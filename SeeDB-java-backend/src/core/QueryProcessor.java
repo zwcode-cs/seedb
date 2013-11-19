@@ -88,7 +88,7 @@ public class QueryProcessor {
 		} else {
 				viewQuery += (queryOnly ? query.substring(table_idx, end_idx) : table);
 		}
-		viewQuery += " GROUP BY " + dimensionAttribute + " ORDER BY " + dimensionAttribute + ";";	
+		viewQuery += " GROUP BY " + dimensionAttribute + ";";	
 		return viewQuery;
 	}
 	
