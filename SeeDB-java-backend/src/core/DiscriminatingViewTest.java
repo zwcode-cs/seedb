@@ -31,7 +31,7 @@ public class DiscriminatingViewTest {
 						
 		DiscriminatingView view = new DiscriminatingView(aggregateAttribute, groupByAttribute, 
 				queryDistribution, datasetDistribution);
-		view.computeUtility();
+		view.computeUtility("EarthMoverDistance");
 		assertEquals(view.getUtility(), 0.45, assertEqualEpsilon);
 	}
 

@@ -8,12 +8,28 @@ import java.util.Comparator;
 import java.util.List;
 
 import utils.DistributionUnit;
+import utils.RuntimeSettings;
 
+/**
+ * This class does the main processing for SeeDB. It generates queries for discriminating views, executes those queries and
+ * picks the top views
+ * @author manasi
+ *
+ */
 public class QueryProcessor {
-	public static final int numViews = 10;
 	private String query;
 	private String table;
 	private String selectPredicate;
+	private RuntimeSettings runtimeSettings;
+	
+	
+	public RuntimeSettings getRuntimeSettings() {
+		return runtimeSettings;
+	}
+	
+	public void setRuntimeSettings(RuntimeSettings runtimeSettings) {
+		this.runtimeSettings = runtimeSettings;
+	}
 	
 	public String getTable() {
 		return table;
@@ -35,8 +51,11 @@ public class QueryProcessor {
 		return query;
 	}
 	
-	public void ParseQuery() {
-		//TODO: use JsqlParser. Extremely sensitive to formating!!!!
+	/**
+	 * Parses the query to find out the predicates in it
+	 * //TODO: use JsqlParser. Extremely sensitive to formating!!!!
+	 */
+	public void ParseQuery() {	
 		String[] parts = query.split(" ");
 		for (int i = 0; i < parts.length; i++) {
 			if (parts[i].trim().toLowerCase().equals("from")) {
@@ -48,17 +67,33 @@ public class QueryProcessor {
 		}
 	}
 	
+	/**
+	 * Modifies the query string to add aggregates, groupby and sampling operations
+	 * @param dimensionAttribute
+	 * @param measureAttribute
+	 * @param queryOnly
+	 * @return
+	 */
 	public String AddViewPredicates(String dimensionAttribute, String measureAttribute, boolean queryOnly) {
 		// update the query for the aggregate and group by
 		int table_idx = query.indexOf(table);
 		int end_idx = query.indexOf(";");
-		String viewQuery = "select " + dimensionAttribute + ", SUM(" + measureAttribute + ") from " + 
-				(queryOnly ? query.substring(table_idx, end_idx) : table) + 
-				" GROUP BY " + dimensionAttribute + ";";		
+		String viewQuery = "select " + dimensionAttribute + ", SUM(" + measureAttribute + ") from ";
+		if (runtimeSettings.useSampling) {
+			viewQuery += "(select * from " + table + " where random() < " 
+					+ runtimeSettings.samplePercent + ") as temp ";
+			if (queryOnly) {
+				viewQuery += query.substring(table_idx + table.length(), end_idx);
+			}
+		} else {
+				viewQuery += (queryOnly ? query.substring(table_idx, end_idx) : table);
+		}
+		viewQuery += " GROUP BY " + dimensionAttribute + " ORDER BY " + dimensionAttribute + ";";	
 		return viewQuery;
 	}
 	
 	public List<DiscriminatingView> Process() {
+		long startTime = System.nanoTime();
 		// parse query for table and selectPredicate
 		ParseQuery();
 		
@@ -90,7 +125,7 @@ public class QueryProcessor {
 					DiscriminatingView discView = new DiscriminatingView(dimensionAttributes.get(i), 
 							measureAttributes.get(j), GetDistributionForQuery(aggregateQueryForQuery), 
 							GetDistributionForQuery(aggregateQueryForDataset));
-					discView.computeUtility();
+					discView.computeUtility(runtimeSettings.metric);
 					views.add(discView);
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -99,19 +134,27 @@ public class QueryProcessor {
 			}
 		}
 		
-		// sort views based on utility and pick top
+		// sort views based on utility and pick top views
 		Collections.sort(views, new Comparator<DiscriminatingView>() {
 			public int compare(DiscriminatingView a, DiscriminatingView b) {
 				return (int) (Math.ceil(b.getUtility() - a.getUtility()));
 			}
 		});
+		List<DiscriminatingView> ret = null;
 		if (views.size() > 0) {
-			return views.subList(0, views.size() > numViews ? numViews : views.size());
-		} else {
-			return null;
+			ret = views.subList(0, views.size() > runtimeSettings.numViews ? runtimeSettings.numViews : views.size());
 		}
+		System.out.println("Time taken by Process:" + (System.nanoTime() - startTime));
+		return ret;
 	}
 	
+	
+	/**
+	 * Runs the given aggregate/groupby query, normalizes the result and formats into vector
+	 * @param distQuery
+	 * @return
+	 * @throws SQLException
+	 */
 	public ArrayList<DistributionUnit> GetDistributionForQuery(String distQuery) throws SQLException {
 		ResultSet rs = QueryExecutor.executeQuery(distQuery);
 		ArrayList<DistributionUnit> dist = new ArrayList<DistributionUnit>();
@@ -127,6 +170,12 @@ public class QueryProcessor {
 		for (DistributionUnit unit : dist) {
 			unit.fraction /= total;		
 		}
+		for (DistributionUnit unit : dist) {
+			System.out.println(unit);
+		}
+		System.out.println();
+		System.out.println();
+		
 		
 		return dist;
 	}
