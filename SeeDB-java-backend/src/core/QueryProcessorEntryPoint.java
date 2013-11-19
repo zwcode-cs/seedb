@@ -18,7 +18,8 @@ public class QueryProcessorEntryPoint {
 	public static void main(String[] args) {
 		RuntimeSettings settings = new RuntimeSettings();
 		settings.samplePercent = 0.1;
-		settings.useSampling = true;
+		settings.useSampling = false;
+		settings.useMultipleAggregateSingleGroupByOptimization = true;
         GatewayServer gatewayServer = new GatewayServer(new QueryProcessorEntryPoint(settings));
         gatewayServer.start();
         System.out.println("Gateway Server Started");

@@ -92,6 +92,29 @@ public class QueryProcessor {
 		return viewQuery;
 	}
 	
+	public String AddViewPredicates(String dimensionAttribute, Object[] measureAttributes, boolean queryOnly) {
+		// update the query for the aggregate and group by
+		int table_idx = query.indexOf(table);
+		int end_idx = query.indexOf(";");
+		String viewQuery = "select " + dimensionAttribute + ", " ;
+		for (Object measureAttribute : measureAttributes) {
+			viewQuery += "SUM(" + measureAttribute.toString() + "), ";
+		}
+		viewQuery = viewQuery.substring(0, viewQuery.length() - 2); // remove extraneous ', '
+		viewQuery += " from ";
+		if (runtimeSettings.useSampling) {
+			viewQuery += "(select * from " + table + " where random() < " 
+					+ runtimeSettings.samplePercent + ") as temp ";
+			if (queryOnly) {
+				viewQuery += query.substring(table_idx + table.length(), end_idx);
+			}
+		} else {
+				viewQuery += (queryOnly ? query.substring(table_idx, end_idx) : table);
+		}
+		viewQuery += " GROUP BY " + dimensionAttribute + ";";	
+		return viewQuery;
+	}
+	
 	public List<DiscriminatingView> Process() {
 		long startTime = System.nanoTime();
 		// parse query for table and selectPredicate
@@ -112,24 +135,36 @@ public class QueryProcessor {
 		ArrayList<DiscriminatingView> views = new ArrayList<DiscriminatingView>();
 		
 		for (int i = 0; i < dimensionAttributes.size(); i++) {
-			for (int j = 0; j < measureAttributes.size(); j++) {
-				if (dimensionAttributes.get(i).equalsIgnoreCase(selectPredicate)) {
-					continue;
-				}
-				// add an aggregate and group by: currently on SUM
-				String aggregateQueryForQuery = AddViewPredicates(dimensionAttributes.get(i), measureAttributes.get(j), true);
-				String aggregateQueryForDataset = AddViewPredicates(dimensionAttributes.get(i), measureAttributes.get(j), 
-						false);
-				// run the queries and turn results into a Discriminating View
+			if (dimensionAttributes.get(i).equalsIgnoreCase(selectPredicate)) {
+				continue;
+			}
+			if (runtimeSettings.useMultipleAggregateSingleGroupByOptimization) {
+				String aggregateQueryForQuery = AddViewPredicates(dimensionAttributes.get(i), 
+						measureAttributes.toArray(), true);
+				String aggregateQueryForDataset = AddViewPredicates(dimensionAttributes.get(i), 
+						measureAttributes.toArray(), false);
 				try {
-					DiscriminatingView discView = new DiscriminatingView(dimensionAttributes.get(i), 
-							measureAttributes.get(j), GetDistributionForQuery(aggregateQueryForQuery), 
-							GetDistributionForQuery(aggregateQueryForDataset));
-					discView.computeUtility(runtimeSettings.metric);
-					views.add(discView);
-				} catch (SQLException e) {
+					CreateAndAddDiscriminatingView(aggregateQueryForQuery, aggregateQueryForDataset, 
+							measureAttributes.size(), dimensionAttributes, measureAttributes, views);
+				} catch (Exception e) {
 					e.printStackTrace();
 					return null;
+				}
+					
+			} else {		
+				for (int j = 0; j < measureAttributes.size(); j++) {	
+					// add an aggregate and group by: currently on SUM
+					String aggregateQueryForQuery = AddViewPredicates(dimensionAttributes.get(i), 
+							new Object[] {measureAttributes.get(j)}, true);
+					String aggregateQueryForDataset = AddViewPredicates(dimensionAttributes.get(i), 
+							new Object[] {measureAttributes.get(j)}, false);
+					try {
+						CreateAndAddDiscriminatingView(aggregateQueryForQuery, aggregateQueryForDataset, 1, 
+								dimensionAttributes, measureAttributes, views);
+					} catch (Exception e) {
+						e.printStackTrace();
+						return null;
+					}
 				}
 			}
 		}
@@ -146,6 +181,21 @@ public class QueryProcessor {
 		}
 		System.out.println("Time taken by Process:" + (System.nanoTime() - startTime));
 		return ret;
+	}
+	
+	public void CreateAndAddDiscriminatingView(String aggregateQueryForQuery, String aggregateQueryForDataset,
+			int numAggregates, ArrayList<String> dimensionAttributes, ArrayList<String> measureAttributes,
+		ArrayList<DiscriminatingView> views) throws SQLException {
+		ArrayList<ArrayList<DistributionUnit>> queryDists = GetDistributionForQueryMultipleAggregates(
+				aggregateQueryForQuery, numAggregates);
+		ArrayList<ArrayList<DistributionUnit>> dataDists = GetDistributionForQueryMultipleAggregates(
+				aggregateQueryForDataset, numAggregates);
+		for (int k = 0; k < numAggregates; k++) {
+			DiscriminatingView discView = new DiscriminatingView(dimensionAttributes.get(k), 
+					measureAttributes.get(k), queryDists.get(k), dataDists.get(k));
+			discView.computeUtility(runtimeSettings.metric);
+			views.add(discView);
+		}
 	}
 	
 	
@@ -178,6 +228,35 @@ public class QueryProcessor {
 		
 		
 		return dist;
+	}
+	
+	public ArrayList<ArrayList<DistributionUnit>> GetDistributionForQueryMultipleAggregates(String distQuery, 
+			int numAggreagtes) throws SQLException {
+		ResultSet rs = QueryExecutor.executeQuery(distQuery);
+		ArrayList<ArrayList<DistributionUnit>> dist_list = new ArrayList<ArrayList<DistributionUnit>>();
+		for (int i = 0; i < numAggreagtes; i++)
+		{
+			dist_list.add(new ArrayList<DistributionUnit>());
+		}
+		while (rs.next()) {		
+			for (int i = 0; i < numAggreagtes; i++)
+			{
+				dist_list.get(i).add(new DistributionUnit(rs.getObject(1), rs.getDouble(i + 2)));
+			}
+		}
+		
+		
+		for (ArrayList<DistributionUnit> dist : dist_list)
+		{
+			double total = 0;
+			for (DistributionUnit unit : dist) {
+				total += unit.fraction;
+			}
+			for (DistributionUnit unit : dist) {
+				unit.fraction /= total;		
+			}
+		}		
+		return dist_list;
 	}
 
 }
