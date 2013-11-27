@@ -1,0 +1,24 @@
+<!doctype html>
+
+<html>
+  <head>
+  </head>
+
+  <body>
+    Hello World!
+
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript">
+      var socket = io.connect("/");
+
+      socket.on("connect", function() {
+        socket.emit("call", {methodName: "setQuery", args: ["select * from election_data ;"]}, function (response) {
+          console.log(response);
+          socket.emit("call", {methodName: "Process", args: []}, function (response) {
+            console.log(response);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
