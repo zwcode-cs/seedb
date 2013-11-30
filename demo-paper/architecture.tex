@@ -201,22 +201,42 @@ We now present some enhancements that may further improve the analyst's user exp
 Our goal simply selects the K views with the highest utility, ignoring the fact that the discriminating views are related. For instance, an analyst may prefer one visualization each of sales and revenue, instead of two visualizations of sales, since the former covers more measure attributes. Incorporating such personalized preferences requires new models of discriminating view-diversity (leveraging metrics from recommendation systems) and hence new computation methods. 
 
 
+\techreport{\stitle{Visualization Tools:} The visualization community has
+developed several tools for data analysts. Tools like
+ShowMe~\cite{DBLP:journals/cacm/StolteTH08} and
+Polaris~\cite{DBLP:journals/tvcg/MackinlayHS07} (which formed the basis of the
+company Tableau) provide a canvas for users to drag and drop columns in order to
+browse visualizations. The visualizations considered are quite powerful ---
+including bar charts, pie charts, graphs, and many more.
 
-\vspace{-3pt}
-\section{Related Work}\label{sec:related}
-\noindent Previous work related to \SeeDB\ falls under three themes: visualization tools (covered in Section 1), OLAP, and database visualizations:
+The work on Wrangler~\cite{DBLP:conf/chi/KandelPHH11} allowed users to transform
+a noisy dataset into a clean one, by automatic inference of schema information
+along with suggestions for deleting rows and pivoting columns.
 
-\techreport{\stitle{Visualization Tools:} The visualization community has developed several tools for
-data analysts. Tools like ShowMe~\cite{DBLP:journals/cacm/StolteTH08} and Polaris~\cite{DBLP:journals/tvcg/MackinlayHS07} (which formed the basis of the company Tableau) provide a canvas for users to drag and drop columns in order to browse visualizations. The visualizations considered are quite powerful --- including bar charts, pie charts, graphs, and many more. 
+The work most closely related to ours in this space is the Profiler anomaly
+browser~\cite{DBLP:conf/avi/KandelPPHH12}, which enables data analysts to browse
+anomalies in data. The analyst specifies an anomaly, and the tool uses mutual
+information as a metric for picking the column to visualize that best explains
+an anomaly. On the other hand, our goal is to layer visualization over regular
+data base query processing; we support a broader class of queries and a broader
+class of visualizations. Furthermore, our focus is on efficiency of generation
+of these visualizations, which wasn't considered in that work.}
 
-The work on Wrangler~\cite{DBLP:conf/chi/KandelPHH11} allowed users to transform a noisy dataset into a clean one, by automatic inference of schema information along with suggestions for deleting rows and pivoting columns. 
+\techreport{The work by Dash et
+al.~\cite{DBLP:conf/cikm/DashRMAL08} addresses similar problems in the faceted search scenario.}
 
-The work most closely related to ours in this space is the Profiler anomaly browser~\cite{DBLP:conf/avi/KandelPPHH12}, which enables data analysts to browse anomalies in data. The analyst specifies an anomaly, and the tool uses mutual information as a metric for picking the column to visualize that best explains an anomaly. On the other hand, our goal is to layer visualization over regular data base query processing; we support a broader class of queries and a broader class of visualizations. Furthermore, our focus is on efficiency of generation of these visualizations, which wasn't considered in that work.}
-
-\stitle{OLAP:} There has been some work on browsing data cubes, allowing analysts to variously find ``explanations'' for why two cube values were different, to find which neighboring cubes have similar properties to the cube under consideration, or get suggestions on what unexplored data cubes should be looked at next~\cite{DBLP:conf/vldb/Sarawagi99, DBLP:conf/vldb/SatheS01, DBLP:conf/vldb/Sarawagi00}. \techreport{The work by Dash et al.~\cite{DBLP:conf/cikm/DashRMAL08} addresses similar problems in the faceted search scenario.}
-
-\techreport{The OLAP papers are similar in spirit to our work of providing assistance to the data analyst, but approach it in
-very different ways: The papers~\cite{DBLP:conf/vldb/Sarawagi99,DBLP:conf/vldb/SatheS01} both facilitate explanation-driven analysis --- the analyst specifies the anomaly, and the system provides explanations or generalizations for that anomaly. On the other hand, the paper~\cite{DBLP:conf/vldb/Sarawagi00} guides analysts to unexplored data cubes based on what has been seen so far. Our work is perhaps more similar to this paper. Unlike the approach described, which simply identifies {\em one} aggregate value, we instead focus on deviating {\em trends}, i.e., many aggregate values (which are then presented as visualizations), since it may be hard for the analyst to make sense of single absolute values. Additionally, they focus on star schemas, with one aggregation function on one measure attribute, while we intend to support queries on general databases, with an arbitrary number of aggregation functions.
+\techreport{The OLAP papers are similar in spirit to our work of providing
+assistance to the data analyst, but approach it in very different ways: The
+papers~\cite{DBLP:conf/vldb/Sarawagi99,DBLP:conf/vldb/SatheS01} both facilitate
+explanation-driven analysis --- the analyst specifies the anomaly, and the
+system provides explanations or generalizations for that anomaly. On the other
+hand, the paper~\cite{DBLP:conf/vldb/Sarawagi00} guides analysts to unexplored
+data cubes based on what has been seen so far. Our work is perhaps more similar
+to this paper. Unlike the approach described, which simply identifies {\em one}
+aggregate value, we instead focus on deviating {\em trends}, i.e., many
+aggregate values (which are then presented as visualizations), since it may be
+hard for the analyst to make sense of single absolute values. Additionally, they
+focus on star schemas, with one aggregation function on one measure attribute,
+while we intend to support queries on general databases, with an arbitrary
+number of aggregation functions.
 }
-
-\stitle{Database Visualization Work:} Fusion tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10} allows users to create visualizations layered on top of web databases; they do not consider the problem of automatic visualization generation. Devise~\cite{DBLP:conf/sigmod/LivnyRBCDLMW97} translated user-manipulated visualizations into database queries.  

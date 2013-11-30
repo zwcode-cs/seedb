@@ -1,288 +1,68 @@
-\section{Introduction}\label{sec:intro}
-\vspace{-10pt}
-\begin{quote} {\em
-... today's researchers must consume ever higher volumes 
-of numbers that gush, as if from a fire hose ... 
-}
-\end{quote}
-\vspace{-7 pt}
-\noindent \hspace{80pt} --- R.M. Friedhoff and T. Kiely
-\smallskip
+\section{Introduction}
+\label{sec:intro}
 
-Data analysts must sift through huge volumes of data
-looking for valuable data-specific insights, trends, or anomalies.
-This process involves selecting the ``right'' subset of the data,
-and the ``right'' way to view it, so that the ``insights'' become apparent.
-Moreover, the process is often ad-hoc and consumes a lot of the analyst's time.
-Our vision is that {\em some especially cumbersome aspects} of this search 
-for interesting insights can be automated.
+% Data scientists analyzing large amounts of data often rely on visualizations to
+% identify interesting trends and gain insights. However, picking the right
+% visualization is a manual and tedious task. Given a query, the analyst would
+% like to know what makes the results of a query ``interesting'' compared to the
+% underlying dataset. In this paper, we demonstrate a prototype of a system
+% \SeeDB\ , a system that automatically discovers statistical differences between
+% the query results and the underlying dataset, and visualizes the differences to
+% aid data exploration.
 
-To illustrate, consider the following interactive exploration workflow,
-which we believe is often used in practice.
+Data scientists analyze large amounts of data to find new insights, trends and
+anomalies. Given the large amount of data and large bandwidth available for
+visual analysis, analysts often use visualizations to identify areas of
+interest. The general workflow, which is usually ad-hoc, can be represented as
+follows:
 
-\noindent 
-{\em Step (1):} First, the analyst poses a relational query 
-to extract some subset of data they are interested in exploring.
-For example, the analyst may select all records associated with
-``stapler'' products.
+\begin{enumerate}
+  \item Step 1: Analyst selects a subset of the data they are interested in; for
+  instance, the analysts may select patients that had costs more than twice the
+  standard deviation of all patients, or the genes that belong to a particular
+  group, or a set of products of a certain kind.
+  \item Step 2: The analyst processes and visualizes the data in various ways,
+  e.g. via binning, aggregates, group-bys etc. and then building scatterplots,
+  histograms etc., and studies these ``views'' of the data.
+  \item Step 3: Finally, the analyst studies all the views and identifies the
+  interesting ones. He/she then drills down into these views or further explores
+  the properties that show unusual trends. This can be done using sophisticated
+  statistics or machine learning.
+\end{enumerate}
 
+This iterative process and repeated for different subsets of the data. Since a
+large number of views of the data are possible, this process of exploration is
+tedious and time-consuming. In Step 3 above, we further posit that {\it what
+makes a view interesting is deviations from expected behavior}. Therefore, given
+the subset of data selected using a relational query, what makes the data
+interesting are trends or properties that are different for this subset compared
+to the underlying complete dataset.
 
+Ultimately, the analyst must decide if deviations in the data are interesting
+but we can use deviation as a means to eliminate the laborious process
+of stepping through all possible views of a dataset. 
 
+<<<Example>>>
 
+In this demo paper, we describe our prototype of \SeeDB, a system to
+automatically identify and visually highlight interesting aspects of a dataset. 
 
-\noindent {\em Step (2):} Then, the analyst considers several candidate views 
-over this subset of data, formed by, say, aggregation and grouping;
-the analyst must study all of these views one by one.
-For example, one view may be total stapler sales by year,
-while another view may be the quantity in stock by sales region.
-Since these views have two-attributes each, we can view them
-as 2-dimensional graphs. 
-For example, Figure 1(a) may be the stapler sales (y-axis) by year (x-axis),
-while Figure 1(c) may be the quantity (y-axis) by region (x-axis).
-(Figures 1(b) and 1(d) are discussed below.)
+While various ways of obtaining ``views'' of a dataset are possible, for the
+purpose of this work, we focus on views obtained by adding a single group-by and
+a single aggregate clause to the query used to select subsets of the data. This
+restriction also allows us to focus on a limited set of visualization types to
+show trends in the data.
 
-
-
-
-\noindent {\em Step (3):} Next, the analyst steps 
-through each view, and decides which views are ``interesting.''
-This of course is the critical and time-consu\-ming step.
-What makes a view like Figure 1(a) interesting or not?
-Well, it all depends on the application semantics
-and what we are comparing against.
-For example, Figure 1(a) shows decreasing sales over time.
-If we are in a recession and all product sales are down then this observation
-is not very interesting. However, say that Figure 1(b) shows
-the aggregate (all) product sales over the same time periods.
-Then the stapler sales view goes against the general trend: 
-overall sales are up, but stapler sales are going down.
-In this case, the view is {\em potentially} ``interesting''
-because it depicts a trend in the subset of data
-that the analyst is interested in (i.e., stapler-related data)
-that {\em deviates} from the trend in the overall data.
-Of course, the analyst must decide if this deviation 
-is truly an insight for this application.
-Even so, our key insight is that we may be able to 
-{\em identify and highlight to the analyst potentially interesting views 
-using automated mechanisms based on deviation}.
-By doing so, we eliminate the laborious process
-of stepping through all possible views that the analyst currently 
-performs.
-Once we recommend potentially interesting views, we can let the analyst
-make the final decision.
-
-\pgfmathdeclarefunction{gauss}{2}{%
-  \pgfmathparse{1/(#2*sqrt(2*pi))*exp(-((x-#1)^2)/(2*#2^2))}%
-}
-
-\pgfplotsset{ticks=none}
-
-\begin{figure}[htp]
-  \centering
-  \vspace{-10pt}
-    \subfigure[]
-    {\begin{tikzpicture}[scale = 0.15]
-      \begin{axis}[
-      axis lines=center,
-      axis on top=true,
-      enlargelimits=0.15,
-      symbolic x coords={mod2,mod3,mod5,mod7,mod11,mod13,mod17,mod19,mod23},
-      ]
-    \addplot[draw=red, ultra thick] coordinates 
-      { (mod2,80) (mod3,79.7961) (mod5,75)
-        (mod7,73) (mod11,69) (mod13,65)
-        (mod17,60) (mod19,53) (mod23,50)};
-    \end{axis}
-    \end{tikzpicture}}
-    \subfigure[]
-    {\begin{tikzpicture}[scale = 0.15]
-    %   \begin{axis}[
-    %   xmin=0, xmax=1.5,
-    %   ymin=0, ymax=1.5,
-    %   axis lines=center,
-    %   axis on top=true,
-    %   domain=0:1,
-    %   ]
-    % \addplot [mark=none,draw=red,ultra thick] {x};
-    \begin{axis}[
-      axis lines=center,
-      axis on top=true,
-      enlargelimits=0.15,
-      symbolic x coords={mod2,mod3,mod5,mod7,mod11,mod13,mod17,mod19,mod23},
-      ]
-    \addplot[draw=red, ultra thick] coordinates 
-      { (mod2,80) (mod3,87) (mod5,95)
-        (mod7,98) (mod11,105) (mod13,115)
-        (mod17,120) (mod19,123) (mod23,129)};
-    \end{axis}
-    \end{tikzpicture}}
-    \subfigure[]
-    {\begin{tikzpicture}[scale = 0.15]
-%       \begin{axis}[every axis plot post/.append style={
-%   mark=none,domain=-2:3,samples=50,smooth}, % All plots: from -2:2, 50 samples, smooth, no marks
-%   axis x line*=bottom, % no box around the plot, only x and y axis
-%   axis y line*=left, % the * suppresses the arrow tips
-%   enlargelimits=upper] % extend the axes a bit to the right and top
-%   \addplot {gauss(0,0.25)};
-% \end{axis}
-    \begin{axis}[
-      ymin=70, ymax=120,
-      axis on top =true,
-      ybar,
-      enlargelimits=0.15,
-      symbolic x coords={mod2,mod3,mod5,mod7,mod11,mod13,mod17,mod19,mod23},
-      ]
-    \addplot coordinates 
-      { (mod2,80) (mod3,79.7961) (mod5,114.4597)
-        (mod7,85) (mod11,90.5600) (mod13,120)
-        (mod17,87) (mod19,79) (mod23,90)};
-    \end{axis}
-    \end{tikzpicture}
-    }
-    \subfigure[]
-    {\begin{tikzpicture}[scale = 0.15]
-      \begin{axis}[
-      ybar,
-      ymin=70, ymax=100,
-      enlargelimits=0.15,
-      symbolic x coords={mod2,mod3,mod5,mod7,mod11,mod13,mod17,mod19,mod23},
-      ]
-    \addplot coordinates 
-      { (mod2,80) (mod3,82.7961) (mod5,87.4597)
-        (mod7,85) (mod11,90.5600) (mod13,85)
-        (mod17,87) (mod19,87) (mod23,90)};
-    \end{axis}
-    \end{tikzpicture}
-    }
-    \vspace{-13pt}
-    \caption{Views (a), (b): Sales over Time. (c), (d): Quantity by Region.}\label{fig:plots}
-    \vspace{-12pt}
- \end{figure}
-
-Figures 1(c) and 1(d) illustrate a different type of deviation.
-The first figure shows the distribution of staplers
-across regions, while the second figure shows the
-overall product distribution.
-Again, the stapler view does not follow the general trend:
-the regions that have the most staplers are not the larger regions
-that have most product in stock.
-The analysis must decide if this observation is interesting:
-perhaps the region that has many staplers is near
-the world-famous stapler-gun-wrestling contest,
-in which case the observation is expected.
-But perhaps there is a problem with the product shipping strategy,
-in which case the deviation is very important.
-% In this example as well, there is a deviation between
-% the distribution in the subset of data that the analyst is interested in,
-% and the rest of the data in the database.
-% Thus, our goal is to automate the search for views that are {\em potentially}
-% interesting, and to then let the analyst make the final decision.
-
-
-
-
-
-
-
-
-
-\begin{figure}[t!]
-\vspace{-15pt}
-\begin{center}
-\epsfig{file=Images/comparison-diagram.pdf, width=1.5in, trim=3in 2.5in 3in 1in}
-\end{center}
-\vspace{-10pt}
-\caption{\SeeDB\ Comparison with regular DBMS\label{fig:comparison} (The workflow for \SeeDB\ is only conceptual and need not happen in that order.)}
-\vspace{-15pt}
-\end{figure}
-
-In this vision paper, we sketch our design for a new data base management system
-(DBMS), \SeeDB, that automates the especially laborious 
-aspects of the search for useful data insights.
-Figure 2 depicts \SeeDB, together with a conventional DBMS.
-In the conventional system, the user or analyst submits a query $Q$
-and obtains data subsets.
-Thus, conventional systems do not provide any means for the analyst 
-to get intuitive visual insights directly.
-In \SeeDB, the analyst also submits a query, but instead
-automatically obtains views (or visualizations) of the query result
-that are potentially of interest.
-As illustrated in our examples,
-these visualizations help the
-analyst quickly interpret and understand specific
-``interesting/useful'' aspects of the query result.
-Thus, with \SeeDB, we fundamentally modify the
-query-result paradigm of databases: \SeeDB\ is provided a query $Q$,
-and outputs visualizations of interesting aspects
-of $Q$.
-
-Given a database and a query $Q$, \SeeDB\ considers a space of views 
-$Q_1', \ldots, Q_n'$ that
-are generated by adding to $Q$ additional relational operators, 
-such that the results can be readily visualized 
-(via the visual engine, depicted in Figure~\ref{fig:comparison}).
-For instance, one possibility in our Staplers example was to 
-add a group by and an aggregation giving a view corresponding to total sales of Staplers per region. 
-We call these views $Q_1', \ldots, Q_n'$ the {\em discriminating views}.
-To decide if a discriminating view is interesting, \SeeDB\ compares it
-to the equivalent view obtained from the full database, using the
-same operators.
-For comparing the two views, \SeeDB\ 
-uses a set of functions that captures how much the first view {\em deviates}
-from the second.  
-Prior work in the visualization community has identified
-several functions for this purpose; however an important
-issue is the feasibility of computing such functions on 
-large databases.
-These functions capture the deviations illustrated in
-our initial example (e.g., different slopes), and draw
-from existing functions that compare value distributions
-(e.g., earth movers function).
-Of course, \SeeDB\ is not tied to any particular function(s),
-and allows the analyst to override the defaults using 
-their own functions.
-We say that \SeeDB\ computes the {\em utility} of discriminating 
-view when it compares the discriminating view against the same
-view on the database.
-
-\techreport{Even if \SeeDB\ limits the discriminating views considered, the cost of computing utilities may be prohibitive. Thus, we will also suggest techniques for improving performance. For example, it may be possible to reuse some of the computations from evaluating one view, in evaluating the utility of another view. A different avenue for improving performance, is to provide approximate results, either by reducing the size of a view, or by computing its utility approximately.}
-
-
-
-% Since the space of possible views that \SeeDB must explore is huge,
-% for tractability the space must be constrained.
-% Here we will suggest the following constraints,
-% which we believe can be relaxed in the future.
-% We focus on a database with a traditional star schema,
-% and a query $Q$ on the fact table.
-% (We illustrate these terms, as well as other terms 
-% in this paragraph, in the example below.)
-% \SeeDB considers 2-attribute views that are generated by adding to $Q$
-% a single aggregation and group-by operator.
-% We call these views the {\em discriminating views}.
-% To decide if discriminating view $V$ is interesting, \SeeDB compares it
-% to the equivalent view $V_D$ obtained from the full database, using the
-% same aggregation and group-by operator.
-% To determine if $V$ and $V_D$ are significantly different, \SeeDB uses
-% a set of analyst-provided comparison functions.
-% These functions capture the differences illustrated in
-% our initial example (e.g., different slopes), and draw
-% from existing functions that compare value distributions
-% (e.g., earth movers function).
-% We say that \SeeDB computes the {\em utility} of $V$
-% when it compares it against $V_D$.
-
-% Even if \SeeDB limits the discriminating views considered,
-% the cost of computing utilities may be prohibitive.
-% Thus, we will also suggest techniques for improving 
-% performance. For example, it may be possible to reuse some of the
-% computations from evaluating one view, in evaluating the utility of another view.
-% A different avenue for improving performance, is to
-% provide approximate results, either by reducing the size of a view,
-% or by computing its utility approximately.
-
-Our next example is a more detailed version of the previous example,
-and clarifies the terms introduced.
+Formally, the problem can be described as follows: given a database and a query
+$Q$, \SeeDB identifies the most significant deviations between the subset of the
+data selected by the query and the underlying dataset. \SeeDB does so by
+considering the space of views obtained by adding a single group-by and
+aggregate to the input query, and then computing the discriminating power of
+each of these views. Discriminating power or utility measures how different the
+distribution of data in the subset is compared to the underlying data. \SeeDB
+produces the top-k views having the highest dicriminating power. For the utility
+measure, \SeeDB provides the option of using distance metrics such as earth
+movers distance, L2 norm etc.
 
 \begin{example}\label{example}
 \vspace{-10pt}
@@ -389,20 +169,12 @@ Boston: 300 & Seattle: 300 & New York: 300
 
 \begin{denselist}
 
-\item For a given query, $n$, the total number of discriminating views, is
-likely to be very large to explore exhaustively and precisely. Even if we
-restrict ourselves to views that append a group-by and an aggregation, the
-number of choices depends on the number of aggregation methods and group-by
-attributes. Generating each of $R_1(Q(D)),$  $\ldots,$ $R_n(Q(D))$, scoring them
-on utility, and then picking the best one is certainly not feasible for most
-databases. Thus, we need mechanisms to prune the space of views and compute
-their utility approximately. This approach is reminiscent of how a query
-optimizer costs and prunes candidate execution plans, except that the objectives
-are different and hence may require different cost models and data statistics.
-In addition, given that the end result is consumed by an analyst, it may be
-preferable to recommend a visualization with lower utility but also lower cost
-to generate. This option creates a bi-criterion optimization problem, where
-possible visualizations may trade off between utility and cost.
+\item For a given query, $n$, the total number of discriminating views, (even if
+we restrict ourselves to views that append a group-by and an aggregation) is
+likely to be very large to explore exhaustively and precisely. Generating each
+of $R_1(Q(D)),$  $\ldots,$ $R_n(Q(D))$, scoring them on utility, and then
+picking the best one is certainly not feasible for most databases. Thus, we need
+mechanisms to prune the space of views and compute their utility approximately.
 
 \item Generating and scoring the discriminating views $R_i(Q(D))$ one-by-one may
 miss interesting optimization opportunities: First, we may share computation
@@ -423,7 +195,7 @@ much more efficiently.
 
 \end{denselist}
 
-\noindent Over the past few years, there has been a significant
+Over the past few years, there has been a significant
 effort from the visualization community to provide interactive tools
 for data analysts. In particular, tools such as ShowMe, Polaris, and
 Tableau~\cite{DBLP:journals/cacm/StolteTH08,
@@ -435,6 +207,16 @@ Profiler~\cite{DBLP:conf/avi/KandelPPHH12} allow users to visualize
 simple anomalies in data.  However, unlike \SeeDB, these tools have
 little automation; in effect, it is up to the analyst to generate a
 two-column result (like the result of the discriminating view)
-to be visualized.
+to be visualized. Other related areas of work include OLAP and database
+visualization tools. There has been some work on browsing data cubes, allowing
+analysts to variously find ``explanations'' for why two cube values were
+different, to find which neighboring cubes have similar properties to the cube
+under consideration, or get suggestions on what unexplored data cubes should be
+looked at next~\cite{DBLP:conf/vldb/Sarawagi99, DBLP:conf/vldb/SatheS01,
+DBLP:conf/vldb/Sarawagi00}.
 
-In this paper, we present our goals formally, and then present our initial design for \SeeDB, along with the underlying challenges.
+Fusion tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10} allows users to create
+visualizations layered on top of web databases; they do not consider the problem
+of automatic visualization generation.
+Devise~\cite{DBLP:conf/sigmod/LivnyRBCDLMW97} translated user-manipulated
+visualizations into database queries.

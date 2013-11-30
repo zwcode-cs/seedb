@@ -1,10 +1,19 @@
-Data scientists rely on visualizations to interpret the data returned by
-queries, but finding the right visualization remains a manual task that is often
-laborious. We propose a DBMS that partially automates the task of finding the
-right visualizations for a query. In a nutshell, given an input query Q, the new
-DBMS optimizer will explore not only the space of physical plans for Q, but also
-the space of possible visualizations for the results of Q. The output will
-comprise a recommendation of potentially ``interesting'' or ``useful''
-visualizations, where each visualization is coupled with a suitable query
-execution plan. We discuss the technical challenges in building this system and
-outline an agenda for future research.
+% Data scientists rely on visualizations to interpret the data returned by
+% queries, but finding the right visualization remains a manual task that is often
+% laborious. We propose a DBMS that partially automates the task of finding the
+% right visualizations for a query. In a nutshell, given an input query Q, the new
+% DBMS optimizer will explore not only the space of physical plans for Q, but also
+% the space of possible visualizations for the results of Q. The output will
+% comprise a recommendation of potentially ``interesting'' or ``useful''
+% visualizations, where each visualization is coupled with a suitable query
+% execution plan. We discuss the technical challenges in building this system and
+% outline an agenda for future research.
+% 
+Data scientists analyzing large amounts of data often rely on visualizations to
+identify interesting trends and gain insights. However, picking the right
+visualization is a manual and tedious task. Given a query, the analyst would
+like to know what makes the results of a query ``interesting'' compared to the
+underlying dataset. In this paper, we demonstrate a prototype of a system
+\SeeDB\, a system that automatically discovers statistical differences between
+the query results and the underlying dataset, and visualizes the differences to
+aid data exploration.
