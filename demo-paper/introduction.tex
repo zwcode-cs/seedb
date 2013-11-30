@@ -1,15 +1,5 @@
 \section{Introduction}
 \label{sec:intro}
-
-% Data scientists analyzing large amounts of data often rely on visualizations to
-% identify interesting trends and gain insights. However, picking the right
-% visualization is a manual and tedious task. Given a query, the analyst would
-% like to know what makes the results of a query ``interesting'' compared to the
-% underlying dataset. In this paper, we demonstrate a prototype of a system
-% \SeeDB\ , a system that automatically discovers statistical differences between
-% the query results and the underlying dataset, and visualizes the differences to
-% aid data exploration.
-
 Data scientists analyze large amounts of data to find new insights, trends and
 anomalies. Given the large amount of data and large bandwidth available for
 visual analysis, analysts often use visualizations to identify areas of
@@ -29,29 +19,45 @@ follows:
   the properties that show unusual trends. This can be done using sophisticated
   statistics or machine learning.
 \end{enumerate}
+This iterative process is repeated for different subsets of the data. 
 
-This iterative process and repeated for different subsets of the data. Since a
-large number of views of the data are possible, this process of exploration is
-tedious and time-consuming. In Step 3 above, we further posit that {\it what
-makes a view interesting is deviations from expected behavior}. Therefore, given
-the subset of data selected using a relational query, what makes the data
-interesting are trends or properties that are different for this subset compared
-to the underlying complete dataset.
+\subsection{Motivating Example}
+\label{motivation_example}
+
+Consider a medical researcher studying the cost of care for cancer patients. Her
+research involves the analysis of a set of 1M electronic medical records (EMRs).
+To analyze this data, the researcher identifies patients that cost
+significantly more than the average: specifically, she selects patients whose
+cost of care is greater than the average cost by two standard deviations. In
+terms of SQL, she runs the following query: \\
+
+\noindent Q = $SELECT * FROM Patients where total_cost - AVG(total_cost) >
+2 * STDDEV (total_cost);$
+<< fix this query >>
+
+Once she has identified these patients, she must study various aspects of their
+care to determine the reason why the patients have large cost of care. For
+instance, she may study length of treatment, survival rate, severity of disease
+etc. For each of these parameters, she is interested in determining whether the
+group of patients with high cost of care are different from those with lower
+cost of care. Since a large number of views of the data are possible, performing
+these calculations repeatedly and visualizing the results is tedious and
+time-consuming. Moreover, since the researcher may not be able to explore all
+potential features, she may miss some interesting trends.
+
+\SeeDB\ partially automates the process by computing and visualizing various
+views of the data and highlighting the interesting views. Moreover, \SeeDB\ is
+based on the principle that {\it what makes a view interesting is deviations
+from expected behavior}. Therefore, given the subset of data selected using a
+relational query, what makes the data interesting are trends or properties that
+are different for this subset compared to the underlying complete dataset.
 
 Ultimately, the analyst must decide if deviations in the data are interesting
 but we can use deviation as a means to eliminate the laborious process
 of stepping through all possible views of a dataset. 
 
-<<<Example>>>
-
-In this demo paper, we describe our prototype of \SeeDB, a system to
-automatically identify and visually highlight interesting aspects of a dataset. 
-
-While various ways of obtaining ``views'' of a dataset are possible, for the
-purpose of this work, we focus on views obtained by adding a single group-by and
-a single aggregate clause to the query used to select subsets of the data. This
-restriction also allows us to focus on a limited set of visualization types to
-show trends in the data.
+\subsection{Problem Description and Challenges}
+\label{problem_description}
 
 Formally, the problem can be described as follows: given a database and a query
 $Q$, \SeeDB identifies the most significant deviations between the subset of the
@@ -64,108 +70,32 @@ produces the top-k views having the highest dicriminating power. For the utility
 measure, \SeeDB provides the option of using distance metrics such as earth
 movers distance, L2 norm etc.
 
-\begin{example}\label{example}
-\vspace{-10pt}
-We focus on a database with a traditional star sch\-ema.
-We operate on a single fact table $D$, containing information
-about sales. The schema of $D$ comprises three dimension
-attributes: \att{Product}, \att{Location}, and \att{Year}, and
-one measure attribute: \att{Sales}.
+While various ways of obtaining ``views'' of a dataset are possible, for the
+purpose of this work, we focus on views obtained by adding a single group-by and
+a single aggregate clause to the query used to select subsets of the data. This
+restriction also allows us to focus on a limited set of visualization types to
+show trends in the data.
 
-Let us assume our analyst has entered a query with a
-single selection predicate:
-$Q \equiv \sigma_{(\att{Product = Staplers})}$.
-The result contains too many tuples to examine individually, and
-hence the analyst has to rely on some appropriate visualization in order
-to glean interesting insights about the overall query result.
+For simplicity, we assume that a discriminating view 
+$R$ in $\calR_Q$ performs a group-by on a single attribute $a \in A$, 
+and applies an aggregation function $f \in F$ 
+on a single measure attribute $m \in M$. 
+A view in this class corresponds to a two-column table 
+that shows how the value of $f(m)$ varies with values of attribute $a$. 
+This table can be directly visualized using a histogram, 
+a bar chart or a line plot. (We consider generalizations in Section 4.)
 
-\SeeDB\ searches over all possible discriminating views that
-can be obtained by adding a single aggregate and group by operator.
-We initially focus on these two-attribute discriminating views
-because they are easy to visualize using histograms or line plots.
-(\SeeDB\ also considers more general views.)
-One of these queries is 
-$Q_1' = R_1(Q)$ where $R_1 \equiv \gamma_{\att{Location, sum(Sales)}}$.
-This query tracks the sum of \att{Sales} over \att{Location}.
-A possible result, $R_1(Q(D))$, is the discriminating view
-shown in the top part of Table 2.
-Another possible query is $Q_2' = R_2(Q)$, where $R_2 \equiv
-\gamma_{\att{Year, sum(Sales)}}$, tracking the sum of
-\att{Sales} over \att{Year}.
-The bottom part of Table 2 shows a possible result of this
-second view.
+We also assume the existence of a function $U(R)$ that can characterize the
+utility of each view $R(Q)$ in $\calR_Q$ (higher is better). For now, we focus
+on picking discriminating views that optimize $U(R)$ with latency as low as
+possible: we return to more general objectives in Section~\ref{sec:extensions}.
+
+Given $Q \in \calQ$ and a positive integer $K$, find $K$ discriminating views
+$R_i \in \calR_Q$, such that the $R_i$ have the largest values of $U(R_i)$ among
+those in $\calR_Q$, and the total latency is minimized.
 
 
-The next step is to score each view based on its utility, i.e., its
-ability to show an interesting property of the query result. For this
-purpose, \SeeDB\ obtains aggregate statistics for
-\att{Sales} for \att{Location} and \att{Year} for the original full database.
-(As we will see later, there
-are interesting optimization opportunities if we can integrate this
-step with the processing of $Q$.)
-Table 1 shows the full database aggregates, i.e., $R_1(D)$ and $R_2(D)$
-corresponding to our sample views.
-(Note the missing $Q$.)
-For the \att{Location} attribute, both $R_1(D)$ and $R_1(Q(D))$
-have similar distributions.
-(The fact that sales are uniformly lower in $R_1(Q(D))$ is not
-surprising since $R_1(Q(D))$ only considers a fraction of the data.)
-However, notice that the
-distribution across \att{Year}s is very different for tuples
-satisfying \att{Product = `Staplers'}. That is, demand for
-\att{`Staplers'} seems to have not gone up, unlike the other products.
-This unexpected behavior will be detected by \SeeDB\ when it
-computes the utility of $R_2(Q)$, and hence $R_2(Q)$
-(and not $R_1(Q)$) will be suggested to the analyst for further human evaluation.
-
-\vspace{-10pt}
-\end{example}
-
-
-\begin{table}
-{\scriptsize \center
-\vspace{-10pt}
-\begin{tabular}{|c|c|c|c|}
-\hline
-\multicolumn{4}{|c|}{\att{Location} Aggregates: $R_1(Q(D))$ } \\ \hline
-Boston: 30 & Seattle: 40 & New York: 40
-& San Francisco: 90  \\
-\hline
- \hline 
-\multicolumn{4}{|c|}{\att{Year} Aggregates: $R_2(Q(D))$} \\ \hline
-2009: 50 & 2010: 40 & 2011: 60 & 2012: 50  \\
-\hline
-\end{tabular} 
-
-\vspace{-10pt}
-\caption{Aggregates for \att{Product = `Staplers'} \label{tab:new-agg}}
-}
-\end{table}
-
-
-\begin{table}
-\vspace{-10pt}
-{\scriptsize \center
-
-\begin{tabular}{|c|c|c|c|}
-\hline
-\multicolumn{4}{|c|}{\att{Location} Aggregates: $R_1(D)$} \\ \hline
-Boston: 300 & Seattle: 300 & New York: 300
-& San Francisco: 700  \\
-\hline
- \hline 
-\multicolumn{4}{|c|}{\att{Year} Aggregates: $R_2(D)$ } \\ \hline
-2009: 100 & 2010: 200 & 2011: 500 & 2012: 800  \\
-\hline
-\end{tabular} 
-
-\vspace{-10pt}
-\caption{Original Aggregates\label{tab:original-agg}}
-}
-\vspace{-18pt}
-\end{table}
-
-\noindent Thus, there are several technical challenges that need to be addressed:
+\noindent There are several technical challenges that need to be addressed:
 
 \begin{denselist}
 
@@ -195,6 +125,11 @@ much more efficiently.
 
 \end{denselist}
 
+
+
+\subsection{State-of-the-Art Approaches}
+\label{related_work}
+
 Over the past few years, there has been a significant
 effort from the visualization community to provide interactive tools
 for data analysts. In particular, tools such as ShowMe, Polaris, and
@@ -220,3 +155,6 @@ visualizations layered on top of web databases; they do not consider the problem
 of automatic visualization generation.
 Devise~\cite{DBLP:conf/sigmod/LivnyRBCDLMW97} translated user-manipulated
 visualizations into database queries.
+
+In this demo paper, we describe our prototype of \SeeDB, a system to
+automatically identify and visually highlight interesting aspects of a dataset. 
