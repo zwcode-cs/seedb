@@ -7,7 +7,7 @@
     "connect-assets-hbs-helpers": "0.0.7",
     "express-hbs": "~0.5.2",
     "less": "~1.5.1",
-    "socket.io-client": "~0.9.16"
+    "socket.io-client": "~0.9.16",
     "connect-handlebars": "0.0.5"
   }
 }
