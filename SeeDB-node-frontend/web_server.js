@@ -1,18 +1,31 @@
 var java = require("java");
 var io = require("socket.io");
-var static = require("node-static");
+var nodeStatic = require("node-static");
+var express = require("express");
+var hbs = require("express-hbs");
+var connectAssets = require("connect-assets");
+
+require("./hbs_helpers.js");
 
 java.classpath.push("../SeeDB-java-backend/lib/postgresql-9.2-1000.jdbc4.jar");
 java.classpath.push("../SeeDB-java-backend/lib/py4j0.8.jar");
 java.classpath.push("server.jar");
 
-var file = new static.Server("./public");
+var app = express();
+app.engine("hbs", hbs.express3({
+  partialsDir: __dirname + "/views/partials",
+  contentHelperName: "content"
+}));
+app.set("view engine", "hbs");
+app.set("views", __dirname + "/views");
 
-var server = require("http").createServer(function(request, response) {
-  request.addListener("end", function() {
-    file.serve(request, response);
-  }).resume();
-}).listen(8000);
+app.use(connectAssets());
+
+app.get("/", function (req, res) {
+  res.render("index");
+});
+
+var server = require("http").createServer(app);
 
 io = io.listen(server);
 
@@ -25,18 +38,9 @@ io.sockets.on("connection", function(socket) {
 
   socket.on("call", function(options, callback) {
     response = query_processor[options.methodName + "Sync"].apply(query_processor, options.args);
-    if(response) {
-      var viewArray = [];
-      var size = response.sizeSync();
-      console.log(size);
-      for(var i=0; i<size; i++) {
-        viewArray.push(response.getSync(i));
-      }
-
-      // at this point, you have an array of DiscriminatingView objects
-      console.log(viewArray);
-    }
 
     callback(response);
   });
 });
+
+server.listen(8000);

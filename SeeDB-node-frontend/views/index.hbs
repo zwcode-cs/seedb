@@ -1,0 +1,29 @@
+<!doctype html>
+
+<html>
+  <head>
+    {{{js "application"}}}
+    {{{css "application"}}}
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>This is the home page yo</h1>
+      <p>Hello World!</p>
+
+      <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+      <script type="text/javascript">
+        var socket = io.connect("/");
+
+        socket.on("connect", function() {
+          socket.emit("call", {methodName: "setQuery", args: ["select * from election_data ;"]}, function (response) {
+            console.log(response);
+            socket.emit("call", {methodName: "Process", args: []}, function (response) {
+              console.log(response);
+            });
+          });
+        });
+      </script>
+    </div>
+  </body>
+</html>
