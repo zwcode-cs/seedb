@@ -1,6 +1,5 @@
 var java = require("java");
 var io = require("socket.io");
-var nodeStatic = require("node-static");
 var express = require("express");
 var hbs = require("express-hbs");
 var connectAssets = require("connect-assets");
@@ -9,6 +8,9 @@ require("./hbs_helpers.js");
 
 java.classpath.push("../SeeDB-java-backend/lib/postgresql-9.2-1000.jdbc4.jar");
 java.classpath.push("../SeeDB-java-backend/lib/py4j0.8.jar");
+java.classpath.push("../SeeDB-java-backend/lib/jackson-annotations-2.3.0.jar");
+java.classpath.push("../SeeDB-java-backend/lib/jackson-core-2.3.0.jar");
+java.classpath.push("../SeeDB-java-backend/lib/jackson-databind-2.3.0.jar");
 java.classpath.push("server.jar");
 
 var app = express();
@@ -38,8 +40,10 @@ io.sockets.on("connection", function(socket) {
 
   socket.on("call", function(options, callback) {
     response = query_processor[options.methodName + "Sync"].apply(query_processor, options.args);
+    objectMapper = java.newInstanceSync("com.fasterxml.jackson.databind.ObjectMapper");
+    jsonObject = objectMapper.writeValueAsStringSync(response);
 
-    callback(response);
+    callback(jsonObject);
   });
 });
 
