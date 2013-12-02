@@ -3,6 +3,7 @@ var io = require("socket.io");
 var express = require("express");
 var hbs = require("express-hbs");
 var connectAssets = require("connect-assets");
+var connectHandlebars = require("connect-handlebars");
 
 require("./hbs_helpers.js");
 
@@ -22,6 +23,12 @@ app.set("view engine", "hbs");
 app.set("views", __dirname + "/views");
 
 app.use(connectAssets());
+
+// This is outside of connect-assets and requires a separate js include, but it's the 
+// easiest way
+app.use("/templates.js", connectHandlebars(__dirname + "/assets/handlebars", {
+  exts: ["hbs", "handlebars"]
+}));
 
 app.get("/", function (req, res) {
   res.render("index");
