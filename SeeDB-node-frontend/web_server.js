@@ -46,9 +46,9 @@ io.sockets.on("connection", function(socket) {
   query_processor.setRuntimeSettingsSync(runtime_settings);
 
   socket.on("call", function(options, callback) {
-    response = query_processor[options.methodName + "Sync"].apply(query_processor, options.args);
-    objectMapper = java.newInstanceSync("com.fasterxml.jackson.databind.ObjectMapper");
-    jsonObject = objectMapper.writeValueAsStringSync(response);
+    var response = query_processor[options.methodName + "Sync"].apply(query_processor, options.args);
+    var objectMapper = java.newInstanceSync("com.fasterxml.jackson.databind.ObjectMapper");
+    var jsonObject = JSON.parse(objectMapper.writeValueAsStringSync(response));
 
     callback(jsonObject);
   });

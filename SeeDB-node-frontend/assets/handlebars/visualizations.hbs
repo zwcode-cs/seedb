@@ -1,0 +1,13 @@
+<h3> Visualizations </h3>
+
+<div> <b> Query: </b> {{query}} </div>
+
+{{#each charts}}
+    <div>
+        <h4>Graph {{@index}} </h4>
+        <b>Utility:</b> {{this.utility}} <br>
+        <b>Group by:</b>  {{this.group_by}} <br>
+        <b>Aggregate by:</b> {{this.aggregate_by}}
+        <div id="chart{{@index}}"></div>
+    </div>
+{{/each}}
