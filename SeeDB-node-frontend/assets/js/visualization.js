@@ -21,16 +21,18 @@
       initialize: function() {
           var _this = this;
           var socket = io.connect("/");
+          this.set("socket", socket);
           socket.on("connect", function() {
               _this.fetchData(socket);
           });
-          this.on("change:query", this.fetchData);
+          this.on("change:query", $.proxy(_this.fetchData, this));
       },
 
-      fetchData: function(socket) {
+      fetchData: function() {
+          console.log("fetchData");
           var _this = this;
-          socket.emit("call", {methodName: "setQuery", args: [_this.get("query")]}, function (response) {
-              socket.emit("call", {methodName: "Process", args: []}, function (response) {
+          _this.get("socket").emit("call", {methodName: "setQuery", args: [_this.get("query")]}, function (response) {
+              _this.get("socket").emit("call", {methodName: "Process", args: []}, function (response) {
                   _this.set("response", response);
                   response.forEach($.proxy(_this.setChartAttributes, _this));
                   _this.trigger("change:charts");
@@ -74,6 +76,15 @@
           this.model.on("change:charts", $.proxy(this.render, this));
       },
 
+      events: {
+          "keypress input[type=text]"  : "updateOnEnter"
+      },
+
+      updateOnEnter: function(e) {
+          if (e.type === "keypress" && e.keyCode === 13) {
+            this.model.set("query", $("#query_input").val());
+          }
+      },
       render: function() {
           this.$el.html(Handlebars.templates.visualizations(this.model.attributes));
           var _this = this;
