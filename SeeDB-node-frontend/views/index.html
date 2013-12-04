@@ -1,6 +1,6 @@
 <!doctype html>
 
-<html>
+<html ng-app>
   <head>
     <script type="text/javascript" src="/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
@@ -12,8 +12,13 @@
   <body>
     <div class="container">
       <h1>SeeDB</h1>
-          <div id="visualizations"></div>
+      <div class="row">
+        <div class="col-md-5">
+          {{> queryBuilder}}
+        </div>
 
+        <div id="visualizations" class="col-md-7">
+        </div>
     </div>
   </body>
 </html>
