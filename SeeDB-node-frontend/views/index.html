@@ -1,11 +1,10 @@
 <!doctype html>
 
-<html ng-app>
+<html ng-app="seeDB">
   <head>
     <script type="text/javascript" src="/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     {{{js "application"}}}
-    <script src="/templates.js"></script>
     {{{css "application"}}}
   </head>
 
@@ -17,7 +16,8 @@
           {{> queryBuilder}}
         </div>
 
-        <div id="visualizations" class="col-md-7">
+        <div class="col-md-7">
+          {{> visualizations}}
         </div>
     </div>
   </body>

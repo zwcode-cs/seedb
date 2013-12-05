@@ -3,8 +3,8 @@
 
   var angular = window.angular;
 
-  var myApp = angular.module("myApp", [], function($interpolateProvider) {
+  var myApp = angular.module("seeDB", [], function($interpolateProvider) {
     $interpolateProvider.startSymbol("[[");
-    $interpolateProvider.endSymbol("[[");
+    $interpolateProvider.endSymbol("]]");
   });
 }(this));
