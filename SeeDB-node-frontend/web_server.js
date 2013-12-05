@@ -27,12 +27,6 @@
 
   app.use(connectAssets());
 
-  // This is outside of connect-assets and requires a separate js include, but it's the 
-  // easiest way
-  app.use("/templates.js", connectHandlebars(__dirname + "/assets/handlebars", {
-    exts: ["hbs", "handlebars", "html"]
-  }));
-
   app.get("/", function (req, res) {
     res.render("index");
   });
