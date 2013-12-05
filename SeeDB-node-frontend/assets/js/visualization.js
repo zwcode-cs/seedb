@@ -8,6 +8,7 @@
   var _ = window._;
   var Handlebars = window.Handlebars;
   var document = window.document;
+  var QueryProcessor = window.QueryProcessor;
 
   var GraphModel = Backbone.Model.extend({
       defaults: {
@@ -19,23 +20,13 @@
       },
 
       initialize: function() {
-          var _this = this;
-          var socket = io.connect("/");
-          socket.on("connect", function() {
-              _this.fetchData(socket);
-          });
-          this.on("change:query", this.fetchData);
+        QueryProcessor.on("ProcessResult", $.proxy(this.processData, this));
       },
 
-      fetchData: function(socket) {
+      processData: function(response) {
           var _this = this;
-          socket.emit("call", {methodName: "setQuery", args: [_this.get("query")]}, function (response) {
-              socket.emit("call", {methodName: "Process", args: []}, function (response) {
-                  _this.set("response", response);
-                  response.forEach($.proxy(_this.setChartAttributes, _this));
-                  _this.trigger("change:charts");
-              });
-          });
+          _this.set("response", response);
+          this.set("charts", response.map($.proxy(_this.setChartAttributes, _this)));
       },
 
       setChartAttributes: function(element, index, array) {    
@@ -61,9 +52,7 @@
           }
 
           // update charts in the model
-          var charts = this.get("charts");
-          charts.push(chart);
-          this.set("charts", charts);
+          return chart;
       }
   });
 
