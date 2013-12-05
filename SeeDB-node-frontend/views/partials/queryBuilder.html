@@ -3,8 +3,7 @@
 
   Table Name:
   <select ng-model="tableName">
-    <option>election_data</option>
-    <option>superstore</option>
+    <option ng-repeat="tableNameOption in tableNames">[[tableNameOption]]</option>
   </select>
 
   <br />
@@ -17,8 +16,8 @@
       <td>where</td>
       <td>
         <select ng-model="predicate.columnName">
-          <option ng-repeat="columnName in columnNames" value="{{withBrackets 'columnName'}}">
-            {{withBrackets "columnName"}}
+          <option ng-repeat="columnName in columnNames" value="[[columnName]]">
+            [[columnName]]
           </option>
         </select>
       </td>

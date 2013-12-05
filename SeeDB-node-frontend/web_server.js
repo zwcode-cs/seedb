@@ -17,10 +17,6 @@
   java.classpath.push("../SeeDB-java-backend/lib/jackson-databind-2.3.0.jar");
   java.classpath.push("server.jar");
 
-  hbs.registerHelper("withBrackets", function(arg) {
-    return new hbs.SafeString("{{" + arg + "}}");
-  });
-
   var app = express();
   app.engine("html", hbs.express3({
     partialsDir: __dirname + "/views/partials",

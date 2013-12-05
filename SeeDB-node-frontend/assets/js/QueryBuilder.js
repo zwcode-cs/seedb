@@ -5,12 +5,15 @@
 
   function QueryBuilderController($scope) {
     $scope.predicates = [{
-      columnName: "cand_nm",
+      columnName: "cand_nm",  // TODO: this is hardcoded as the first default predicate
       modifier: "=",
       value: "McCain, John S"
     }];
-    $scope.tableName = "election_data";
-    $scope.columnNames = ["cand_nm", "contbr_st"];
+
+    $scope.tableNames = ["election_data", "superstore"]; // TODO: hardcoded
+    $scope.tableName = $scope.tableNames[0];
+
+    $scope.columnNames = ["cand_nm", "contbr_st"];  // TODO: hardcoded
 
     $scope.addPredicate = function () {
       this.predicates.push({
@@ -23,16 +26,16 @@
     };
 
     $scope.generateQuery = function() {
-      var newQuery = "select * from " + $scope.tableName;
+      var newQuery = "SELECT * FROM " + $scope.tableName;
       var predicateStrings = [];
 
       $scope.predicates.forEach(function(predicate) {
-        var string = predicate.columnName + " " + predicate.modifier + " '" + predicate.value + "'";
-        predicateStrings.push("(" + string + ")");
+        var predicateString = predicate.columnName + " " + predicate.modifier + " '" + predicate.value + "'";
+        predicateStrings.push("(" + predicateString + ")");
       });
 
       if(predicateStrings.length > 0) {
-        newQuery += " where " + predicateStrings.join(" and ");
+        newQuery += " WHERE " + predicateStrings.join(" AND ");
       }
       newQuery += ";";
 
