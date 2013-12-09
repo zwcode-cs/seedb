@@ -94,6 +94,8 @@ public class DiscriminatingView {
 	{
 		if (metric.equals("EarthMoverDistance")) {
 			this.viewUtility = UtilityMetrics.EarthMoverDistance(queryDistribution, datasetDistribution);
+		} else if (metric.equals("EuclideanDistance")) {
+			this.viewUtility = UtilityMetrics.EuclideanDistance(queryDistribution, datasetDistribution);
 		}
 	}
 	
