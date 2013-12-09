@@ -19,8 +19,6 @@
 
     this.setDistanceMeasure = function(distanceMeasure) {
       var _this = this;
-      console.log("set distance measure");
-
       _this.socket.emit("call", {methodName: "setDistanceMeasure", args:[distanceMeasure]}, function(response) {
         return false;
       });

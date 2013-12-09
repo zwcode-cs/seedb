@@ -53,6 +53,7 @@ public class QueryProcessor {
 	}
 	
 	public QueryProcessor() {
+		this.distanceMeasure = this.runtimeSettings.metric;
 		QueryExecutor.Instantiate();
 	}
 	

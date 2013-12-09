@@ -51,8 +51,7 @@
 
       $scope.setDistanceMeasure = function() {
         QueryProcessor.setDistanceMeasure($scope.distanceMeasure);
-      }
-
+      };
 
       $scope.generateQuery = function() {
         var newQuery = "SELECT * FROM " + $scope.tableName;
