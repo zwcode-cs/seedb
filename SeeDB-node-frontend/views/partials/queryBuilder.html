@@ -1,14 +1,14 @@
 <div id="ctrl-queryBuilder" ng-controller="QueryBuilderController">
   <h2>Query Builder</h2>
 
-  Table Name:
+  <strong>Table Name:</strong>
   <select ng-model="tableName">
     <option ng-repeat="tableNameOption in tableNames">[[tableNameOption]]</option>
   </select>
 
-  <br />
+  <br /> <br />
 
-  Predicates:
+  <strong>Predicates:</strong>
 
   <table class="table">
     <tr><th></th><th>Column Name</th><th>Operator</th><th>Value</th><th></th></tr>
@@ -42,10 +42,19 @@
     </tr>
   </table>
 
-  <div>
-    <pre ng-bind="query">
-    </pre>
 
+  <strong>Distance Measure:</strong>
+  <select ng-model="distanceMeasure">
+    <option ng-repeat="distanceMeasureOption in distanceMeasures">[[distanceMeasureOption]]</option>
+  </select>
+
+  <br />
+  <br />
+
+  <div>
+    <pre ng-bind="query"></pre>
     <a href="" ng-click="submitQuery()" class="btn btn-primary">Submit Query</a>
   </div>
+
+
 </div>
