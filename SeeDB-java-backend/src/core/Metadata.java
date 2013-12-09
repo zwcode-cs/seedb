@@ -14,7 +14,7 @@ public class Metadata {
 		this.table = table;
 	}
 	
-	public void getTableSchema() throws SQLException {
+	public void updateTableSchema() throws SQLException {
 		// get all the columns in the table, the dimension and the measure columns
 		this.allAttributes = new ArrayList<String>();
 		this.dimensionAttributes = new ArrayList<String>();

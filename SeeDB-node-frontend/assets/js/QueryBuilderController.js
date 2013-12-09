@@ -11,10 +11,30 @@
         value: "McCain, John S"
       }];
 
-      $scope.tableNames = ["election_data", "superstore"]; // TODO: hardcoded
+      $scope.tableNames = ["election_data", "super_store_data"]; // TODO: hardcoded
       $scope.tableName = $scope.tableNames[0];
 
-      $scope.columnNames = ["cand_nm", "contbr_st"];  // TODO: hardcoded
+      $scope.setTable = function() {
+        QueryProcessor.setTable($scope.tableName);
+      };
+
+      $scope.setMetadata = function(metadata) {
+        var dimensionAttributes = metadata.dimensionAttributes.map(function(element) {
+          return element;
+        });
+        var measureAttributes = metadata.measureAttributes.map(function(element) {
+          return element;
+        });
+
+        var allAttributes = dimensionAttributes.concat(measureAttributes);
+
+        $scope.$apply(function() {
+          $scope.columnNames = allAttributes;
+        });
+      };
+
+      QueryProcessor.on("Metadata", $scope.setMetadata);
+      QueryProcessor.getMetadata();
 
       $scope.addPredicate = function () {
         this.predicates.push({
@@ -49,5 +69,6 @@
       
       $scope.$watch("predicates", $scope.generateQuery, true);
       $scope.$watch("tableName", $scope.generateQuery, true);
+      $scope.$watch("tableName", $scope.setTable, true);
     });
 }(this));

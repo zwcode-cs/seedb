@@ -51,6 +51,7 @@
             };
 
             QueryProcessor.on("ProcessResult", processData);
+
         })
         .directive("seedbChart", function() {
             return {
