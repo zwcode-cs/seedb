@@ -54,6 +54,18 @@
                 data.addColumn("number", datasetRangeTitle);
                 data.addRows(rows);
 
+                // sorts the data 
+                data.sort([{column: 1}]);
+
+                // gets the rows for which the query fraction is less than 1/100th of the max fraction
+                var rowsToIgnore = data.getFilteredRows([{
+                    column: 1,
+                    minValue: data.getRowProperties(0)[queryRangeTitle]/100
+                }]);
+
+                //remove those rows
+                data.removeRows(rowsToIgnore[0], data.getNumberOfRows() - rowsToIgnore);
+
                 return data;
             };
 

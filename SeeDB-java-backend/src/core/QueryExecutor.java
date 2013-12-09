@@ -64,6 +64,9 @@ public class QueryExecutor {
 	}
 	
 	public static ResultSet getTableColumns(String table) {
+		if (table == null) {
+			throw new NullPointerException("Table is null.");
+		}
 		DatabaseMetaData dbmd = null;
 		ResultSet rs = null;
 		try {
