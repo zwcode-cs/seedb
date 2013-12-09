@@ -85,47 +85,6 @@ of automatic visualization generation.
 Devise~\cite{DBLP:conf/sigmod/LivnyRBCDLMW97} translated user-manipulated
 visualizations into database queries.
 
-In this demo paper, we describe our prototype of \SeeDB, a system to
-automatically identify and visually highlight interesting aspects of a dataset. 
-
-\subsection{Problem Description and Challenges}
-\label{problem_description}
-
-Formally, the problem can be described as follows: given a database and a query
-$Q$, \SeeDB identifies the most significant deviations between the subset of the
-data selected by the query and the underlying dataset. \SeeDB does so by
-considering the space of views obtained by adding a single group-by and
-aggregate to the input query, and then computing the discriminating power of
-each of these views. Discriminating power or utility measures how different the
-distribution of data in the subset is compared to the underlying data. \SeeDB
-produces the top-k views having the highest dicriminating power. For the utility
-measure, \SeeDB provides the option of using distance metrics such as earth
-movers distance, L2 norm etc.
-
-While various ways of obtaining ``views'' of a dataset are possible, for the
-purpose of this work, we focus on views obtained by adding a single group-by and
-a single aggregate clause to the query used to select subsets of the data. This
-restriction also allows us to focus on a limited set of visualization types to
-show trends in the data.
-
-For simplicity, we assume that a discriminating view 
-$R$ in $\calR_Q$ performs a group-by on a single attribute $a \in A$, 
-and applies an aggregation function $f \in F$ 
-on a single measure attribute $m \in M$. 
-A view in this class corresponds to a two-column table 
-that shows how the value of $f(m)$ varies with values of attribute $a$. 
-This table can be directly visualized using a histogram, 
-a bar chart or a line plot. (We consider generalizations in Section 4.)
-
-We also assume the existence of a function $U(R)$ that can characterize the
-utility of each view $R(Q)$ in $\calR_Q$ (higher is better). For now, we focus
-on picking discriminating views that optimize $U(R)$ with latency as low as
-possible: we return to more general objectives in Section~\ref{sec:extensions}.
-
-Given $Q \in \calQ$ and a positive integer $K$, find $K$ discriminating views
-$R_i \in \calR_Q$, such that the $R_i$ have the largest values of $U(R_i)$ among
-those in $\calR_Q$, and the total latency is minimized.
-
 
 \noindent There are several technical challenges that need to be addressed:
 
@@ -157,5 +116,6 @@ much more efficiently.
 
 \end{denselist}
 
-
+In this demo paper, we describe our prototype of \SeeDB, a system to
+automatically identify and visually highlight interesting aspects of a dataset. 
 
