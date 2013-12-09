@@ -1,6 +1,100 @@
+%!TEX root = demo-paper.tex
+
 \section{Demo Walkthrough}
 \label{demo-walkthrough}
 
+We propose to demonstrate the following aspects of \SeeDB\ as part our
+scenarios: (i) the utility and versatility of \SeeDB, (ii) the latency
+of \SeeDB\ operating on various dataset sizes, along with the relative
+impact of optimizations within \SeeDB.
+
+\stitle{Demonstrating Utility and Versatility:} We will allow
+conference attendees to interact with three diverse datasets,
+capturing three potential ways \SeeDB\ may be used. Attendees will be
+both (a) able to pose queries, view results, and interact further with
+these datasets in real time, and (b) be able to browse a selection of
+queries that we have pre-selected to be those that give unexpected or
+surprising results. The datasets that we will allow the conference
+attendees to browse include the following:
+
+\squishlist
+  \item {\bf Store Orders dataset}~\cite{superstore}: This dataset is
+    often used by Tableau~\cite{tableau} as a canonical dataset for
+    business intelligence applications. It consists of information
+    about orders placed in a store including products, prices, ship
+    dates, geographical information, profits, and so on. This dataset
+    is well-studied by users learning how to use Tableau, with several
+    web-pages dedicated to discovering interesting trends hidden in
+    this dataset~\cite{website}. Attendees using \SeeDB\ will be able
+    to identify very quickly the same insights and trends that Tableau
+    users have discovered over many years. This dataset will also
+    enable us to demonstrate how \SeeDB can correctly deal with
+    numeric, categorical, time series and geographic data.
+  \item {\bf Election Contribution dataset}~\cite{}: This dataset is
+    an example of a real-world dataset that is typically analyzed by
+    non-expert data analysts, such as journalists or historians. This
+    dataset will enable us to demonstrate to the attendees how
+    non-experts can quickly arrive at interesting visualizations via
+    the intuitive user interface.
+  \item {\bf Medical dataset~\cite{}:} This dataset is an example of a
+    real-world dataset that a researcher (here, a clinical researcher)
+    might use over the course of his/her work. This data has a schema
+    that is more complex than the the election or store one, and is of
+    larger size too.  \squishend
+
+\noindent \agp{If this stuff is already in the user interface, I would
+  delete it. No point repeating the workflow} For all of these
+datasets, the interaction workflow will be the following: the
+conference attendee can either opt for a pre-selected query, or
+formulate a query of their own using the query builder tool or using
+SQL. Then, \SeeDB\ will search through the entire space of possible
+visualizations using techniques described in
+Section~\ref{sec:optimizations}, and returns the top-$k$ (attendees
+will be allowed to set this value when forming the query, otherwise
+the default is set as $10$.). For the purposes of the demonstration,
+we will also allow attendees to view the bottom-$k$ visualizations,
+enabling them to see why \SeeDB\ actually displayed the chosen set of
+visualizations over other ones.
+
+
+\stitle{Demonstrating Speed and Optimizations:} This demonstration
+scenario will use an enhanced user interface, with three additional
+``knobs'' or ``dials'' that attendees can fix, described below. For
+this demonstration scenario, we will focus on the Medical dataset,
+which is a large dataset with a large schema.
+
+\squishlist
+\item Fraction of dataset: The first knob allows attendees to change
+  the fraction of the medical dataset selected. Clearly, as the
+  dataset size increases, the latency of \SeeDB\ increases, so
+  attendees will be able to see how much of an impact the size of the
+  dataset has on the latency of \SeeDB.
+
+\item Fraction of schema: The second knob allows attendees to change
+  the number of columns in the medical dataset selected. As before, as
+  the number of columns increases, the latency of \SeeDB\ increases,
+  so attendees will be able to see how much of an impact the number of
+  columns has on the latency of \SeeDB.
+
+\item Optimizations selected: The last knob allows attendees to change
+  the optimizations (from Section~\ref{sec:optimzations}) that are
+  being used within \SeeDB, allowing attendees to see which
+  optimizations actually have an impact.  \squishend
+
+\noindent This demonstration scenario, in addition to having a
+different user interface, will also have a different result interface,
+with additional statistics reported when the visualizations are
+generated, including (but not limited to):
+
+\squishlist
+\item Time to completion
+\item Time to first visualization
+\item \agp{more here...}
+\squishend
+
+
+
+\eat{
 We propose to demonstrate the functionality of the SeeDB system by means of
 analyzing three diverse datasets of practical importance. Users will be able to
 explore each of these datasets in real-time by using SeeDB to formulate
@@ -42,3 +136,4 @@ perform further exploration through operations such as drill-downs (graphically
 selecting subsets of data), comparisons of multiple views etc. The user will
 also be able to experiment with the effect of choosing different utility metrics
 and optimization strategies described in Section \ref{}.
+}
