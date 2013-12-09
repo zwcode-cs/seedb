@@ -20,19 +20,19 @@
             $scope.height = 400;
             $scope.charts = [];
 
-            var dataTableFromDiscriminatingView = function (dView) {
+            var dataTableFromDiscriminatingView = function (discriminatingView) {
                 var keys = [];
                 var datasetDistribution = {};
                 var queryDistribution = {};
 
-                dView.datasetDistribution.forEach(function (dUnit) {
-                    keys.push(dUnit.attributeValue);
-                    datasetDistribution[dUnit.attributeValue] = dUnit.fraction;
+                discriminatingView.datasetDistribution.forEach(function (distributionUnit) {
+                    keys.push(distributionUnit.attributeValue);
+                    datasetDistribution[distributionUnit.attributeValue] = distributionUnit.fraction;
                 });
 
-                dView.queryDistribution.forEach(function (dUnit) {
-                    keys.push(dUnit.attributeValue);
-                    queryDistribution[dUnit.attributeValue] = dUnit.fraction;
+                discriminatingView.queryDistribution.forEach(function (distributionUnit) {
+                    keys.push(distributionUnit.attributeValue);
+                    queryDistribution[distributionUnit.attributeValue] = distributionUnit.fraction;
                 });
 
                 keys = _.uniq(keys);
@@ -43,9 +43,9 @@
                     rows.push([key, queryDistribution[key], datasetDistribution[key]]);
                 });
 
-                var domainTitle = dView.groupByAttribute;
-                var queryRangeTitle = dView.aggregateAttribute + " in query";
-                var datasetRangeTitle = dView.aggregateAttribute + " in dataset";
+                var domainTitle = discriminatingView.aggregateAttribute;
+                var queryRangeTitle = discriminatingView.groupByAttribute + " in query";
+                var datasetRangeTitle = discriminatingView.groupByAttribute + " in dataset";
 
                 // Create the data table.
                 var data = new google.visualization.DataTable();
@@ -57,8 +57,8 @@
                 return data;
             };
 
-            var setChartAttributes = function (dView) {
-                var dataTable = dataTableFromDiscriminatingView(dView);
+            var setChartAttributes = function (discriminatingView) {
+                var dataTable = dataTableFromDiscriminatingView(discriminatingView);
 
                 // determine chart type based on data
                 var chartDataIsNumbers = dataTable.getColumnType(1) === "numbers";
@@ -70,7 +70,7 @@
 
                 // Set chart options
                 var options = {
-                    'title': dView.aggregateAttribute + " vs " + dView.groupByAttribute,
+                    'title': discriminatingView.aggregateAttribute + " vs " + discriminatingView.groupByAttribute,
                     'width': chartWidth,
                     'height': chartHeight
                 };
@@ -79,12 +79,12 @@
                 var chart = {
                     dataTable: dataTable,
                     chartType: chartType,
-                    utility: dView.utility,
-                    numRows: dView.queryDistribution.length,
-                    dView: dView,
+                    utility: discriminatingView.utility,
+                    numRows: discriminatingView.queryDistribution.length,
+                    discriminatingView: discriminatingView,
                     options: options,
-                    aggregateBy: dView.aggregateAttribute,
-                    groupBy: dView.groupByAttribute
+                    aggregateBy: discriminatingView.aggregateAttribute,
+                    groupBy: discriminatingView.groupByAttribute
                 };
 
                 return chart;
