@@ -27,7 +27,6 @@
         });
 
         var allAttributes = dimensionAttributes.concat(measureAttributes);
-        console.log(dimensionAttributes, measureAttributes);
 
         $scope.$apply(function() {
           $scope.columnNames = allAttributes;

@@ -55,16 +55,19 @@
                 data.addRows(rows);
 
                 // sorts the data 
-                data.sort([{column: 1}]);
+                data.sort([{column: 1, desc: true}]);
 
-                // gets the rows for which the query fraction is less than 1/100th of the max fraction
-                var rowsToIgnore = data.getFilteredRows([{
-                    column: 1,
-                    minValue: data.getRowProperties(0)[queryRangeTitle]/100
-                }]);
+                if (data.getNumberOfRows() > 10) {  // too many rows, can't deal with it
 
-                //remove those rows
-                data.removeRows(rowsToIgnore[0], data.getNumberOfRows() - rowsToIgnore);
+                    // gets the rows for which the query fraction is less than 1/100th of the max fraction
+                    var rowsToIgnore = data.getFilteredRows([{
+                        column: 1,
+                        maxValue: data.getValue(0, 1)/50 // first item in data
+                    }]);
+
+                    //remove those rows
+                    data.removeRows(rowsToIgnore[0], rowsToIgnore.length);
+                }
 
                 return data;
             };
