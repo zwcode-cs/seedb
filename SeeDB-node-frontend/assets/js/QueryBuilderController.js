@@ -11,10 +11,29 @@
         value: "McCain, John S"
       }];
 
-      $scope.tableNames = ["election_data", "superstore"]; // TODO: hardcoded
+      $scope.tableNames = ["election_data", "election_data_full", "super_store_data"]; // TODO: hardcoded
       $scope.tableName = $scope.tableNames[0];
 
-      $scope.columnNames = ["cand_nm", "contbr_st"];  // TODO: hardcoded
+      $scope.setTable = function() {
+        QueryProcessor.setTable($scope.tableName);
+      };
+
+      $scope.setMetadata = function(metadata) {
+        var dimensionAttributes = metadata.dimensionAttributes.map(function(element) {
+          return element;
+        });
+        var measureAttributes = metadata.measureAttributes.map(function(element) {
+          return element;
+        });
+
+        var allAttributes = dimensionAttributes.concat(measureAttributes);
+
+        $scope.$apply(function() {
+          $scope.columnNames = allAttributes;
+        });
+      };
+
+      QueryProcessor.on("Metadata", $scope.setMetadata);
 
       $scope.addPredicate = function () {
         this.predicates.push({
@@ -24,6 +43,13 @@
       $scope.removePredicate = function(predicateToRemove) {
         var index = this.predicates.indexOf(predicateToRemove);
         this.predicates.splice(index, 1);
+      };
+
+      $scope.distanceMeasures = ["EarthMoverDistance", "EuclideanDistance", "CosineDistance" ,"FidelityDistance" , "ChiSquaredDistance", "EntropyDistance"];  //TODO: hardcoded
+      $scope.distanceMeasure = $scope.distanceMeasures[0];
+
+      $scope.setDistanceMeasure = function() {
+        QueryProcessor.setDistanceMeasure($scope.distanceMeasure);
       };
 
       $scope.generateQuery = function() {
@@ -49,5 +75,7 @@
       
       $scope.$watch("predicates", $scope.generateQuery, true);
       $scope.$watch("tableName", $scope.generateQuery, true);
+      $scope.$watch("tableName", $scope.setTable, true);
+      $scope.$watch("distanceMeasure", $scope.setDistanceMeasure, true);
     });
 }(this));

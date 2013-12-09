@@ -2,6 +2,9 @@
     "use strict";
 
     var QueryProcessor = window.QueryProcessor;
+    var google = window.google;
+    var angular = window.angular;
+    var _ = window._;
 
     var chartWidth = 500;
     var chartHeight = 400;
@@ -17,29 +20,88 @@
             $scope.height = 400;
             $scope.charts = [];
 
-            var setChartAttributes = function(element, index, array) {
-                var chart = {
-                    chartData: {},
-                    chartType: null,
-                    aggregate_by: element.aggregateAttribute,
-                    group_by: element.groupByAttribute,
-                    utility: element.utility,
-                    num_rows: element.datasetDistribution.length
-                };
+            var dataTableFromDiscriminatingView = function (discriminatingView) {
+                var keys = [];
+                var datasetDistribution = {};
+                var queryDistribution = {};
 
-                element.datasetDistribution.forEach(function(element, index, array) {
-                    chart.chartData[element.attributeValue] = element.fraction;
+                discriminatingView.datasetDistribution.forEach(function (distributionUnit) {
+                    keys.push(distributionUnit.attributeValue);
+                    datasetDistribution[distributionUnit.attributeValue] = distributionUnit.fraction;
                 });
 
-                // determine chart type based on data
-                var chartDataIsNumbers = !isNaN(parseFloat(chart.chartData[0]));
-                if (chart.chartData.length > 10 && chartDataIsNumbers) {
-                    chart.chartType = "LineChart";
-                } else {
-                    chart.chartType = "ColumnChart";
+                discriminatingView.queryDistribution.forEach(function (distributionUnit) {
+                    keys.push(distributionUnit.attributeValue);
+                    queryDistribution[distributionUnit.attributeValue] = distributionUnit.fraction;
+                });
+
+                keys = _.uniq(keys);
+                keys.sort();
+
+                var rows = [];
+                keys.forEach(function (key) {
+                    rows.push([key, queryDistribution[key], datasetDistribution[key]]);
+                });
+
+                var domainTitle = discriminatingView.aggregateAttribute;
+                var queryRangeTitle = discriminatingView.groupByAttribute + " in query";
+                var datasetRangeTitle = discriminatingView.groupByAttribute + " in dataset";
+
+                // Create the data table.
+                var data = new google.visualization.DataTable();
+                data.addColumn("string", domainTitle);
+                data.addColumn("number", queryRangeTitle);
+                data.addColumn("number", datasetRangeTitle);
+                data.addRows(rows);
+
+                // sorts the data 
+                data.sort([{column: 1, desc: true}]);
+
+                if (data.getNumberOfRows() > 10) {  // too many rows, can't deal with it
+
+                    // gets the rows for which the query fraction is less than 1/100th of the max fraction
+                    var rowsToIgnore = data.getFilteredRows([{
+                        column: 1,
+                        maxValue: data.getValue(0, 1)/50 // first item in data
+                    }]);
+
+                    //remove those rows
+                    data.removeRows(rowsToIgnore[0], rowsToIgnore.length);
                 }
 
+                return data;
+            };
+
+            var setChartAttributes = function (discriminatingView) {
+                var dataTable = dataTableFromDiscriminatingView(discriminatingView);
+
+                // determine chart type based on data
+                var chartDataIsNumbers = dataTable.getColumnType(1) === "numbers";
+                
+                var chartType = "ColumnChart";
+                if (dataTable.getNumberOfRows() > 10 && chartDataIsNumbers) {
+                    chartType = "LineChart";
+                }
+
+                // Set chart options
+                var options = {
+                    'title': discriminatingView.aggregateAttribute + " vs " + discriminatingView.groupByAttribute,
+                    'width': chartWidth,
+                    'height': chartHeight
+                };
+
                 // update charts in the model
+                var chart = {
+                    dataTable: dataTable,
+                    chartType: chartType,
+                    utility: discriminatingView.utility,
+                    numRows: discriminatingView.queryDistribution.length,
+                    discriminatingView: discriminatingView,
+                    options: options,
+                    aggregateBy: discriminatingView.aggregateAttribute,
+                    groupBy: discriminatingView.groupByAttribute
+                };
+
                 return chart;
             };
 
@@ -51,6 +113,7 @@
             };
 
             QueryProcessor.on("ProcessResult", processData);
+
         })
         .directive("seedbChart", function() {
             return {
@@ -62,22 +125,9 @@
                     var chart = scope.chart;
                     element = element.get(0);
 
-                    // Create the data table.
-                    var data = new google.visualization.DataTable();
-                    data.addColumn('string', chart.group_by);
-                    data.addColumn('number', chart.aggregate_by);
-                    data.addRows(_.pairs(chart.chartData));
-
-                    // Set chart options
-                    var options = {
-                        'title': chart.aggregate_by,
-                        'width': chartWidth,
-                        'height': chartHeight
-                    };
-
                     // Instantiate and draw our chart, passing in some options.
                     var googleChart = new google.visualization[chart.chartType](element);
-                    googleChart.draw(data, options);
+                    googleChart.draw(chart.dataTable, chart.options);
                 }
             };
         });

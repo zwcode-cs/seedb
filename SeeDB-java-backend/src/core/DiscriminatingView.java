@@ -94,6 +94,16 @@ public class DiscriminatingView {
 	{
 		if (metric.equals("EarthMoverDistance")) {
 			this.viewUtility = UtilityMetrics.EarthMoverDistance(queryDistribution, datasetDistribution);
+		} else if (metric.equals("EuclideanDistance")) {
+			this.viewUtility = UtilityMetrics.EuclideanDistance(queryDistribution, datasetDistribution);
+		} else if (metric.equals("CosineDistance")) {
+			this.viewUtility = UtilityMetrics.CosineDistance(queryDistribution, datasetDistribution);
+		} else if (metric.equals("FidelityDistance")) {
+			this.viewUtility = UtilityMetrics.FidelityDistance(queryDistribution, datasetDistribution);
+		} else if (metric.equals("ChiSquaredDistance")) {
+			this.viewUtility = UtilityMetrics.ChiSquaredDistance(queryDistribution, datasetDistribution);
+		} else if (metric.equals("EntropyDistance")) {
+			this.viewUtility = UtilityMetrics.EntropyDistance(queryDistribution, datasetDistribution);
 		}
 	}
 	

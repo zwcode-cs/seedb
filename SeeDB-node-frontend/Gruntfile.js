@@ -7,7 +7,8 @@ module.exports = function(grunt) {
       all: {
         src: ['Gruntfile.js', 'assets/js/*.js', 'web_server.js'],
         options: {
-          strict: true
+          strict: true,
+          devel: false
         }
       }
     }
