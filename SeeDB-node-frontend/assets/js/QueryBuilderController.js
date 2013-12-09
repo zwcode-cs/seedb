@@ -11,7 +11,7 @@
         value: "McCain, John S"
       }];
 
-      $scope.tableNames = ["election_data", "super_store_data"]; // TODO: hardcoded
+      $scope.tableNames = ["election_data", "election_data_full", "super_store_data"]; // TODO: hardcoded
       $scope.tableName = $scope.tableNames[0];
 
       $scope.setTable = function() {
