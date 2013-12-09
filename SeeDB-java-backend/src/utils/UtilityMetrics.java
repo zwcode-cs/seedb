@@ -147,4 +147,28 @@ public class UtilityMetrics {
 		}
 		return utility;
 	}
+	
+	/**
+	 * Compute the Kullback-Leibler Entropy distance between the distribution generate from the query and the distribution from the entire dataset
+	 * @param distributionForQuery
+	 * @param distributionForDataset
+	 * @return
+	 */
+	public static double EntropyDistance(ArrayList<DistributionUnit> queryDistribution, 
+			ArrayList<DistributionUnit> datasetDistribution) {
+		if ((queryDistribution.size() == 0) || (queryDistribution.size() == 0)) {
+			return DISTRIBUTION_EMPTY;
+		}
+		double utility = 0;
+		int query_idx = 0; // index into distributionForQuery
+		int dataset_idx = 0; // index into distributionForDataset
+		for (dataset_idx = 0; dataset_idx < datasetDistribution.size(); dataset_idx++) {
+			if ((query_idx < queryDistribution.size()) && 
+				(queryDistribution.get(query_idx).attributeValue.equals(datasetDistribution.get(dataset_idx).attributeValue))){
+				utility += Math.log(Math.abs(queryDistribution.get(query_idx).fraction / datasetDistribution.get(dataset_idx).fraction)) * queryDistribution.get(query_idx).fraction;
+				query_idx += 1;
+			}
+		}
+		return utility;
+	}
 }

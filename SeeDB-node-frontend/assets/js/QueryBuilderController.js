@@ -45,7 +45,7 @@
         this.predicates.splice(index, 1);
       };
 
-      $scope.distanceMeasures = ["EarthMoverDistance", "EuclideanDistance", "CosineDistance" ,"FidelityDistance" , "ChiSquaredDistance"];  //TODO: hardcoded
+      $scope.distanceMeasures = ["EarthMoverDistance", "EuclideanDistance", "CosineDistance" ,"FidelityDistance" , "ChiSquaredDistance", "EntropyDistance"];  //TODO: hardcoded
       $scope.distanceMeasure = $scope.distanceMeasures[0];
 
       $scope.setDistanceMeasure = function() {
