@@ -146,14 +146,7 @@ public class QueryProcessor {
 		ParseQuery();
 		
 		// get metadata about table mentioned in the query
-		Metadata tableMetadata = new Metadata(table);
-		try {
-			tableMetadata.updateTableSchema();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
+		Metadata tableMetadata = getMetadata();
 		
 		ArrayList<String> dimensionAttributes = tableMetadata.getDimensionAttributes();
 		ArrayList<String> measureAttributes = tableMetadata.getMeasureAttributes();

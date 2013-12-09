@@ -27,6 +27,7 @@
         });
 
         var allAttributes = dimensionAttributes.concat(measureAttributes);
+        console.log(dimensionAttributes, measureAttributes);
 
         $scope.$apply(function() {
           $scope.columnNames = allAttributes;
@@ -34,7 +35,6 @@
       };
 
       QueryProcessor.on("Metadata", $scope.setMetadata);
-      QueryProcessor.getMetadata();
 
       $scope.addPredicate = function () {
         this.predicates.push({
