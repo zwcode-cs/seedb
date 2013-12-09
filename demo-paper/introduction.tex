@@ -56,6 +56,38 @@ Ultimately, the analyst must decide if deviations in the data are interesting
 but we can use deviation as a means to eliminate the laborious process
 of stepping through all possible views of a dataset. 
 
+\subsection{State-of-the-Art Approaches}
+\label{related_work}
+
+Over the past few years, there has been a significant
+effort from the visualization community to provide interactive tools
+for data analysts. In particular, tools such as ShowMe, Polaris, and
+Tableau~\cite{DBLP:journals/cacm/StolteTH08,
+  DBLP:journals/tvcg/MackinlayHS07} provide a canvas for data analysts
+to manipulate and view data, tools such as
+Wrangler~\cite{DBLP:conf/chi/KandelPHH11} allow data analysts to
+transform and clean data, and tools such as
+Profiler~\cite{DBLP:conf/avi/KandelPPHH12} allow users to visualize
+simple anomalies in data.  However, unlike \SeeDB, these tools have
+little automation; in effect, it is up to the analyst to generate a
+two-column result (like the result of the discriminating view)
+to be visualized. Other related areas of work include OLAP and database
+visualization tools. There has been some work on browsing data cubes, allowing
+analysts to variously find ``explanations'' for why two cube values were
+different, to find which neighboring cubes have similar properties to the cube
+under consideration, or get suggestions on what unexplored data cubes should be
+looked at next~\cite{DBLP:conf/vldb/Sarawagi99, DBLP:conf/vldb/SatheS01,
+DBLP:conf/vldb/Sarawagi00}.
+
+Fusion tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10} allows users to create
+visualizations layered on top of web databases; they do not consider the problem
+of automatic visualization generation.
+Devise~\cite{DBLP:conf/sigmod/LivnyRBCDLMW97} translated user-manipulated
+visualizations into database queries.
+
+In this demo paper, we describe our prototype of \SeeDB, a system to
+automatically identify and visually highlight interesting aspects of a dataset. 
+
 \subsection{Problem Description and Challenges}
 \label{problem_description}
 
@@ -127,34 +159,3 @@ much more efficiently.
 
 
 
-\subsection{State-of-the-Art Approaches}
-\label{related_work}
-
-Over the past few years, there has been a significant
-effort from the visualization community to provide interactive tools
-for data analysts. In particular, tools such as ShowMe, Polaris, and
-Tableau~\cite{DBLP:journals/cacm/StolteTH08,
-  DBLP:journals/tvcg/MackinlayHS07} provide a canvas for data analysts
-to manipulate and view data, tools such as
-Wrangler~\cite{DBLP:conf/chi/KandelPHH11} allow data analysts to
-transform and clean data, and tools such as
-Profiler~\cite{DBLP:conf/avi/KandelPPHH12} allow users to visualize
-simple anomalies in data.  However, unlike \SeeDB, these tools have
-little automation; in effect, it is up to the analyst to generate a
-two-column result (like the result of the discriminating view)
-to be visualized. Other related areas of work include OLAP and database
-visualization tools. There has been some work on browsing data cubes, allowing
-analysts to variously find ``explanations'' for why two cube values were
-different, to find which neighboring cubes have similar properties to the cube
-under consideration, or get suggestions on what unexplored data cubes should be
-looked at next~\cite{DBLP:conf/vldb/Sarawagi99, DBLP:conf/vldb/SatheS01,
-DBLP:conf/vldb/Sarawagi00}.
-
-Fusion tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10} allows users to create
-visualizations layered on top of web databases; they do not consider the problem
-of automatic visualization generation.
-Devise~\cite{DBLP:conf/sigmod/LivnyRBCDLMW97} translated user-manipulated
-visualizations into database queries.
-
-In this demo paper, we describe our prototype of \SeeDB, a system to
-automatically identify and visually highlight interesting aspects of a dataset. 
