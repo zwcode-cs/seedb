@@ -1,2 +1,44 @@
 \section{Demo Walkthrough}
 \label{demo-walkthrough}
+
+We propose to demonstrate the functionality of the SeeDB system by means of
+analyzing three diverse datasets of practical importance. Users will be able to
+explore each of these datasets in real-time by using SeeDB to formulate
+queries and find interesting trends in the underlying dataset. Specifically, we
+will use the following datasets for demonstration purposes:
+
+\begin{itemize}
+  \item {\bf Store Orders dataset}: This is a canonical dataset used in business
+  intelligence applications. It consists of information about orders placed in a
+  store including products, prices, ship dates, geographical information,
+  profits etc. The dataset is well known for its interesting trends and
+  richness of various data types. It will show off SeeDB capabilities to
+  correctly identify diverse trends in the data and the ability to deal with
+  numeric, categorical, time series and geographic data.
+  \item {\bf Election Contribution dataset}: This dataset is a great example of
+  the kind of data and analysis that must be done by potential users like
+  journalists who are not data analysts by trade but often need to find
+  interesting trends in datasets. As a result, this use case will help the
+  audience guage the intuitiveness of the user interface, ease of use and fast
+  response times.
+  \item {\bf Medical dataset:} This dataset is an example of a dataset that a
+  researcher (here, a clinical researcher) might use over the course of his/her
+  work. This data has a schema that is more complex than the the election
+  or store one, and is of larger size too. Since this data is usually analyzed
+  by experts, in addition to fast provision of insights, the user also cares about
+  flexiblity and ``expert'' operations on this data such as statistical
+  information, accuracy of visualizations, drill-downs etc.
+\end{itemize}
+
+We envision the demonstration workflow to be as follows: The user selects one of
+the three dataset from above for analysis. He/she formulates a selection query
+using the SeeDB query builder or by using ready-made queries (e.g. selecting
+outliers in a column etc.) and submits the query to SeeDB. SeeDB then searches
+through the entire space of possible views using techniques and heuristics
+described in Section \ref{optimizations} and returns the top-{\it k} views it
+considers most interesting. The SeeDB frontend then visualizes the top-{it k} views and
+presents them to the user. The user can interact with each of these views and
+perform further exploration through operations such as drill-downs (graphically
+selecting subsets of data), comparisons of multiple views etc. The user will
+also be able to experiment with the effect of choosing different utility metrics
+and optimization strategies described in Section \ref{}.
