@@ -20,6 +20,7 @@ public class QueryProcessor {
 	private String query;
 	private String table;
 	private String selectPredicate;
+	private String distanceMeasure;
 	private RuntimeSettings runtimeSettings;
 	
 	
@@ -43,7 +44,16 @@ public class QueryProcessor {
 		return selectPredicate;
 	}
 	
+	public String getDistanceMeasure() {
+		return distanceMeasure;
+	}
+	
+	public void setDistanceMeasure(String distanceMeasure) {
+		this.distanceMeasure = distanceMeasure;
+	}
+	
 	public QueryProcessor() {
+		this.distanceMeasure = this.runtimeSettings.metric;
 		QueryExecutor.Instantiate();
 	}
 	
@@ -210,7 +220,7 @@ public class QueryProcessor {
 		for (int k = 0; k < numAggregates; k++) {
 			DiscriminatingView discView = new DiscriminatingView(dimensionAttributes.get(k), 
 					measureAttributes.get(k), queryDists.get(k), dataDists.get(k));
-			discView.computeUtility(runtimeSettings.metric);
+			discView.computeUtility(distanceMeasure);
 			views.add(discView);
 		}
 	}
