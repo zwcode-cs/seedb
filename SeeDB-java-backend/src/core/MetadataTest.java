@@ -13,7 +13,7 @@ public class MetadataTest {
 		QueryExecutor.Instantiate();
 		Metadata metadata = new Metadata("election_data");
 		try {
-			metadata.getTableSchema();
+			metadata.updateTableSchema();
 			// check number of dimension attributes, measure attributes, all attribtues and a few examples from each
 			assertTrue(metadata.getDimensionAttributes().contains("contbr_st"));
 			assertTrue(metadata.getMeasureAttributes().contains("contb_receipt_amt"));

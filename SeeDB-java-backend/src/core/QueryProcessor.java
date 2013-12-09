@@ -35,6 +35,10 @@ public class QueryProcessor {
 		return table;
 	}
 	
+	public void setTable(String table) {
+		this.table = table;
+	}
+	
 	public String getSelectPredicate() {
 		return selectPredicate;
 	}
@@ -115,6 +119,19 @@ public class QueryProcessor {
 		return viewQuery;
 	}
 	
+	public Metadata getMetadata() {
+		// get metadata about table mentioned in the query
+		Metadata tableMetadata = new Metadata(table);
+		try {
+			tableMetadata.updateTableSchema();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		return tableMetadata;
+	}
+	
 	public List<DiscriminatingView> Process() {
 		long startTime = System.nanoTime();
 		// parse query for table and selectPredicate
@@ -123,7 +140,7 @@ public class QueryProcessor {
 		// get metadata about table mentioned in the query
 		Metadata tableMetadata = new Metadata(table);
 		try {
-			tableMetadata.getTableSchema();
+			tableMetadata.updateTableSchema();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -9,6 +9,19 @@
     this.socket = io.connect("/");
 
     _.extend(this, Backbone.Events);
+    this.setTable = function(table) {
+      var _this = this;
+      _this.socket.emit("call", {methodName: "setTable", args:[table]}, function (response) {
+        _this.getMetadata();
+      });
+    };
+
+    this.getMetadata = function() {
+      var _this = this;
+      _this.socket.emit("call", {methodName: "getMetadata", args:[]}, function (response) {
+        _this.trigger("Metadata", response);
+      });
+    };
 
     this.submitQuery = function(query) {
       var _this = this;
