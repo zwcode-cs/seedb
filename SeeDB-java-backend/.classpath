@@ -5,5 +5,8 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="lib/postgresql-9.2-1000.jdbc4.jar"/>
 	<classpathentry kind="lib" path="lib/py4j0.8.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-databind-2.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-core-2.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-annotations-2.3.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

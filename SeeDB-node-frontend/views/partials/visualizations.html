@@ -1,0 +1,12 @@
+<div ng-controller="VisualizationsController">
+    <h3> Visualizations </h3>
+
+    <div ng-repeat="chart in charts">
+        <h4>Graph [[$index]] </h4>
+        <b>Utility:</b> [[chart.utility]] <br>
+        <b>Group by:</b>  [[chart.group_by]] <br>
+        <b>Aggregate by:</b> [[chart.aggregate_by]]
+
+        <seedb-chart chart="chart"></seedb-chart>
+    </div>
+</div>
