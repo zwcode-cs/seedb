@@ -102,6 +102,8 @@ public class DiscriminatingView {
 			this.viewUtility = UtilityMetrics.FidelityDistance(queryDistribution, datasetDistribution);
 		} else if (metric.equals("ChiSquaredDistance")) {
 			this.viewUtility = UtilityMetrics.ChiSquaredDistance(queryDistribution, datasetDistribution);
+		} else if (metric.equals("EntropyDistance")) {
+			this.viewUtility = UtilityMetrics.EntropyDistance(queryDistribution, datasetDistribution);
 		}
 	}
 	
