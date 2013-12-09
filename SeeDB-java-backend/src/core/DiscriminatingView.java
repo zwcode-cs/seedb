@@ -98,6 +98,10 @@ public class DiscriminatingView {
 			this.viewUtility = UtilityMetrics.EuclideanDistance(queryDistribution, datasetDistribution);
 		} else if (metric.equals("CosineDistance")) {
 			this.viewUtility = UtilityMetrics.CosineDistance(queryDistribution, datasetDistribution);
+		} else if (metric.equals("FidelityDistance")) {
+			this.viewUtility = UtilityMetrics.FidelityDistance(queryDistribution, datasetDistribution);
+		} else if (metric.equals("ChiSquaredDistance")) {
+			this.viewUtility = UtilityMetrics.ChiSquaredDistance(queryDistribution, datasetDistribution);
 		}
 	}
 	
