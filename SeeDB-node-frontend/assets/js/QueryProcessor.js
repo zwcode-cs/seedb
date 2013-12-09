@@ -9,10 +9,20 @@
     this.socket = io.connect("/");
 
     _.extend(this, Backbone.Events);
+
     this.setTable = function(table) {
       var _this = this;
       _this.socket.emit("call", {methodName: "setTable", args:[table]}, function (response) {
         _this.getMetadata();
+      });
+    };
+
+    this.setDistanceMeasure = function(distanceMeasure) {
+      var _this = this;
+      console.log("set distance measure");
+
+      _this.socket.emit("call", {methodName: "setDistanceMeasure", args:[distanceMeasure]}, function(response) {
+        return false;
       });
     };
 
