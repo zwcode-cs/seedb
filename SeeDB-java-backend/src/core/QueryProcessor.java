@@ -39,8 +39,20 @@ public class QueryProcessor {
 		return table;
 	}
 	
+	public void setTable(String table) {
+		this.table = table;
+	}
+	
 	public String getSelectPredicate() {
 		return selectPredicate;
+	}
+	
+	public String getDistanceMeasure() {
+		return this.runtimeSettings.metric;
+	}
+	
+	public void setDistanceMeasure(String distanceMeasure) {
+		this.runtimeSettings.metric = distanceMeasure;
 	}
 	
 	public QueryProcessor() {
@@ -131,19 +143,25 @@ public class QueryProcessor {
 		return viewQuery;
 	}
 	
-	public List<DiscriminatingView> Process() {
-		long startTime = System.nanoTime();
-		
-		// parse query for table and selectPredicate
-		ParseQuery();
+	public Metadata getMetadata() {
 		// get metadata about table mentioned in the query
 		Metadata tableMetadata = new Metadata(table);
 		try {
-			tableMetadata.getTableSchema();
+			tableMetadata.updateTableSchema();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
 		}
+		return tableMetadata;
+	}
+	
+	public List<DiscriminatingView> Process() {
+		long startTime = System.nanoTime();
+		// parse query for table and selectPredicate
+		ParseQuery();
+		
+		// get metadata about table mentioned in the query
+		Metadata tableMetadata = getMetadata();
 		
 		ArrayList<String> dimensionAttributes = tableMetadata.getDimensionAttributes();
 		ArrayList<String> measureAttributes = tableMetadata.getMeasureAttributes();
@@ -234,6 +252,9 @@ public class QueryProcessor {
 			DiscriminatingView discView = new DiscriminatingView(measureAttributes[k].toString(), 
 					dimensionAttributes[0].toString(), queryDists.get(k), dataDists.get(k));
 			discView.computeUtility(runtimeSettings.metric);
+			DiscriminatingView discView = new DiscriminatingView(dimensionAttributes.get(k), 
+					measureAttributes.get(k), queryDists.get(k), dataDists.get(k));
+			discView.computeUtility(this.runtimeSettings.metric);
 			views.add(discView);
 		}
 	}
