@@ -6,16 +6,16 @@
   var express = require("express");
   var hbs = require("express-hbs");
   var connectAssets = require("connect-assets");
-  var connectHandlebars = require("connect-handlebars");
-
-  require("./hbs_helpers.js");
 
   java.classpath.push("../SeeDB-java-backend/lib/postgresql-9.2-1000.jdbc4.jar");
   java.classpath.push("../SeeDB-java-backend/lib/py4j0.8.jar");
   java.classpath.push("../SeeDB-java-backend/lib/jackson-annotations-2.3.0.jar");
   java.classpath.push("../SeeDB-java-backend/lib/jackson-core-2.3.0.jar");
   java.classpath.push("../SeeDB-java-backend/lib/jackson-databind-2.3.0.jar");
-  java.classpath.push("server.jar");
+  java.classpath.push("../SeeDB-java-backend/bin/");
+
+  java.options.push("-Xdebug");
+  java.options.push("-agentlib:jdwp=transport=dt_socket,address=8888,server=y,suspend=n");
 
   var app = express();
   app.engine("html", hbs.express3({
@@ -29,6 +29,14 @@
 
   app.get("/", function (req, res) {
     res.render("index");
+  });
+
+  hbs.registerHelper("js", function(path) {
+    return js(path);
+  });
+
+  hbs.registerHelper("css", function(path) {
+    return css(path);
   });
 
   var server = require("http").createServer(app);
