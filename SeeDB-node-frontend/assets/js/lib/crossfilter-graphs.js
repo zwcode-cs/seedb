@@ -49,7 +49,7 @@
           g.append("clipPath")
               .attr("id", "clip-" + id)
             .append("rect")
-              .attr("width", width)
+              .attr("width", 0)
               .attr("height", height);
 
           g.selectAll(".bar")
@@ -85,7 +85,7 @@
           if (brush.empty()) {
             g.selectAll("#clip-" + id + " rect")
                 .attr("x", 0)
-                .attr("width", width);
+                .attr("width", 0);
           } else {
             var extent = brush.extent();
             g.selectAll("#clip-" + id + " rect")
@@ -145,21 +145,25 @@
       //dimension.filterFunction(filterFunction(extent));
 
       var queryItems = [];
-      var on = false;
-      var thisTurn = false;
-      groups.forEach(function(g) {
-        thisTurn = false;
-        if(!on && (extent[0] === g.key || extent[1] === g.key)) {
-          on = true;
-          thisTurn = true;
-        }
-        if (on) {
-          queryItems.push(g.key);
-        }
-        if(!thisTurn && (extent[0] === g.key || extent[1] === g.key)) {
-          on = false;
-        }
-      });
+      if (extent[0] === extent[1]) {
+        queryItems.push(extent[0]);
+      } else {
+        var on = false;
+        var thisTurn = false;
+        groups.forEach(function(g) {
+          thisTurn = false;
+          if(!on && (extent[0] === g.key || extent[1] === g.key)) {
+            on = true;
+            thisTurn = true;
+          }
+          if (on) {
+            queryItems.push(g.key);
+          }
+          if(!thisTurn && (extent[0] === g.key || extent[1] === g.key)) {
+            on = false;
+          }
+        });
+      }
 
       QueryProcessor.trigger("filter", {
         dimensionName: dimensionName,
@@ -171,8 +175,13 @@
       if (brush.empty()) {
         var div = d3.select(this.parentNode.parentNode.parentNode);
         div.select(".title a").style("display", "none");
-        div.select("#clip-" + id + " rect").attr("x", null).attr("width", "100%");
-        dimension.filterAll();
+        div.select("#clip-" + id + " rect").attr("x", null).attr("width", 0);
+        // dimension.filterAll();
+
+        QueryProcessor.trigger("filter", {
+          dimensionName: dimensionName,
+          items: null
+        });
       }
     });
 
