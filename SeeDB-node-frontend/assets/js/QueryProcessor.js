@@ -15,11 +15,7 @@
     _.extend(this, Backbone.Events);
     
     this.socket = io.connect("/");
-
-    this.on("filter", function(result) {
-      console.log(result);
-    });
-
+    
     this.setTable = function(table) {
       _this.socket.emit("call", {methodName: "setTable", args:[table]}, function () {
         _this.getMetadata();
