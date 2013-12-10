@@ -57,7 +57,11 @@
         var predicateStrings = [];
 
         $scope.predicates.forEach(function(predicate) {
-          var predicateString = predicate.columnName + " " + predicate.modifier + " '" + predicate.value + "'";
+          if (predicate.modifier === "in") {
+            var predicateString = predicate.columnName + " " + predicate.modifier + " (" + predicate.value + ")";
+          } else {
+            var predicateString = predicate.columnName + " " + predicate.modifier + " '" + predicate.value + "'";            
+          }
           predicateStrings.push("(" + predicateString + ")");
         });
 
@@ -79,6 +83,34 @@
         });
       };
 
+      $scope.drilldownPredicates = {};
+      
+      $scope.generateDrilldownPredicates = function(dimensionDrilldown) {
+        $scope.$apply(function () {
+          $scope.drilldownPredicates[dimensionDrilldown.dimensionName] = dimensionDrilldown.items;
+        });
+      };
+
+      $scope.formatDrilldownPredicate = function(dimensionName, items) {
+        var optionsString = items.map(function (item) {
+          return "'" + item + "'";
+        }).join(", ");
+        return dimensionName + " in (" + optionsString + ")";
+      };
+
+      $scope.addDrillDownPredicate = function(key) {
+        var options = $scope.drilldownPredicates[key];
+        var optionsString = options.map(function (item) {
+          return "'" + item + "'";
+        }).join(", ");
+        $scope.predicates.push({
+          columnName: key,
+          modifier: "in",
+          value: optionsString
+        });
+      };
+
+      QueryProcessor.on("filter", $scope.generateDrilldownPredicates);
       QueryProcessor.on("DistributionsForAllDimensions", $scope.setDimensionDistributions);
       
       $scope.$watch("predicates", $scope.generateQuery, true);

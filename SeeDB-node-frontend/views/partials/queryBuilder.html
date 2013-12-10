@@ -28,6 +28,7 @@
               <option>=</option>
               <option>&lt;</option>
               <option>&gt;</option>
+              <option>in</option>
             </select>
           </td>
           <td>
@@ -59,7 +60,11 @@
     <div class="col-md-6">
       <h4>Distributions in data set</h4>
       <p>In the case of many unique values, only the 20 most common are displayed.</p>
-      <div id="distributionCharts">
+      <div id="distributionCharts"></div>
+      <div ng-repeat="(key, value) in drilldownPredicates">
+        <pre>[[formatDrilldownPredicate(key, value)]]</pre>
+        <a href="" ng-click="addDrillDownPredicate(key)" class="btn btn-success btn-xs">+ Add Predicate</a>
+        <br />
       </div>
     </div>
   </div>
