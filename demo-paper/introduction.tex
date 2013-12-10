@@ -1,25 +1,26 @@
 \section{Introduction}
 \label{sec:intro}
-Data scientists analyze large amounts of data to find new insights, trends and
-anomalies. Given the large amount of data and large bandwidth available for
-visual analysis, analysts often use visualizations to identify areas of
-interest. The general workflow, which is usually ad-hoc, can be represented as
-follows:
+Data scientists analyze large amounts of data to find trends and novel insights.
+Given the large scale of data and relative ease of visual analysis, analysts
+often use visualizations to identify trends of interest. The general workflow,
+which is usually ad-hoc, can be represented as follows:
 
 \begin{enumerate}
   \item Step 1: Analyst selects a subset of the data they are interested in; for
-  instance, the analysts may select patients that had costs more than twice the
-  standard deviation of all patients, or the genes that belong to a particular
-  group, or a set of products of a certain kind.
+  instance, the analysts may select patients that had expenses more than twice
+  the standard deviation of all patients, or a set of products of a certain kind.
   \item Step 2: The analyst processes and visualizes the data in various ways,
-  e.g. via binning, aggregates, group-bys etc. and then building scatterplots,
-  histograms etc., and studies these ``views'' of the data.
-  \item Step 3: Finally, the analyst studies all the views and identifies the
-  interesting ones. He/she then drills down into these views or further explores
-  the properties that show unusual trends. This can be done using sophisticated
+  e.g. via binning, aggregates, group-bys and then building
+  visualizations such as scatterplots, histograms, pie charts etc.
+  \item Step 3: The analyst studies all the views and identifies the
+  {\it interesting} ones. He/she then drills down into these views or further
+  explores the properties that show unusual trends. This can be done using sophisticated
   statistics or machine learning.
 \end{enumerate}
-This iterative process is repeated for different subsets of the data. 
+
+The above process, while crucial in data analysis, is tedious and time-consuming
+because the analyst must generate and study a large number of view of a
+dataset. 
 
 \subsection{Motivating Example}
 \label{motivation_example}
@@ -86,35 +87,35 @@ Devise~\cite{DBLP:conf/sigmod/LivnyRBCDLMW97} translated user-manipulated
 visualizations into database queries.
 
 
-\noindent There are several technical challenges that need to be addressed:
-
-\begin{denselist}
-
-\item For a given query, $n$, the total number of discriminating views, (even if
-we restrict ourselves to views that append a group-by and an aggregation) is
-likely to be very large to explore exhaustively and precisely. Generating each
-of $R_1(Q(D)),$  $\ldots,$ $R_n(Q(D))$, scoring them on utility, and then
-picking the best one is certainly not feasible for most databases. Thus, we need
-mechanisms to prune the space of views and compute their utility approximately.
-
-\item Generating and scoring the discriminating views $R_i(Q(D))$ one-by-one may
-miss interesting optimization opportunities: First, we may share computation
-between discriminating views.  For example, the results of two views with
-different aggregates but the same group-by may be computed together in one
-query, followed by projecting out to reveal the two individual views.  Second,
-by evaluating the discriminating views in a deliberate order, we may be able to
-prune views with low utility (without evaluation) that are definitely not going
-to be recommended to the analyst.
-
-\item Since visualizations tend to convey approximate information, e.g., a trend
-in a line plot may be more important than knowing the exact coordinates of each
-point, we can introduce approximations as part of \SeeDB.  Thus, the utility of
-a discriminating view may be computed approximately but efficiently, and the
-recommended discriminating views can be populated with approximate results,
-based on synopses of the base data or of the query result, that can be generated
-much more efficiently.
-
-\end{denselist}
+% \noindent There are several technical challenges that need to be addressed:
+% 
+% \begin{denselist}
+% 
+% \item For a given query, $n$, the total number of discriminating views, (even if
+% we restrict ourselves to views that append a group-by and an aggregation) is
+% likely to be very large to explore exhaustively and precisely. Generating each
+% of $R_1(Q(D)),$  $\ldots,$ $R_n(Q(D))$, scoring them on utility, and then
+% picking the best one is certainly not feasible for most databases. Thus, we need
+% mechanisms to prune the space of views and compute their utility approximately.
+% 
+% \item Generating and scoring the discriminating views $R_i(Q(D))$ one-by-one may
+% miss interesting optimization opportunities: First, we may share computation
+% between discriminating views.  For example, the results of two views with
+% different aggregates but the same group-by may be computed together in one
+% query, followed by projecting out to reveal the two individual views.  Second,
+% by evaluating the discriminating views in a deliberate order, we may be able to
+% prune views with low utility (without evaluation) that are definitely not going
+% to be recommended to the analyst.
+% 
+% \item Since visualizations tend to convey approximate information, e.g., a trend
+% in a line plot may be more important than knowing the exact coordinates of each
+% point, we can introduce approximations as part of \SeeDB.  Thus, the utility of
+% a discriminating view may be computed approximately but efficiently, and the
+% recommended discriminating views can be populated with approximate results,
+% based on synopses of the base data or of the query result, that can be generated
+% much more efficiently.
+% 
+% \end{denselist}
 
 In this demo paper, we describe our prototype of \SeeDB, a system to
 automatically identify and visually highlight interesting aspects of a dataset. 

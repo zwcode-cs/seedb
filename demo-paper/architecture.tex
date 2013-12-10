@@ -20,23 +20,21 @@ clip=true]{Images/seedb-architecture.pdf}}}}
 
 The \SeeDB\ frontend allows the user to pose queries via various means including
 raw SQL, an easy-to-use query builder and a set of queries pre-written for
-specific tasks (more in \ref{}). Once the user issues a query $Q$ to \SeeDB\,
-the \SeeDB\ optimizer determines potential views possible for $Q$ and explores
-options to optimize the computation of these views (Section \ref{}). These
-options include traditional multi-query optimization techniques as well as
-pruning heuristics. The View Query Generator module of \SeeDB\ then uses this
-information to rewrite $Q$ as multiple queries where each query is either a view
-or a precursor to multiple views. These queries are sent to the DBMS and the
-results are processed by the Post-processor to generate data for individual
-views and determine utility for each view. The views are then ranked using a
-metric that depends both on the view utility and complexity of the view (we
-prefer views with high utility and low complexity). The top-k views with highest
-utility are then picked and shipped to the frontend. The post-processor also
-determines the best way to package view information to allow quick future
-interaction at the frontend. The SeeDB frontend uses view information sent by
-the SeeDB engine to pick appropriate visualizations and show the top views along
-with appropriate metadata. The user can then examine these views and perform
-further processing (Section \ref{}).
+specific tasks (more in Section \ref{}). Once the user issues a query $Q$ to
+\SeeDB\, the \SeeDB\ optimizer determines potential views for $Q$ and explores
+ways to optimize the computation of these views (Section \ref{}). These
+optimizations include query rewriting, multi-query optimization, sampling etc.
+The View Query Generator then uses input from the optimizer to rewrite $Q$ as
+multiple view queries. These queries are executed on the DBMS and the results
+returned to the Post-processor. This module processes query results and computes
+utility for individual views which are then ranked based on the utility metric
+discussed in Section \ref{}. The top-k views with highest utility are then
+picked and shipped to the frontend. The post-processor also determines the best
+way to package view information to allow quick future interaction at the
+frontend. The SeeDB frontend uses view information sent by the SeeDB engine to
+pick appropriate visualizations and shows the top views along with appropriate
+metadata. The user can then examine these views and perform further processing
+(Section \ref{}).
 
 \subsection{Basic Framework}
 \label{basic_framework}
@@ -45,12 +43,9 @@ Given a user query $Q$, the basic version of \SeeDB\ computes all possible view
 queries by adding a single aggregate and a single or multiple attribute group-by
 operator to $Q$. Each of these view queries is executed independently at the
 backend along with an equivalent aggregate+group-by query on the complete
-underlying dataset. These two query results produce a ``distribution'' for the
-attribute that has been aggregated (Section \ref{}). These two distributions are
-compared using the chosen distance metric (Section \ref{}) and the top k views
-with the largest distance are chosen. These views are sent to the
-frontend where they are visualized and presented to the user (Section
-\ref{user_interface}).
+underlying dataset. The two resulting distributions are compared using the
+chosen distance metric (Section \ref{}) and the top k views with the largest
+utility are chosen. The frontend then visualizes the results. 
 % {\bf Utility Metric}:
 % 
 % One of the key challenges behind \SeeDB\ 
@@ -114,7 +109,9 @@ optimizations. Strategies include:
   obtaining separate aggregates for individual $G_i$'s. This is reminiscent of
   data cube algorithms. As shown in Figure \ref{}.c the speed up depends closely
   on the number of distinct values for each of the group-by attributes and the
-  memory constraints of the DBMS. A variation of this approach also implemented
+  memory constraints of the DBMS. 
+  
+  A variation of this approach also implemented
   on \SeeDB\ is to send the results of the multiple group-by query to the front
   end and ask the \SeeDB\ frontend to compute utility and select views. The
   advantage of this approach is that it allows for more efficient interactive

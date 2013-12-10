@@ -42,19 +42,13 @@ attendees to browse include the following:
     that is more complex than the the election or store one, and is of
     larger size too.  \squishend
 
-\noindent \agp{If this stuff is already in the user interface, I would
-  delete it. No point repeating the workflow} For all of these
-datasets, the interaction workflow will be the following: the
-conference attendee can either opt for a pre-selected query, or
-formulate a query of their own using the query builder tool or using
-SQL. Then, \SeeDB\ will search through the entire space of possible
-visualizations using techniques described in
-Section~\ref{sec:optimizations}, and returns the top-$k$ (attendees
-will be allowed to set this value when forming the query, otherwise
-the default is set as $10$.). For the purposes of the demonstration,
-we will also allow attendees to view the bottom-$k$ visualizations,
-enabling them to see why \SeeDB\ actually displayed the chosen set of
-visualizations over other ones.
+For each dataset, the interaction workflow will be the following: the conference
+attendee can either opt for a pre-selected query, or formulate a query of their
+own. After submitting the query, \SeeDB\ will search the space of possible views
+to return the top-$k$ views (tunable value, default set to $10$.). For the
+purposes of the demonstration, we will also allow attendees to view the
+bottom-$k$ visualizations, enabling them to see why \SeeDB\ actually displayed
+the chosen set of visualizations over other ones.
 
 
 \stitle{Demonstrating Speed and Optimizations:} This demonstration
