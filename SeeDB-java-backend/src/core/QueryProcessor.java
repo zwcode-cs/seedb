@@ -126,9 +126,9 @@ public class QueryProcessor {
 		// get metadata about table mentioned in the query
 		Metadata tableMetadata = getMetadata();
 		
-		ArrayList<String> dimensionAttributes = tableMetadata.getDimensionAttributes();
-		ArrayList<String> measureAttributes = tableMetadata.getMeasureAttributes();
-		ArrayList<DiscriminatingView> views = new ArrayList<DiscriminatingView>();
+		List<String> dimensionAttributes = tableMetadata.getDimensionAttributes();
+		List<String> measureAttributes = tableMetadata.getMeasureAttributes();
+		List<DiscriminatingView> views = Lists.newArrayList();
 		
 		for (int dimensionIndex = 0; dimensionIndex < dimensionAttributes.size(); dimensionIndex++) {
 			if (dimensionAttributes.get(dimensionIndex).equalsIgnoreCase(selectPredicate)) {
@@ -141,7 +141,7 @@ public class QueryProcessor {
 						measureAttributes, false);
 				try {
 					CreateAndAddDiscriminatingView(aggregateQueryForQuery, aggregateQueryForDataset, 
-							measureAttributes.size(), Lists.newArrayList(dimensionAttributes.get(dimensionIndex)), measureAttributes, views);
+							Lists.newArrayList(dimensionAttributes.get(dimensionIndex)), measureAttributes, views);
 				} catch (Exception e) {
 					e.printStackTrace();
 					return null;
@@ -155,7 +155,7 @@ public class QueryProcessor {
 					String aggregateQueryForDataset = AddViewPredicates(dimensionAttributes.get(dimensionIndex), 
 							Lists.newArrayList(measureAttributes.get(measureIndex)), false);
 					try {
-						CreateAndAddDiscriminatingView(aggregateQueryForQuery, aggregateQueryForDataset, 1, 
+						CreateAndAddDiscriminatingView(aggregateQueryForQuery, aggregateQueryForDataset,
 								Lists.newArrayList(dimensionAttributes.get(dimensionIndex)), Lists.newArrayList(measureAttributes.get(measureIndex)), views);
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -180,11 +180,13 @@ public class QueryProcessor {
 	}
 	
 	public void CreateAndAddDiscriminatingView(String aggregateQueryForQuery, String aggregateQueryForDataset,
-			int numAggregates, ArrayList<String> dimensionAttributes, ArrayList<String> measureAttributes,
-		ArrayList<DiscriminatingView> views) throws SQLException {
-		ArrayList<ArrayList<DistributionUnit>> queryDists = GetDistributionForQueryMultipleAggregates(
+			List<String> dimensionAttributes, List<String> measureAttributes,
+		List<DiscriminatingView> views) throws SQLException {
+		
+		int numAggregates = measureAttributes.size();
+		List<List<DistributionUnit>> queryDists = GetDistributionForQueryMultipleAggregates(
 				aggregateQueryForQuery, numAggregates);
-		ArrayList<ArrayList<DistributionUnit>> dataDists = GetDistributionForQueryMultipleAggregates(
+		List<List<DistributionUnit>> dataDists = GetDistributionForQueryMultipleAggregates(
 				aggregateQueryForDataset, numAggregates);
 		for (int k = 0; k < numAggregates; k++) {
 			DiscriminatingView discView = new DiscriminatingView(dimensionAttributes.get(k), 
@@ -201,9 +203,9 @@ public class QueryProcessor {
 	 * @return
 	 * @throws SQLException
 	 */
-	public ArrayList<DistributionUnit> GetDistributionForQuery(String distQuery) throws SQLException {
+	public List<DistributionUnit> GetDistributionForQuery(String distQuery) throws SQLException {
 		ResultSet rs = QueryExecutor.executeQuery(distQuery);
-		ArrayList<DistributionUnit> dist = new ArrayList<DistributionUnit>();
+		List<DistributionUnit> dist = Lists.newArrayList();
 		while (rs.next()) {					
 			dist.add(new DistributionUnit(rs.getObject(1), rs.getDouble(2)));
 		}
@@ -226,23 +228,24 @@ public class QueryProcessor {
 		return dist;
 	}
 	
-	public ArrayList<ArrayList<DistributionUnit>> GetDistributionForQueryMultipleAggregates(String distQuery, 
+	public List<List<DistributionUnit>> GetDistributionForQueryMultipleAggregates(String distQuery, 
 			int numAggregates) throws SQLException {
 		ResultSet rs = QueryExecutor.executeQuery(distQuery);
-		ArrayList<ArrayList<DistributionUnit>> dist_list = new ArrayList<ArrayList<DistributionUnit>>();
-		for (int i = 0; i < numAggregates; i++)
-		{
-			dist_list.add(new ArrayList<DistributionUnit>());
+		List<List<DistributionUnit>> distList = Lists.newArrayList();
+		
+		for (int i = 0; i < numAggregates; i++) {
+			distList.add(new ArrayList<DistributionUnit>());
 		}
+		
 		while (rs.next()) {		
 			for (int i = 0; i < numAggregates; i++)
 			{
-				dist_list.get(i).add(new DistributionUnit(rs.getObject(1), rs.getDouble(i + 2)));
+				distList.get(i).add(new DistributionUnit(rs.getObject(1), rs.getDouble(i + 2)));
 			}
 		}
 		
 		
-		for (ArrayList<DistributionUnit> dist : dist_list)
+		for (List<DistributionUnit> dist : distList)
 		{
 			double total = 0;
 			for (DistributionUnit unit : dist) {
@@ -252,7 +255,7 @@ public class QueryProcessor {
 				unit.fraction /= total;		
 			}
 		}		
-		return dist_list;
+		return distList;
 	}
 
 }
