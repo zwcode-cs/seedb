@@ -3,6 +3,10 @@ package core;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 public class Metadata {
 	private String table;
@@ -35,11 +39,11 @@ public class Metadata {
 		}
 	}
 	
-	public ArrayList<String> getDimensionAttributes() {
-		return dimensionAttributes;
+	public List<String> getDimensionAttributes() {
+		return ImmutableList.copyOf(dimensionAttributes);
 	}
 	
-	public ArrayList<String> getMeasureAttributes() {
-		return measureAttributes;
+	public List<String> getMeasureAttributes() {
+		return ImmutableList.copyOf(measureAttributes);
 	}
 }

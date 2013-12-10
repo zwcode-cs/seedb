@@ -11,7 +11,7 @@
         value: "Obama, Barack"
       }];
 
-      $scope.tableNames = ["election_data", "election_data_full", "super_store_data"]; // TODO: hardcoded
+      $scope.tableNames = ["election_data_full", "election_data", "super_store_data"]; // TODO: hardcoded
       $scope.tableName = $scope.tableNames[0];
 
       $scope.setTable = function() {
@@ -72,6 +72,14 @@
       $scope.submitQuery = function() {
         QueryProcessor.submitQuery($scope.query);
       };
+
+      $scope.setDimensionDistributions = function (dictionaryOfDistributions) {
+        $scope.$apply(function () {
+          $scope.datasetDistributions = dictionaryOfDistributions;
+        });
+      };
+
+      QueryProcessor.on("DistributionsForAllDimensions", $scope.setDimensionDistributions);
       
       $scope.$watch("predicates", $scope.generateQuery, true);
       $scope.$watch("tableName", $scope.generateQuery, true);
