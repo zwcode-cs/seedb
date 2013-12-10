@@ -4,9 +4,8 @@
     var QueryProcessor = window.QueryProcessor;
     var google = window.google;
     var angular = window.angular;
-    var _ = window._;
 
-    var chartWidth = 500;
+    var chartWidth = 1000;
     var chartHeight = 400;
 
     // Draw Google Charts 
@@ -16,8 +15,6 @@
 
     angular.module("seeDB")
         .controller("VisualizationsController", function($scope) {
-            $scope.width = 500;
-            $scope.height = 400;
             $scope.charts = [];
 
             var dataTableFromDiscriminatingView = function (discriminatingView) {
@@ -31,12 +28,8 @@
                 });
 
                 discriminatingView.queryDistribution.forEach(function (distributionUnit) {
-                    keys.push(distributionUnit.attributeValue);
                     queryDistribution[distributionUnit.attributeValue] = distributionUnit.fraction;
                 });
-
-                keys = _.uniq(keys);
-                keys.sort();
 
                 var rows = [];
                 keys.forEach(function (key) {
@@ -57,16 +50,9 @@
                 // sorts the data 
                 data.sort([{column: 1, desc: true}]);
 
-                if (data.getNumberOfRows() > 10) {  // too many rows, can't deal with it
-
-                    // gets the rows for which the query fraction is less than 1/100th of the max fraction
-                    var rowsToIgnore = data.getFilteredRows([{
-                        column: 1,
-                        maxValue: data.getValue(0, 1)/50 // first item in data
-                    }]);
-
-                    //remove those rows
-                    data.removeRows(rowsToIgnore[0], rowsToIgnore.length);
+                if (data.getNumberOfRows() > 20) {  // too many rows, can't deal with it
+                    var rowsToLeave = 20;
+                    data.removeRows(rowsToLeave, data.getNumberOfRows() - rowsToLeave);
                 }
 
                 return data;

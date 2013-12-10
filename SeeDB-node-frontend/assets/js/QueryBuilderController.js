@@ -8,7 +8,7 @@
       $scope.predicates = [{
         columnName: "cand_nm",  // TODO: this is hardcoded as the first default predicate
         modifier: "=",
-        value: "McCain, John S"
+        value: "Obama, Barack"
       }];
 
       $scope.tableNames = ["election_data", "election_data_full", "super_store_data"]; // TODO: hardcoded
