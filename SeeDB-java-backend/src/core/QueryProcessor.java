@@ -22,7 +22,6 @@ public class QueryProcessor {
 	private String selectPredicate;
 	private RuntimeSettings runtimeSettings;
 	
-	
 	public RuntimeSettings getRuntimeSettings() {
 		return runtimeSettings;
 	}
@@ -51,16 +50,29 @@ public class QueryProcessor {
 		this.runtimeSettings.metric = distanceMeasure;
 	}
 	
-	public QueryProcessor() {
-		QueryExecutor.Instantiate();
-	}
-	
 	public void setQuery(String query) {
 		this.query = query;
 	}
-	
+
 	public String getQuery() {
 		return query;
+	}
+
+	public Metadata getMetadata() {
+		// get metadata about table mentioned in the query
+		Metadata tableMetadata = new Metadata(table);
+		try {
+			tableMetadata.updateTableSchema();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		return tableMetadata;
+	}
+
+	public QueryProcessor() {
+		QueryExecutor.Instantiate();
 	}
 	
 	/**
@@ -125,19 +137,6 @@ public class QueryProcessor {
 		}
 		viewQuery += " GROUP BY " + dimensionAttribute + ";";	
 		return viewQuery;
-	}
-	
-	public Metadata getMetadata() {
-		// get metadata about table mentioned in the query
-		Metadata tableMetadata = new Metadata(table);
-		try {
-			tableMetadata.updateTableSchema();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
-		return tableMetadata;
 	}
 	
 	public List<DiscriminatingView> Process() {

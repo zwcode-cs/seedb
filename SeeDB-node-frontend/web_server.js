@@ -41,7 +41,7 @@
 
   var server = require("http").createServer(app);
 
-  io = io.listen(server);
+  io = io.listen(server, {log: false});
 
   io.sockets.on("connection", function(socket) {
     var query_processor = java.newInstanceSync("core.QueryProcessor");
@@ -59,5 +59,5 @@
     });
   });
 
-  server.listen(8000);
+  server.listen(8001);
 }());
