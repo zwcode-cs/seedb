@@ -19,8 +19,10 @@ which is usually ad-hoc, can be represented as follows:
 \end{enumerate}
 
 The above process, while crucial in data analysis, is tedious and time-consuming
-because the analyst must generate and study a large number of view of a
-dataset. 
+because the analyst must generate a large number of view of a dataset and
+determine if each one is interesting or not. We believe that we can automate
+several of the labor-intensive parts of this process by automatically generating
+different views of the data and surfacing the most interesting ones to the user.
 
 \subsection{Motivating Example}
 \label{motivation_example}
@@ -32,30 +34,55 @@ significantly more than the average: specifically, she selects patients whose
 cost of care is greater than the average cost by two standard deviations. In
 terms of SQL, she runs the following query: \\
 
-\noindent Q = $SELECT * FROM Patients where total_cost - AVG(total_cost) >
-2 * STDDEV (total_cost);$
-<< fix this query >>
+\noindent 
+\begin{small}
+\begin{verbatim}
+Q = SELECT * FROM Patients where total_cost - 
+(SELECT AVG(total_cost) from Patients) as avg_cost
+> 2 * (SELECT STDDEV(total_cost) from Patients);
+\end{verbatim}
+\end{small}
+
 
 Once she has identified these patients, she must study various aspects of their
 care to determine the reason why the patients have large cost of care. For
 instance, she may study length of treatment, survival rate, severity of disease
 etc. For each of these parameters, she is interested in determining whether the
-group of patients with high cost of care are different from those with lower
-cost of care. Since a large number of views of the data are possible, performing
+group of patients with high cost of care are different from the overall group of
+patients. Since a large number of views of the data are possible, performing
 these calculations repeatedly and visualizing the results is tedious and
 time-consuming. Moreover, since the researcher may not be able to explore all
 potential features, she may miss some interesting trends.
 
-\SeeDB\ partially automates the process by computing and visualizing various
-views of the data and highlighting the interesting views. Moreover, \SeeDB\ is
-based on the principle that {\it what makes a view interesting is deviations
-from expected behavior}. Therefore, given the subset of data selected using a
-relational query, what makes the data interesting are trends or properties that
-are different for this subset compared to the underlying complete dataset.
+In this demo, we propose a system called \SeeDB\ that partially automates the
+data analysis process. Given a query posed by the researcher, \SeeDB\ can
+compute a large number of views based on that query, determine the
+``interesting''-ness or utility of each of the view and show to the user only
+those views that it deems most interesting. The researcher can then further
+explore these views. 
 
-Ultimately, the analyst must decide if deviations in the data are interesting
-but we can use deviation as a means to eliminate the laborious process
-of stepping through all possible views of a dataset. 
+Since \SeeDB\ must rank views based on utility, accurately measuring utility is
+cruicial. \SeeDB\ is based on the principle that it is the {\it deviations from
+expected behavior that make a view interesting}. For instance, in the above
+example, the researcher would be interested in the fact that it is patients
+insured by a particular company that consistently have the highest expenses or
+that survival for this group of patients doesn't improve with strong drug
+regimens although it does for the full dataset of patients. Specifically, given
+a query, interesting trends are those that differ significantly between the
+query and the underlying dataset. Therefore, we must prefer views that show
+these divergent trends.
+
+Ultimately, the researcher must decide if deviations in the data are
+interesting, but in \SeeDB\ we can use deviation as a means to eliminate the
+laborious process of stepping through all possible views of a dataset.
+In the process of automatically producing an interesting set of views for any
+query, \SeeDB\ must address a few challenges: (a) the size of
+the space of potential views increases exponentially with the number of
+attributes in a table, as a result, \SeeDB\ must intelligently explore this
+space; (b) computing each view and its utility independently is expensive and
+wasteful, and hence \SeeDB\ must share computation between queries; and (c)
+since visual analysis must happen in real-time, \SeeDB\ must tradeoff accuracy
+of views for reduced latency.
 
 \subsection{State-of-the-Art Approaches}
 \label{related_work}
@@ -116,7 +143,3 @@ visualizations into database queries.
 % much more efficiently.
 % 
 % \end{denselist}
-
-In this demo paper, we describe our prototype of \SeeDB, a system to
-automatically identify and visually highlight interesting aspects of a dataset. 
-
