@@ -1,22 +1,19 @@
 \section{Introduction}
 \label{sec:intro}
-Data scientists analyze large amounts of data to find trends and novel insights.
-Given the large scale of data and relative ease of visual analysis, analysts
-often use visualizations to identify trends of interest. The general workflow,
-which is usually ad-hoc, can be represented as follows:
-
-\begin{enumerate}
-  \item Step 1: Analyst selects a subset of the data they are interested in; for
-  instance, the analysts may select patients that had expenses more than twice
-  the standard deviation of all patients, or a set of products of a certain kind.
-  \item Step 2: The analyst processes and visualizes the data in various ways,
-  e.g. via binning, aggregates, group-bys and then building
-  visualizations such as scatterplots, histograms, pie charts etc.
-  \item Step 3: The analyst studies all the views and identifies the
-  {\it interesting} ones. He/she then drills down into these views or further
-  explores the properties that show unusual trends. This can be done using sophisticated
-  statistics or machine learning.
-\end{enumerate}
+Data scientists analyze large amounts of data to find interesting trends and
+gain novel insights. Given the large scale of data and relative ease of visual
+analysis, analysts often use visualizations as a means to identify properties of
+interest. The general analysis workflow is usually ad-hoc and can be represented
+as follows: First, the analyst selects a subset of the data they are interested
+in; for instance, in a medical use-case (Section \ref{subsec:motivation_example}
+the analysts may select patients that had expenses more than twice the standard
+deviation of all patients, or a set of products of a certain kind. Next, the
+analyst processes and visualizes the data in various ways, e.g. via binning,
+aggregates, group-bys and then building visualizations such as scatterplots,
+histograms, pie charts etc. Finally, the analyst studies all the views and
+identifies the {\it interesting} ones. He/she then drills down into these views
+or further explores the properties that show unusual trends. This can be done
+using sophisticated statistics or machine learning.
 
 The above process, while crucial in data analysis, is tedious and time-consuming
 because the analyst must generate a large number of view of a dataset and
@@ -25,7 +22,7 @@ several of the labor-intensive parts of this process by automatically generating
 different views of the data and surfacing the most interesting ones to the user.
 
 \subsection{Motivating Example}
-\label{motivation_example}
+\label{subsec:motivation_example}
 
 Consider a medical researcher studying the cost of care for cancer patients. Her
 research involves the analysis of a set of 1M electronic medical records (EMRs).
