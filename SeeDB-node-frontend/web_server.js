@@ -12,6 +12,7 @@
   java.classpath.push("../SeeDB-java-backend/lib/jackson-annotations-2.3.0.jar");
   java.classpath.push("../SeeDB-java-backend/lib/jackson-core-2.3.0.jar");
   java.classpath.push("../SeeDB-java-backend/lib/jackson-databind-2.3.0.jar");
+  java.classpath.push("../SeeDB-java-backend/lib/guava-15.0.jar");
   java.classpath.push("../SeeDB-java-backend/bin/");
 
   java.options.push("-Xdebug");
@@ -44,14 +45,15 @@
   io = io.listen(server, {log: false});
 
   io.sockets.on("connection", function(socket) {
-    var query_processor = java.newInstanceSync("core.QueryProcessor");
+    var queryProcessor = java.newInstanceSync("core.QueryProcessor");
 
     // set up runtime settings
-    var runtime_settings = java.newInstanceSync("utils.RuntimeSettings");
-    query_processor.setRuntimeSettingsSync(runtime_settings);
+    var runtimeSettings = java.newInstanceSync("utils.RuntimeSettings");
+    runtimeSettings.useSampling = true;
+    queryProcessor.setRuntimeSettingsSync(runtimeSettings);
 
     socket.on("call", function(options, callback) {
-      var response = query_processor[options.methodName + "Sync"].apply(query_processor, options.args);
+      var response = queryProcessor[options.methodName + "Sync"].apply(queryProcessor, options.args);
       var objectMapper = java.newInstanceSync("com.fasterxml.jackson.databind.ObjectMapper");
       var jsonObject = JSON.parse(objectMapper.writeValueAsStringSync(response));
 
