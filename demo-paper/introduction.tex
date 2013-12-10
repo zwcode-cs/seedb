@@ -5,15 +5,16 @@ gain novel insights. Given the large scale of data and relative ease of visual
 analysis, analysts often use visualizations as a means to identify properties of
 interest. The general analysis workflow is usually ad-hoc and can be represented
 as follows: First, the analyst selects a subset of the data they are interested
-in; for instance, in a medical use-case (Section \ref{subsec:motivation_example}
-the analysts may select patients that had expenses more than twice the standard
-deviation of all patients, or a set of products of a certain kind. Next, the
-analyst processes and visualizes the data in various ways, e.g. via binning,
-aggregates, group-bys and then building visualizations such as scatterplots,
-histograms, pie charts etc. Finally, the analyst studies all the views and
-identifies the {\it interesting} ones. He/she then drills down into these views
-or further explores the properties that show unusual trends. This can be done
-using sophisticated statistics or machine learning.
+in; for instance, in a medical use-case (Section
+\ref{subsec:motivation_example}), the analysts may select patients that had
+expenses more than twice the standard deviation of all patients, or a set of
+products of a certain kind. Next, the analyst processes the data in various
+ways, e.g. via binning, aggregates, group-bys, to generate various ``views''of
+the data and builds visualizations such as scatterplots, histograms, pie charts
+etc. Finally, the analyst studies all the views and identifies the {\it
+interesting} ones. He/she then drills down into these views or further explores
+the properties that show unusual trends. This can be done using sophisticated
+statistics or machine learning.
 
 The above process, while crucial in data analysis, is tedious and time-consuming
 because the analyst must generate a large number of view of a dataset and
@@ -79,7 +80,8 @@ attributes in a table, as a result, \SeeDB\ must intelligently explore this
 space; (b) computing each view and its utility independently is expensive and
 wasteful, and hence \SeeDB\ must share computation between queries; and (c)
 since visual analysis must happen in real-time, \SeeDB\ must tradeoff accuracy
-of views for reduced latency.
+of views for reduced latency. In Section \ref{sec:system_architecture}, we
+describe how \SeeDB\ addresses these challenges.
 
 \subsection{State-of-the-Art Approaches}
 \label{related_work}
