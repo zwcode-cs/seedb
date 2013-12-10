@@ -33,8 +33,8 @@ public class QueryProcessorTest {
 		QueryProcessor queryProcessor = new QueryProcessor();
 		queryProcessor.setQuery(query);
 		queryProcessor.ParseQuery();
-		assertEquals(queryProcessor.AddViewPredicates("contbr_st", Lists.newArrayList("contb_receipt_amt"), true).toLowerCase(), aggQueryForQuery.toLowerCase());
-		assertEquals(queryProcessor.AddViewPredicates("contbr_st", Lists.newArrayList("contb_receipt_amt"), false).toLowerCase(), aggQueryForDataset.toLowerCase());
+		assertEquals(queryProcessor.queryWithViewPredicates("contbr_st", Lists.newArrayList("contb_receipt_amt"), true).toLowerCase(), aggQueryForQuery.toLowerCase());
+		assertEquals(queryProcessor.queryWithViewPredicates("contbr_st", Lists.newArrayList("contb_receipt_amt"), false).toLowerCase(), aggQueryForDataset.toLowerCase());
 	}
 	
 	@Test

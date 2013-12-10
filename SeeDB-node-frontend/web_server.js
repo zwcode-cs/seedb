@@ -53,13 +53,19 @@
     queryProcessor.setRuntimeSettingsSync(runtimeSettings);
 
     socket.on("call", function(options, callback) {
-      var response = queryProcessor[options.methodName + "Sync"].apply(queryProcessor, options.args);
-      var objectMapper = java.newInstanceSync("com.fasterxml.jackson.databind.ObjectMapper");
-      var jsonObject = JSON.parse(objectMapper.writeValueAsStringSync(response));
+      console.log("Calling method:", options.methodName, options.args);
 
-      callback(jsonObject);
+      var javaArgs = options.args.concat([function (err, result) {
+        var objectMapper = java.newInstanceSync("com.fasterxml.jackson.databind.ObjectMapper");
+        var jsonObject = JSON.parse(objectMapper.writeValueAsStringSync(result));
+
+        console.log("Returning result for: ", options.methodName);
+        callback(jsonObject);
+      }]);
+
+      queryProcessor[options.methodName].apply(queryProcessor, javaArgs);
     });
   });
 
-  server.listen(8001);
+  server.listen(8002);
 }());
