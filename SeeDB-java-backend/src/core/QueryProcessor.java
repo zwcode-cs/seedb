@@ -304,7 +304,7 @@ public class QueryProcessor {
 		
 		String commaSeparatedSumMeasureColumns = Joiner.on(", ").join(measuresWrappedWithSum);
 		String query = "select " + commaSeparatedDimensionColumns + ", " + commaSeparatedSumMeasureColumns +
-			" from " + table + " group by " + commaSeparatedDimensionColumns + ";";
+			" from " + table + " where random() < " + runtimeSettings.samplePercent + " group by " + commaSeparatedDimensionColumns + " order by " + commaSeparatedSumMeasureColumns +" desc limit 4000;";
 		
 		// listOfKeys is a list of column names in the order that the query will return them
 		List<String> listOfKeys = Lists.newArrayList();

@@ -87,7 +87,11 @@
       
       $scope.generateDrilldownPredicates = function(dimensionDrilldown) {
         $scope.$apply(function () {
-          $scope.drilldownPredicates[dimensionDrilldown.dimensionName] = dimensionDrilldown.items;
+          if(dimensionDrilldown.items) {
+            $scope.drilldownPredicates[dimensionDrilldown.dimensionName] = dimensionDrilldown.items;
+          } else {
+            delete $scope.drilldownPredicates[dimensionDrilldown.dimensionName];
+          }
         });
       };
 
@@ -108,6 +112,8 @@
           modifier: "in",
           value: optionsString
         });
+
+        console.log($scope.predicates);
       };
 
       QueryProcessor.on("filter", $scope.generateDrilldownPredicates);

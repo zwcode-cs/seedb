@@ -15,8 +15,9 @@
   java.classpath.push("../SeeDB-java-backend/lib/guava-15.0.jar");
   java.classpath.push("../SeeDB-java-backend/bin/");
 
-  java.options.push("-Xdebug");
-  java.options.push("-agentlib:jdwp=transport=dt_socket,address=8888,server=y,suspend=n");
+  //java.options.push("-Xdebug");
+  java.options.push("-Xmx4g");
+  //java.options.push("-agentlib:jdwp=transport=dt_socket,address=8888,server=y,suspend=n");
 
   var app = express();
   app.engine("html", hbs.express3({
