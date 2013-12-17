@@ -86,9 +86,8 @@
     };
 
     this.getAllMeasureAggregatesForAllDimensionCombinations = function () {
-      _this.included = {};
-
       callJava("getAllMeasureAggregatesForAllDimensionCombinations", function (response) {
+        /* BEGIN BAD CODE */
         var crossfilter = crossfilterGlobal(response);
 
         var dimensions = {};
@@ -98,10 +97,7 @@
           });
 
           dimension.name = dimensionAttribute;
-
           dimensions[dimensionAttribute] = dimension;
-
-          _this.included[dimensionAttribute] = {};
         });
 
         var charts = [];
@@ -132,7 +128,6 @@
             .append("div").attr("class", "chart");
 
         function render (method) {
-          console.log(this, method);
           d3.select(this).call(method);
         }
 
@@ -141,6 +136,7 @@
         }
 
         renderAll();
+        /* END BAD CODE */
       });
     };
   };
