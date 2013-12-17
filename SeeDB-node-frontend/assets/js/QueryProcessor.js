@@ -132,6 +132,7 @@
             .append("div").attr("class", "chart");
 
         function render (method) {
+          console.log(this, method);
           d3.select(this).call(method);
         }
 
