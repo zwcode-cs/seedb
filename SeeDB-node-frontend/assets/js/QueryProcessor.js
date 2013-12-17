@@ -8,8 +8,6 @@
   var d3 = window.d3;
   var CrossfilterGraphs = window.CrossfilterGraphs;
 
-  var SUMMARY_DISTRIBUTION_MAX_COUNT = 20;
-
   var QueryProcessor = function () {
     var _this = this;
     _.extend(this, Backbone.Events);
@@ -19,14 +17,12 @@
     this.setTable = function(table) {
       _this.socket.emit("call", {methodName: "setTable", args:[table]}, function () {
         _this.getMetadata();
-        console.log("setTable called");
+        _this.getAllMeasureAggregatesForAllDimensionCombinations();
       });
     };
 
     this.setDistanceMeasure = function(distanceMeasure) {
-      _this.socket.emit("call", {methodName: "setDistanceMeasure", args:[distanceMeasure]}, function () {
-        return false; // TODO what if it fails somehow?
-      });
+      _this.socket.emit("call", {methodName: "setDistanceMeasure", args:[distanceMeasure]});
     };
 
     this.getMetadata = function() {
@@ -43,14 +39,6 @@
           _this.socket.emit("call", {methodName: "Process", args: []}, function (response) {
             _this.trigger("ProcessResult", response);
           });
-      });
-    };
-
-    this.getDistributionsForAllDimensions = function () {
-      _this.socket.emit("call", {methodName: "getDistributionsForAllDimensions", args: [SUMMARY_DISTRIBUTION_MAX_COUNT]}, function (response) {
-        _this.trigger("DistributionsForAllDimensions", response);
-        _this.dimensionDistributions = response;
-        _this.getAllMeasureAggregatesForAllDimensionCombinations();
       });
     };
 
@@ -72,28 +60,6 @@
 
           _this.included[dimensionAttribute] = {};
         });
-
-        var groupOfAll = crossfilter.groupAll();
-
-        function reduceAdd(p, v) {
-          p[v.cand_nm] += v.contb_receipt_amt;
-          return p;
-        }
-
-        function reduceRemove(p, v) {
-          p[v.cand_nm] -= v.contb_receipt_amt;
-          return p;
-        }
-
-        function reduceInitial() {
-          var p = {};
-
-          _this.dimensionDistributions.cand_nm.forEach(function (distributionUnit) {
-            p[distributionUnit.attributeValue] = 0;
-          });
-
-          return p;
-        }
 
         var charts = [];
         _.values(dimensions).forEach(function (dimension) {
@@ -131,16 +97,6 @@
         }
 
         renderAll();
-
-        groupOfAll.reduce(reduceAdd, reduceRemove, reduceInitial);
-
-        dimensions["contbr_st"].filterExact("AZ");
-        console.log(groupOfAll.value());
-
-        dimensions["contbr_st"].filterAll();
-        dimensions["cand_nm"].filterExact("McCain, John S");
-        console.log(groupOfAll.value());
-
       });
     };
   };

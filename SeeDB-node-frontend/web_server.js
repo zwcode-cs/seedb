@@ -61,7 +61,10 @@
         var jsonObject = JSON.parse(objectMapper.writeValueAsStringSync(result));
 
         console.log("Returning result for: ", options.methodName);
-        callback(jsonObject);
+
+        if (callback) {
+          callback(jsonObject);
+        }
       }]);
 
       queryProcessor[options.methodName].apply(queryProcessor, javaArgs);

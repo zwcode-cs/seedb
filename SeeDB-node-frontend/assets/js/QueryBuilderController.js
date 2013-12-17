@@ -2,6 +2,7 @@
   "use strict";
 
   var QueryProcessor = window.QueryProcessor;
+  var angular = window.angular;
 
   angular.module("seeDB")
     .controller("QueryBuilderController", function ($scope) {
@@ -57,11 +58,14 @@
         var predicateStrings = [];
 
         $scope.predicates.forEach(function(predicate) {
+          var predicateString;
+
           if (predicate.modifier === "in") {
-            var predicateString = predicate.columnName + " " + predicate.modifier + " (" + predicate.value + ")";
+            predicateString = predicate.columnName + " " + predicate.modifier + " (" + predicate.value + ")";
           } else {
-            var predicateString = predicate.columnName + " " + predicate.modifier + " '" + predicate.value + "'";            
+            predicateString = predicate.columnName + " " + predicate.modifier + " '" + predicate.value + "'";
           }
+
           predicateStrings.push("(" + predicateString + ")");
         });
 
@@ -75,12 +79,6 @@
 
       $scope.submitQuery = function() {
         QueryProcessor.submitQuery($scope.query);
-      };
-
-      $scope.setDimensionDistributions = function (dictionaryOfDistributions) {
-        $scope.$apply(function () {
-          $scope.datasetDistributions = dictionaryOfDistributions;
-        });
       };
 
       $scope.drilldownPredicates = {};
@@ -117,7 +115,6 @@
       };
 
       QueryProcessor.on("filter", $scope.generateDrilldownPredicates);
-      QueryProcessor.on("DistributionsForAllDimensions", $scope.setDimensionDistributions);
       
       $scope.$watch("predicates", $scope.generateQuery, true);
       $scope.$watch("tableName", $scope.generateQuery, true);
