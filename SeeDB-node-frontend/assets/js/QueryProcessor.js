@@ -13,21 +13,64 @@
     _.extend(this, Backbone.Events);
     
     this.socket = io.connect("/");
+
+    // candidates:
+    // callJava (methodName)
+    // callJava (methodName, arg1, arg2..)
+    // callJava (methodName, callback)
+    // callJava (methodName, arg1, arg2.., callback)
+    function callJava () {
+      // check for at least one argument
+      if (arguments.length < 1) {
+        throw "not enough arguments to callJava";
+      }
+
+      // check that first argument is a string and could be valid method name
+      if (!_.isString(arguments[0])) {
+        throw "first argument to callJava must be method name";
+      }
+
+      // allocate variables for arguments
+      var methodName = arguments[0];
+      var javaArgs = [];
+      var callback;
+
+      // loop through arguments, starting with second item since we have already processed methodName
+      var i, argument;
+      for (i = 1; i < arguments.length; i += 1) {
+        argument = arguments[i];
+
+        if (_.isFunction(argument)) {
+          // if it is a function, it is the callback and should be the last argument
+          callback = argument;
+          if (i < arguments.length - 1) {
+            console.warn("All arguments after the first function will be ignored in callJava.");
+          }
+          break;
+        } else {
+          // if it's not a function, add it to the list of arguments to send to the server
+          javaArgs.push(argument);
+        }
+      }
+
+      // send method call to socket
+      _this.socket.emit("call", {methodName: methodName, args: javaArgs}, callback);
+    }
     
     this.setTable = function(table) {
-      _this.socket.emit("call", {methodName: "setTable", args:[table]}, function () {
+      callJava("setTable", table, function () {
         _this.getMetadata();
         _this.getAllMeasureAggregatesForAllDimensionCombinations();
       });
     };
 
     this.setDistanceMeasure = function(distanceMeasure) {
-      _this.socket.emit("call", {methodName: "setDistanceMeasure", args:[distanceMeasure]});
+      callJava("setDistanceMeasure", distanceMeasure);
     };
 
     this.getMetadata = function() {
       var _this = this;
-      _this.socket.emit("call", {methodName: "getMetadata", args:[]}, function (response) {
+      callJava("getMetadata", function (response) {
         _this.trigger("Metadata", response);
         _this.metadata = response;
         _this.getAllMeasureAggregatesForAllDimensionCombinations();
@@ -35,17 +78,17 @@
     };
 
     this.submitQuery = function(query) {
-      _this.socket.emit("call", {methodName: "setQuery", args: [query]}, function () {
-          _this.socket.emit("call", {methodName: "Process", args: []}, function (response) {
-            _this.trigger("ProcessResult", response);
-          });
+      callJava("setQuery", query, function () {
+        callJava("Process", function (response) {
+          _this.trigger("ProcessResult", response);
+        });
       });
     };
 
     this.getAllMeasureAggregatesForAllDimensionCombinations = function () {
       _this.included = {};
 
-      _this.socket.emit("call", {methodName: "getAllMeasureAggregatesForAllDimensionCombinations", args: []}, function (response) {
+      callJava("getAllMeasureAggregatesForAllDimensionCombinations", function (response) {
         var crossfilter = crossfilterGlobal(response);
 
         var dimensions = {};
