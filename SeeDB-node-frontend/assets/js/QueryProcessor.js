@@ -19,7 +19,6 @@
     this.setTable = function(table) {
       _this.socket.emit("call", {methodName: "setTable", args:[table]}, function () {
         _this.getMetadata();
-        _this.getDistributionsForAllDimensions();
         console.log("setTable called");
       });
     };
@@ -35,6 +34,7 @@
       _this.socket.emit("call", {methodName: "getMetadata", args:[]}, function (response) {
         _this.trigger("Metadata", response);
         _this.metadata = response;
+        _this.getAllMeasureAggregatesForAllDimensionCombinations();
       });
     };
 
