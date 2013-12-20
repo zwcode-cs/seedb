@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.google.common.collect.Lists;
+
 import utils.DistributionUnit;
 
 public class QueryProcessorTest {
@@ -31,8 +33,8 @@ public class QueryProcessorTest {
 		QueryProcessor queryProcessor = new QueryProcessor();
 		queryProcessor.setQuery(query);
 		queryProcessor.ParseQuery();
-		assertEquals(queryProcessor.AddViewPredicates("contbr_st", "contb_receipt_amt", true).toLowerCase(), aggQueryForQuery.toLowerCase());
-		assertEquals(queryProcessor.AddViewPredicates("contbr_st", "contb_receipt_amt", false).toLowerCase(), aggQueryForDataset.toLowerCase());
+		assertEquals(queryProcessor.queryWithViewPredicates("contbr_st", Lists.newArrayList("contb_receipt_amt"), true).toLowerCase(), aggQueryForQuery.toLowerCase());
+		assertEquals(queryProcessor.queryWithViewPredicates("contbr_st", Lists.newArrayList("contb_receipt_amt"), false).toLowerCase(), aggQueryForDataset.toLowerCase());
 	}
 	
 	@Test

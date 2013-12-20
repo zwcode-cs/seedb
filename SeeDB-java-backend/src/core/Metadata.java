@@ -21,6 +21,7 @@ public class Metadata {
 		this.measureAttributes = new ArrayList<String>();
 
 		ResultSet rs = QueryExecutor.getTableColumns(table);
+		
 		while (rs.next()) {
 			String attribute = rs.getString("COLUMN_NAME");
 			String description = rs.getString("REMARKS");
