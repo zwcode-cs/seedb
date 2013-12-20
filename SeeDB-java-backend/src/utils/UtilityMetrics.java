@@ -155,8 +155,8 @@ public class UtilityMetrics {
 	 * @param distributionForDataset
 	 * @return
 	 */
-	public static double EntropyDistance(ArrayList<DistributionUnit> queryDistribution, 
-			ArrayList<DistributionUnit> datasetDistribution) {
+	public static double EntropyDistance(List<DistributionUnit> queryDistribution, 
+			List<DistributionUnit> datasetDistribution) {
 		if ((queryDistribution.size() == 0) || (queryDistribution.size() == 0)) {
 			return DISTRIBUTION_EMPTY;
 		}
