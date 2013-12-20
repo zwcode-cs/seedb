@@ -1,8 +1,13 @@
 package core;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+
+import com.google.common.collect.Lists;
 
 import utils.DistributionUnit;
 import utils.UtilityMetrics;
@@ -19,32 +24,32 @@ import utils.UtilityMetrics;
 public class DiscriminatingView {
 	private String aggregateAttribute;
 	private String groupByAttribute;
-	private ArrayList<DistributionUnit> queryDistribution;
-	private ArrayList<DistributionUnit> datasetDistribution;
-	private Hashtable<String, double[]> combinedDistribution;
-	private ArrayList<String> combinedDistributionAsStrings;
+	private List<DistributionUnit> queryDistribution;
+	private List<DistributionUnit> datasetDistribution;
+	private Map<String, double[]> combinedDistribution;
+	private List<String> combinedDistributionAsStrings;
 	
 	private double viewUtility;
 	
 	public DiscriminatingView(String aggregateAttribute, String groupByAttribute, 
-			ArrayList<DistributionUnit> queryDistribution, ArrayList<DistributionUnit> datasetDistribution)
+			List<DistributionUnit> list, List<DistributionUnit> list2)
 	{
 		this.aggregateAttribute = aggregateAttribute;
 		this.groupByAttribute = groupByAttribute;	
-		this.queryDistribution = queryDistribution;
-		this.datasetDistribution = datasetDistribution;
+		this.queryDistribution = list;
+		this.datasetDistribution = list2;
 		viewUtility = 0;
 		
 		// make both distributions uniform (i.e. same values)
 		combinedDistribution = new Hashtable<String, double[]>();
 		
 		// populate the distributions for the entire dataset, placeholder for query distribution
-		for (DistributionUnit d: datasetDistribution) {
+		for (DistributionUnit d: list2) {
 			combinedDistribution.put(d.attributeValue.toString(), new double[]{d.fraction, 0});	
 		}
 		
 		// update query distribution
-		for (DistributionUnit d: queryDistribution) {
+		for (DistributionUnit d: list) {
 			if (!combinedDistribution.containsKey(d.attributeValue)) {
 				combinedDistribution.put(d.attributeValue.toString(), new double[]{0, d.fraction});
 			} else {
@@ -52,26 +57,25 @@ public class DiscriminatingView {
 			}
 		}
 		
-		datasetDistribution.clear();
-		queryDistribution.clear();
+		list2.clear();
+		list.clear();
 		
-		ArrayList<String> result = new ArrayList<String>();
-		Enumeration<String> e = this.combinedDistribution.keys();
-		while (e.hasMoreElements()) {
-			String key = e.nextElement();
+		List<String> result = Lists.newArrayList();
+		Collection<String> keys = this.combinedDistribution.keySet();
+		for(String key : keys) {
 			result.add(key + ":" + this.combinedDistribution.get(key)[0] + ":" + 
 					this.combinedDistribution.get(key)[1]);
-			datasetDistribution.add(new DistributionUnit(key, combinedDistribution.get(key)[0]));
-			queryDistribution.add(new DistributionUnit(key, combinedDistribution.get(key)[1]));
+			list2.add(new DistributionUnit(key, combinedDistribution.get(key)[0]));
+			list.add(new DistributionUnit(key, combinedDistribution.get(key)[1]));
 		}
 		this.combinedDistributionAsStrings = result;		
 	}
 	
-	public ArrayList<DistributionUnit> getQueryDistribution() {
+	public List<DistributionUnit> getQueryDistribution() {
 		return this.queryDistribution;
 	}
 	
-	public ArrayList<DistributionUnit> getDatasetDistribution() {
+	public List<DistributionUnit> getDatasetDistribution() {
 		return this.datasetDistribution;
 	}
 	
@@ -81,7 +85,7 @@ public class DiscriminatingView {
 	 * ["ABC:0.5:0.01", "DEF:0.33:0.21"]
 	 * 
 	 */
-	public ArrayList<String> getCombinedDistribution() {
+	public List<String> getCombinedDistribution() {
 		// format as strings
 		return combinedDistributionAsStrings;
 	}

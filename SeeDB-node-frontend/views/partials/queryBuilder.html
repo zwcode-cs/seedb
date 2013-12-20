@@ -1,58 +1,75 @@
 <div id="ctrl-queryBuilder" ng-controller="QueryBuilderController">
   <h2>Query Builder</h2>
 
-  <strong>Table Name:</strong>
-  <select ng-model="tableName">
-    <option ng-repeat="tableNameOption in tableNames">[[tableNameOption]]</option>
-  </select>
+  <div class="row">
+    <div class="col-md-6">
+      <strong>Table Name:</strong>
+      <select ng-model="tableName">
+        <option ng-repeat="tableNameOption in tableNames">[[tableNameOption]]</option>
+      </select>
 
-  <br /> <br />
+      <br /> <br />
 
-  <strong>Predicates:</strong>
+      <strong>Predicates:</strong>
 
-  <table class="table">
-    <tr><th></th><th>Column Name</th><th>Operator</th><th>Value</th><th></th></tr>
-    <tr ng-repeat="predicate in predicates">
-      <td>where</td>
-      <td>
-        <select ng-model="predicate.columnName">
-          <option ng-repeat="columnName in columnNames" value="[[columnName]]">
-            [[columnName]]
-          </option>
-        </select>
-      </td>
-      <td>
-        <select ng-model="predicate.modifier">
-          <option>=</option>
-          <option>&lt;</option>
-          <option>&gt;</option>
-        </select>
-      </td>
-      <td>
-        <input type="text" ng-model="predicate.value" />
-      </td>
-      <td>
-        <a href="" ng-click="removePredicate(predicate)" class="btn btn-danger btn-xs">X</a>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="100">
-        <a href="" ng-click="addPredicate()" class="btn btn-success btn-xs">+ Add Predicate</a>
-    </td>
-    </tr>
-  </table>
+      <table class="table">
+        <tr><th></th><th>Column Name</th><th>Operator</th><th>Value</th><th></th></tr>
+        <tr ng-repeat="predicate in predicates">
+          <td>where</td>
+          <td>
+            <select ng-model="predicate.columnName">
+              <option ng-repeat="columnName in columnNames" value="[[columnName]]">
+                [[columnName]]
+              </option>
+            </select>
+          </td>
+          <td>
+            <select ng-model="predicate.modifier">
+              <option>=</option>
+              <option>&lt;</option>
+              <option>&gt;</option>
+              <option>in</option>
+            </select>
+          </td>
+          <td>
+            <input type="text" ng-model="predicate.value" />
+          </td>
+          <td>
+            <a href="" ng-click="removePredicate(predicate)" class="btn btn-danger btn-xs">X</a>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="100">
+            <a href="" ng-click="addPredicate()" class="btn btn-success btn-xs">+ Add Predicate</a>
+        </td>
+        </tr>
+      </table>
 
 
-  <strong>Distance Measure:</strong>
-  <select ng-model="distanceMeasure">
-    <option ng-repeat="distanceMeasureOption in distanceMeasures">[[distanceMeasureOption]]</option>
-  </select>
+      <strong>Distance Measure:</strong>
+      <select ng-model="distanceMeasure">
+        <option ng-repeat="distanceMeasureOption in distanceMeasures">[[distanceMeasureOption]]</option>
+      </select>
 
-  <br />
-  <br />
+      <br />
+      <br />
+
+      <pre ng-bind="query"></pre>
+    </div>
+
+    <div class="col-md-6">
+      <h4>Distributions in data set</h4>
+      <p>In the case of many unique values, only the 20 most common are displayed.</p>
+      <div id="distributionCharts"></div>
+      <div ng-repeat="(key, value) in drilldownPredicates">
+        <pre>[[formatDrilldownPredicate(key, value)]]</pre>
+        <a href="" ng-click="addDrillDownPredicate(key)" class="btn btn-success btn-xs">+ Add Predicate</a>
+        <br />
+      </div>
+    </div>
+  </div>
 
   <div>
-    <pre ng-bind="query"></pre>
     <a href="" ng-click="submitQuery()" class="btn btn-primary">Submit Query</a>
   </div>
 

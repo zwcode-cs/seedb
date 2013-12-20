@@ -4,4 +4,6 @@
 //= require bootstrap
 //= require handlebars.runtime-v1.1.2
 //= require angular
+//= require d3.v3.js
+//= require crossfilter.v1
 //= require_tree .

@@ -2,16 +2,17 @@
   "use strict";
 
   var QueryProcessor = window.QueryProcessor;
+  var angular = window.angular;
 
   angular.module("seeDB")
     .controller("QueryBuilderController", function ($scope) {
       $scope.predicates = [{
         columnName: "cand_nm",  // TODO: this is hardcoded as the first default predicate
         modifier: "=",
-        value: "McCain, John S"
+        value: "Obama, Barack"
       }];
 
-      $scope.tableNames = ["election_data", "election_data_full", "super_store_data"]; // TODO: hardcoded
+      $scope.tableNames = ["election_data_full", "election_data", "super_store_data"]; // TODO: hardcoded
       $scope.tableName = $scope.tableNames[0];
 
       $scope.setTable = function() {
@@ -57,7 +58,14 @@
         var predicateStrings = [];
 
         $scope.predicates.forEach(function(predicate) {
-          var predicateString = predicate.columnName + " " + predicate.modifier + " '" + predicate.value + "'";
+          var predicateString;
+
+          if (predicate.modifier === "in") {
+            predicateString = predicate.columnName + " " + predicate.modifier + " (" + predicate.value + ")";
+          } else {
+            predicateString = predicate.columnName + " " + predicate.modifier + " '" + predicate.value + "'";
+          }
+
           predicateStrings.push("(" + predicateString + ")");
         });
 
@@ -72,6 +80,41 @@
       $scope.submitQuery = function() {
         QueryProcessor.submitQuery($scope.query);
       };
+
+      $scope.drilldownPredicates = {};
+      
+      $scope.generateDrilldownPredicates = function(dimensionDrilldown) {
+        $scope.$apply(function () {
+          if(dimensionDrilldown.items) {
+            $scope.drilldownPredicates[dimensionDrilldown.dimensionName] = dimensionDrilldown.items;
+          } else {
+            delete $scope.drilldownPredicates[dimensionDrilldown.dimensionName];
+          }
+        });
+      };
+
+      $scope.formatDrilldownPredicate = function(dimensionName, items) {
+        var optionsString = items.map(function (item) {
+          return "'" + item + "'";
+        }).join(", ");
+        return dimensionName + " in (" + optionsString + ")";
+      };
+
+      $scope.addDrillDownPredicate = function(key) {
+        var options = $scope.drilldownPredicates[key];
+        var optionsString = options.map(function (item) {
+          return "'" + item + "'";
+        }).join(", ");
+        $scope.predicates.push({
+          columnName: key,
+          modifier: "in",
+          value: optionsString
+        });
+
+        console.log($scope.predicates);
+      };
+
+      QueryProcessor.on("filter", $scope.generateDrilldownPredicates);
       
       $scope.$watch("predicates", $scope.generateQuery, true);
       $scope.$watch("tableName", $scope.generateQuery, true);

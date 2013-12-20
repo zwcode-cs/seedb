@@ -12,10 +12,12 @@
   java.classpath.push("../SeeDB-java-backend/lib/jackson-annotations-2.3.0.jar");
   java.classpath.push("../SeeDB-java-backend/lib/jackson-core-2.3.0.jar");
   java.classpath.push("../SeeDB-java-backend/lib/jackson-databind-2.3.0.jar");
+  java.classpath.push("../SeeDB-java-backend/lib/guava-15.0.jar");
   java.classpath.push("../SeeDB-java-backend/bin/");
 
-  java.options.push("-Xdebug");
-  java.options.push("-agentlib:jdwp=transport=dt_socket,address=8888,server=y,suspend=n");
+  //java.options.push("-Xdebug");
+  java.options.push("-Xmx4g");
+  //java.options.push("-agentlib:jdwp=transport=dt_socket,address=8888,server=y,suspend=n");
 
   var app = express();
   app.engine("html", hbs.express3({
@@ -41,23 +43,33 @@
 
   var server = require("http").createServer(app);
 
-  io = io.listen(server);
+  io = io.listen(server, {log: false});
 
   io.sockets.on("connection", function(socket) {
-    var query_processor = java.newInstanceSync("core.QueryProcessor");
+    var queryProcessor = java.newInstanceSync("core.QueryProcessor");
 
     // set up runtime settings
-    var runtime_settings = java.newInstanceSync("utils.RuntimeSettings");
-    query_processor.setRuntimeSettingsSync(runtime_settings);
+    var runtimeSettings = java.newInstanceSync("utils.RuntimeSettings");
+    runtimeSettings.useSampling = true;
+    queryProcessor.setRuntimeSettingsSync(runtimeSettings);
 
     socket.on("call", function(options, callback) {
-      var response = query_processor[options.methodName + "Sync"].apply(query_processor, options.args);
-      var objectMapper = java.newInstanceSync("com.fasterxml.jackson.databind.ObjectMapper");
-      var jsonObject = JSON.parse(objectMapper.writeValueAsStringSync(response));
+      console.log("Calling method:", options.methodName, options.args);
 
-      callback(jsonObject);
+      var javaArgs = options.args.concat([function (err, result) {
+        var objectMapper = java.newInstanceSync("com.fasterxml.jackson.databind.ObjectMapper");
+        var jsonObject = JSON.parse(objectMapper.writeValueAsStringSync(result));
+
+        console.log("Returning result for: ", options.methodName);
+
+        if (callback) {
+          callback(jsonObject);
+        }
+      }]);
+
+      queryProcessor[options.methodName].apply(queryProcessor, javaArgs);
     });
   });
 
-  server.listen(8000);
+  server.listen(8002);
 }());

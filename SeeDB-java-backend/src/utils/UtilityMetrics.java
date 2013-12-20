@@ -1,6 +1,7 @@
 package utils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class UtilityMetrics {
 	
@@ -12,8 +13,8 @@ public class UtilityMetrics {
 	 * @param distributionForDataset
 	 * @return
 	 */
-	public static double EarthMoverDistance(ArrayList<DistributionUnit> queryDistribution, 
-			ArrayList<DistributionUnit> datasetDistribution) {
+	public static double EarthMoverDistance(List<DistributionUnit> queryDistribution, 
+			List<DistributionUnit> datasetDistribution) {
 		if ((queryDistribution.size() == 0) || (queryDistribution.size() == 0)) {
 			return DISTRIBUTION_EMPTY;
 		}
@@ -40,8 +41,8 @@ public class UtilityMetrics {
 	 * @param distributionForDataset
 	 * @return
 	 */
-	public static double EuclideanDistance(ArrayList<DistributionUnit> queryDistribution, 
-			ArrayList<DistributionUnit> datasetDistribution) {
+	public static double EuclideanDistance(List<DistributionUnit> queryDistribution, 
+			List<DistributionUnit> datasetDistribution) {
 		if ((queryDistribution.size() == 0) || (queryDistribution.size() == 0)) {
 			return DISTRIBUTION_EMPTY;
 		}
@@ -67,8 +68,8 @@ public class UtilityMetrics {
 	 * @param distributionForDataset
 	 * @return
 	 */
-	public static double CosineDistance(ArrayList<DistributionUnit> queryDistribution, 
-			ArrayList<DistributionUnit> datasetDistribution) {
+	public static double CosineDistance(List<DistributionUnit> queryDistribution, 
+			List<DistributionUnit> datasetDistribution) {
 		if ((queryDistribution.size() == 0) || (queryDistribution.size() == 0)) {
 			return DISTRIBUTION_EMPTY;
 		}
@@ -101,8 +102,8 @@ public class UtilityMetrics {
 	 * @param distributionForDataset
 	 * @return
 	 */
-	public static double FidelityDistance(ArrayList<DistributionUnit> queryDistribution, 
-			ArrayList<DistributionUnit> datasetDistribution) {
+	public static double FidelityDistance(List<DistributionUnit> queryDistribution, 
+			List<DistributionUnit> datasetDistribution) {
 		if ((queryDistribution.size() == 0) || (queryDistribution.size() == 0)) {
 			return DISTRIBUTION_EMPTY;
 		}
@@ -126,8 +127,8 @@ public class UtilityMetrics {
 	 * @param distributionForDataset
 	 * @return
 	 */
-	public static double ChiSquaredDistance(ArrayList<DistributionUnit> queryDistribution, 
-			ArrayList<DistributionUnit> datasetDistribution) {
+	public static double ChiSquaredDistance(List<DistributionUnit> queryDistribution, 
+			List<DistributionUnit> datasetDistribution) {
 		if ((queryDistribution.size() == 0) || (queryDistribution.size() == 0)) {
 			return DISTRIBUTION_EMPTY;
 		}
