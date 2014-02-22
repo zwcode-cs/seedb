@@ -1,12 +1,11 @@
 package core;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 import utils.DistributionUnit;
@@ -14,7 +13,7 @@ import utils.UtilityMetrics;
 
 /**
  * This class stores all the information about a discriminating view and performs computations
- * on the view. Specifically, it store sthe groupby and aggregate attributes, distributions for
+ * on the view. Specifically, it stores the groupby and aggregate attributes, distributions for
  * the query and full dataset and utility. It has functions to compute utility based on various 
  * metrics
  * 
@@ -22,8 +21,8 @@ import utils.UtilityMetrics;
  * 
  */
 public class DiscriminatingView {
-	private String aggregateAttribute;
-	private String groupByAttribute;
+	private List<String> aggregateAttributes;
+	private List<String> groupByAttributes;
 	private List<DistributionUnit> queryDistribution;
 	private List<DistributionUnit> datasetDistribution;
 	private Map<String, double[]> combinedDistribution;
@@ -31,25 +30,22 @@ public class DiscriminatingView {
 	
 	private double viewUtility;
 	
-	public DiscriminatingView(String aggregateAttribute, String groupByAttribute, 
-			List<DistributionUnit> list, List<DistributionUnit> list2)
-	{
-		this.aggregateAttribute = aggregateAttribute;
-		this.groupByAttribute = groupByAttribute;	
-		this.queryDistribution = list;
-		this.datasetDistribution = list2;
-		viewUtility = 0;
-		
+	private DiscriminatingView() {
+		this.aggregateAttributes = Lists.newArrayList();
+		this.groupByAttributes = Lists.newArrayList();
+	}
+	
+	private void fixDistributions() {
 		// make both distributions uniform (i.e. same values)
 		combinedDistribution = new Hashtable<String, double[]>();
 		
 		// populate the distributions for the entire dataset, placeholder for query distribution
-		for (DistributionUnit d: list2) {
+		for (DistributionUnit d: datasetDistribution) {
 			combinedDistribution.put(d.attributeValue.toString(), new double[]{d.fraction, 0});	
 		}
 		
 		// update query distribution
-		for (DistributionUnit d: list) {
+		for (DistributionUnit d: queryDistribution) {
 			if (!combinedDistribution.containsKey(d.attributeValue)) {
 				combinedDistribution.put(d.attributeValue.toString(), new double[]{0, d.fraction});
 			} else {
@@ -57,18 +53,42 @@ public class DiscriminatingView {
 			}
 		}
 		
-		list2.clear();
-		list.clear();
+		datasetDistribution.clear();
+		queryDistribution.clear();
 		
 		List<String> result = Lists.newArrayList();
 		Collection<String> keys = this.combinedDistribution.keySet();
 		for(String key : keys) {
 			result.add(key + ":" + this.combinedDistribution.get(key)[0] + ":" + 
 					this.combinedDistribution.get(key)[1]);
-			list2.add(new DistributionUnit(key, combinedDistribution.get(key)[0]));
-			list.add(new DistributionUnit(key, combinedDistribution.get(key)[1]));
+			// repopulate because some keys may have been missing from one or either distributions
+			datasetDistribution.add(new DistributionUnit(key, combinedDistribution.get(key)[0]));
+			queryDistribution.add(new DistributionUnit(key, combinedDistribution.get(key)[1]));
 		}
 		this.combinedDistributionAsStrings = result;		
+
+	}
+	
+	public DiscriminatingView(List<String> aggregateAttributes, List<String> groupByAttributes, 
+			List<DistributionUnit> queryDistribution, List<DistributionUnit> datasetDistribution) {
+		this();
+		this.aggregateAttributes.addAll(aggregateAttributes);
+		this.groupByAttributes.addAll(groupByAttributes);	
+		this.queryDistribution = queryDistribution;
+		this.datasetDistribution = datasetDistribution;
+		viewUtility = 0;
+	}
+	
+	public DiscriminatingView(String aggregateAttribute, String groupByAttribute, 
+			List<DistributionUnit> queryDistribution, List<DistributionUnit> datasetDistribution)
+	{
+		this();
+		this.aggregateAttributes.add(aggregateAttribute);
+		this.groupByAttributes.add(groupByAttribute);	
+		this.queryDistribution = queryDistribution;
+		this.datasetDistribution = datasetDistribution;
+		viewUtility = 0;
+		
 	}
 	
 	public List<DistributionUnit> getQueryDistribution() {
@@ -116,13 +136,24 @@ public class DiscriminatingView {
 		return viewUtility;
 	}
 	
-	public String getAggregateAttribute()
+	public List<String> getAggregateAttribute()
 	{
-		return aggregateAttribute;
+		return aggregateAttributes;
 	}
 	
-	public String getGroupByAttribute()
+	public List<String> getGroupByAttribute()
 	{
-		return groupByAttribute;
+		return groupByAttributes;
+	}
+	
+	public boolean equals(Object o) {
+		if (o == null) return false;
+		if (o.getClass() != this.getClass()) return false;
+		DiscriminatingView v = (DiscriminatingView) o;
+		return v.toString().equalsIgnoreCase(this.toString());
+	}
+	
+	public String toString() {
+		return Joiner.on("-").join(this.aggregateAttributes) + "--" + Joiner.on("-").join(this.groupByAttributes);
 	}
 }

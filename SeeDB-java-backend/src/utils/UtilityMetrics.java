@@ -1,6 +1,5 @@
 package utils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class UtilityMetrics {
@@ -166,7 +165,8 @@ public class UtilityMetrics {
 		for (dataset_idx = 0; dataset_idx < datasetDistribution.size(); dataset_idx++) {
 			if ((query_idx < queryDistribution.size()) && 
 				(queryDistribution.get(query_idx).attributeValue.equals(datasetDistribution.get(dataset_idx).attributeValue))){
-				utility += Math.log(Math.abs(queryDistribution.get(query_idx).fraction / datasetDistribution.get(dataset_idx).fraction)) * queryDistribution.get(query_idx).fraction;
+				utility += Math.log(Math.abs(queryDistribution.get(query_idx).fraction / datasetDistribution.get(dataset_idx).fraction))
+						* queryDistribution.get(query_idx).fraction;
 				query_idx += 1;
 			}
 		}

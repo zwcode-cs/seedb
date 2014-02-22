@@ -1,0 +1,6 @@
+CREATE TABLE table-10-1-1-2-1 (
+dim1 VARCHAR(6),
+measure1 FLOAT(10, 2),
+join_column INT,
+);
+COPY table-10-1-1-2-1 FROM 'table-10-1-1-2-1-data.txt' DELIMITER ',' CSV HEADER 

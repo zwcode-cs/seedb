@@ -43,4 +43,8 @@ public class Metadata {
 	public ArrayList<String> getMeasureAttributes() {
 		return measureAttributes;
 	}
+
+	public ArrayList<String> getAllAttributes() {
+		return allAttributes;
+	}
 }

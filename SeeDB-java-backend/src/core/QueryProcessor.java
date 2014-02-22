@@ -3,7 +3,6 @@ package core;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -11,7 +10,6 @@ import java.util.Map;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -79,7 +77,7 @@ public class QueryProcessor {
                 return metadata;
         }
 
-        public QueryProcessor() {
+        public QueryProcessor() {  
                 QueryExecutor.Instantiate();
                 runtimeSettings = new RuntimeSettings();
         }
@@ -111,18 +109,40 @@ public class QueryProcessor {
                 }
                 viewQuery = viewQuery.substring(0, viewQuery.length() - 2); // remove extraneous ', '
                 viewQuery += " from ";
-                if (runtimeSettings.useSampling) {
-                        viewQuery += "(select * from " + table + " where random() < " 
-                                        + runtimeSettings.samplePercent + ") as temp ";
-                        if (queryOnly) {
-                                viewQuery += query.substring(table_idx + table.length(), end_idx);
-                        }
-                } else {
-                                viewQuery += (queryOnly ? query.substring(table_idx, end_idx) : table);
-                }
+                viewQuery += (queryOnly ? query.substring(table_idx, end_idx) : table);
                 viewQuery += " GROUP BY " + dimensionAttribute + ";";        
                 return viewQuery;
         }
+        
+        public Integer computeBinSize(String attribute) {
+        	int binSize = 100;
+        	// get the maximum value and make 20 partitions
+        	String max_min = "Select max(" + attribute + "), min(" + attribute + ") from " + table;
+        	ResultSet rs = QueryExecutor.executeQuery(max_min);
+        	try {
+				while (rs.next()) {
+					binSize = (int) ((rs.getDouble(1) - rs.getDouble(2)) / 20); 
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+        	return binSize;
+        }
+        
+        public String queryWithViewPredicatesBinning(String attribute, List<String> measureAttributes, boolean queryOnly, Integer binSize) {
+            // update the query for the aggregate and group by
+            int table_idx = query.indexOf(table);
+            int end_idx = query.indexOf(";");
+            String viewQuery = "select ceil(" + attribute + "/" + binSize + "), " ;
+            for (Object measureAttribute : measureAttributes) {
+                    viewQuery += "COUNT(" + measureAttribute.toString() + "), ";
+            }
+            viewQuery = viewQuery.substring(0, viewQuery.length() - 2); // remove extraneous ', '
+            viewQuery += " from ";
+            viewQuery += (queryOnly ? query.substring(table_idx, end_idx) : table);
+            viewQuery += " GROUP BY ceil(" + attribute + "/" + binSize + ") ORDER BY ceil(" + attribute + "/" + binSize + ");";        
+            return viewQuery;
+    }
         
         public List<DiscriminatingView> Process() {
                 long startTime = System.nanoTime();
@@ -135,9 +155,10 @@ public class QueryProcessor {
                 List<DiscriminatingView> views = Lists.newArrayList();
                 
                 for (int dimensionIndex = 0; dimensionIndex < dimensionAttributes.size(); dimensionIndex++) {
-                        if (dimensionAttributes.get(dimensionIndex).equalsIgnoreCase(selectPredicate)) {
+                        if (selectPredicate.indexOf(dimensionAttributes.get(dimensionIndex)) > -1) {
                                 continue;
                         }
+                        /**
                         if (runtimeSettings.useMultipleAggregateSingleGroupByOptimization) {
                                 String aggregateQueryForQuery = queryWithViewPredicates(dimensionAttributes.get(dimensionIndex), 
                                                 measureAttributes, true);
@@ -151,7 +172,9 @@ public class QueryProcessor {
                                         return null;
                                 }
                                         
-                        } else {                
+                        } else { 
+                        */
+                                       
                                 for (int measureIndex = 0; measureIndex < measureAttributes.size(); measureIndex++) {        
                                         // add an aggregate and group by: currently on SUM
                                         String aggregateQueryForQuery = queryWithViewPredicates(dimensionAttributes.get(dimensionIndex), 
@@ -160,14 +183,31 @@ public class QueryProcessor {
                                                         Lists.newArrayList(measureAttributes.get(measureIndex)), false);
                                         try {
                                                 CreateAndAddDiscriminatingView(aggregateQueryForQuery, aggregateQueryForDataset,
-                                                                Lists.newArrayList(dimensionAttributes.get(dimensionIndex)), Lists.newArrayList(measureAttributes.get(measureIndex)), views);
+                                                                Lists.newArrayList(dimensionAttributes.get(dimensionIndex)), Lists.newArrayList(measureAttributes.get(measureIndex)), views, null);
                                         } catch (Exception e) {
                                                 e.printStackTrace();
                                                 return null;
                                         }
                                 }
                         }
+                
+                 /* */
+                //}
+                // bin measure attributes and count to build histogram
+                int binSize = this.computeBinSize(measureAttributes.get(0));
+                String aggregateQueryForQuery = queryWithViewPredicatesBinning(measureAttributes.get(0), 
+                        Lists.newArrayList(measureAttributes.get(0)), true, binSize);
+                String aggregateQueryForDataset = queryWithViewPredicatesBinning(measureAttributes.get(0), 
+                        Lists.newArrayList(measureAttributes.get(0)), false, binSize);
+                try {
+                    CreateAndAddDiscriminatingView(aggregateQueryForQuery, aggregateQueryForDataset,
+                                    Lists.newArrayList(measureAttributes.get(0)), Lists.newArrayList(measureAttributes.get(0)), views,
+                                    binSize);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
                 }
+                
                 
                 // sort views based on utility and pick top views
                 Collections.sort(views, new Comparator<DiscriminatingView>() {
@@ -185,16 +225,16 @@ public class QueryProcessor {
         
         public void CreateAndAddDiscriminatingView(String aggregateQueryForQuery, String aggregateQueryForDataset,
                         List<String> dimensionAttributes, List<String> measureAttributes,
-                List<DiscriminatingView> views) throws SQLException {
+                List<DiscriminatingView> views, Integer binSize) throws SQLException {
                 
                 int numAggregates = measureAttributes.size();
-                List<List<DistributionUnit>> queryDists = GetDistributionForQueryMultipleAggregates(
-                                aggregateQueryForQuery, numAggregates);
-                List<List<DistributionUnit>> dataDists = GetDistributionForQueryMultipleAggregates(
-                                aggregateQueryForDataset, numAggregates);
+                List<DistributionUnit> queryDists = GetDistributionForQuery(
+                                aggregateQueryForQuery, binSize);
+                List<DistributionUnit> dataDists = GetDistributionForQuery(
+                                aggregateQueryForDataset, binSize);
                 for (int k = 0; k < numAggregates; k++) {
                         DiscriminatingView discView = new DiscriminatingView(dimensionAttributes.get(k), 
-                                        measureAttributes.get(k), queryDists.get(k), dataDists.get(k));
+                                        measureAttributes.get(k), queryDists, dataDists);
                         discView.computeUtility(this.runtimeSettings.metric);
                         views.add(discView);
                 }
@@ -207,11 +247,16 @@ public class QueryProcessor {
          * @return
          * @throws SQLException
          */
-        public List<DistributionUnit> GetDistributionForQuery(String distQuery) throws SQLException {
+        public List<DistributionUnit> GetDistributionForQuery(String distQuery, Integer binSize) throws SQLException {
                 ResultSet rs = QueryExecutor.executeQuery(distQuery);
                 List<DistributionUnit> dist = Lists.newArrayList();
-                while (rs.next()) {                                        
-                        dist.add(new DistributionUnit(rs.getObject(1), rs.getDouble(2)));
+                while (rs.next()) {    
+                	if (binSize != null) {
+                		dist.add(new DistributionUnit(new Integer((rs.getInt(1)) * binSize).toString(), rs.getDouble(2)));
+                	}
+                	else {
+                        dist.add(new DistributionUnit(rs.getString(1), rs.getDouble(2)));
+                	}
                 }
                 
                 // normalize
@@ -222,45 +267,8 @@ public class QueryProcessor {
                 for (DistributionUnit unit : dist) {
                         unit.fraction /= total;                
                 }
-                for (DistributionUnit unit : dist) {
-                        System.out.println(unit);
-                }
-                System.out.println();
-                System.out.println();
-                
                 
                 return dist;
-        }
-        
-        public List<List<DistributionUnit>> GetDistributionForQueryMultipleAggregates(String distQuery, 
-                        int numAggregates) throws SQLException {
-                ResultSet rs = QueryExecutor.executeQuery(distQuery);
-                List<List<DistributionUnit>> distList = Lists.newArrayList();
-                
-                for (int i = 0; i < numAggregates; i++) {
-                        distList.add(new ArrayList<DistributionUnit>());
-                }
-                
-                while (rs.next()) {                
-                        for (int indexOfAggregate = 0; indexOfAggregate < numAggregates; indexOfAggregate++)
-                        {
-                                int indexOfAggregateInRow = indexOfAggregate + 2;
-                                distList.get(indexOfAggregate).add(new DistributionUnit(rs.getObject(1), rs.getDouble(indexOfAggregateInRow)));
-                        }
-                }
-                
-                // makes sure distribution adds up to 1
-                for (List<DistributionUnit> dist : distList)
-                {
-                        double total = 0;
-                        for (DistributionUnit unit : dist) {
-                                total += unit.fraction;
-                        }
-                        for (DistributionUnit unit : dist) {
-                                unit.fraction /= total;                
-                        }
-                }                
-                return distList;
         }
         
         public Map<String, List<DistributionUnit>> getDistributionsForAllDimensions(int maxValues) throws SQLException {
@@ -310,7 +318,7 @@ public class QueryProcessor {
                 List<String> listOfKeys = Lists.newArrayList();
                 listOfKeys.addAll(metadata.getDimensionAttributes());
                 listOfKeys.addAll(metadata.getMeasureAttributes());
-                
+                System.out.println(query); 
                 ResultSet resultSet = QueryExecutor.executeQuery(query);
                 
                 while(resultSet.next()) {
