@@ -1,0 +1,24 @@
+CREATE TABLE table_1M_10_10_test (
+id INT,
+dim1 VARCHAR(6),
+dim2 VARCHAR(6),
+dim3 VARCHAR(6),
+dim4 VARCHAR(6),
+dim5 VARCHAR(6),
+dim6 VARCHAR(6),
+dim7 VARCHAR(6),
+dim8 VARCHAR(6),
+dim9 VARCHAR(6),
+dim10 VARCHAR(6),
+measure1 DECIMAL,
+measure2 DECIMAL,
+measure3 DECIMAL,
+measure4 DECIMAL,
+measure5 DECIMAL,
+measure6 DECIMAL,
+measure7 DECIMAL,
+measure8 DECIMAL,
+measure9 DECIMAL,
+measure10 DECIMAL
+);
+COPY table_1M_10_10_test FROM '~/Public/table-1000000-10-10-5-10-50-100-100-100-100-100-250-500-1-data.txt' DELIMITER ',' CSV HEADER 

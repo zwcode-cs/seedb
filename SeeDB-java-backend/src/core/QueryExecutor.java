@@ -9,6 +9,12 @@ import java.sql.Statement;
 
 public class QueryExecutor {
 	private static Connection connection = null;
+	private static String database = "127.0.0.1/donations";
+	
+	public static void ConnectToDatabase(String s) {
+		database = s;
+		Instantiate();
+	}
 	
 	public static void Instantiate() {
 		if (connection == null) {
@@ -26,7 +32,7 @@ public class QueryExecutor {
 			try {
 				 
 				connection = DriverManager.getConnection(
-						"jdbc:postgresql://127.0.0.1/seedb_data", "postgres",
+						"jdbc:postgresql://" + database, "postgres",
 						"postgrespwd");
 	 
 			} catch (SQLException e) {

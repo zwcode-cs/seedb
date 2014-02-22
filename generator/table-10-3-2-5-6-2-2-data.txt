@@ -1,0 +1,11 @@
+id,dim1,dim2,dim3,measures1,measures2,join_column
+1,dqsxtn,88lsq6,f7zcsf,4074.09,4148.46,366
+2,n1tc6w,dllpm0,f7zcsf,4241.92,4627.41,470
+3,pftj8f,m28ggi,f7zcsf,523.93,4397.73,36
+4,dqsxtn,wyt8qo,f7zcsf,110.21,4890.04,68
+5,pftj8f,88lsq6,f7zcsf,4115.76,464.13,140
+6,n1tc6w,ki0hfv,uzdssa,1359.95,3861.12,92
+7,dqsxtn,dllpm0,uzdssa,2868.52,596.32,314
+8,zzpim0,ki0hfv,f7zcsf,2608.10,2517.63,310
+9,n1tc6w,wyt8qo,uzdssa,66.48,4585.58,358
+10,18xerb,r3gfrw,f7zcsf,534.46,313.68,108

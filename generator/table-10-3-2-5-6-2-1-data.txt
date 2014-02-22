@@ -1,0 +1,11 @@
+id,dim1,dim2,dim3,measures1,measures2
+1,ffiqo9,lq0j81,htcdim,1850.56,4035.29
+2,2c5q43,k409s3,htcdim,3631.96,702.00
+3,ffiqo9,ebp6a2,htcdim,4170.91,4900.83
+4,2c5q43,3z2s6l,2umhxi,4247.36,3286.21
+5,pd3x8s,lq0j81,2umhxi,2842.72,2139.13
+6,wdwq3w,3z2s6l,2umhxi,2418.59,4405.80
+7,ffiqo9,3z2s6l,2umhxi,1096.83,481.88
+8,ffiqo9,3zo5f4,2umhxi,3024.80,4122.30
+9,2c5q43,ebp6a2,2umhxi,1773.45,2468.57
+10,pd3x8s,n5xmr8,htcdim,1694.29,2609.02
