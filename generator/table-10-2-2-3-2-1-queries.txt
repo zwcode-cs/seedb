@@ -1,7 +1,0 @@
-CREATE TABLE table_10_2_2_3_2_1 (
-dim1 VARCHAR(6),
-dim2 VARCHAR(6),
-measure1 DECIMAL(10, 2),
-measure2 DECIMAL(10, 2)
-);
-COPY table-10-2-2-3-2-1 FROM 'table-10-2-2-3-2-1-data.txt' DELIMITER ',' CSV HEADER 
