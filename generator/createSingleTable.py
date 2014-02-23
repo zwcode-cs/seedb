@@ -1,6 +1,7 @@
 import random
 import sys
 import string
+import os
 
 """
 Call function as: python createSingleTable.py nrows ndims nmeasures list of
@@ -24,11 +25,13 @@ def generate_single_table(nrows, ndims, nmeasures, mult, join=False,
   parts = ['table', str(nrows), str(ndims), str(nmeasures)] + \
           [str(x) for x in mult] + [str(ntable)]
   filename = '_'.join(parts)
-  fdata = open(filename + '-data.txt', 'w')
-  fqueries = open(filename + '-queries.txt', 'w')
+  fdata = open(filename + '_data.txt', 'w')
+  fqueries = open(filename + '_queries.txt', 'w')
 
   # write queries
+  fqueries.write('DROP TABLE IF EXISTS ' + filename + ';\n')
   fqueries.write('CREATE TABLE ' + filename + ' (\n')
+  fqueries.write('id INT,\n')
   for i in range(ndims):
     fqueries.write('dim' + str(i+1) + ' VARCHAR(' + str(max_dim_value_size) +
      '),\n')
@@ -43,8 +46,9 @@ def generate_single_table(nrows, ndims, nmeasures, mult, join=False,
     fqueries.write('join_column INT,\n')
 
   fqueries.write(');\n')
-  fqueries.write('COPY ' + filename + ' FROM \'' + filename + '-data.txt\'' +  \
-   ' DELIMITER \',\' CSV HEADER ')
+  fqueries.write('COPY ' + filename + ' FROM \'' + os.path.realpath(__file__) + '/' + filename + '_data.txt\'' +  \
+   ' DELIMITER \',\' CSV HEADER;')
+  fqueries.close()
 
   # generate lists of possible values for dimensions
   dimvalues = []
