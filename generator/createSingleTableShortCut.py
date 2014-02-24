@@ -38,4 +38,4 @@ if __name__ == '__main__':
   for x in range(int(ndims)):
   	mult += [random.choice(num_distinct_values)]
 
-  createSingleTable.generate_single_table(nrows, nrows, ndims, mult)
+  createSingleTable.generate_single_table(nrows, ndims, nmeasures, mult)
