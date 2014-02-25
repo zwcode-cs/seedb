@@ -3,20 +3,32 @@
 
   var QueryProcessor = window.QueryProcessor;
   var angular = window.angular;
+  var DOMManipulation = window.DOMManipulation;
 
-  angular.module("seeDB")
-    .controller("QueryBuilderController", function ($scope) {
+  var queryBuilderController = function ($scope, queryBroadcast) {
       $scope.predicates = [{
         columnName: "cand_nm",  // TODO: this is hardcoded as the first default predicate
         modifier: "=",
         value: "Obama, Barack"
       }];
 
-      $scope.tableNames = ["election_data_full", "election_data", "super_store_data"]; // TODO: hardcoded
+      $scope.init = function(query_num) {
+        $scope.query_num = query_num;
+      }
+
+      $scope.tableNames = ["donations_small"];
+      //["election_data_full", "election_data", "super_store_data"]; // TODO: hardcoded
       $scope.tableName = $scope.tableNames[0];
 
+      $scope.databaseNames = ["donations"];
+      $scope.databaseName = $scope.databaseNames[0];
+
+      $scope.setDatabase = function() {
+        // connect to the right database
+      }
+
       $scope.setTable = function() {
-        QueryProcessor.setTable($scope.tableName);
+        QueryProcessor.setTable($scope.tableName, $scope.query_num);
       };
 
       $scope.setMetadata = function(metadata) {
@@ -46,13 +58,6 @@
         this.predicates.splice(index, 1);
       };
 
-      $scope.distanceMeasures = ["EarthMoverDistance", "EuclideanDistance", "CosineDistance" ,"FidelityDistance" , "ChiSquaredDistance", "EntropyDistance"];  //TODO: hardcoded
-      $scope.distanceMeasure = $scope.distanceMeasures[0];
-
-      $scope.setDistanceMeasure = function() {
-        QueryProcessor.setDistanceMeasure($scope.distanceMeasure);
-      };
-
       $scope.generateQuery = function() {
         var newQuery = "SELECT * FROM " + $scope.tableName;
         var predicateStrings = [];
@@ -75,10 +80,7 @@
         newQuery += ";";
 
         $scope.query = newQuery;
-      };
-
-      $scope.submitQuery = function() {
-        QueryProcessor.submitQuery($scope.query);
+        queryBroadcast.prepForBroadcast(newQuery, $scope.query_num);
       };
 
       $scope.drilldownPredicates = {};
@@ -114,11 +116,38 @@
         console.log($scope.predicates);
       };
 
+      $scope.done = function(query_num) {
+        DOMManipulation.addQueryBuilder(query_num, false);
+      }
+
       QueryProcessor.on("filter", $scope.generateDrilldownPredicates);
       
       $scope.$watch("predicates", $scope.generateQuery, true);
       $scope.$watch("tableName", $scope.generateQuery, true);
       $scope.$watch("tableName", $scope.setTable, true);
       $scope.$watch("distanceMeasure", $scope.setDistanceMeasure, true);
-    });
+  };
+
+  var queryBroadcastService = function($rootScope) {
+    var queryBroadcast = {};
+    
+    queryBroadcast.query = '';
+
+    queryBroadcast.prepForBroadcast = function(msg, query_num) {
+        this.query = msg;
+        this.query_num = query_num;
+        this.broadcastItem();
+    };
+
+    queryBroadcast.broadcastItem = function() {
+        $rootScope.$broadcast('handleQueryBroadcast');
+    };
+    return queryBroadcast;
+  };
+
+  angular.module("seeDB").factory("queryBroadcastService", queryBroadcastService);
+  queryBuilderController.$inject = ['$scope', 'queryBroadcastService']; 
+  angular.module("seeDB")
+    .controller("QueryBuilderController", queryBuilderController);
+
 }(this));

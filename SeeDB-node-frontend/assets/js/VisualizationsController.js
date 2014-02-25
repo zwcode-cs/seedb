@@ -37,8 +37,8 @@
                 });
 
                 var domainTitle = discriminatingView.aggregateAttribute;
-                var queryRangeTitle = discriminatingView.groupByAttribute + " in query";
-                var datasetRangeTitle = discriminatingView.groupByAttribute + " in dataset";
+                var queryRangeTitle = "Query";
+                var datasetRangeTitle = "Dataset";
 
                 // Create the data table.
                 var data = new google.visualization.DataTable();
@@ -51,7 +51,7 @@
                 data.sort([{column: 1, desc: true}]);
 
                 if (data.getNumberOfRows() > 20) {  // too many rows, can't deal with it
-                    var rowsToLeave = 20;
+                    var rowsToLeave = 50;
                     data.removeRows(rowsToLeave, data.getNumberOfRows() - rowsToLeave);
                 }
 

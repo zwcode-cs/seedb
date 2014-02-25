@@ -57,10 +57,10 @@
       _this.socket.emit("call", {methodName: methodName, args: javaArgs}, callback);
     }
     
-    this.setTable = function(table) {
+    this.setTable = function(table, query_num) {
       callJava("setTable", table, function () {
-        _this.getMetadata();
-        _this.getAllMeasureAggregatesForAllDimensionCombinations();
+        _this.getMetadata(query_num);
+        _this.getAllMeasureAggregatesForAllDimensionCombinations(query_num); // this seems to be called twice
       });
     };
 
@@ -68,12 +68,12 @@
       callJava("setDistanceMeasure", distanceMeasure);
     };
 
-    this.getMetadata = function() {
+    this.getMetadata = function(query_num) {
       var _this = this;
       callJava("getMetadata", function (response) {
         _this.trigger("Metadata", response);
         _this.metadata = response;
-        _this.getAllMeasureAggregatesForAllDimensionCombinations();
+        _this.getAllMeasureAggregatesForAllDimensionCombinations(query_num);
       });
     };
 
@@ -85,7 +85,7 @@
       });
     };
 
-    this.getAllMeasureAggregatesForAllDimensionCombinations = function () {
+    this.getAllMeasureAggregatesForAllDimensionCombinations = function (query_num) {
       callJava("getAllMeasureAggregatesForAllDimensionCombinations", function (response) {
         /* BEGIN BAD CODE */
         var crossfilter = crossfilterGlobal(response);
@@ -122,7 +122,14 @@
           charts.push(barChart);
         });
 
-        var chart = d3.select("#distributionCharts")
+        
+        var tmp;
+        $(".distributionCharts").each(function() {
+          if ($(this).data('query') == query_num) {
+            tmp = this;
+          }
+        })
+        var chart = d3.select(tmp)
           .selectAll(".chart").data(charts)
           .enter()
             .append("div").attr("class", "chart");

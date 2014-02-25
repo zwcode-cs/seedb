@@ -1,0 +1,30 @@
+<div class="row" ng-controller="SubmitQueryController"> <!--submit query row -->
+  <div class="col-md-8">
+    <div>
+      <strong>Distance Measure:</strong>
+      <select ng-model="distanceMeasure">
+        <option ng-repeat="distanceMeasureOption in distanceMeasures">[[distanceMeasureOption]]</option>
+      </select>
+      <br />
+    </div>
+    <div class="radio">
+      <label>
+        <input type="radio" name="compareTo" id="optionsRadios0" value="option0" checked>
+          Compare the two datasets
+      </label>
+    </div>
+    <div class="radio">
+      <label>
+        <input type="radio" name="compareTo" id="optionsRadios1" value="option1" >
+          Compare to entire underlying dataset
+      </label>
+    </div>
+    <div class="radio">
+      <label>
+        <input type="radio" name="compareTo" id="optionsRadios2" value="option2">
+        Compare to all records that have not been selected
+      </label>
+    </div>
+    <a href="" ng-click="submitQuery()" class="btn btn-lg btn-primary">Submit Query</a>
+  </div>
+</div> <!-- end submit query row -->
