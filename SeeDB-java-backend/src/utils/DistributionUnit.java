@@ -12,7 +12,8 @@ public class DistributionUnit {
 	public boolean equals(Object o) {
 		if ((o != null) && (o instanceof DistributionUnit)) {
 			DistributionUnit unit = (DistributionUnit) o;
-			return (Math.abs(unit.fraction - this.fraction) < 1E-5) && (this.attributeValue.equals(unit.attributeValue));
+			return (Math.abs(unit.fraction - this.fraction) < 1E-5) && 
+					(this.attributeValue.equals(unit.attributeValue));
 		}
 		return false;
 	}
