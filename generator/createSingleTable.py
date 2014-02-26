@@ -33,8 +33,7 @@ def generate_single_table(nrows, ndims, nmeasures, mult, join=False,
   fqueries.write('CREATE TABLE ' + filename + ' (\n')
   fqueries.write('id INT,\n')
   for i in range(ndims):
-    fqueries.write('dim' + str(i+1) +  '_' + str(mult[i])) + ' VARCHAR(' + str(max_dim_value_size) +
-     '),\n')
+    fqueries.write('dim' + str(i+1) +  '_' + str(mult[i]) + ' VARCHAR(' + str(max_dim_value_size) + '),\n')
 
   for i in range(nmeasures):
     fqueries.write('measure' + str(i+1) + ' DECIMAL(10, 2)')
