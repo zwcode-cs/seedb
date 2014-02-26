@@ -52,7 +52,7 @@ public class MultipleAggregate {
 		this.connection = this.getConnection(dbType, dbAddress, dbUser, dbPassword);
 	}
 	
-	public void runMultipleGroupByTest() throws SQLException {
+	public void runMultipleAggregateTest() throws SQLException {
 
 		if (connection == null) {
 			System.out.println("Connection null. Quit");
