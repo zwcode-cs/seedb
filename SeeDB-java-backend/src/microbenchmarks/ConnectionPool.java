@@ -73,5 +73,11 @@ public class ConnectionPool {
 		}
 		return null;
 	}
+	
+	public void closeAllConnections() throws SQLException {
+		for (Connection c : connectionsInUse.keySet()) {
+			c.close();
+		}
+	}
 
 }
