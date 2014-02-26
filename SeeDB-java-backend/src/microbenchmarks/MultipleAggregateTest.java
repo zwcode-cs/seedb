@@ -4,7 +4,7 @@ import java.sql.SQLException;
 
 public class MultipleAggregateTest {
 	public static void main(String[] args) {
-		MultipleAggregate mg = new MultipleAggregate("table_1000_4_2_10_10_5_5_1", 64, // table_1m_10_10_test, table_10_2_2_3_2_1
+		MultipleAggregate mg = new MultipleAggregate("table_1000_4_2_10_10_5_5_1", 1000, // table_1m_10_10_test, table_10_2_2_3_2_1
 				"postgresql", "127.0.0.1/seedb_data", "postgres", "postgrespwd");
 		try {
 			mg.runMultipleGroupByTest();

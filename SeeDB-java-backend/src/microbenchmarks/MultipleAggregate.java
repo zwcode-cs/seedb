@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -82,39 +83,33 @@ public class MultipleAggregate {
 			else if (attribute.startsWith("measure")) measureAttributes.add(attribute);
 		}
 		
-		int nDims = dimensionAttributes.size();
-		for (int i = 1; i <= 5; i++) { //TODO: change to nDims
-			List<List<String>> combinations = CommonOperations.getCombinations(i, dimensionAttributes);
-			for (List<String> combo : combinations) {
-				int ngroups = 1;
-				for (String s : combo) {
-					ngroups *= dimensionAttributeDistinctValues.get(s);
-				}
+		for (String dimensionAttribute : dimensionAttributes) {
+			for (int i = 0; i < measureAttributes.size() ; i++) {
+				List<List<String>> combinations = CommonOperations.getCombinations(i + 1, measureAttributes);
 				
-
-				String sqlQuery = "SELECT COUNT(*) FROM " + table + " GROUP BY " + Joiner.on(",").join(combo);
-				Statement stmt = null;
-				rs = null;
-				try {
-					stmt = connection.createStatement();
-					/*System.out.println(stmt.execute("show work_mem;"));
-					rs = stmt.getResultSet();
-					while (rs.next()) {
-						System.out.println(rs.getString(1));
+				for (List<String> combo : combinations) {
+					List<String> sumCombo = new ArrayList <String>();
+					for (String measure : combo) {
+						sumCombo.add("count(" + measure + ")");
 					}
-					System.out.println(stmt.execute("set work_mem=4000000;"));
-					*/
-					stmt.execute("set work_mem=" + working_mem + ";");
-					long start = System.nanoTime();
-				    rs = stmt.executeQuery(sqlQuery);
-				    System.out.print(working_mem + "," + table + "," + i + "," + ngroups + ",");
-				    System.out.println("Time taken: " + (System.nanoTime() - start));
-				} catch (Exception e) {
-					System.out.println("Error in executing query");
+				
+					String sqlQuery = "SELECT " + Joiner.on(", ").join(sumCombo) + " FROM " + table + " GROUP BY " + dimensionAttribute;
+					System.out.println( "\n" + sqlQuery);
+					Statement stmt = null;
+					rs = null;
+					try {
+						stmt = connection.createStatement();
+						stmt.execute("set work_mem=" + working_mem + ";");
+						long start = System.nanoTime();
+					    rs = stmt.executeQuery(sqlQuery);
+					    System.out.print("working mem: " + working_mem + ", table: " + table + ", # aggregates: " + sumCombo.size() + ", ");
+					    System.out.println("Time taken: " + (System.nanoTime() - start));
+					} catch (Exception e) {
+						System.out.println("Error in executing query");
+					}
 				}
 			}
-		}
-		
+		}	
 	}
 	
 
