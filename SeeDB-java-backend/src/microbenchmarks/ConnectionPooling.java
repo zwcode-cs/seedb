@@ -10,10 +10,12 @@ import com.google.common.collect.Lists;
 
 public class ConnectionPooling {	
 	private ConnectionPool pool;
+	private int nDBconnections;
 	
 	public ConnectionPooling(int nDBConnections, String dbType, String dbAddress, 
 			String dbUser, String dbPassword) {
 		this.pool = new ConnectionPool(nDBConnections, dbType, dbAddress, dbUser, dbPassword);
+		this.nDBconnections = nDBConnections;
 	}
 	
 	public Connection getConnectionFromPool() {
@@ -53,6 +55,20 @@ public class ConnectionPooling {
 		}
 		pool.returnConnectionToPool(c);
 		
+		Statement stmt = null;
+		rs = null;
+		try {
+			stmt = c.createStatement();
+			//stmt.execute("set max_connections=" + nDBconnections+1 + ";");
+			System.out.println(stmt.execute("show max_connections;"));
+			rs = stmt.getResultSet();
+			while (rs.next()) {
+				System.out.println(rs.getString(1));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		long start = System.nanoTime();
 		List<Thread> threads = Lists.newArrayList();
 		// walk through all combinations and make query
@@ -74,6 +90,7 @@ public class ConnectionPooling {
 			}
 		}
 		System.out.println("Total time: " + (System.nanoTime() - start));
+		pool.closeAllConnections();
 	}
 
 	private class ExecuteQuery implements Runnable {
@@ -98,7 +115,7 @@ public class ConnectionPooling {
 		
 		@Override
 		public void run() {
-			System.out.println("Executing: " + this.query);
+			//System.out.println("Executing: " + this.query);
 			Connection c = getConnectionFromPool();
 			if (c == null) {
 				System.out.println("Null connection for thread");
@@ -109,7 +126,7 @@ public class ConnectionPooling {
 				stmt = c.createStatement();
 				long start = System.nanoTime();
 			    rs = stmt.executeQuery(query);
-			    System.out.println("Time taken: " + (System.nanoTime() - start));
+			    System.out.println(nDBconnections + ", Time taken: " + (System.nanoTime() - start));
 			} catch (Exception e) {
 				System.out.println("Error in executing query");
 			}
