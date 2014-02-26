@@ -105,7 +105,7 @@ public class MultipleGroupBy {
 					long start = System.nanoTime();
 				    rs = stmt.executeQuery(sqlQuery);
 				    System.out.print(working_mem + "," + table + "," + i + "," + ngroups + ",");
-				    System.out.println("Time taken: " + (System.nanoTime() - start));
+				    System.out.println("Time taken: " + (System.nanoTime() - start) + ", Names:"+Joiner.on("::").join(combo));
 				} catch (Exception e) {
 					System.out.println("Error in executing query");
 				}
