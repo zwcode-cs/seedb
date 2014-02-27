@@ -94,7 +94,6 @@ public class MultipleAggregate {
 					}
 				
 					String sqlQuery = "SELECT " + Joiner.on(", ").join(sumCombo) + " FROM " + table + " GROUP BY " + dimensionAttribute;
-					System.out.println( "\n" + sqlQuery);
 					Statement stmt = null;
 					rs = null;
 					try {
