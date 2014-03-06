@@ -4,23 +4,26 @@ Data scientists analyze large amounts of data to find interesting trends and
 gain novel insights. Given the large scale of data and relative ease of visual
 analysis, analysts often use visualizations as a means to identify properties of
 interest. The general analysis workflow is usually ad-hoc and can be represented
-as follows: First, the analyst selects a subset of the data they are interested
+as follows: (1) The analyst selects a subset of the data they are interested
 in; for instance, in a medical use-case (Section
 \ref{subsec:motivation_example}), the analysts may select patients that had
-expenses more than twice the standard deviation of all patients, or a set of
-products of a certain kind. Next, the analyst processes the data in various
-ways, e.g. via binning, aggregates, group-bys, to generate various ``views''of
-the data and builds visualizations such as scatterplots, histograms, pie charts
-etc. Finally, the analyst studies all the views and identifies the {\it
-interesting} ones. He/she then drills down into these views or further explores
-the properties that show unusual trends. This can be done using sophisticated
-statistics or machine learning.
+expenses more than twice the standard deviation of all patients or patients
+with a certain kind of disease. (2) Next, the analyst processes the data in
+various ways, e.g. via binning, aggregates, group-bys etc. to generate a large
+number of ``views'' of the data and builds visualizations such as scatterplots,
+histograms, pie charts etc. for each view of the data. (3) The analyst then
+studies all the views and identifies the {\it interesting} ones. (4) Once he/she
+has identified the interesting views, he/she then drills down into these views
+or further explores the properties that show unusual trends. This can be done
+using sophisticated statistics or machine learning.
 
-The above process, while crucial in data analysis, is tedious and time-consuming
-because the analyst must generate a large number of view of a dataset and
-determine if each one is interesting or not. We believe that we can automate
-several of the labor-intensive parts of this process by automatically generating
-different views of the data and surfacing the most interesting ones to the user.
+Of the four steps in the above process, only two (Steps 1 and 4) require
+creative thinking and analyst input. Steps 2 and 3 are tedious and
+time-consuming and ideal candidates for automation. Specifically, given the data that the analyst
+is interested in (result of Step 1), we can automatically generate various
+views of that data, evaluate each one for ``interesting''-ness and only surface
+the most promising views. \SeeDB\ automates these labor-intensive parts of data
+analysis.
 
 \subsection{Motivating Example}
 \label{subsec:motivation_example}
@@ -41,38 +44,44 @@ Q = SELECT * FROM Patients where total_cost -
 \end{verbatim}
 \end{small}
 
-
 Once she has identified these patients, she must study various aspects of their
 care to determine the reason why the patients have large cost of care. For
 instance, she may study length of treatment, survival rate, severity of disease
-etc. For each of these parameters, she is interested in determining whether the
+etc. For each of these parameters, she is interested in determining how the
 group of patients with high cost of care are different from the overall group of
-patients. Since a large number of views of the data are possible, performing
-these calculations repeatedly and visualizing the results is tedious and
-time-consuming. Moreover, since the researcher may not be able to explore all
-potential features, she may miss some interesting trends.
+patients. As a result, she may construct various views of the data that
+compare various metrics between the high cost patients and the overall patient
+population. For instance, she may compare the distribution of length of
+treatment for the two populations, the average severity of the disease
+etc. Since there are a large number of metrics that may be responsible for high
+cost of care, the analyst must construct, visualize and examine a large number
+of views to identify interesting trends. For more than 5 metrics, this process
+quickly becomes tedious and time-consuming. We can significantly simplify and
+speed up the analysis process if we can automate the creation and evaluation of
+views.
 
-In this demo, we propose a system called \SeeDB\ that partially automates the
-data analysis process. Given a query posed by the researcher, \SeeDB\ can
-compute a large number of views based on that query, determine the
-``interesting''-ness or utility of each of the view and show to the user only
-those views that it deems most interesting. The researcher can then further
-explore these views. 
+In this demo, we propose to demonstrate a system called \SeeDB\
+\cite{DBLP:conf/vldb/Parameswaran2013} that partially automates the data
+analysis process. Given a query posed by the researcher, \SeeDB\ can compute a
+large number of views based on that query, determine the ``interesting''-ness or
+utility of each of the view and show to the user only those views that it deems
+most interesting. The researcher can then focus only on the important trends in
+the data.
 
-Since \SeeDB\ must rank views based on utility, accurately measuring utility is
-cruicial. \SeeDB\ is based on the principle that it is the {\it deviations from
-expected behavior that make a view interesting}. For instance, in the above
-example, the researcher would be interested in the fact that it is patients
-insured by a particular company that consistently have the highest expenses or
-that survival for this group of patients doesn't improve with strong drug
-regimens although it does for the full dataset of patients. Specifically, given
-a query, interesting trends are those that differ significantly between the
-query and the underlying dataset. Therefore, we must prefer views that show
-these divergent trends.
+Since \SeeDB\ must rank views based on utility, accurately measuring
+``interesting"-ness or utility is cruicial. \SeeDB\ is based on the principle
+that it is the {\bf deviations from expected behavior that make a view
+interesting}. For instance, in the above example, the researcher would be
+interested in the fact that high-cost patients actually visit a specific set of
+doctors compared to the entire patient population. Similarly, the researcher
+would be interested in knowing that the high-cost patients have longer hospital
+stays compared to the rest of the population. Thus, given a query, interesting
+trends are those that differ significantly between the query and the underlying
+dataset. \SeeDB\ therefore assigns higher utility to views that show divergent
+trends. (Since it may be more appropriate to compare the high-cost patients with
+other patients having the same disease but lower cost, so \SeeDB\ allows the
+user to specify what dataset to compare with).
 
-Ultimately, the researcher must decide if deviations in the data are
-interesting, but in \SeeDB\ we can use deviation as a means to eliminate the
-laborious process of stepping through all possible views of a dataset.
 In the process of automatically producing an interesting set of views for any
 query, \SeeDB\ must address a few challenges: (a) the size of
 the space of potential views increases exponentially with the number of
@@ -97,9 +106,8 @@ transform and clean data, and tools such as
 Profiler~\cite{DBLP:conf/avi/KandelPPHH12} allow users to visualize
 simple anomalies in data.  However, unlike \SeeDB, these tools have
 little automation; in effect, it is up to the analyst to generate a
-two-column result (like the result of the discriminating view)
-to be visualized. Other related areas of work include OLAP and database
-visualization tools. There has been some work on browsing data cubes, allowing
+two-column view to be visualized. Other related areas of work include OLAP and
+database visualization tools. There has been some work on browsing data cubes, allowing
 analysts to variously find ``explanations'' for why two cube values were
 different, to find which neighboring cubes have similar properties to the cube
 under consideration, or get suggestions on what unexplored data cubes should be
