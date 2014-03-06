@@ -3,21 +3,28 @@
 \section{Demo Walkthrough}
 \label{demo-walkthrough}
 
-We propose to demonstrate the following aspects of \SeeDB\ as part our
-scenarios: (i) the utility and versatility of \SeeDB, (ii) the latency
-of \SeeDB\ operating on various dataset sizes, along with the relative
-impact of optimizations within \SeeDB.
+We propose to demonstrate the functionality of \SeeDB\ through hands-on
+interaction with a variety of datasets. Our goals are two fold: (1) demonstrate
+the utility of a tool like \SeeDB\ in surfacing interesting trends for a query
+and (2) demonstrate that we can return high quality results efficiently for
+datasets with varying size and number of attributes.\\
 
-\stitle{Demonstrating Utility and Versatility:} We will allow
-conference attendees to interact with three diverse datasets,
-capturing three potential ways \SeeDB\ may be used. Attendees will be
-both (a) able to pose queries, view results, and interact further with
-these datasets in real time, and (b) be able to browse a selection of
-queries that we have pre-selected to be those that give unexpected or
-surprising results. The datasets that we will allow the conference
-attendees to browse include the following:
-
-\squishlist
+\stitle{Demonstrating Utility:} To show the utility of \SeeDB\ in a real-world
+scenario, we will provide conference attendees three diverse datasets that they
+can explore and interact with. Attendees can pose ad-hoc or pre-selected queries
+on any of the following datasets and evaluate the visualizations returned. The
+evaluation is based on whether the visualizations surface ``interesting''
+aspects of the queried data and whether the right visualizations have been
+selected. To aid the evaluation of visualizations, the demo verion of \SeeDB\
+will have the option of showing ``bad'' visualizations too, i.e. visualizations
+that were predicted to have low utility. The purpose behind providing some
+pre-selected queries (and interesting information about their results) is to
+allow attendees to confirm that the tool doesn indeed reproduce known
+information about these queries. The attendees will also have the option of
+trying various utility metrics as described in Section
+\ref{sec:problem_statement}. The demo datasets will include:
+ 
+\begin{enumerate}
   \item {\bf Store Orders dataset}~\cite{superstore}: This dataset is
     often used by Tableau~\cite{tableau} as a canonical dataset for
     business intelligence applications. It consists of information
@@ -29,64 +36,31 @@ attendees to browse include the following:
     to identify very quickly the same insights and trends that Tableau
     users have discovered over many years. This dataset will also
     enable us to demonstrate how \SeeDB can correctly deal with
-    numeric, categorical, time series and geographic data.
-  \item {\bf Election Contribution dataset}~\cite{}: This dataset is
-    an example of a real-world dataset that is typically analyzed by
+    numeric, categorical, and geographic data.
+  \item {\bf Election Contribution dataset}~\cite{election_data}: This dataset
+  is an example of a real-world dataset that is typically analyzed by
     non-expert data analysts, such as journalists or historians. This
     dataset will enable us to demonstrate to the attendees how
     non-experts can quickly arrive at interesting visualizations via
     the intuitive user interface.
-  \item {\bf Medical dataset~\cite{}:} This dataset is an example of a
+  \item {\bf Medical dataset~\cite{mimic}:} This dataset is an example of a
     real-world dataset that a researcher (here, a clinical researcher)
     might use over the course of his/her work. This data has a schema
     that is more complex than the the election or store one, and is of
-    larger size too.  \squishend
-
-For each dataset, the interaction workflow will be the following: the conference
-attendee can either opt for a pre-selected query, or formulate a query of their
-own. After submitting the query, \SeeDB\ will search the space of possible views
-to return the top-$k$ views (tunable value, default set to $10$.). For the
-purposes of the demonstration, we will also allow attendees to view the
-bottom-$k$ visualizations, enabling them to see why \SeeDB\ actually displayed
-the chosen set of visualizations over other ones.
-
+    larger size too.  
+\end{enumerate}
 
 \stitle{Demonstrating Speed and Optimizations:} This demonstration
-scenario will use an enhanced user interface, with three additional
-``knobs'' or ``dials'' that attendees can fix, described below. For
-this demonstration scenario, we will focus on the Medical dataset,
-which is a large dataset with a large schema.
+scenario will use an enhanced user interface and synthetic datasets with varying
+sizes, attribute numbers and attribute distributions. Attendees can examine the
+efficiency of \SeeDB\ by tuning various ``knobs'' such as data size, number of
+attributes, optimizations applied etc.
 
-\squishlist
-\item Fraction of dataset: The first knob allows attendees to change
-  the fraction of the medical dataset selected. Clearly, as the
-  dataset size increases, the latency of \SeeDB\ increases, so
-  attendees will be able to see how much of an impact the size of the
-  dataset has on the latency of \SeeDB.
-
-\item Fraction of schema: The second knob allows attendees to change
-  the number of columns in the medical dataset selected. As before, as
-  the number of columns increases, the latency of \SeeDB\ increases,
-  so attendees will be able to see how much of an impact the number of
-  columns has on the latency of \SeeDB.
-
-\item Optimizations selected: The last knob allows attendees to change
-  the optimizations (from Section~\ref{sec:optimzations}) that are
-  being used within \SeeDB, allowing attendees to see which
-  optimizations actually have an impact.  \squishend
-
-\noindent This demonstration scenario, in addition to having a
-different user interface, will also have a different result interface,
-with additional statistics reported when the visualizations are
-generated, including (but not limited to):
-
-\squishlist
-\item Time to completion
-\item Time to first visualization
-\item \agp{more here...}
-\squishend
-
-
+Thus, through our demonstration of \SeeDB\, we seek to illustrate that (a) it is
+possible to automate labor-intensive parts of data analysis, (b) aggregate based
+views are a powerful means of identifying interesting trends in data, and (c) we
+can use various optimizations to enable data analysis in real-time for a range
+od datasets.
 
 \eat{
 We propose to demonstrate the functionality of the SeeDB system by means of
