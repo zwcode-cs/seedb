@@ -1,0 +1,187 @@
+\section{SeeDB Backend}
+\label{subsec:seedb_backend}
+
+One of the chief challenges in \SeeDB\ is producing the most interesting views
+of the data in the minimum time. For the set of dimension attributes
+$\mathcal{D}$ and measure attributes $\mathcal{M}$, the number of potential
+views for any query is $O(|\mathcal{D}| \ast |\mathcal{M}|)$. Even for a modest
+dataset of 1M rows, 10 dimension attributes and 10 measure attributes, the time
+for computing all potential views is too large to permit realistic response
+times. XXX: Add table or chart. 
+
+As a result, \SeeDB\ must aggressively prune views and optimize query execution.
+Pruning of the view space is performed in the Query Generator and optimization
+of queries is performed by the Optimizer module. We first describe
+the basic \SeeDB\ algorithm and then discuss our optimization in detail.
+
+\subsection{Basic Framework}
+\label{subsubsec:basic_framework}
+
+Given a user query $Q$, the basic version of \SeeDB\ obtains the list of
+dimension and measure attributes, and computes all possible view queries by
+adding a single aggregate and a single group-by clause to $Q$. Each of the
+view queries is then executed independently at the backend along with an
+equivalent aggregate+group-by query on the complete underlying dataset. The two resulting
+distributions are compared using the chosen distance metric (Section
+\ref{sec:problem_statement}) and the top k views with the largest utility are
+chosen.
+
+\subsection{View Space Pruning}
+\label{subsubsec:view_space_pruning}
+
+To minimize the \SeeDB\ response time, we aggressively prune view queries that
+are unlikely to generate interesting views. This pruning, done in the Query
+Generator, is based on prior knowledge about data statistics as well as access
+patterns for the table, if available. Specifically, no expensive scans of the underlying
+tables are performed. In addition, we order the execution of view queries so
+that higher utility views can be computed before those with lower utility,
+thus permitting early stopping. For each table in the DBMS, we assume that
+statistics from Table~\ref{tab:statistics} are available or can be computed
+cheaply. The data type for each column is numeric, categorical, ordinal, geographic, or
+date\_or\_time. The data type for column $C_i$, $T(C_i)$, along with the number
+of distinct values $|C_i|$ is used to determine whether the column will be
+treated as a {\it dimension} attribute or a {\it measure}
+attribute (Section~\ref{subsec:definitions}). As before, we denote the set of
+dimension attributes by $\mathcal{D}$ and measure by $\mathcal{M}$.
+
+We employ the following heuristics for pruning and ordering views based on the
+statistics above.
+
+\begin{table}
+{\scriptsize \center
+\vspace{-10pt}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$T(C_i)$ & Data type for column $C_i$ \\ \hline
+$|C_i|$ & Number of distinct values in $C_i$ \\
+\hline $Var(C_i)$ & Variance of values in $C_i$ \\ \hline
+$Corr(C_i, C_j)$ & Correlation measure for all pairs of columns \\ \hline
+$\mathcal{H}_{i\ldots k}$ & Hierarchies between columns $C_i$ to $C_k$ \\ \hline
+$f_{C_i}, f_{C_i, C_j}$ & Frequency of access for each column and column pair \\
+\hline
+\end{tabular} 
+\vspace{-10pt}
+\caption{Statistics and Table Metadata \label{tab:statistics}}
+}
+\end{table}
+
+\subsubsection{No variance rule}
+If a dimension attribute has 0 variance, we
+  remove it from $\mathcal{D}$. We cannot prune a measure attribute with 0
+  variance.
+  
+\subsubsection{Correlation-based clustering}
+We cluster dimension attributes and
+  measure attributes separately based on their correlation, $Corr(C_i, C_j)$. As
+  a result, we identify groups of attributes that are highly correlated
+  (correlation co-efficient $>$ threshold). Highly correlated attributes will
+  produce similar views, and therefore we pick only a single representative
+  attribute from each set and prune the rest from $\mathcal{D}$ and
+  $\mathcal{M}$. Correlations between columns are also used by the optimizer
+  while combining queries~\ref{}.
+  
+  %If a dimension attribute $\mathcal{d}$ is highly correlated with measure
+  %attribute $\mathcal{m}$, then?
+\subsubsection{Bottom-up hierarchy traversal}
+We observe that for a set of
+  dimension attribute with a hierarchial structure, $H_{C_{i\ldots k}}$, if a
+  view $V$ at hierarchy level $h$ has utility $u$, then views at hierarchy level
+  $h-1$ will have utility $\leq$ $u$. XXX: is this true for all utility
+  functions?
+  
+\subsubsection{Order views by frequency of attribute access}
+In order to surface
+  the most interesting views of the dataset, we can use access traces for the
+  queried tables. Specifically, a view $V_i\ =\ V(Q, D, d_i, m_i)$ is ordered
+  before view $V_j\ =\ V(Q, d_j, m_j)$ if frequency of access of attributes
+  in $V_i$ is greater than that of $V_j$, i.e., $f_{d_i, m_i}\ >\ f_{d_j,
+  m_j}$ or $max(f_{d_i}, f_{m_i})\ >\ max(f_{d_j}, f_{m_j})$. 
+
+
+It is possible to collect the above statistics at the dataset level too, as
+opposed to the entire table level. The advantage of table level statistics is
+that they have to be computed only once per table; however, dataset-level
+statistics are more accurate since they only consider the specific parts of the
+table. XXX: we use dataset-level statistics with table statistics do not result
+in aggressive pruning. 
+
+These rules are applied by the Query Generator to generate a reduced space of
+views ordered by their potential utility.
+
+\subsection{View Query Optimizations}
+\label{subsubsec:optimizations}
+
+Although the Query Generator knocks down the view query space, the resulting
+view queries are very similar (differing only in the group-by and aggregates).
+As a result, we can optimize these queries to execute them more efficiently. For
+each of the optimization strategies described below, we ran micro-benchmarks to
+measure the effect of each optimization independently. We ran the benchmarks
+on four datasets with properties shown in
+Table~\ref{tab:micro_benchmark_datasets}.
+
+\begin{table}
+{\scriptsize \center
+\vspace{-10pt}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+Name & # dim attr & # measure attr & $D * M$ & nrows & size (GB) \\ \hline
+\hline
+XS & 5 & 2 & 10 & 10M & 0.5 \\ \hline
+S & 50 & 5 & 250 & 10M & 3.8 \\ \hline
+M & 100 & 10 & 1000 & 10M & 7.7 \\ \hline
+L & 500 & 20 & 10000 & 10M & 26 \\ \hline
+
+\end{tabular} 
+\vspace{-10pt}
+\caption{Micro-benchmark Datasets \label{tab:micro_benchmark_datasets}}
+}
+\end{table}
+
+\subsubsection{Rewrite view query}
+Since \SeeDB\ executes the same group-by+aggregate query twice for each view
+(once for the query and once for the dataset), one straighforward optimization
+is to rewrite these two queries as one query. Our microbenchmarks test the
+effect of this optimization for varying selectivities of the input query Q. We
+note the presence of specific indexes may make this optimization less useful
+(e.g. when we are comparing two datasets which are highly selective and have
+indexes optimized for the specific selection). However, we do not explore these
+cases further since they are heavily dependent on the type of selection
+predicate and presence of indexes. Our experiments show this simple
+optimization to achieve a speed-up of Y\% ~\ref{} when we compare against the
+entire underlying dataset.
+  
+\subsubsection{Single Group-by Multiple Aggregates}
+A large number of view queries have the same group-by clause but aggregates on
+different attributes. Therefore, \SeeDB\ combines all view queries with the same
+group-by clause into a single view query. This rewriting provides a speed up
+linear in the number of aggregate attributes.
+  
+\subsubsection{Multiple Aggregate Computation}
+Similar to data cubes (\cite{}), \SeeDB\ seeks to compute a large number of
+group-bys. As a result, we can combine queries with different group-by
+attributes into a single query with multiple group-bys attributes. For instance,
+consider view queries $V(Q, A_1,$ $G_1)$, $V(Q, A_1,$ $G_2)$ \ldots $V(Q, A_1,$
+$G_n)$. Instead of executing them individually, we can rewrite them into a
+single view query $V(Q, A_1,$ $(G_1, G_2$\ldots $G_n))$. While this optimization
+can reduce the number of queries executed, the number of group by attributes we
+can include in a single query depends on the correlation between values of the
+various attributes (this affects number of distinct groups) and the working
+memory. We can compute the optimal combinations of group-bys by modeling the
+problem as a variant of bin-packing. The correlation between group-by attributes
+can be used to approximate the number of distinct groups that will be produced
+by a group-by set. Note that the grouping-set functionality, if available can be
+used to make this process efficient. The bin-packing formulation for
+grouping-sets is as follows.
+
+\subsubsection{Sampling} 
+The optimization that can have the most impact in terms of efficiency is to
+reduce the number of tuples examined by constructing a data sample and running
+all queries against the sample. As expected, the sampling technique and size of
+the sample can affect the accuracy of the generated views.
+  
+\subsubsection{Parallel Query Execution}
+Finally, we take advantage of the ability of DBMSs to run queries in parallel
+and potentially share scans of the underlying table. We find that although the
+execution time of a single query increasing while running in parallel
+(potentially due to some amount of thrashing), the overall time required to
+execute a set of queries decreases.

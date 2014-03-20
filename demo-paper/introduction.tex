@@ -1,124 +1,279 @@
+%!TEX root=demo-paper.tex
+
 \section{Introduction}
-\label{sec:intro}
-Data scientists analyze large amounts of data to find interesting trends and
-gain novel insights. Given the large scale of data and relative ease of visual
-analysis, analysts often use visualizations as a means to identify properties of
-interest. The general analysis workflow is usually ad-hoc and can be represented
-as follows: (1) The analyst selects a subset of the data they are interested
-in; for instance, in a medical use-case (Section
-\ref{subsec:motivation_example}), the analysts may select patients that had
-expenses more than twice the standard deviation of all patients or patients
-with a certain kind of disease. (2) Next, the analyst processes the data in
-various ways, e.g. via binning, aggregates, group-bys etc. to generate a large
-number of ``views'' of the data and builds visualizations such as scatterplots,
-histograms, pie charts etc. for each view of the data. (3) The analyst then
-studies all the views and identifies the {\it interesting} ones. (4) Once he/she
-has identified the interesting views, he/she then drills down into these views
-or further explores the properties that show unusual trends. This can be done
-using sophisticated statistics or machine learning.
+\label{sec:introduction}
 
-Of the four steps in the above process, only two (Steps 1 and 4) require
-creative thinking and analyst input. Steps 2 and 3 are tedious and
-time-consuming and ideal candidates for automation. Specifically, given the data that the analyst
-is interested in (result of Step 1), we can automatically generate various
-views of that data, evaluate each one for ``interesting''-ness and only surface
-the most promising views. \SeeDB\ automates these labor-intensive parts of data
-analysis.
 
-\subsection{Motivating Example}
-\label{subsec:motivation_example}
+Data analysts must sift through very large volumes of data 
+to identify trends, insights, or anomalies. 
+Given the scale of data, and the relative ease and 
+intuitiveness of examining data visually,
+analysts often use visualizations as a tool to identify
+these trends, insights, and anomalies.
+However, selecting the ``right'' visualization often 
+remains a laborious and time-consuming task. 
 
-Consider a medical researcher studying the cost of care for cancer patients. Her
-research involves the analysis of a set of 1M electronic medical records (EMRs).
-To analyze this data, the researcher identifies patients that cost
-significantly more than the average: specifically, she selects patients whose
-cost of care is greater than the average cost by two standard deviations. In
-terms of SQL, she runs the following query: \\
+We illustrate this using an example. 
+Consider a dataset containing sales records for a nation-wide
+chain of stores.
+Let's say the store's data analyst is interested
+in examining how a newly-introduced
+range of electronic heating devices, ``Laserwave Oven'',
+has been doing over the past year.
+The results of their analysis will inform business decisions
+for the chain, including marketing strategies, as well as
+the possiblity of introduction of a new heating device, the ``Saberwave Oven''.
 
+Consider the following typical data analysis workflow
+that the analyst may use:
+(1) The analyst poses a query to select the subset of data 
+that they are interested in exploring.
+For instance, for the example above, they may issue the query:
 \noindent 
-\begin{small}
-\begin{verbatim}
-Q = SELECT * FROM Patients where total_cost - 
-(SELECT AVG(total_cost) from Patients) as avg_cost
-> 2 * (SELECT STDDEV(total_cost) from Patients);
-\end{verbatim}
-\end{small}
+$${\tt \ Q \ \ = \ \ SELECT \ * \ FROM \ \  Sales \ \ WHERE \ \ Product=``Laserwave''} $$
+\noindent Notice that the results for this query 
+may have (say) several million records each with several hundred attributes. 
+Thus, directly perusing the query result is simply infeasible.
+(2) Next, the analyst considers various ways of visualizing 
+or viewing the results of this query. 
+To do this, the analyst will use operations like binning, grouping,
+and aggregations, and then generate visualizations such as
+scatterplots, histograms, or bar charts.
+In our example, the analyst may generate and examine the visualizations
+or views corresponding to total sales by
+store, quantity in stock by region, or average profits by month.
+To generate, say, average profits by month, the analyst would need
+to bin the sale dates into months, group the sales records by month,
+and then compute the average profits by month.
+This operation can be expressed as the following query:
+\noindent 
+\begin{align*}
+& \tt Q' = SELECT \ \ AVG(profit) \ \ FROM \ \  Sales \ \ WHERE \\
+& \tt Product=``Laserwave" \ \ GROUP  \ \ BY \ \ month(saledate)
+\end{align*}
+The result of the above query is a two-column table that can then be visualized
+as a bar-chart. Table \ref{tab:staplerX} and Figure
+\ref{fig:staplerX} respectively show an example of the results of this view and
+the associated visualization.
+The analyst generates all possible views or visualizations of the query result
+of the form described above.
+(3) The analyst then manually examines each view or visualization and decides
+which views are ``interesting''.
+This is the critical and time-consuming step.
+Naturally, what makes a view interesting depends on the 
+application semantics and the trend we are comparing against.
+For instance, the view of Laserwave sales by month shown in Figure
+\ref{fig:staplerX} may be interesting if the overall sales of products shows the
+opposite trend (e.g. Figure \ref{fig:staplerX-a}).
+However, the same view may be uninteresting if the sales of all products follows
+the same trend (Figure \ref{fig:staplerX-b}). 
+Thus, we posit that  a view is {\em potentially ``interesting'' if it shows 
+a trend in the subset of data that the analyst is interested in 
+(i.e., Laserwave product-related data)
+that deviates from the equivalent trend in the overall dataset}.
+Of course, the analyst must decide if this deviation 
+is truly an insight for this application.
+(4) Once the analyst has identified interesting views, the analyst may
+then either share these views with others, may further interact with
+the displayed views or visualizations by drilling down or rolling up, or
+may start afresh with a new query.
 
-Once she has identified these patients, she must study various aspects of their
-care to determine the reason why the patients have large cost of care. For
-instance, she may study length of treatment, survival rate, severity of disease
-etc. For each of these parameters, she is interested in determining how the
-group of patients with high cost of care are different from the overall group of
-patients. As a result, she may construct various views of the data that
-compare various metrics between the high cost patients and the overall patient
-population. For instance, she may compare the distribution of length of
-treatment for the two populations, the average severity of the disease
-etc. Since there are a large number of metrics that may be responsible for high
-cost of care, the analyst must construct, visualize and examine a large number
-of views to identify interesting trends. For more than 5 metrics, this process
-quickly becomes tedious and time-consuming. We can significantly simplify and
-speed up the analysis process if we can automate the creation and evaluation of
-views.
 
-In this demo, we propose to demonstrate a system called \SeeDB\
-\cite{DBLP:conf/vldb/Parameswaran2013} that partially automates the data
-analysis process. Given a query posed by the researcher, \SeeDB\ can compute a
-large number of views based on that query, determine the ``interesting''-ness or
-utility of each of the view and show to the user only those views that it deems
-most interesting. The researcher can then focus only on the important trends in
-the data.
+Of the four steps in the workflow described above, the 
+ones that are especially repetitive and tedious are steps (2) and (3),
+where the analyst generates all possible views, and examines each of them.
+The goal of our system, \SeeDB, is to partially automate these two steps.
+Given a query $Q$ indicating the subset of data that the analyst is interested in
+(i.e., the result of step (1)), 
+\SeeDB\ automatically {\em identifies and highlights to the analyst 
+the most potentially interesting views using automated mechanisms 
+based on deviation}.
+That is, we measure how much these views deviate from the corresponding
+views on the underlying dataset 
+(just like Figure~\ref{fig:staplerX} vs. Figures~\ref{fig:staplerX-a} or \ref{fig:staplerX-b}.)
+By doing so, we eliminate the laborious process
+of stepping through all possible views that the analyst currently 
+performs.
+Once we recommend potentially interesting views, the analyst can 
+limit their analysis to these views, and can further
+make the final decision as to whether the recommended views are indeed interesting
+given the semantics of the application.
 
-Since \SeeDB\ must rank views based on utility, accurately measuring
-``interesting"-ness or utility is cruicial. \SeeDB\ is based on the principle
-that it is the {\bf deviations from expected behavior that make a view
-interesting}. For instance, in the above example, the researcher would be
-interested in the fact that high-cost patients actually visit a specific set of
-doctors compared to the entire patient population. Similarly, the researcher
-would be interested in knowing that the high-cost patients have longer hospital
-stays compared to the rest of the population. Thus, given a query, interesting
-trends are those that differ significantly between the query and the underlying
-dataset. \SeeDB\ therefore assigns higher utility to views that show divergent
-trends. (Since it may be more appropriate to compare the high-cost patients with
-other patients having the same disease but lower cost, so \SeeDB\ allows the
-user to specify what dataset to compare with).
+We described our vision for \SeeDB, along with the associated research challenges
+in a companion vision paper~\cite{DBLP:conf/vldb/Parameswaran2013}. 
+In this demonstration proposal, we present our first \SeeDB\ prototype,
+addressing some of the challenges that were listed in that vision paper.
+In particular, \SeeDB\ is built as a ``wrapper'' that can be overlaid on
+any existing traditional database system, and given a query, 
+generates and recommends interesting visualizations.
+Note that even architecting \SeeDB\ as a wrapper requires us to 
+address the following challenges:
+(a) we need to determine metrics that accurately measures the
+``deviation'' of a view with respect to the equivalent view
+on the entire database (e.g., Figure~\ref{fig:staplerX}
+vs.~\ref{fig:staplerX-a}), while at the same time
+ensure that \SeeDB\ is not tied to any particular metric(s);
+(b) the number of potential views (or visualizations) increases 
+as the square of the number of attributes in a table 
+(we will demonstrate this in subsequent sections) --- so generating 
+and evaluating all views even for a moderately sized dataset
+(e.g. 1M rows, 100 attributes) can be prohibitively expensive; 
+as a result, \SeeDB\ must intelligently
+explore this space; 
+(c) computing each view and its ``deviation'' from 
+the same view on the underlying dataset independently is
+expensive and wasteful, and hence \SeeDB\ must share computation as much as possible; and 
+(d) since visual analysis must happen in real-time, \SeeDB\ may have to
+trade-off accuracy of visualizations or accuracy of estimation of ``interestingness'' 
+for reduced latency. In Section~\ref{sec:system_architecture}, 
+we describe how \SeeDB\ addresses these challenges.
 
-In the process of automatically producing an interesting set of views for any
-query, \SeeDB\ must address a few challenges: (a) the size of
-the space of potential views increases exponentially with the number of
-attributes in a table, as a result, \SeeDB\ must intelligently explore this
-space; (b) computing each view and its utility independently is expensive and
-wasteful, and hence \SeeDB\ must share computation between queries; and (c)
-since visual analysis must happen in real-time, \SeeDB\ must tradeoff accuracy
-of views for reduced latency. In Section \ref{sec:system_architecture}, we
-describe how \SeeDB\ addresses these challenges.
 
-\subsection{State-of-the-Art Approaches}
-\label{related_work}
 
-Over the past few years, there has been a significant
-effort from the visualization community to provide interactive tools
-for data analysts. In particular, tools such as ShowMe, Polaris, and
-Tableau~\cite{DBLP:journals/cacm/StolteTH08,
-  DBLP:journals/tvcg/MackinlayHS07} provide a canvas for data analysts
-to manipulate and view data, tools such as
-Wrangler~\cite{DBLP:conf/chi/KandelPHH11} allow data analysts to
-transform and clean data, and tools such as
-Profiler~\cite{DBLP:conf/avi/KandelPPHH12} allow users to visualize
-simple anomalies in data.  However, unlike \SeeDB, these tools have
-little automation; in effect, it is up to the analyst to generate a
-two-column view to be visualized. Other related areas of work include OLAP and
-database visualization tools. There has been some work on browsing data cubes, allowing
-analysts to variously find ``explanations'' for why two cube values were
-different, to find which neighboring cubes have similar properties to the cube
-under consideration, or get suggestions on what unexplored data cubes should be
-looked at next~\cite{DBLP:conf/vldb/Sarawagi99, DBLP:conf/vldb/SatheS01,
-DBLP:conf/vldb/Sarawagi00}.
 
-Fusion tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10} allows users to create
-visualizations layered on top of web databases; they do not consider the problem
-of automatic visualization generation.
-Devise~\cite{DBLP:conf/sigmod/LivnyRBCDLMW97} translated user-manipulated
-visualizations into database queries.
+% of Step 1), we demonstrate that we can automatically explore various views of
+% that data, evaluate each one for ``interesting''-ness and only surface the most
+% promising views to the analyst. 
+
+
+
+% In this demo, we demonstrate a system called \SeeDB\
+% \cite{DBLP:conf/vldb/Parameswaran2013} that automates the labor-intensive parts
+% of the aforementioned data analysis process by automatically identifying and
+% producing high-quality views for any input query. Specifically, given a query
+% $Q$ posed by the user, \SeeDB\ explores all possible views of $Q$, determines
+% the ``interesting''-ness of each of the views based on deviation and returns to
+% the user the set of views that it deems the most interesting. The user can then
+% limit his analysis to this high-quality set of views.
+
+% In the process of automatically producing an interesting set of views for any
+% query, \SeeDB\ must address a few challenges: (a) the size of the space of
+% potential views increases as the square of the number of attributes in a table,
+% and even for a moderately sized table (e.g. 1M rows, 100 attributes) generating
+% all views is prohibitively expensive; as a result, \SeeDB\ must intelligently
+% explore this space; (b) computing each view and its utility independently is
+% expensive and wasteful, and hence \SeeDB\ must share computation between
+% queries; and (c) since visual analysis must happen in real-time, \SeeDB\ must
+% tradeoff accuracy of views for reduced latency. In Section
+% \ref{sec:system_architecture}, we describe how \SeeDB\ addresses these
+% challenges.
+
+
+% Consider a medical researcher studying the cost of care for cancer patients. Her
+% research involves the analysis of a set of 1M electronic medical records (EMRs).
+% To analyze this data, the researcher identifies patients that cost
+% significantly more than the average: specifically, she selects patients whose
+% cost of care is greater than the average cost by two standard deviations. In
+% terms of SQL, she runs the following query: \\
+
+% \noindent 
+% \begin{small}
+% \begin{verbatim}
+% Q = SELECT * FROM Patients where total_cost - 
+% (SELECT AVG(total_cost) from Patients) as avg_cost
+% > 2 * (SELECT STDDEV(total_cost) from Patients);
+% \end{verbatim}
+% \end{small}
+
+% Once she has identified these patients, she must study various aspects of their
+% care to determine the reason why the patients have large cost of care. For
+% instance, she may study length of treatment, survival rate, severity of disease
+% etc. For each of these parameters, she is interested in determining how the
+% group of patients with high cost of care are different from the overall group of
+% patients. As a result, she may construct various views of the data that
+% compare various metrics between the high cost patients and the overall patient
+% population. For instance, she may compare the distribution of length of
+% treatment for the two populations, the average severity of the disease
+% etc. Since there are a large number of metrics that may be responsible for high
+% cost of care, the analyst must construct, visualize and examine a large number
+% of views to identify interesting trends. For more than 5 metrics, this process
+% quickly becomes tedious and time-consuming. We can significantly simplify and
+% speed up the analysis process if we can automate the creation and evaluation of
+% views.
+
+
+\begin{figure}
+\CenterFloatBoxes
+\begin{floatrow}
+\ttabbox{%
+  \begin{tabular}{cc} \hline
+  Month & Profit(\$) \\ \hline
+  Jan & 180.55 \\ \hline
+  Feb &  145.50\\ \hline
+  March & 122.00 \\ \hline
+  April & 90.13 \\ \hline
+  \end{tabular}
+}{%
+  \caption{Average Profit by Month for Laserwave}\label{tab:staplerX}%
+}
+\killfloatstyle
+\ffigbox{%
+  \hbox{\resizebox{3cm}{3cm}{\includegraphics{Images/dist1.pdf}}}
+  
+}{%
+  \caption{Visualization of average profit by month for
+  Laserwave}\label{fig:staplerX}%
+}
+\end{floatrow}
+\end{figure}
+
+\begin{figure}
+\CenterFloatBoxes
+\begin{floatrow}
+\ffigbox{%
+  \hbox{\resizebox{3cm}{3cm}{\includegraphics{Images/dist2.pdf}}}
+  
+}{%
+  \caption{Average profit by month for
+  all products --- Scenario A}\label{fig:staplerX-a}%
+}
+\killfloatstyle
+\ffigbox{%
+  \hbox{\resizebox{3cm}{3cm}{\includegraphics{Images/dist3.pdf}}}
+  
+}{%
+  \caption{Average profit by month for
+  all products --- Scenario B}\label{fig:staplerX-b}%
+}
+\end{floatrow}
+\end{figure}
+
+
+% Since \SeeDB\ must rank views based on utility, accurately measuring 
+% utility is cruicial. \SeeDB\ is based on the principle
+% that it is the {\bf deviations from expected behavior that make a view
+% interesting}. For instance, in the above example, the researcher would be
+% interested in the fact that high-cost patients actually visit a specific set of
+% doctors compared to the entire patient population. Similarly, the researcher
+% would be interested in knowing that the high-cost patients have longer hospital
+% stays compared to the rest of the population. Thus, given a query, interesting
+% trends are those that differ significantly between the query and the underlying
+% dataset. \SeeDB\ therefore assigns higher utility to views that show divergent
+% trends. (Since it may be more appropriate to compare the high-cost patients with
+% other patients having the same disease but lower cost, so \SeeDB\ allows the
+% user to specify what dataset to compare with).
+
+
+\stitle{Related Work:}
+Over the past few years, the research community has introduced 
+a number of interactive data analytics tools: 
+tools such as ShowMe, Polaris, and Tableau~\cite{DBLP:journals/cacm/StolteTH08,
+  DBLP:journals/tvcg/MackinlayHS07}, as well as  allow analysts to specify and
+  generate visualizations, while tools like Profiler
+  allow analysts to detect anomalies in data.
+Unlike \SeeDB, which recommends visualizations, here the onus is on
+the analyst to specify the visualization to be generated.
+Similar visualization specification tools have also been introduced
+by the database community, including Fusion Tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10} 
+and the Devise~\cite{DBLP:conf/sigmod/LivnyRBCDLMW97} toolkit.
+
+There has been some work on browsing data cubes, allowing
+analysts to find explanations, get suggestions for next cubes to visit,
+or identify generalizations or patterns starting from a single cube~\cite{DBLP:conf/vldb/Sarawagi99, 
+DBLP:conf/vldb/SatheS01, DBLP:conf/vldb/Sarawagi00}. 
+While we may be able to reuse the metrics from that line of work,
+the same techniques will not apply to visualizations.
+
 
 
 % \noindent There are several technical challenges that need to be addressed:
