@@ -1,3 +1,6 @@
+%!TEX root=demo-paper.tex
+
+
 % Data scientists rely on visualizations to interpret the data returned by
 % queries, but finding the right visualization remains a manual task that is often
 % laborious. We propose a DBMS that partially automates the task of finding the
@@ -9,10 +12,18 @@
 % execution plan. We discuss the technical challenges in building this system and
 % outline an agenda for future research.
 % 
-Data scientists analyzing large amounts of data often rely on visualizations to
-identify interesting trends and gain insights. However, picking the right
-visualization is a manual and tedious task. Given a query, the analyst would
-like to know what makes the results of a query ``interesting'' compared to the
-underlying dataset. In this paper, we demonstrate a prototype of \SeeDB\, a
-system that automatically discovers differences in trends between a query and
-the underlying dataset, and visualizes the differences to help data analysis.
+Data analysts operating on large volumes of data 
+often rely on visualizations to interpret the results of queries. 
+However, finding the right visualization for a query is 
+a laborious and time-consuming task. 
+We demonstrate \SeeDB, a system that partially automates 
+the task of finding the right visualization for a query: 
+given a query, \SeeDB\ explores the space of all possible visualizations,
+and automatically identifies and then recommends to the data scientist
+those visualizations it finds to be the most ``interesting'' or ``useful''. 
+In our demonstration, conference attendees
+will see \SeeDB\ in action for multiple queries on multiple real-world datasets.
+
+
+
+

@@ -1,0 +1,50 @@
+\section{User Study: is this useful?}
+\subsection{Comparison with other tools - Tableau, Spotfire}
+\subsection{Lessons from different datasets}
+
+We propose to demonstrate the functionality of \SeeDB\ through hands-on
+interaction with a variety of datasets. Our goals are two fold: (1) demonstrate
+the utility of a tool like \SeeDB\ in surfacing interesting trends for a query
+and (2) demonstrate that we can return high quality results efficiently for
+datasets with varying size and number of attributes.\\
+
+\stitle{Demonstrating Utility:} To show the utility of \SeeDB\ in a real-world
+scenario, we will provide conference attendees three diverse datasets that they
+can explore and interact with. Attendees can pose ad-hoc or pre-selected queries
+on any of the following datasets and evaluate the visualizations returned. The
+evaluation is based on whether the visualizations surface ``interesting''
+aspects of the queried data and whether the right visualizations have been
+selected. To aid the evaluation of visualizations, the demo verion of \SeeDB\
+will have the option of showing ``bad'' visualizations too, i.e. visualizations
+that were predicted to have low utility. The purpose behind providing some
+pre-selected queries (and interesting information about their results) is to
+allow attendees to confirm that the tool doesn indeed reproduce known
+information about these queries. The attendees will also have the option of
+trying various utility metrics as described in Section
+\ref{sec:problem_statement}. The demo datasets will include:
+ 
+\begin{enumerate}
+  \item {\bf Store Orders dataset}~\cite{superstore}: This dataset is
+    often used by Tableau~\cite{tableau} as a canonical dataset for
+    business intelligence applications. It consists of information
+    about orders placed in a store including products, prices, ship
+    dates, geographical information, profits, and so on. This dataset
+    is well-studied by users learning how to use Tableau, with several
+    web-pages dedicated to discovering interesting trends hidden in
+    this dataset~\cite{website}. Attendees using \SeeDB\ will be able
+    to identify very quickly the same insights and trends that Tableau
+    users have discovered over many years. This dataset will also
+    enable us to demonstrate how \SeeDB can correctly deal with
+    numeric, categorical, and geographic data.
+  \item {\bf Election Contribution dataset}~\cite{election_data}: This dataset
+  is an example of a real-world dataset that is typically analyzed by
+    non-expert data analysts, such as journalists or historians. This
+    dataset will enable us to demonstrate to the attendees how
+    non-experts can quickly arrive at interesting visualizations via
+    the intuitive user interface.
+  \item {\bf Medical dataset~\cite{mimic}:} This dataset is an example of a
+    real-world dataset that a researcher (here, a clinical researcher)
+    might use over the course of his/her work. This data has a schema
+    that is more complex than the the election or store one, and is of
+    larger size too.  
+\end{enumerate}

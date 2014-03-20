@@ -1,0 +1,25 @@
+\section{SeeDB Frontend}
+\label{subsec:seedb_frontend}
+
+The \SeeDB\ frontend serves two purposes - to input a query, and to visualize
+and analyze the resulting views. We provide the user with three options for
+specifying an input query: (a) as raw SQL, (b) through a query builder that can
+allow users unfamiliar with SQL to formulate queries through an easy-to-use
+form-based interface, (c) through pre-defined query templates, e.g., queries
+that select outliers in a particular column. These templates are particularly
+useful since users are interested in anomalous data points.
+
+Once a user submits a query to \SeeDB\, the \SeeDB\ engine evaluates various
+views and sends the most promising ones to the frontend. The frontend then
+determines the best ways to visualize these views (e.g. depending on data types
+being represented, number of distinct values etc.) and displays the
+visualizations. The user can then examine these diverse views at a glance,
+explore specific views in detail and view metadata for each view (e.g. size of
+result, sample data, value with maximum change, statistics etc.). The user can
+also slice-and-dice views further by selecting particular values of grouping
+attributes to explore. The user does this simply by selecting the relevant
+attribute values in the view. This automatically modifies the selection query
+and displays views for the subset of data selected. The user can of course
+revert back to the original views and continue exploring the data.
+
+\subsection{Interactivity. Ship all data to client?}

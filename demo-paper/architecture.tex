@@ -5,10 +5,9 @@
 \label{subsec:overview}
 
 Figure \ref{fig:sys-arch} shows the architecture of our system. Currently,
-\SeeDB\ is a wrapper around a database. While optimization opportunities are
-restricted by virtue of being outside the DBMS, we believe that this design
-allows quick iteration and permits \SeeDB\ to be used with a variety of
-databases.
+\SeeDB\ is implemeted as a layer on top of a database. While optimization opportunities are
+restricted by virtue of being outside the DBMS, it permits \SeeDB\ to be used 
+with a variety of existing databases.
 
 \begin{figure}[htb]
 \centerline{
@@ -18,7 +17,7 @@ clip=true]{Images/seedb-architecture.pdf}}}}
 \label{fig:sys-arch}
 \end{figure} 
 
-The \SeeDB\ front end allows the user to make queries to the \SeeDB\ backend
+The \SeeDB\ front end allows the user to issue queries
 through several means including raw SQL, via a query-builder and via
 pre-formulated queries (more in Section \ref{subsec:seedb_frontend}). Once user
 queries are sent to the backend, the Metadata Collector queries the relevant
@@ -40,7 +39,8 @@ most interesting views and returning them to the user.
 \subsection{SeeDB Frontend}
 \label{subsec:seedb_frontend}
 
-The \SeeDB\ frontend serves two purposes - to input a query, and to visualize
+The \SeeDB\ frontend has a two-fold purpose: allow the user to input a query, and 
+to visualize
 and analyze the resulting views. We provide the user with three options for
 specifying an input query: (a) as raw SQL, (b) through a query builder that can
 allow users unfamiliar with SQL to formulate queries through an easy-to-use
@@ -51,10 +51,10 @@ useful since users are interested in anomalous data points.
 Once a user submits a query to \SeeDB\, the \SeeDB\ engine evaluates various
 views and sends the most promising ones to the frontend. The frontend then
 determines the best ways to visualize these views (e.g. depending on data types
-being represented, number of distinct values etc.) and displays the
+being represented and number of distinct values) and displays the
 visualizations. The user can then examine these diverse views at a glance,
 explore specific views in detail and view metadata for each view (e.g. size of
-result, sample data, value with maximum change, statistics etc.). The user can
+result, sample data, value with maximum change and statistics). The user can
 also slice-and-dice views further by selecting particular values of grouping
 attributes to explore. The user does this simply by selecting the relevant
 attribute values in the view. This automatically modifies the selection query
@@ -80,8 +80,8 @@ of these view queries is executed independently at the backend along with an
 equivalent aggregate+group-by query on the complete underlying dataset. The two
 resulting distributions are compared using the chosen distance metric (Section
 \ref{sec:problem_statement}) and the top k views with the largest utility are
-chosen. The frontend then visualizes the results. The basic approach is clearly inefficient and we
-can do better.
+chosen. The frontend then visualizes the results. The basic approach is clearly 
+inefficient and we can significantly improve performance.
 
 \subsubsection{View Space Pruning}
 \label{subsubsec:view_space_pruning}
@@ -96,28 +96,27 @@ columns will be very similar. We therefore only generate a single view for the
 pair of columns. We can similarly use statistical properties of measure
 attributes to prune views further. Finally, if access patterns for the table are
 available, we can use them to prune views with attributes that are
-rarely accessed.
+rarely accessed and are therefore likely to be unimportant.
 
 \subsubsection{View Query Optimizations}
 \label{subsubsec:optimizations}
 
 Since \SeeDB\ executes many similar queries, we clearly can do better than
-the basic algorithm presented above, and \SeeDB\ implements various such
-optimizations. Strategies include:
+the basic framework presented above, and \SeeDB\ implements various such
+optimizations. Our optimization strategies include:
 
 \begin{enumerate}
   \item {\it Rewrite view query}: Since similar group-by and aggregate queries
   are executed on the results of user query $Q$ and the underlying dataset,
-  one straighforward optimization is to combine these queries into one
-  query. Our experiments show this simple optimization to achieve a
-  speed-up of Y\%.
+  one straighforward optimization is to combine these two queries into one. 
+  XXX actual queries.
   \item {\it Single Group-by Multiple Aggregates}: A large number of view
-  queries have the same group-by clause but aggregates on different attributes.
+  queries have the same group-by clause but aggregates over different attributes.
   Therefore, \SeeDB\ combines all view queries with the same group-by clause
   into a single view query. This rewriting provides a speed up linear in the
   number of aggregate attributes.
-  \item {\it Multiple Aggregate Computation}: Similar to data cubes (\cite{}),
-  \SeeDB\ seeks to compute a large number of group-bys. One optimization is to
+  \item {\it Multiple Aggregate Computation}: 
+  \SeeDB\ computes a large number of group-bys. One optimization is to
   combine queries with different group-by attributes into a single query with
   multiple group-bys attributes. For instance, consider view queries $V(Q,
   A_1,$ $G_1)$, $V(Q, A_1,$ $G_2)$ \ldots $V(Q, A_1,$ $G_n)$. Instead of
