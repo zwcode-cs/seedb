@@ -54,37 +54,42 @@ results of the optimized queries in a streaming fashion and produces results for
 individual views. Results of individual views are then normalized as discussed
 in Section~\ref{sec:problem_statement} and the utility of each view is computed.
 Finally \SeeDB\ selects the top $k$ views with the highest utility and returns them to the
-\SeeDB\ front end which creates visualizations for each view and displays
-the visualizations to the analyst.
+\SeeDB\ front end. The \SeeDB\ frontend creates visualizations for each
+view and displays the visualizations to the analyst.
 
-We now discuss the \SeeDB\ modules in detail.
+We now discuss the major \SeeDB\ modules in detail.
 
 \subsection{SeeDB Frontend}
 \label{subsec:seedb_frontend}
 
-The \SeeDB\ frontend serves a two-fold purpose: allow the analyst to input a
-query, and to visualize the results (views) produced by the \SeeDB\ backend.
-As mentioned before, we provide the analyst with three options for specifying an
-input query: (a) as raw SQL, (b) through a query builder that can allow users
-unfamiliar with SQL to formulate queries through an easy-to-use form-based
-interface, (c) through pre-defined query templates to perform common operations
-on a dataset, e.g., select outliers in a particular column. These
-templates are particularly useful since users are often interested in anomalous
-data points.
+The \SeeDB\ frontend, designed as a thin client, performs two main functions: it
+allows the analyst to issue a query to \SeeDB, and it visualizes the results (views) produced by the \SeeDB\
+backend.
+To provide the analyst maximum flexibility in issuing queries, \SeeDB\
+provides the analyst with three
+mechanisms for specifying an input query: 
+(a) writing raw SQL, (b) using a query builder that allows analysts
+unfamiliar with SQL to formulate queries through a form-based interface, and (c)
+using pre-defined query templates which encode commonly performed operations,
+e.g., selecting outliers in a particular column. We find that pre-defined query
+templates are particularly useful since analysts are often interested in
+anomalous data points.
 
 Once the analyst issues a query via the \SeeDB\ frontend, the \SeeDB\ backend
 evaluates various views and sends the most interesting ones back to the
 frontend.
-For each view in the result, the \SeeDB\ frontend determines the best
-way to visualize the view depending on parameters including the data
-type being represented and the number of distinct values. 
-The resulting
-visualizations are displayed to the analyst who can then examine
-these ``most interesting'' views at a glance, explore specific views in detail and
+For each view returned by the backend, the \SeeDB\ frontend determines the best
+way to visualize the view depending on parameters such as the data
+type (e.g. ordinal, numeric), number of distinct values and semantics (e.g.
+geography vs.
+time series).
+The resulting set of visualizations is displayed to the analyst who can easily
+examine these ``most interesting'' views at a glance, explore specific views in detail and
 view metadata for each view (e.g. size of result, sample data, value with
 maximum change and other statistics). 
-The user can also slice-and-dice views further by performing drill-downs on the 
-relevant attributes in the view. 
+The analyst can also slice-and-dice views further by performing drill-downs on
+the relevant attributes in the view. 
+Figure~\ref{} shows a screenshot of the \SeeDB\ frontend in action.
 %This action automatically
 %modifies the selection query and displays views for the subset of data
 % selected. The user can of course revert back to the original views and continue exploring the data.
@@ -117,12 +122,14 @@ We first describe the basic \SeeDB\ framework and then briefly discuss our optim
 
 Given a user query $Q$, the basic technique used in \SeeDB\ computes all
 possible views obtained by adding a single aggregate and a single group-by
-clause to $Q$. Target and comparison views corresponding to each view are
-computed and each view query is executed independently on the DBMS. The
-results for each view are then computed and the utility of the view is
-computed by comparing the target view distribution and the comparison view
-distribution (Section \ref{sec:problem_statement}). Finally, the top-$k$ views
-with the largest utility are chosen. The basic approach is clearly inefficient
+clause to $Q$. Target and comparison views corresponding to each view are then
+computed and each view query is executed independently on the DBMS. The query
+results for each view are normalized to compute the target and comparison view
+probability distributions. The utility of a given view is computed as the
+distance between these two distributions (Section \ref{sec:problem_statement}).
+Finally, the top-$k$ views with the largest utility are chosen. 
+
+The basic approach is clearly inefficient
 since it examines each possible view and executes each view query independently;
 we next discuss how our optimizations fix some of these problems.
 
@@ -135,64 +142,81 @@ As a result,
 \SeeDB\ aggressively prunes view queries that are unlikely to have high
 utility. 
 This pruning is based on metadata about the table including data
-distributions and access patterns for the table. (This information is collected
-by the Metadata Collector module.)
- Specifically, we use variance estimates for
-table columns and correlation measures between columns of the table. 
-If two columns in the table have high correlation, the views generated by grouping with respect to these two
-columns will be very similar. 
-We therefore only generate a single view for the
-pair of columns. 
-We can similarly use statistical properties of measure
-attributes to prune views further. 
-Finally, if access patterns for the table are
-available, we can use them to prune views with attributes that are
-rarely accessed and are therefore likely to be unimportant.
+distributions and access patterns.
+We leverage table metadata in several ways, some of which are listed below:
+\begin{denselist}
+\item {\it Variance-based pruning}: Dimension attributes with low variance are
+likely to produce views having low utility (e.g. consider the extreme case where
+an attribute only takes a single value); as a result, \SeeDB\ prunes views
+containing grouping attributes with low variance.
+\item {\it Correlated columns}: If two dimension attributes $a_i$ and $a_j$ have
+a high degree of correlation (e.g. full name of airport and abbreviated name of
+airport), the views generated by grouping the table on $a_i$ and $a_j$ will be
+very similar (and have almost equal utility). We can therefore generate and
+evaluate a single view representing both $a_i$ and $a_j$. \SeeDB\ clusters
+attributes based on correlation and evaluates a single representative view per
+cluster.
+\item {\it Access Frequency Pruning}: In tables with a large number of
+attributes, only a small subset of attributes are relevant to the analyst and
+are frequently accessed for data analysis. \SeeDB\ tracks access patterns
+for each table to identify the most frequently accessed columns and combinations of
+columns. While creating views, \SeeDB\ uses this information to prune attributes
+that are rarely accessed and are thus likely to be unimportant.
+\end{denselist}
 
 \subsubsection{View Query Optimizations}
 \label{subsubsec:optimizations}
 
 The second set of optimizations used by \SeeDB\ minimizes the execution time for
 view queries that haven't been pruned using the techniques described above.
-Since view queries are very similar (e.g. target and comparison views only differ in the subset of data that the
-query is run on) \SeeDB\ uses multiple techniques to combine view queries. 
+Since view queries tend to be very similar (they differ in the aggregation
+attribute, grouping attribute or subset of data queried) \SeeDB\ uses multiple
+techniques to intelligently combine view queries.
 The ultimate goal is to minimize scans of the underlying dataset by sharing as
 many table scans as possible. Our optimization strategies include:
 
-\begin{enumerate}
-  \item {\it Combine target and comparison view}: Since the target view and
-  comparison views only differ in the subset of data that the query is
-  executed on, we combine the two queries to generate these view into one.
+\begin{denselist}
+  \item {\it Combine target and comparison view query}: Since the target view
+  and comparison views only differ in the subset of data that the query is
+  executed on, we can easily rewrite these two view queries as one.
   This simple optimization halves the time required to compute the results for
-  a single query.
+  a single view.
   \item {\it Combine Multiple Aggregates}: A large number of view
-  queries have the same group-by clause but aggregates over different attributes.
-  Therefore, \SeeDB\ combines all view queries with the same group-by clause
-  into a single view query. This rewriting provides a speed up linear in the
+  queries have the same group-by attribute but different aggregation attributes.
+  Therefore, \SeeDB\ combines all view queries with the same group-by attribute
+  into a single query. This rewriting provides a speed up linear in the
   number of aggregate attributes.
   \item {\it Combine Multiple Group-bys}: 
-  \SeeDB\ computes a large number of group-bys. One optimization is to
-  combine queries with different group-by attributes into a single query with
-  multiple group-bys attributes. For instance, consider view queries $V(Q,
-  A_1,$ $G_1)$, $V(Q, A_1,$ $G_2)$ \ldots $V(Q, A_1,$ $G_n)$. Instead of
-  executing them individually, we can rewrite them into a single view query
-  $V(Q, A_1,$ $(G_1, G_2$\ldots $G_n))$. While this optimization can reduce the
-  number of queries executed, the number of group by attributes we can include in a single query
-  depends on the correlation between values of the various attributes (this
-  affects number of distinct groups) and the working memory. We compute the
-  optimal combinations of group-bys by modeling the problem as a variant of
-  bin-packing (We discuss our algorithm in our full paper~\ref{}). 
+  Because \SeeDB\ computes a large number of group-bys, one significant
+  optimization is to combine queries with different
+  group-by attributes into a single query with multiple group-bys attributes.
+  For instance, consider views $(a_1$, $m_1$, $f_1)$, $(a_2$, $m_1$, $f_1)$
+  \ldots $(a_n$, $m_1$, $f_1)$. Instead of executing queries for each view
+  independently, we can combine the $n$ views into a single view represented by
+  $(\{a_1, a_2\ldots a_n\}$, $m_1$, $f_1)$. 
+  While this optimization has the potential to significantly reduce query
+  execution time, the number of views that can potentially be combined depends
+  closely on the correlation between values of the grouping attributes and system parameters like the
+  working memory. Given a set of candidate views, we model the problem of
+  finding the optimal combinations of views as a variant of bin-packing and
+  apply ILP techniques to obtain the best solution (We discuss our model and
+  algorithm in our full paper~\ref{}).
 %   A variation of this approach also implemented
 %   on \SeeDB\ is to send the results of the multiple group-by query to the front
 %   end and ask the \SeeDB\ frontend to compute utility and select views. The
 %   advantage of this approach is that it allows for more efficient interactive
 %   exploration of the views.
-  \item {\it Sampling}: The optimization that can have the most impact in
-  terms of efficiency is to reduce the number of tuples examined by
-  constructing a data sample and running all queries against the sample. As
+  \item {\it Sampling}: For datasets of large size, the optimization that can
+  have the most impact on latency is reducing the data size by
+  constructing sample and running all queries against the sample. As
   expected, the sampling technique and size of the sample significantly affects
   the accuracy of the generated views. 
-\end{enumerate}
+  \item {\it Paralle Query Execution}: The final optimization employed by
+  \SeeDB\ is to take advantage of parallel processing in order to reduce total
+  latency. We observe that as the number of queries executed in parallel
+  increases, the total execution time does down but this comes at the cost of
+  increased per query execution time.
+\end{denselist}
 
 %\begin{figure}[htb]
 %\centerline{
