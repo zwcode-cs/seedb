@@ -24,7 +24,7 @@ information about these queries. The attendees will also have the option of
 trying various utility metrics as described in Section
 \ref{sec:problem_statement}. The demo datasets will include:
  
-\begin{enumerate}
+\begin{denselist}
   \item {\bf Store Orders dataset}~\cite{superstore}: This dataset is
     often used by Tableau~\cite{tableau} as a canonical dataset for
     business intelligence applications. It consists of information
@@ -48,19 +48,21 @@ trying various utility metrics as described in Section
     might use over the course of his/her work. This data has a schema
     that is more complex than the the election or store one, and is of
     larger size too.  
-\end{enumerate}
+\end{denselist}
 
 \stitle{Demonstrating Speed and Optimizations:} This demonstration
 scenario will use an enhanced user interface and synthetic datasets with varying
 sizes, attribute numbers and attribute distributions. Attendees can examine the
 efficiency of \SeeDB\ by tuning various ``knobs'' such as data size, number of
-attributes, and optimizations applied. 
+attributes, and optimizations applied. This scenario will highlight the several
+optimizations that must be applied by \SeeDB\ to provide interactive response
+times without sacrificing accuracy.
 
 Thus, through our demonstration of \SeeDB\, we seek to illustrate that (a) it is
-possible to automate labor-intensive parts of data analysis, (b) aggregate based
-views are a powerful means of identifying interesting trends in data, and (c) we
-can use various optimizations to enable data analysis in real-time for a range
-od datasets.
+possible to automate labor-intensive parts of data analysis, (b) aggregate
+and grouping-based views are a powerful means of identifying interesting trends
+in data, and (c) we can use various optimizations to enable data analysis in real-time for a range
+of datasets.
 
 \eat{
 We propose to demonstrate the functionality of the SeeDB system by means of

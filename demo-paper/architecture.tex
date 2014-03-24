@@ -80,12 +80,12 @@ evaluates various views and sends the most interesting ones back to the
 frontend.
 For each view returned by the backend, the \SeeDB\ frontend determines the best
 way to visualize the view depending on parameters such as the data
-type (e.g. ordinal, numeric), number of distinct values and semantics (e.g.
+type (e.g. ordinal, numeric), number of distinct values, and semantics (e.g.
 geography vs.
 time series).
 The resulting set of visualizations is displayed to the analyst who can easily
-examine these ``most interesting'' views at a glance, explore specific views in detail and
-view metadata for each view (e.g. size of result, sample data, value with
+examine these ``most interesting'' views at a glance, explore specific views in
+detail, and view metadata for each view (e.g. size of result, sample data, value with
 maximum change and other statistics). 
 The analyst can also slice-and-dice views further by performing drill-downs on
 the relevant attributes in the view. 
@@ -124,8 +124,8 @@ Given a user query $Q$, the basic technique used in \SeeDB\ computes all
 possible views obtained by adding a single aggregate and a single group-by
 clause to $Q$. Target and comparison views corresponding to each view are then
 computed and each view query is executed independently on the DBMS. The query
-results for each view are normalized to compute the target and comparison view
-probability distributions. The utility of a given view is computed as the
+results for each view are normalized to obtain the target and comparison view
+probability distributions, and the utility of a given view is computed as the
 distance between these two distributions (Section \ref{sec:problem_statement}).
 Finally, the top-$k$ views with the largest utility are chosen. 
 
@@ -170,7 +170,7 @@ that are rarely accessed and are thus likely to be unimportant.
 The second set of optimizations used by \SeeDB\ minimizes the execution time for
 view queries that haven't been pruned using the techniques described above.
 Since view queries tend to be very similar (they differ in the aggregation
-attribute, grouping attribute or subset of data queried) \SeeDB\ uses multiple
+attribute, grouping attribute or subset of data queried), \SeeDB\ uses multiple
 techniques to intelligently combine view queries.
 The ultimate goal is to minimize scans of the underlying dataset by sharing as
 many table scans as possible. Our optimization strategies include:
