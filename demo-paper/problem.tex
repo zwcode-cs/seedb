@@ -78,7 +78,8 @@ from the comparison view, and the more likely the view is to be interesting to t
 
 Computing distance between probability distributions has
 been well studied in the literature, and \SeeDB\ supports a variety of metrics
-to compute utility, including:
+to compute utility, including: \agp{can make the following into a comma separated list
+of metrics without giving details if you want to save space.}
 \squishlist
   \item {\bf Earth Movers Distance (EMD)}~\cite{wikipedia-prob-dist}: Commonly used to
   measure differences between color histograms from images, EMD is a popular metric for comparing
@@ -98,10 +99,12 @@ visualizations produced for real-world datasets.
 
 We are now ready to state the goals of \SeeDB\ formally:
 \begin{problem}
+\vspace{-5pt}
 Given an analyst-specified query $Q$ on a database $D$, a distance function $S$,
 and a positive integer $k$, find $k$ views $V \equiv (a, m, f)$ that
 have the largest values of $U(V)$ among all the views that can be represented
 using a triple $(a, m, f)$, while minimizing total computation time.
+\vspace{-5pt}
 \end{problem}
 Thus, \SeeDB\ aims to find the $k$ views (obtained by adding a single aggregate and
 group-by operator) that have the largest utility based on the function $U$.
