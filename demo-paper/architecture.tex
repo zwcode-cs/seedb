@@ -124,9 +124,9 @@ We first describe the basic \SeeDB\ backend framework and then briefly discuss o
 % prior knowledge such as statistics to prune out uninteresting views without examining table data; and second, minimizing the
 % execution time for queries that are issued to the database. 
 
-\subsubsection{Basic Framework}
-\label{subsubsec:basic_framework}
-
+%\subsubsection{Basic Framework}
+%\label{subsubsec:basic_framework}
+\stitle{Basic Framework:}
 Given a user query $Q$, the basic approach would be to compute all
 possible views obtained by adding a single aggregate and a single group-by
 clause to $Q$ \agp{two column?}. 
@@ -142,9 +142,10 @@ since it examines every single possible view
 and executes each view query independently;
 we next discuss how our optimizations fix some of these problems.
 
-\subsubsection{View Space Pruning}
-\label{subsubsec:view_space_pruning}
+%\subsubsection{View Space Pruning}
+%\label{subsubsec:view_space_pruning}
 
+\stitle{View Space Pruning:}
 In practice, most views for any query $Q$ have low utility since the target view
 distribution is very similar to the comparison view distribution. 
 \SeeDB\ uses this property to aggressively prune 
@@ -172,9 +173,9 @@ columns. While creating views, \SeeDB\ uses this information to prune attributes
 that are rarely accessed and are thus likely to be unimportant.
 \end{denselist}
 
-\subsubsection{View Query Optimizations}
-\label{subsubsec:optimizations}
-
+%\subsubsection{View Query Optimizations}
+%\label{subsubsec:optimizations}
+\stitle{View Query Optimizations:}
 The second set of optimizations used by \SeeDB\ minimizes the execution time for
 view queries that haven't been pruned using the techniques described above.
 Since view queries tend to be very similar in structure (they differ in the aggregation
