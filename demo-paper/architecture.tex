@@ -128,8 +128,8 @@ We first describe the basic \SeeDB\ backend framework and then briefly discuss o
 %\label{subsubsec:basic_framework}
 \stitle{Basic Framework:}
 Given a user query $Q$, the basic approach would be to compute all
-possible views obtained by adding a single aggregate and a single group-by
-clause to $Q$ \agp{two column?}. 
+possible two-column views obtained by adding a single aggregate and a single
+group-by clause to $Q$. 
 The target and comparison views corresponding to each view are then
 computed and each view query is executed independently on the DBMS. The query
 results for each view are normalized to obtain the target and comparison view

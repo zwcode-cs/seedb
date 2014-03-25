@@ -78,25 +78,31 @@ from the comparison view, and the more likely the view is to be interesting to t
 
 Computing distance between probability distributions has
 been well studied in the literature, and \SeeDB\ supports a variety of metrics
-to compute utility, including: \agp{can make the following into a comma separated list
-of metrics without giving details if you want to save space. I would also get
-rid of the citations, not necessary to cite everything in a demo paper.}
-\squishlist
-  \item {\bf Earth Movers Distance (EMD)}~\cite{wikipedia-prob-dist}: Commonly used to
-  measure differences between color histograms from images, EMD is a popular metric for comparing
-  discrete distributions.
-  \item {\bf Euclidean Distance}: The L2 norm or
-  Euclidean distance considers the two distributions to be points in a high
-  dimensional space and measures the distance between them.
-  \item {\bf Kullback-Leibler Divergence}(K-L divergence)~\cite{wikipedia-KL}:
-  K-L divergence measures the information lost when one probability distribution is used to approximate
-  the other one.
-  \item {\bf Jenson-Shannon Distance}~\cite{wikipedia-JS,entropy-vis}: Based on
-  the K-L divergence, this distance measures the similarity between two probability distributions.
-\squishend
+to compute utility, including Earth Movers Distance~\cite{wikipedia-prob-dist}, 
+Euclidean Distance, Kullback-Leibler Divergence (K-L
+divergence)~\cite{wikipedia-KL}, and Jenson-Shannon
+Distance~\cite{wikipedia-JS,entropy-vis}. 
 In our demonstration, we will allow conference attendees to experiment with
 different distance metrics and examine how the choice of metric affects the
 visualizations produced for real-world datasets.
+
+% \agp{can make the following into a comma separated list
+% of metrics without giving details if you want to save space. I would also get
+% rid of the citations, not necessary to cite everything in a demo paper.}
+% \squishlist
+%   \item {\bf Earth Movers Distance (EMD)}~\cite{wikipedia-prob-dist}: Commonly used to
+%   measure differences between color histograms from images, EMD is a popular metric for comparing
+%   discrete distributions.
+%   \item {\bf Euclidean Distance}: The L2 norm or
+%   Euclidean distance considers the two distributions to be points in a high
+%   dimensional space and measures the distance between them.
+%   \item {\bf Kullback-Leibler Divergence}(K-L divergence)~\cite{wikipedia-KL}:
+%   K-L divergence measures the information lost when one probability distribution is used to approximate
+%   the other one.
+%   \item {\bf Jenson-Shannon Distance}~\cite{wikipedia-JS,entropy-vis}: Based on
+%   the K-L divergence, this distance measures the similarity between two probability distributions.
+% \squishend
+
 
 We are now ready to state the goals of \SeeDB\ formally:
 \begin{problem}
