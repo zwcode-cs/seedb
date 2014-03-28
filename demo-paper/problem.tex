@@ -11,10 +11,10 @@ interchangeably, since it is straightforward to translate views into
 visualizations automatically: for example, there are straightforward rules that
 dictate how the view in Table~\ref{tab:staplerX} can be transformed to give a
 visualization like Figure~\ref{fig:staplerX}.
-Also for this discussion, we limit the set of candidate views to those
-that generate a two column result via a single-attribute grouping and
+Furthermore, we limit the set of candidate views to those
+that generate a two-column result via a single-attribute grouping and
 aggregation (e.g. Table~\ref{tab:staplerX}). However, \SeeDB\ techniques can
-directly be used to generate and recommend visualizations for
+directly be used to recommend visualizations for
 multiple column views ($> 2$ columns) that are generated via multi-attribute
 grouping and aggregation.
 
@@ -28,64 +28,65 @@ We consider a database $D$ with a snowflake schema,
 with dimension attributes $A$, measure attributes $M$, and potential
 aggregate functions $F$ over the measure attributes.
 We limit the class of queries $Q$ posed over $D$ to be
-those that select a horizontal fragment of the fact table:
-this selection can be done using selection predicates on the fact
-table, or on dimension tables via key-foreign-key joins.
+those that select one or more rows from the fact table, and denote the results
+as $D_Q$. 
+%select a horizontal fragment of the fact table:
+%this selection can be done using selection predicates on the fact
+%table, or on dimension tables via key-foreign-key joins.
 %Overall, this class of queries allows the analyst to express their interest
 %in examining facts (i.e., a slice of the dataset)
 %that satisfy specific conditions.
-We denote the result of $Q(D)$ as $D_Q$.
+%We denote the result of $Q(D)$ as $D_Q$.
 
 Given such a query $Q$, \SeeDB\ considers all views $V_i$ that perform a
-group-by and aggregation on $D_Q$.
-For single
-attribute grouping and aggregation, $V_i$ can be represented
-as a triple $(a, m, f)$, where $m \in M, a \in A, f \in F$, i.e., the view performs a group-by on
-$a$ and applies the aggregation function $f$ on a measure attribute $m$.
-Thus, $V_i (D_Q)$ can be expressed as the following SQL query:
-$${\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D_Q\  {\tt GROUP \ \ BY} \ a$$ We
-call this the {\em target view}.
-
+single-attribute group-by and aggregation on $D_Q$. We represent $V_i$ as a
+triple $(a, m, f)$, where $m \in M, a \in A, f \in F$, i.e., the view
+performs a group-by on $a$ and applies the aggregation function $f$ on a measure
+attribute $m$. We call this the {\em target view}.
+%Thus, $V_i (D_Q)$ can be expressed as the following SQL query:
+$${\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D_Q\  {\tt GROUP \ \ BY} \ a$$ 
 As discussed in the previous section, \SeeDB\ evaluates
 whether a view $V_i$ is interesting
 by computing the deviation between the view applied to the selected data (i.e., $D_Q$) 
 and the view applied to the entire database.
-The equivalent view on the entire database $V_i (D)$ can be expressed as:
+The equivalent view on the entire database $V_i (D)$ can be expressed as shown
+below that we call the {\em comparison view}. 
 $${\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt GROUP \ \ BY} \ a$$
-We call this the {\em comparison view}.
-
 The results of both the above views are tables with two columns, namely $a$ and
-$f(m)$, and the tables can be normalized into probability distributions for
-comparison. To convert each result table into a probability distribution, we
-normalize the values of $f(m)$ such that they sum to $1$ over the various values
-of $a$.
+$f(m)$. We normalize each result table into a probability distribution, such
+that the values of $f(m)$ such that they sum to $1$.
+% over the various values of $a$ and the tables can be normalized into
+%probability distributions for comparison. To convert each result table 
 For our example in Table~\ref{tab:staplerX}, the probability distribution of
 $V_i(D_Q)$, denoted as $P[V_i (D_Q)]$, is: (Jan: 180.55/538.18, Feb:
 145.50/538.18, March: 122.00/538.18,  April: 90.13/538.18). A similar
 probability distribution can be derived for $P[V_i (D)]$.
 
-Given a view $V_i$ and the corresponding probability distributions for the
+Given a view $V_i$ and probability distributions for the
 target view  ($P[V_i (D_Q)]$) and comparison view ($P[V_i (D)]$), the
 {\em utility} of $V_i$ is defined as the distance between these two probability
-distributions.
-Formally:
+distributions. Formally, if $S$ is a distance function,
 $$ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$$
 
-where S is a distance function. The utility of a view is our measure for whether
-the target view is ``potentially interesting'' as compared to the comparison view: 
+The utility of a view is our measure for whether the target view is
+``potentially interesting'' as compared to the comparison view:
 the higher the utility, the more the deviation
-from the comparison view, and the more likely the view is to be interesting to the analyst.
-
+from the comparison view, and the more likely the view is to be interesting.
+% Computing distance between probability distributions has
+% been well studied in the literature, and \SeeDB\ supports a variety of metrics
+% to compute utility, including Earth Movers Distance~\cite{wikipedia-prob-dist}, 
+% Euclidean Distance, Kullback-Leibler Divergence (K-L
+% divergence)~\cite{wikipedia-KL}, and Jenson-Shannon
+% Distance~\cite{wikipedia-JS,entropy-vis}. 
 Computing distance between probability distributions has
-been well studied in the literature, and \SeeDB\ supports a variety of metrics
-to compute utility, including Earth Movers Distance~\cite{wikipedia-prob-dist}, 
+been well studied, and \SeeDB\ supports a variety of metrics
+to compute utility, including Earth Movers Distance, 
 Euclidean Distance, Kullback-Leibler Divergence (K-L
-divergence)~\cite{wikipedia-KL}, and Jenson-Shannon
-Distance~\cite{wikipedia-JS,entropy-vis}. 
-In our demonstration, we will allow conference attendees to experiment with
-different distance metrics and examine how the choice of metric affects the
-visualizations produced for real-world datasets.
-
+divergence), and Jenson-Shannon
+Distance. 
+In our demonstration, conference attendees can experiment with
+different distance metrics and examine how the choice of metric affects view
+quality.
 % \agp{can make the following into a comma separated list
 % of metrics without giving details if you want to save space. I would also get
 % rid of the citations, not necessary to cite everything in a demo paper.}
@@ -102,8 +103,6 @@ visualizations produced for real-world datasets.
 %   \item {\bf Jenson-Shannon Distance}~\cite{wikipedia-JS,entropy-vis}: Based on
 %   the K-L divergence, this distance measures the similarity between two probability distributions.
 % \squishend
-
-
 We are now ready to state the goals of \SeeDB\ formally:
 \begin{problem}
 \vspace{-5pt}
@@ -113,6 +112,6 @@ have the largest values of $U(V)$ among all the views that can be represented
 using a triple $(a, m, f)$, while minimizing total computation time.
 \vspace{-5pt}
 \end{problem}
-Thus, \SeeDB\ aims to find the $k$ views (obtained by adding a single aggregate and
-group-by operator) that have the largest utility based on the function $U$.
+%Thus, \SeeDB\ aims to find the $k$ views (obtained by adding a single aggregate
+% and group-by operator) that have the largest utility based on the function $U$.
 

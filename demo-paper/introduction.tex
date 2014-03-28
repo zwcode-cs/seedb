@@ -80,18 +80,18 @@ of data that the analyst is interested in, \SeeDB\ automatically {\em identifies
 interesting views of the query results using methods based on
 deviation}. Specifically, \SeeDB\ explores the space of all possible views and
 measures how much each view deviates from the corresponding view on the
-entire underlying dataset (just like Figure~\ref{fig:staplerX} vs.
+entire underlying dataset (e.g. Figure~\ref{fig:staplerX} vs.
 Figures~\ref{fig:staplerX-a} or \ref{fig:staplerX-b}.) By generating and
 scoring potential views automatically, \SeeDB\ effectively eliminates
 steps (2) and (3) that the analyst currently performs. Instead, once \SeeDB\
-recommends potentially interesting views, the analyst can evaluate this small
-subset of views using his domain knowledge and limit further
-exploration to these views. 
+recommends interesting views, the analyst can evaluate this small
+subset of views using domain knowledge and limit further
+exploration to these views.  
 
 We described our vision for \SeeDB, along with the associated research
 challenges in a companion vision paper~\cite{DBLP:conf/vldb/Parameswaran2013}.
 In this demonstration proposal, we present our first \SeeDB\ prototype
-addressing some of the challenges that were listed in that vision paper.
+addressing some of the challenges listed in that vision paper.
 In particular, our current prototype of \SeeDB\ is built as a ``wrapper'' that
 can be overlaid on any relational database system. Given any query, \SeeDB\
 leverages special optimization algorithms and the underlying DBMS to generate
@@ -110,7 +110,7 @@ generating and evaluating all views, even for a moderately sized dataset (e.g.
 computation as much as possible. Queries to compute views and their
 deviation are highly similar and therefore
 independent execution is expensive and wasteful; (d) Since
-visual analysis must happen in real-time, we must trade-off accuracy
+analysis must happen in real-time, we must trade-off accuracy
 of visualizations or estimation of ``interestingness'' for reduced latency.
 Section~\ref{sec:system_architecture} describes how we address these challenges.
 
@@ -181,22 +181,23 @@ Section~\ref{sec:system_architecture} describes how we address these challenges.
 \CenterFloatBoxes
 \begin{floatrow}
 \ttabbox{%
+  \small
   \begin{tabular}{cc} \hline
-  Store & Profit(\$) \\ \hline
+  Store & Total Sales (\$) \\ \hline
   Cambridge, MA & 180.55 \\ \hline
   Seattle, WA &  145.50\\ \hline
   New York, NY & 122.00 \\ \hline
   San Francisco, CA & 90.13 \\ \hline
   \end{tabular}
 }{%
-  \caption{Total Sales by Store for Laserwave}\label{tab:staplerX}%
+  \caption{Data: Total Sales by Store for Laserwave}\label{tab:staplerX}%
 }
 \killfloatstyle
 \ffigbox{%
-  \hbox{\resizebox{3cm}{3cm}{\includegraphics{Images/dist1.pdf}}}
+  \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist1.pdf}}}
   
 }{%
-  \caption{Visualization of Total Sales by Store for
+  \caption{Visualization: Total \\ Sales by Store for
   Laserwave}\label{fig:staplerX}%
 }
 \end{floatrow}
@@ -206,17 +207,17 @@ Section~\ref{sec:system_architecture} describes how we address these challenges.
 \CenterFloatBoxes
 \begin{floatrow}
 \ffigbox{%
-  \hbox{\resizebox{3cm}{3cm}{\includegraphics{Images/dist2.pdf}}}
+  \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist2.pdf}}}
   
 }{%
-  \caption{Total Sales by Store --- Scenario A}\label{fig:staplerX-a}%
+  \caption{Scenario A: Total Sales by Store}\label{fig:staplerX-a}%
 }
 \killfloatstyle
 \ffigbox{%
-  \hbox{\resizebox{3cm}{3cm}{\includegraphics{Images/dist3.pdf}}}
+  \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist3.pdf}}}
   
 }{%
-  \caption{Total Sales by Store --- Scenario B}\label{fig:staplerX-b}%
+  \caption{Scenario B: Total Sales by Store}\label{fig:staplerX-b}%
 }
 \end{floatrow}
 \vspace{-10pt}
