@@ -1,6 +1,6 @@
 %!TEX root=demo-paper.tex
 
-\section{System architecure}
+\section{\SeeDB\ Design}
 \label{sec:system_architecture}
 
 In this section, we present the \SeeDB\ architecture, starting with an
@@ -28,7 +28,7 @@ depicts the architecture of our system.
 clip=true]{Images/seedb-architecture.pdf}}}}
 \caption{SeeDB Architecture}
 \label{fig:sys-arch}
-\vspace{-10pt}
+\vspace{-12pt}
 \end{figure} 
 
 An analyst uses the frontend to issue queries to \SeeDB. We provide three
@@ -208,16 +208,16 @@ many table scans as possible. Our strategies include:
   Because \SeeDB\ computes a large number of group-bys, one significant
   optimization is to combine queries with different
   group-by attributes into a single query with multiple group-bys attributes.
-  For instance, consider views $(a_1$, $m_1$, $f_1)$, $(a_2$, $m_1$, $f_1)$
-  \ldots $(a_n$, $m_1$, $f_1)$. Instead of executing queries for each view
-  independently, we can combine the $n$ views into a single view represented by
+  For instance, instead of executing queries for views $(a_1$, $m_1$, $f_1)$,
+  $(a_2$, $m_1$, $f_1)$ \ldots $(a_n$, $m_1$, $f_1)$ independently, we can combine the $n$ views into a single view represented by
   $(\{a_1, a_2\ldots a_n\}$, $m_1$, $f_1)$. 
+  If the GROUPING SETS functionality is available in
+  the underlying DBMS, we leverage it. 
   While this optimization has the potential to significantly reduce query
-  execution time, the number of views that can potentially be combined depends
-  closely on the correlation between values of the grouping attributes and system parameters like the
-  working memory. Given a set of candidate views, we model the problem of
-  finding the optimal combinations of views as a variant of bin-packing and
-  apply ILP techniques to obtain the best solution. 
+  execution time, the number of views that can be combined depends
+  on the correlation between values of grouping attributes and system parameters like the
+  working memory. Given a set of candidate views, we model the
+  problem of finding the optimal combinations of views as a variant of bin-packing and apply ILP techniques to obtain the best solution. 
 %   (We discuss our model and
 %   algorithm in our full paper~\ref{}).\agp{if full paper is not available
 %   by the time of the demo, we can't cite it unfortunately..}
