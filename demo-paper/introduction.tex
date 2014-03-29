@@ -24,9 +24,9 @@ for the chain, including marketing strategies, and the introduction of a similar
 ``Saberwave Oven''.
 
 The analysis workflow proceeds as follows:
-(1) The analyst poses a query to select the subset of data that he is
+(1) The analyst poses a query to select the subset of data that she is
 interested in exploring.
-For instance, for the example above, he may issue the query:
+For instance, for the example above, she may issue the query:
 \noindent $${\tt \ Q \ \ = \ \ SELECT \ * \ FROM \ \  Sales \ \ WHERE \ \
 Product=``Laserwave''} $$ \noindent Notice that the results for this query may
 have (say) several million records each with several dozen attributes.
@@ -38,7 +38,7 @@ by region, or average profits by month. To construct these views, the analyst
 can use operations such as binning, grouping, and aggregation, and then generate
 visualizations from the view. For example, to generate the view `total sales by
 store', the analyst would group each sales record based on the store where the
-sale took place and add up the sale amounts per store. This operation can easily
+sale took place and sum up the sale amounts per store. This operation can easily
 be expressed as the familiar aggregation over group-by query:
 \noindent
 \begin{align*}
@@ -67,7 +67,7 @@ Of course, the analyst must decide if this deviation
 is truly an insight for this application.
 (4) Once the analyst has identified interesting views, the analyst may
 then either share these views with others, further interact with
-the displayed views (e.g. by drilling down or rolling up), or
+the displayed views (e.g., by drilling down or rolling up), or
 start afresh with a new query.
 
 
@@ -107,9 +107,14 @@ attributes in a table (we will demonstrate this in subsequent sections),
 generating and evaluating all views, even for a moderately sized dataset (e.g.
 1M rows, 100 attributes), can be prohibitively expensive;
 (c) While executing queries corresponding to different views, we must share
-computation as much as possible. Queries to compute views and their
-deviation are highly similar and therefore
-independent execution is expensive and wasteful; (d) Since
+computation as much as possible. For example, 
+we can compute multiple views and measure their deviation 
+all together in one query. Independent execution,
+on the other hand, will be expensive and wasteful;
+% Queries to compute views and their
+% deviation are highly similar and therefore
+% independent execution is expensive and wasteful; 
+(d) Since
 analysis must happen in real-time, we must trade-off accuracy
 of visualizations or estimation of ``interestingness'' for reduced latency.
 Section~\ref{sec:system_architecture} describes how we address these challenges.
@@ -207,6 +212,7 @@ Section~\ref{sec:system_architecture} describes how we address these challenges.
 \begin{figure}
 \CenterFloatBoxes
 \begin{floatrow}
+\centering
 \ffigbox{%
   \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist2.pdf}}}
   
@@ -245,7 +251,7 @@ Over the past few years, the research community has introduced
 a number of interactive data analytics tools such as ShowMe, Polaris, and
 Tableau~\cite{DBLP:journals/cacm/StolteTH08, DBLP:journals/tvcg/MackinlayHS07}
 as well as tools like Profiler allow analysts to detect anomalies in data.
-Unlike \SeeDB, which recommends visualizations automatically, the tools put the
+Unlike \SeeDB, which recommends visualizations automatically, the tools place the
 onus on the analyst to specify the visualization to be generated.
 Similar visualization specification tools have also been introduced
 by the database community, including Fusion Tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10} 
@@ -255,7 +261,7 @@ analysts to find explanations, get suggestions for next cubes to visit,
 or identify generalizations or patterns starting from a single cube~\cite{DBLP:conf/vldb/Sarawagi99, 
 DBLP:conf/vldb/SatheS01, DBLP:conf/vldb/Sarawagi00}. 
 While we may be able to reuse the metrics from that line of work,
-the same techniques will not apply directly to visualizations.
+the same techniques will not directly apply to visualizations.
 
 
 

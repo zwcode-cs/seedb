@@ -8,7 +8,7 @@ Given a database $D$ and a query $Q$, \SeeDB\ considers a number of views that
 can be generated from $Q$ by adding relational operators.
 For the purposes of this discussion, we will refer to views and visualizations
 interchangeably, since it is straightforward to translate views into
-visualizations automatically: for example, there are straightforward rules that
+visualizations automatically. For example, there are straightforward rules that
 dictate how the view in Table~\ref{tab:staplerX} can be transformed to give a
 visualization like Figure~\ref{fig:staplerX}.
 Furthermore, we limit the set of candidate views to those
@@ -81,8 +81,7 @@ from the comparison view, and the more likely the view is to be interesting.
 Computing distance between probability distributions has
 been well studied, and \SeeDB\ supports a variety of metrics
 to compute utility, including Earth Movers Distance, 
-Euclidean Distance, Kullback-Leibler Divergence (K-L
-divergence), and Jenson-Shannon
+Euclidean Distance, Kullback-Leibler (K-L) Divergence, and Jenson-Shannon
 Distance. 
 In our demonstration, conference attendees can experiment with
 different distance metrics and examine how the choice of metric affects view
@@ -104,7 +103,9 @@ quality.
 %   the K-L divergence, this distance measures the similarity between two probability distributions.
 % \squishend
 Finally, we note that while other definitions of the comparison views and
-utility metrics are possible, we choose the above definitions in this demo.
+utility metrics are possible, for our initial exploration into 
+visualization recommendations, we chose to focus on the intuitive definitions above.
+%we choose the above definitions in this demo.
 \begin{problem}
 \vspace{-5pt}
 Given an analyst-specified query $Q$ on a database $D$, a distance function $S$,

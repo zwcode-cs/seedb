@@ -25,7 +25,7 @@ a range of datasets. We will use four different datasets in our demonstration:
     non-expert data analysts like journalists or historians. With this
     dataset, we demonstrate how non-experts can use \SeeDB\ to quickly
     arrive at interesting visualizations.
-  \item {\bf Medical dataset~\cite{mimic}:} This real-world dataset exemplifies
+  \item {\bf Medical dataset}~\cite{mimic}: This real-world dataset exemplifies
   a dataset that a clinical researcher might use. The schema of the dataset is
   significantly complex and it is of larger size.  
     \item {\bf Synthetic data:} We provide a set of synthetic datasets with
@@ -39,13 +39,13 @@ attendees can issue ad-hoc or pre-formulated queries to \SeeDB. \SeeDB\ will
 then intelligently explore the view space and optimize query execution to return the
 most interesting visualizations with low latency. Attendees can examine the
 returned queries visually, via the associated view metadata, and via
-drill-downs. To aid the evaluation of visualizations, the demo system will show
-the user a set of ``bad'' views (views with low utility) that were not selected
+drill-downs. To aid the evaluation of visualizations, the demo system will 
+be configured to also show the user ``bad'' views (views with low utility) that were not selected
 by \SeeDB.
 Similarly, we provide pre-selected queries (and
 previously known information about their results) to allow attendees to
 confirm that \SeeDB\ does indeed reproduce known information about these
-queries. Attendees will also have the ability to experiment with a
+queries. Attendees will also be able to experiment with a
 variety of distance metrics for computing utility and observe the effects on the
 resulting views.
 
@@ -63,8 +63,8 @@ resulting views.
 
 \stitle{Scenario 2: Demonstrating Performance and Optimizations.} This scenario
 will use an enhanced user interface and synthetic datasets mentioned above.
-Attendees will be able to easily experiment with a range of datasets and input
-queries by tuning various ``knobs'' such as data size, number of attributes, and
+Attendees will be able to easily experiment with a range of synthetic datasets and input
+queries by adjusting various ``knobs'' such as data size, number of attributes, and
 data distribution. In addition, attendees will also be able to select the
 optimizations that \SeeDB\ applies and observe the effect on response times and
 accuracy.

@@ -1,6 +1,6 @@
 %!TEX root=demo-paper.tex
 
-\section{\SeeDB\ Design}
+\section{{\large \SeeDB\ } Design}
 \label{sec:system_architecture}
 
 In this section, we present the \SeeDB\ architecture, starting with an
@@ -9,14 +9,14 @@ overview followed by a detailed discussion of its components.
 \subsection{{\large \SeeDB} architecture overview}
 \label{subsec:overview}
 
-Our prototype of \SeeDB\ is designed as a layer on top of a traditional
+Our \SeeDB\ prototype is designed as a layer on top of a traditional
 relational database system.
-While optimization opportunities are restricted by virtue of being a layer outside the
+While optimization opportunities are restricted by virtue of being outside the
 database, our design permits \SeeDB\ to be used in conjunction with a variety of
 existing database systems. 
-\SeeDB\ is comprised of two main parts: the \SeeDB\
-frontend and the \SeeDB\ backend. The frontend is a ``thin client'' that
-is only used to issue queries to \SeeDB\ and view results. The backend, in
+\SeeDB\ is comprised of two parts: a frontend and a backend. 
+The frontend is a ``thin client'' that
+is used to issue queries and display visualizations. The backend, in
 contrast, performs all the computation required to generate and select views
 to be recommended. Figure \ref{fig:sys-arch}
 depicts the architecture of our system.
@@ -205,14 +205,15 @@ many table scans as possible. Our strategies include:
   into a single query. This rewriting provides a speed up linear in the
   number of aggregate attributes.
   \item {\it Combine Multiple Group-bys}: 
-  Because \SeeDB\ computes a large number of group-bys, one significant
+  Since \SeeDB\ computes a large number of group-bys, one significant
   optimization is to combine queries with different
   group-by attributes into a single query with multiple group-bys attributes.
   For instance, instead of executing queries for views $(a_1$, $m_1$, $f_1)$,
-  $(a_2$, $m_1$, $f_1)$ \ldots $(a_n$, $m_1$, $f_1)$ independently, we can combine the $n$ views into a single view represented by
+  $(a_2$, $m_1$, $f_1)$ \ldots $(a_n$, $m_1$, $f_1)$ independently, 
+  we can combine the $n$ views into a single view represented by
   $(\{a_1, a_2\ldots a_n\}$, $m_1$, $f_1)$ and post-process results at the
   backend. Alternatively, if the SQL GROUPING SETS functionality is available in
-  the underlying DBMS, we can leverage it. 
+  the underlying DBMS, \SeeDB\ can leverage that as well. 
   While this optimization has the potential to significantly reduce query
   execution time, the number of views that can be combined depends
   on the correlation between values of grouping attributes and system parameters like the
@@ -226,14 +227,15 @@ many table scans as possible. Our strategies include:
 %   end and ask the \SeeDB\ frontend to compute utility and select views. The
 %   advantage of this approach is that it allows for more efficient interactive
 %   exploration of the views.
-  \item {\it Sampling}: For datasets of large size, the optimization that
-  affects performance most is sampling - we construct a sample of the dataset
-  that can fit in memory and run all view queries against the sample. As
-  expected, the sampling technique and size of the sample significantly affects
+  \item {\it Sampling}: For datasets of large size, an optimization that
+  affects performance significantly is employing sampling: we  
+  construct a sample of the dataset
+  that can fit in memory and run all view queries against the sample. However, as
+  expected, the sampling technique and size of the sample both affect
   view accuracy. 
-  \item {\it Parallel Query Execution}: The final optimization employed by
-  \SeeDB\ is to take advantage of parallel query execution at the DBMS to reduce
-  total latency.
+  \item {\it Parallel Query Execution}: The final optimization that
+  \SeeDB\ employs is taking advantage of parallel query execution 
+  at the DBMS to reduce total latency.
   We observe that as the number of queries executed in parallel
   increases, the total latency decreases at the cost of
   increased per query execution time.
