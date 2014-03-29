@@ -24,7 +24,7 @@ for the chain, including marketing strategies, and the introduction of a similar
 ``Saberwave Oven''.
 
 The analysis workflow proceeds as follows:
-(1) The analyst poses a query to select the subset of data that he are
+(1) The analyst poses a query to select the subset of data that he is
 interested in exploring.
 For instance, for the example above, he may issue the query:
 \noindent $${\tt \ Q \ \ = \ \ SELECT \ * \ FROM \ \  Sales \ \ WHERE \ \
@@ -39,10 +39,10 @@ can use operations such as binning, grouping, and aggregation, and then generate
 visualizations from the view. For example, to generate the view `total sales by
 store', the analyst would group each sales record based on the store where the
 sale took place and add up the sale amounts per store. This operation can easily
-be expressed as the familiar aggregate-plus-group-by query:
+be expressed as the familiar aggregation over group-by query:
 \noindent
 \begin{align*}
-& \tt Q' = SELECT \ \ SUM(amount) \ \ FROM \ \  Sales \ \ WHERE \\
+& \tt Q' = SELECT \ \ store,\ SUM(amount) \ \ FROM \ \  Sales \ \ WHERE \\
 & \tt Product=``Laserwave" \ \ GROUP  \ \ BY \ \ store
 \end{align*}
 The result of the above query is a two-column table that can then be visualized
@@ -52,7 +52,7 @@ the associated visualization.
 To explore the query results from different perspectives, the analyst generates
 a large number of views (and visualizations) of the form described above.
 (3) The analyst then manually examines each view and decides
-which ones are ``interesting''. This is the critical and time-consuming step.
+which ones are ``interesting''. This is a critical and time-consuming step.
 Naturally, what makes a view interesting depends on the 
 application semantics and the trend we are comparing against.
 For instance, the view of Laserwave sales by store, as shown in Figure

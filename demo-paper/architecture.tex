@@ -210,9 +210,9 @@ many table scans as possible. Our strategies include:
   group-by attributes into a single query with multiple group-bys attributes.
   For instance, instead of executing queries for views $(a_1$, $m_1$, $f_1)$,
   $(a_2$, $m_1$, $f_1)$ \ldots $(a_n$, $m_1$, $f_1)$ independently, we can combine the $n$ views into a single view represented by
-  $(\{a_1, a_2\ldots a_n\}$, $m_1$, $f_1)$. 
-  If the GROUPING SETS functionality is available in
-  the underlying DBMS, we leverage it. 
+  $(\{a_1, a_2\ldots a_n\}$, $m_1$, $f_1)$ and post-process results at the
+  backend. Alternatively, if the SQL GROUPING SETS functionality is available in
+  the underlying DBMS, we can leverage it. 
   While this optimization has the potential to significantly reduce query
   execution time, the number of views that can be combined depends
   on the correlation between values of grouping attributes and system parameters like the
