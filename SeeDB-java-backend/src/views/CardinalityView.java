@@ -1,11 +1,12 @@
 package views;
 
+import output.CardinalityOutputView;
 import common.DifferenceQuery;
 import common.ExperimentalSettings;
 import common.Utils;
 import common.ExperimentalSettings.DifferenceOperators;
 
-public class CardinalityView extends AggregateView {
+public class CardinalityView extends AggregateView implements CardinalityOutputView {
 	public CardinalityView(DifferenceQuery dq) {
 		super(dq);
 	}
@@ -24,6 +25,15 @@ public class CardinalityView extends AggregateView {
 	@Override
 	public DifferenceOperators getOperator() {
 		return DifferenceOperators.CARDINALITY;
+	}
+
+	@Override
+	public double getCardinality(int dataset) {
+		if (dataset == 1) {
+			return this.groupByValues.get("none").get(0).get(0);
+		} else if (dataset == 2) {
+			return this.groupByValues.get("none").get(1).get(0);
+		} else return -1;
 	}
 
 }
