@@ -1,7 +1,9 @@
-Data scientists analyzing large amounts of data often rely on visualizations to
-identify interesting trends and gain insights. However, picking the right
-visualization is a manual and tedious task. Given a query, the analyst would
-like to know what makes the results of a query ``interesting'' compared to the
-underlying dataset. In this paper, we demonstrate a prototype of \SeeDB\, a
-system that automatically discovers differences in trends between a query and
-the underlying dataset, and visualizes the differences to help data analysis.
+Data analysts operating on large volumes of data 
+often rely on visualizations to interpret the results of queries. 
+However, finding the right visualization for a query is 
+a laborious and time-consuming task. 
+We propose \SeeDB, a system that partially automates 
+this task: 
+given a query, \SeeDB\ explores the space of all possible visualizations,
+and automatically identifies and recommends to the analyst those visualizations
+it finds to be most ``interesting'' or ``useful''.
