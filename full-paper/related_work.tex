@@ -1,30 +1,22 @@
 \section{State-of-the-Art Approaches}
 \label{sec:related_work}
 
-Over the past few years, there has been a significant
-effort from the visualization community to provide interactive tools
-for data analysts. In particular, tools such as ShowMe, Polaris, and
-Tableau~\cite{DBLP:journals/cacm/StolteTH08,
-  DBLP:journals/tvcg/MackinlayHS07} provide a canvas for data analysts
-to manipulate and view data, tools such as
-Wrangler~\cite{DBLP:conf/chi/KandelPHH11} allow data analysts to
-transform and clean data, and tools such as
-Profiler~\cite{DBLP:conf/avi/KandelPPHH12} allow users to visualize
-simple anomalies in data.  However, unlike \SeeDB, these tools have
-little automation; in effect, it is up to the analyst to generate a
-two-column view to be visualized. Other related areas of work include OLAP and
-database visualization tools. There has been some work on browsing data cubes, allowing
-analysts to variously find ``explanations'' for why two cube values were
-different, to find which neighboring cubes have similar properties to the cube
-under consideration, or get suggestions on what unexplored data cubes should be
-looked at next~\cite{DBLP:conf/vldb/Sarawagi99, DBLP:conf/vldb/SatheS01,
-DBLP:conf/vldb/Sarawagi00}.
-
-Fusion tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10} allows users to create
-visualizations layered on top of web databases; they do not consider the problem
-of automatic visualization generation.
-Devise~\cite{DBLP:conf/sigmod/LivnyRBCDLMW97} translated user-manipulated
-visualizations into database queries.
+\stitle{Related Work:}
+Over the past few years, the research community has introduced 
+a number of interactive data analytics tools such as ShowMe, Polaris, and
+Tableau~\cite{DBLP:journals/cacm/StolteTH08, DBLP:journals/tvcg/MackinlayHS07}
+as well as tools like Profiler allow analysts to detect anomalies in data.
+Unlike \SeeDB, which recommends visualizations automatically, the tools place the
+onus on the analyst to specify the visualization to be generated.
+Similar visualization specification tools have also been introduced
+by the database community, including Fusion Tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10} 
+and the Devise~\cite{DBLP:conf/sigmod/LivnyRBCDLMW97} toolkit.
+There has been some work on browsing data cubes in OLAP, allowing
+analysts to find explanations, get suggestions for next cubes to visit,
+or identify generalizations or patterns starting from a single cube~\cite{DBLP:conf/vldb/Sarawagi99, 
+DBLP:conf/vldb/SatheS01, DBLP:conf/vldb/Sarawagi00}. 
+While we may be able to reuse the metrics from that line of work,
+the same techniques will not directly apply to visualizations.
 
 \subsection{Viz papers and tools}
 \subsection{Data Cubes}
