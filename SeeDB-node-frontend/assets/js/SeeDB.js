@@ -4,11 +4,8 @@
   var io = window.io;
   var _ = window._;
   var Backbone = window.Backbone;
-  var crossfilterGlobal = window.crossfilter;
-  var d3 = window.d3;
-  var CrossfilterGraphs = window.CrossfilterGraphs;
 
-  var QueryProcessor = function () {
+  var SeeDB = function () {
     var _this = this;
     _.extend(this, Backbone.Events);
     
@@ -84,62 +81,7 @@
         });
       });
     };
-
-    this.getAllMeasureAggregatesForAllDimensionCombinations = function () {
-      callJava("getAllMeasureAggregatesForAllDimensionCombinations", function (response) {
-        /* BEGIN BAD CODE */
-        var crossfilter = crossfilterGlobal(response);
-
-        var dimensions = {};
-        _this.metadata.dimensionAttributes.forEach(function (dimensionAttribute) {
-          var dimension = crossfilter.dimension(function (d) {
-            return d[dimensionAttribute];
-          });
-
-          dimension.name = dimensionAttribute;
-          dimensions[dimensionAttribute] = dimension;
-        });
-
-        var charts = [];
-        _.values(dimensions).forEach(function (dimension) {
-          var group = dimension.group();
-
-          var domain = group.top(20).map(function (obj) {return obj.key;});
-          console.log(domain);
-          var xScale = d3.scale.ordinal()
-            .domain(domain)
-            .rangePoints([0, 12*Math.min(group.size(), 20)], 0.5);
-
-          xScale.invert = function(x) {
-            return xScale.domain()[d3.bisect(xScale.range(), x+6) - 1];
-          };
-
-          var barChart = CrossfilterGraphs.barChart(dimension.name)
-            .dimension(dimension)
-            .group(group)
-            .x(xScale);
-
-          charts.push(barChart);
-        });
-
-        var chart = d3.select("#distributionCharts")
-          .selectAll(".chart").data(charts)
-          .enter()
-            .append("div").attr("class", "chart");
-
-        function render (method) {
-          d3.select(this).call(method);
-        }
-
-        function renderAll () {
-          chart.each(render);
-        }
-
-        renderAll();
-        /* END BAD CODE */
-      });
-    };
   };
 
-  window.QueryProcessor = new QueryProcessor();
+  window.SeeDB = new SeeDB();
 }(this));
