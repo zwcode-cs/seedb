@@ -45,6 +45,9 @@
 
   app.use(connectAssets());
 
+  // serve the HTML templates
+  app.use(express.static(__dirname + "/views/partials"));
+
   app.get("/", function (req, res) {
     res.render("index");
   });
@@ -63,6 +66,9 @@
 
   io.sockets.on("connection", function(socket) {
     var seeDB = java.newInstanceSync("api.SeeDB");
+
+    seeDB.connectToDatabaseSync(0);
+    seeDB.connectToDatabaseSync(1);
 
     // set up runtime settings
     // var runtimeSettings = java.newInstanceSync("utils.RuntimeSettings");
