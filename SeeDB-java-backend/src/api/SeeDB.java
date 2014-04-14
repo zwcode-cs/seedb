@@ -4,6 +4,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 
+import output.OutputView;
+
 import optimizer.Optimizer;
 import views.View;
 
@@ -112,7 +114,6 @@ public class SeeDB {
 			if (!connections[0].connectToDatabase(DBSettings.getDefault()))
 				return false;
 		}
-		query1 = query1.toLowerCase();
 		inputQueries[0] = QueryParser.parse(query1, 
 				connections[0].getDatabaseName());
 
@@ -125,7 +126,6 @@ public class SeeDB {
 			}
 			this.numDatasets = 2;
 			settings.comparisonType = ExperimentalSettings.ComparisonType.TWO_DATASETS;
-			query2 = query2.toLowerCase();
 			inputQueries[1] = QueryParser.parse(query2, 
 					connections[1].getDatabaseName());
 		}
@@ -195,7 +195,7 @@ public class SeeDB {
 	 * registered with the system
 	 * @return List of serialized difference results
 	 */
-	public List<String> computeDifference() {
+	public List<OutputView> computeDifference() {
 		// compute the attributes that we want to analyze
 		InputTablesMetadata[] queryMetadatas = this.getMetadata();
 		
@@ -221,9 +221,9 @@ public class SeeDB {
 		}
 		
 		// TODO: do something to pick the top k
-		List<String> result = Lists.newArrayList(); 
+		List<OutputView> result = Lists.newArrayList(); 
 		for (View view : views) {
-			result.add(view.serializeView());
+			result.add(view);
 		}
 		return result;
 	}	
