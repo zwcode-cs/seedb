@@ -18,10 +18,6 @@ import org.postgresql.util.PSQLException;
 
 import utils.CommonOperations;
 
-import com.google.code.geocoder.Geocoder;
-import com.google.code.geocoder.GeocoderRequestBuilder;
-import com.google.code.geocoder.model.GeocodeResponse;
-import com.google.code.geocoder.model.GeocoderRequest;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -62,9 +58,9 @@ public class Metadata {
 		this.connection = this.getConnection(dbType, dbAddress, dbUser, dbPassword);
 	}
 	
-public List<String> getColumnNames() throws SQLException {
+public Map<String, String> getColumnAttributes() throws SQLException {
 		
-		List<String> columnNames = Lists.newArrayList();
+		Map<String, String> columnAttributes = new HashMap<String, String>();
 
 		if (connection == null) {
 			System.out.println("Connection null. Quit");
@@ -79,26 +75,43 @@ public List<String> getColumnNames() throws SQLException {
 		} catch (SQLException e) {
 			System.out.println("Error in executing metadata query");
 			e.printStackTrace();
-			return columnNames;
+			return columnAttributes;
 		}
 		
 		List<String> dimensionAttributes = Lists.newArrayList();
-		HashMap<String, Integer> dimensionAttributeDistinctValues = Maps.newHashMap();
 		List<String> measureAttributes = Lists.newArrayList();
 		
 		while (rs.next()) {
-			String attribute = rs.getString("COLUMN_NAME");
-			if (attribute.startsWith("dim")) {
-				dimensionAttributes.add(attribute);
-				dimensionAttributeDistinctValues.put(attribute, Integer.parseInt(attribute.split("_")[1])); // col names are dim10_50
-			}
-			else if (attribute.startsWith("measure")) measureAttributes.add(attribute);
+			String name = rs.getString("COLUMN_NAME");
+			String type = rs.getString("TYPE_NAME");
+			columnAttributes.put(name, type);
+		}
+
+		return columnAttributes;
+	}
+
+	public Integer getNumRows() throws SQLException {
+		
+		if (connection == null) {
+			System.out.println("Connection null. Quit");
+		}
+			
+		String sqlQuery = "SELECT count(*) FROM " + table;
+		Statement stmt = null;
+		ResultSet rs = null;
+		try {
+			stmt = connection.createStatement();
+		    rs = stmt.executeQuery(sqlQuery);
+	
+		    rs.next();
+		 	return rs.getInt(1);
+		    
+		    
+		} catch (PSQLException e) {
+			System.out.println(e.getMessage());
 		}
 		
-		columnNames.addAll(dimensionAttributes);
-		columnNames.addAll(measureAttributes);
-	
-		return columnNames;
+		return null;
 	}
 
 	public Float getVariance(String columnName) throws SQLException {
@@ -107,7 +120,7 @@ public List<String> getColumnNames() throws SQLException {
 			System.out.println("Connection null. Quit");
 		}
 			
-		String sqlQuery = "SELECT variance(" + columnName + ") FROM " + table;
+		String sqlQuery = "SELECT var_pop(" + columnName + ") FROM " + table;
 		Statement stmt = null;
 		ResultSet rs = null;
 		try {
@@ -119,7 +132,7 @@ public List<String> getColumnNames() throws SQLException {
 		    
 		    
 		} catch (PSQLException e) {
-			if (e.getMessage().contains("variance") && e.getMessage().contains("does not exist")) {
+			if (e.getMessage().contains("var_pop") && e.getMessage().contains("does not exist")) {
 			 	return null;
 			} else {
 				System.out.println(e.getMessage());
@@ -130,7 +143,7 @@ public List<String> getColumnNames() throws SQLException {
 	}
 	
 	
-public Float getNumDistinct(String columnName) throws SQLException {
+	public Integer getNumDistinct(String columnName) throws SQLException {
 		
 		if (connection == null) {
 			System.out.println("Connection null. Quit");
@@ -145,7 +158,7 @@ public Float getNumDistinct(String columnName) throws SQLException {
 		    rs = stmt.executeQuery(sqlQuery);
 
 		    rs.next();
-		    return rs.getFloat(1);
+		    return rs.getInt(1);
 		    
 		    
 		} catch (PSQLException e) {
@@ -159,68 +172,21 @@ public Float getNumDistinct(String columnName) throws SQLException {
 		return null;
 	}
 	
-	public String getAttribute(String columnName) throws SQLException {
-	
-		if (connection == null) {
-			System.out.println("Connection null. Quit");
+	public String getType(String columnName, String columnType, Integer numRows, Integer numDistinct ) throws SQLException {
+	 
+		if (columnType.contains("char") || columnType.contains("bit")) {
+			if (numDistinct < 20 || numDistinct * 10 < numRows) {
+				return "Categorical";
+			} else {
+				return "String"; //Geographic?
+			}
+		} else if (columnType.contains("time")) {
+			return "Time";
+		} else if (columnType.contains("date")) {
+			return "Date";
 		}
-		
-		DatabaseMetaData dbmd = null;
-		ResultSet rs = null;
-	
-	
-				
-		String sqlQuery = "SELECT " + columnName + " FROM " + table;
-		Statement stmt = null;
-		try {
-			stmt = connection.createStatement();
-		    rs = stmt.executeQuery(sqlQuery);
-		    Set<String> uniqueValues = new HashSet<String>();
-		    int rowCount = 0;
-		    
-		    int isTime = 0;
-		    int isGeographic = 0; //XXX:not done
-		    int isNumeric = 0;
-		    boolean isCategorical = false;
-		    int isOrdinal = 0; //XXX: not done
-
-		    while (rs.next()) {
-
-		    	uniqueValues.add(rs.getString(1));
-
-		    	try {
-		    		if (rs.getTimestamp(1) != null)  {
-		    			isTime++;
-			    	}
-		    	} catch (PSQLException e) {
-		    	}
-		    	
-		    	try {
-		    		if (rs.getBigDecimal(1) != null)  {
-		    			isNumeric++;
-		    		}			    		
-		    	} catch (PSQLException e) {
-		    	}
-		    	
-		    		
-	    		System.out.println(rs.getString(1));
-	    		String shit = new GeocodeImplementation().getJSONByGoogle(rs.getString(1));
-	    		System.out.println(shit);
-
-		    	
-		    	rowCount++;
-		    }
-		    
-		    if (uniqueValues.size() < 20 || uniqueValues.size() < 0.1 * rowCount) {
-		    	isCategorical = true;
-		    }
-		    
-		    return null;
-		    
-		} catch (Exception e) {
-			System.out.println(e);
-			return null;
-		}
+		//Ordinal?
+		return "Numeric";
 	}	
 
 }

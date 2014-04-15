@@ -3,6 +3,7 @@ package metadata;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class MetadataTest {
 	public static void main(String[] args) {
@@ -10,16 +11,25 @@ public class MetadataTest {
 				"postgresql", "127.0.0.1/seedb_data", "postgres", "postgrespwd");
 		try {
 			
-			List<String> columnNames = mg.getColumnNames();
+			Map<String, String> columnAttributes = mg.getColumnAttributes();
+			Integer numRows = mg.getNumRows();
+			System.out.println(numRows);
 			
-			for (String columnName : columnNames) {
+			for (Entry<String, String> columnAttribute : columnAttributes.entrySet()) {
+				
+				String columnName = columnAttribute.getKey();
+				String columnType = columnAttribute.getValue();
+				
 				System.out.println(columnName);
 				
-				Float variances = mg.getVariance(columnName);
-				System.out.println(variances);
+				Float variance = mg.getVariance(columnName);
+				System.out.println(variance);
 				
-				Float numDistinct = mg.getNumDistinct(columnName);
+				Integer numDistinct = mg.getNumDistinct(columnName);
 				System.out.println(numDistinct);
+				
+				String type = mg.getType(columnName, columnType, numRows, numDistinct);
+				System.out.println(type);
 				
 				System.out.println("\n");
 			}
