@@ -195,7 +195,7 @@ public class SeeDB {
 	 * registered with the system
 	 * @return List of serialized difference results
 	 */
-	public List<OutputView> computeDifference() {
+	public List<View> computeDifference() {
 		// compute the attributes that we want to analyze
 		InputTablesMetadata[] queryMetadatas = this.getMetadata();
 		
@@ -221,12 +221,7 @@ public class SeeDB {
 			return null;
 		}
 		
-		// TODO: do something to pick the top k
-		List<OutputView> result = Lists.newArrayList(); 
-		for (View view : views) {
-			result.add(view);
-		}
-		return result;
+		return views;
 	}	
 	
 }
