@@ -52,6 +52,9 @@ public class QueryExecutor {
 	
 	public static ResultSet executeQuery(String query)
 	{
+		System.out.println("Executing query:");
+		System.out.println(query);
+		
 		Statement stmt = null;
 		ResultSet rs = null;
 		try {

@@ -1,25 +1,15 @@
 package views;
 
-import output.CardinalityOutputView;
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
 import common.DifferenceQuery;
-import common.ExperimentalSettings;
-import common.Utils;
 import common.ExperimentalSettings.DifferenceOperators;
 
-public class CardinalityView extends AggregateView implements CardinalityOutputView {
+public class CardinalityView extends AggregateView {
 	public CardinalityView(DifferenceQuery dq) {
 		super(dq);
-	}
-
-	@Override
-	public String serializeView() {
-		String ret = "";
-		ret += "diff_type:cardinality_diff;";
-		ret += "dataset_num:1;";
-		ret += "cardinality:" + this.groupByValues.get("none").get(0).get(0) + ";";
-		ret += "dataset_num:2;";
-		ret += "cardinality:" + this.groupByValues.get("none").get(1).get(0) + ";";
-		return ret;
 	}
 
 	@Override
@@ -27,13 +17,29 @@ public class CardinalityView extends AggregateView implements CardinalityOutputV
 		return DifferenceOperators.CARDINALITY;
 	}
 
-	@Override
-	public double getCardinality(int dataset) {
-		if (dataset == 1) {
-			return this.groupByValues.get("none").get(0).get(0);
-		} else if (dataset == 2) {
-			return this.groupByValues.get("none").get(1).get(0);
-		} else return -1;
+	public List<Double> getCardinalities() {
+		if (this.groupByValues == null || this.groupByValues.get("none") == null) {
+			return Lists.newArrayList(null, null);
+		}
+		
+		List<List<Double>> cardinalityAggregates = this.groupByValues.get("none");
+		
+		// do a bunch of stuff to avoid possible null pointer exceptions :[
+		List<Double> output = Lists.newArrayList(null, null);
+		
+		if (cardinalityAggregates.get(0) == null) {
+			output.set(0, null);
+		} else {
+			output.set(0, cardinalityAggregates.get(0).get(0));
+		}
+		
+		if (cardinalityAggregates.get(1) == null) {
+			output.set(1, null);
+		} else {
+			output.set(1, cardinalityAggregates.get(1).get(0));
+		}
+		
+		return output;
 	}
 
 }

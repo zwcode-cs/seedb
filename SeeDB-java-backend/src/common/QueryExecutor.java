@@ -32,18 +32,18 @@ public class QueryExecutor {
 			}
 			else if (optQuery.op == DifferenceOperators.CARDINALITY ||
 					optQuery.op == DifferenceOperators.AGGREGATE) {
-				if (aggregateViewMap == null) {
+//				if (aggregateViewMap == null) {
 					aggregateViewMap = Maps.newHashMap();
 					// create dummy views for all the views we care about
 					for (DifferenceQuery query : queries) {
-						if (optQuery.op == DifferenceOperators.CARDINALITY) {
+						if (query.op == DifferenceOperators.CARDINALITY) {
 							aggregateViewMap.put(query, new CardinalityView(query));
 						}
-						if (optQuery.op == DifferenceOperators.AGGREGATE) {
+						if (query.op == DifferenceOperators.AGGREGATE) {
 							aggregateViewMap.put(query, new AggregateGroupByView(query));
 						}		
 					}
-				}
+//				}
 				executeAggregateDifferenceQuery(optQuery, connections);
 			}
 		}

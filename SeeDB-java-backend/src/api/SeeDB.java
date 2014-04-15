@@ -4,8 +4,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 
-import output.OutputView;
-
 import optimizer.Optimizer;
 import views.View;
 
@@ -107,8 +105,11 @@ public class SeeDB {
 			ExperimentalSettings settings) throws Exception {
 		
 		// first process query1, this cannot be empty
-		if (query1 == null)
+		if (query1 == null) {
 			throw new Exception("query1 cannot be null");
+		}
+		
+		// query 1 not null
 		if (!connections[0].hasConnection()) {
 			// populate connection from settings
 			if (!connections[0].connectToDatabase(DBSettings.getDefault()))
@@ -130,22 +131,22 @@ public class SeeDB {
 					connections[1].getDatabaseName());
 		}
 		// there is only 1 dataset
-		else {
-			this.numDatasets = 1;
-			connections[1] = connections[0]; // share the connection
-			if (settings.comparisonType == ExperimentalSettings.ComparisonType.TWO_DATASETS)
-				settings.comparisonType = 
-					ExperimentalSettings.ComparisonType.ONE_DATASET_FULL;
-			if (settings.comparisonType == ExperimentalSettings.ComparisonType.ONE_DATASET_FULL) {
-				inputQueries[1] = InputQuery.deepCopy(inputQueries[0]);
-				inputQueries[1].whereClause = "";
-				// TODO: update raw query for input query 1
-			}
-			else {
-				inputQueries[1] = InputQuery.deepCopy(inputQueries[0]);
-				inputQueries[1].whereClause = "NOT(" + inputQueries[0].whereClause + ")";
-			}
-		}
+//		else {
+//			this.numDatasets = 1;
+//			connections[1] = connections[0]; // share the connection
+//			if (settings.comparisonType == ExperimentalSettings.ComparisonType.TWO_DATASETS)
+//				settings.comparisonType = 
+//					ExperimentalSettings.ComparisonType.ONE_DATASET_FULL;
+//			if (settings.comparisonType == ExperimentalSettings.ComparisonType.ONE_DATASET_FULL) {
+//				inputQueries[1] = InputQuery.deepCopy(inputQueries[0]);
+//				inputQueries[1].whereClause = "";
+//				// TODO: update raw query for input query 1
+//			}
+//			else {
+//				inputQueries[1] = InputQuery.deepCopy(inputQueries[0]);
+//				inputQueries[1].whereClause = "NOT(" + inputQueries[0].whereClause + ")";
+//			}
+//		}
 		this.settings = settings;
 		return true;
 	}
@@ -219,6 +220,8 @@ public class SeeDB {
 			e.printStackTrace();
 			return null;
 		}
+		
+		System.out.println(views);
 		
 		return views;
 	}	

@@ -41,9 +41,6 @@ public abstract class AggregateView implements View {
 		}
 		numAggregates = ctr;
 	}
-	
-	@Override
-	public abstract String serializeView();
 
 	@Override
 	public abstract DifferenceOperators getOperator();

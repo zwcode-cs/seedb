@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import output.OutputView;
 import views.View;
 
 import com.google.common.collect.Lists;
