@@ -2,6 +2,7 @@ package views;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import common.DifferenceQuery;
@@ -18,8 +19,8 @@ public class AggregateGroupByView extends AggregateView {
 		return DifferenceOperators.AGGREGATE;
 	}
 
-	public Set<String> getAggregateAttributeIndex() {
-		return this.aggregateIdx.keySet();
+	public Map<String, Integer> getAggregateAttributeIndex() {
+		return this.aggregateIdx;
 	}
 
 	public List<String> getGroupByAttributes() {

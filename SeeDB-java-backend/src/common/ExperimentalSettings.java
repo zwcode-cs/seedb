@@ -34,7 +34,7 @@ public class ExperimentalSettings {
 	public static ExperimentalSettings getDefault() {
 		ExperimentalSettings settings = new ExperimentalSettings();
 		settings.differenceOperators = Lists.newArrayList();
-		settings.differenceOperators.add(DifferenceOperators.ALL);
+		settings.differenceOperators.add(DifferenceOperators.CARDINALITY);
 		return settings;
 	}
 }
