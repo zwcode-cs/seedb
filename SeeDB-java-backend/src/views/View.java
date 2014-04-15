@@ -1,7 +1,7 @@
 package views;
 
-import output.OutputView;
+import common.ExperimentalSettings.DifferenceOperators;
 
-public interface View extends OutputView {
-	public String serializeView();
+public interface View {
+	public DifferenceOperators getOperator();
 }
