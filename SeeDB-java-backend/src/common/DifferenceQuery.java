@@ -68,6 +68,7 @@ public class DifferenceQuery {
 		}
 		else {
 			result += " FROM " + q1.fromClause;
+			// TODO: do I need a where extension?
 		}
 		
 		if (!groupByAttributes.isEmpty()) {
