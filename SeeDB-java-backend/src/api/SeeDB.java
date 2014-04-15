@@ -131,22 +131,22 @@ public class SeeDB {
 					connections[1].getDatabaseName());
 		}
 		// there is only 1 dataset
-//		else {
-//			this.numDatasets = 1;
-//			connections[1] = connections[0]; // share the connection
-//			if (settings.comparisonType == ExperimentalSettings.ComparisonType.TWO_DATASETS)
-//				settings.comparisonType = 
-//					ExperimentalSettings.ComparisonType.ONE_DATASET_FULL;
-//			if (settings.comparisonType == ExperimentalSettings.ComparisonType.ONE_DATASET_FULL) {
-//				inputQueries[1] = InputQuery.deepCopy(inputQueries[0]);
-//				inputQueries[1].whereClause = "";
-//				// TODO: update raw query for input query 1
-//			}
-//			else {
-//				inputQueries[1] = InputQuery.deepCopy(inputQueries[0]);
-//				inputQueries[1].whereClause = "NOT(" + inputQueries[0].whereClause + ")";
-//			}
-//		}
+		else {
+			this.numDatasets = 1;
+			connections[1] = connections[0]; // share the connection
+			if (settings.comparisonType == ExperimentalSettings.ComparisonType.TWO_DATASETS)
+				settings.comparisonType = 
+					ExperimentalSettings.ComparisonType.ONE_DATASET_FULL;
+			if (settings.comparisonType == ExperimentalSettings.ComparisonType.ONE_DATASET_FULL) {
+				inputQueries[1] = InputQuery.deepCopy(inputQueries[0]);
+				inputQueries[1].whereClause = "";
+				// TODO: update raw query for input query 1
+			}
+			else {
+				inputQueries[1] = InputQuery.deepCopy(inputQueries[0]);
+				inputQueries[1].whereClause = "NOT(" + inputQueries[0].whereClause + ")";
+			}
+		}
 		this.settings = settings;
 		return true;
 	}
