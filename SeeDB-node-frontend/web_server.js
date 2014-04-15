@@ -45,6 +45,9 @@
 
   app.use(connectAssets());
 
+  // serve the HTML templates
+  app.use(express.static(__dirname + "/views/partials"));
+
   app.get("/", function (req, res) {
     res.render("index");
   });
@@ -64,27 +67,25 @@
   io.sockets.on("connection", function(socket) {
     var seeDB = java.newInstanceSync("api.SeeDB");
 
-    // set up runtime settings
-    // var runtimeSettings = java.newInstanceSync("utils.RuntimeSettings");
-    // runtimeSettings.useSampling = true;
-    // seeDB.setRuntimeSettingsSync(runtimeSettings);
+    seeDB.connectToDatabaseSync(0);
+    seeDB.connectToDatabaseSync(1);
 
-    // socket.on("call", function(options, callback) {
-    //   console.log("Calling method:", options.methodName, options.args);
+    socket.on("call", function(options, callback) {
+      console.log("Calling method:", options.methodName, options.args);
 
-    //   var javaArgs = options.args.concat([function (err, result) {
-    //     var objectMapper = java.newInstanceSync("com.fasterxml.jackson.databind.ObjectMapper");
-    //     var jsonObject = JSON.parse(objectMapper.writeValueAsStringSync(result));
+      var javaArgs = options.args.concat([function (err, result) {
+        var objectMapper = java.newInstanceSync("com.fasterxml.jackson.databind.ObjectMapper");
+        var jsonObject = JSON.parse(objectMapper.writeValueAsStringSync(result));
 
-    //     console.log("Returning result for: ", options.methodName);
+        console.log("Returning result for: ", options.methodName);
 
-    //     if (callback) {
-    //       callback(jsonObject);
-    //     }
-    //   }]);
+        if (callback) {
+          callback(jsonObject);
+        }
+      }]);
 
-    //   seeDB[options.methodName].apply(seeDB, javaArgs);
-    // });
+      seeDB[options.methodName].apply(seeDB, javaArgs);
+    });
   });
 
   var port = 8000;

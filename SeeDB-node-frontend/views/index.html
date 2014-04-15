@@ -6,53 +6,33 @@
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     {{{js "application"}}}
     {{{css "application"}}}
-    <style type="text/css">
-      .chart {
-        display: inline-block;
-        height: 200px;
-        margin-bottom: 20px;
-      }
-
-      .reset {
-        padding-left: 1em;
-        font-size: smaller;
-        color: #ccc;
-      }
-
-      .background.bar {
-        fill: #ccc;
-      }
-
-      .foreground.bar {
-        fill: steelblue;
-      }
-
-      .axis path, .axis line {
-        fill: none;
-        stroke: #000;
-        shape-rendering: crispEdges;
-      }
-
-      .axis text {
-        font: 10px sans-serif;
-      }
-
-      .brush rect.extent {
-        fill: steelblue;
-        fill-opacity: .125;
-      }
-
-      .brush .resize path {
-        fill: #eee;
-        stroke: #666;
-      }
-    </style>
   </head>
 
   <body>
     <div class="container">
       <h1>SeeDB</h1>
-      {{> queryBuilder}}
+
+      <div ng-controller="DatasetsController">
+        <button type="button" ng-click="toggleTwoDatasets()"
+          class="btn btn-primary btn-sm">
+            Two Datasets?</button>
+
+        <div class="row">
+          <div class="col-md-6">
+            <label>Query 1</label>
+            <input type="text" class="form-control" ng-model="query1" />
+          </div>
+          <div class="col-md-6" ng-if="twoDatasets">
+            <label>Query 2</label>
+            <input type="text" class="form-control" ng-model="query2" />
+          </div>
+        </div>
+
+        <button type="button" ng-click="submitQueries()"
+          class="btn btn-primary btn-lg">
+            Submit Queries</button>
+      </div>
+
       {{> visualizations}}
     </div>
   </body>
