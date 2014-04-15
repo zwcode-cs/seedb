@@ -22,6 +22,7 @@
 %\usepackage[ruled,vlined]{algorithm2e}
 
 \usepackage[font={scriptsize,it}]{caption}
+\usepackage{floatrow}
 
 
 \begin{document}
@@ -29,6 +30,7 @@
 
 
 \newcommand{\agp}[1]{\textcolor{red}{Aditya: #1}}
+\newcommand{\mpv}[1]{\textcolor{blue}{Manasi: #1}}
 %\newcommand{\alkis}[1]{\smallskip\noindent \textcolor{red}{\it $\Rightarrow$ Alkis: #1}}
 \newcommand{\SeeDB}{{\sc SeeDB}}
 \newcommand{\calQ}{\mathcal{Q}}
@@ -37,7 +39,7 @@
 
 \newtheorem{definition}{Definition}[section]
 \newtheorem{example}[definition]{Example}
-\newtheorem{goal}{Goal}[section]
+\newtheorem{problem}{Problem}[section]
 \renewcommand{\baselinestretch}{0.995}
 
 %\DeclareMathOperator*{\argmax}{arg\!\max}
@@ -81,7 +83,7 @@
 
 
 
-\title{SeeDB: What's interesting about my query?\vspace{-5pt}}
+\title{{\LARGE \sc SeeDB}: Automatically Generating Query Visualizations}
 %\subtitle{\vspace{-10pt}[Vision Paper]\vspace{5pt}}
 
 
@@ -96,19 +98,17 @@
 \end{abstract}
 \input{introduction.tex}
 \input{problem.tex}
-% \input{related_work.tex}
-% 
+\input{related_work.tex} 
 \input{architecture.tex}
-% 
+\input{frontend.tex}
 \input{backend.tex}
 % 
 % 
-% \section{Handling attributes of different kinds}
-% \subsection{Numerical, Temporal, Categorical, Gepgraphical}
-% \subsection{Binning}
-% \section{Handling distribution of single attributes}
-% \input{frontend.tex}
-% \input{user_study.tex}
-% \input{experiments.tex}
+\section{Handling attributes of different kinds}
+\mpv{Numerical, Temporal, Categorical, Gepgraphical}\\
+\mpv{Binning}
+%\section{Handling distribution of single attributes}
+\input{user_study.tex}
+\input{experiments.tex}
 
 \end{document}

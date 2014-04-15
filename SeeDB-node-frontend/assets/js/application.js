@@ -1,5 +1,5 @@
 //= require lib/lib
 //= require customizeAngularDelimiters
-//= require QueryProcessor
+//= require SeeDB
 //= require_tree .
 
