@@ -1,7 +1,7 @@
 (function(window) {
     "use strict";
 
-    var QueryProcessor = window.QueryProcessor;
+    var SeeDB = window.SeeDB;
     var google = window.google;
     var angular = window.angular;
 
@@ -98,7 +98,7 @@
                 });
             };
 
-            QueryProcessor.on("ProcessResult", processData);
+            SeeDB.on("ProcessResult", processData);
 
         })
         .directive("seedbChart", function() {

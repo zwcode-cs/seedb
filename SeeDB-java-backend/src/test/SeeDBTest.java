@@ -6,6 +6,9 @@ import java.util.List;
 
 import org.junit.Test;
 
+import output.OutputView;
+import views.View;
+
 import com.google.common.collect.Lists;
 
 import common.DBSettings;
@@ -17,7 +20,6 @@ import common.QueryParser;
 import common.Utils;
 import difference_operators.CardinalityDifferenceOperator;
 import difference_operators.DifferenceOperator;
-
 import api.SeeDB;
 
 public class SeeDBTest {
@@ -90,7 +92,7 @@ public class SeeDBTest {
 		settings.comparisonType = ComparisonType.TWO_DATASETS;
 		try {
 			seedb.initialize(defaultQuery, defaultQuery, settings);
-			List<String> result = seedb.computeDifference();
+			List<View> result = seedb.computeDifference();
 			Utils.printList(result);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -107,7 +109,7 @@ public class SeeDBTest {
 		settings.comparisonType = ComparisonType.TWO_DATASETS;
 		try {
 			seedb.initialize(defaultQuery, defaultQuery, settings);
-			List<String> result = seedb.computeDifference();
+			List<View> result = seedb.computeDifference();
 			Utils.printList(result);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -124,7 +126,7 @@ public class SeeDBTest {
 		settings.comparisonType = ComparisonType.TWO_DATASETS;
 		try {
 			seedb.initialize(defaultQuery1, defaultQuery2, settings);
-			List<String> result = seedb.computeDifference();
+			List<View> result = seedb.computeDifference();
 			Utils.printList(result);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -142,7 +144,7 @@ public class SeeDBTest {
 		settings.comparisonType = ComparisonType.TWO_DATASETS;
 		try {
 			seedb.initialize(defaultQuery1, defaultQuery2, settings);
-			List<String> result = seedb.computeDifference();
+			List<View> result = seedb.computeDifference();
 			Utils.printList(result);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -160,7 +162,7 @@ public class SeeDBTest {
 		settings.comparisonType = ComparisonType.ONE_DATASET_FULL;
 		try {
 			seedb.initialize(defaultQuery1, null, settings);
-			List<String> result = seedb.computeDifference();
+			List<View> result = seedb.computeDifference();
 			Utils.printList(result);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -177,7 +179,7 @@ public class SeeDBTest {
 		settings.comparisonType = ComparisonType.ONE_DATASET_FULL;
 		try {
 			seedb.initialize(defaultQuery1, null, settings);
-			List<String> result = seedb.computeDifference();
+			List<View> result = seedb.computeDifference();
 			Utils.printList(result);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -195,7 +197,7 @@ public class SeeDBTest {
 		settings.comparisonType = ComparisonType.ONE_DATASET_DIFF;
 		try {
 			seedb.initialize(defaultQuery1, null, settings);
-			List<String> result = seedb.computeDifference();
+			List<View> result = seedb.computeDifference();
 			Utils.printList(result);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -212,7 +214,7 @@ public class SeeDBTest {
 		settings.comparisonType = ComparisonType.ONE_DATASET_DIFF;
 		try {
 			seedb.initialize(defaultQuery1, null, settings);
-			List<String> result = seedb.computeDifference();
+			List<View> result = seedb.computeDifference();
 			Utils.printList(result);
 		} catch (Exception e) {
 			e.printStackTrace();

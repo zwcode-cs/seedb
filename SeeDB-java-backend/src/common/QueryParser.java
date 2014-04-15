@@ -18,11 +18,12 @@ public class QueryParser {
 	public static InputQuery parse(String query, String database) throws Exception {
 		InputQuery in = new InputQuery();
 		in.rawQuery = query.trim();
+		String lowerCase = query.toLowerCase();
 		int fromLength = 4;
 		int whereLength = 5;
-		int fromIdx = query.indexOf("from");
+		int fromIdx = lowerCase.indexOf("from");
 		if (fromIdx < 0) throw new Exception("no from keyword");
-		int whereIdx = query.indexOf("where");
+		int whereIdx = lowerCase.indexOf("where");
 		if (whereIdx < 0) throw new Exception("no where keyword");
 		in.fromClause = query.substring(fromIdx + fromLength, whereIdx).trim();
 		in.whereClause = query.substring(whereIdx + whereLength).trim();

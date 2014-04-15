@@ -1,12 +1,18 @@
 package views;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+
+import output.AggregateGroupByOutputView;
+
 import com.google.common.base.Joiner;
 
 import common.DifferenceQuery;
 import common.ExperimentalSettings;
 import common.ExperimentalSettings.DifferenceOperators;
 
-public class AggregateGroupByView extends AggregateView {
+public class AggregateGroupByView extends AggregateView implements AggregateGroupByOutputView {
 
 	public AggregateGroupByView(DifferenceQuery dq) {
 		super(dq);
@@ -38,5 +44,20 @@ public class AggregateGroupByView extends AggregateView {
 	@Override
 	public DifferenceOperators getOperator() {
 		return DifferenceOperators.AGGREGATE;
+	}
+
+	@Override
+	public Set<String> getAggregateAttributeIndex() {
+		return this.aggregateIdx.keySet();
+	}
+
+	@Override
+	public List<String> getGroupByAttributes() {
+		return this.groupByAttributes;
+	}
+
+	@Override
+	public HashMap<String, List<List<Double>>> getResult() {
+		return this.groupByValues;
 	}
 }
