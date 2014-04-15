@@ -159,5 +159,68 @@ public Float getNumDistinct(String columnName) throws SQLException {
 		return null;
 	}
 	
+	public String getAttribute(String columnName) throws SQLException {
+	
+		if (connection == null) {
+			System.out.println("Connection null. Quit");
+		}
+		
+		DatabaseMetaData dbmd = null;
+		ResultSet rs = null;
+	
+	
+				
+		String sqlQuery = "SELECT " + columnName + " FROM " + table;
+		Statement stmt = null;
+		try {
+			stmt = connection.createStatement();
+		    rs = stmt.executeQuery(sqlQuery);
+		    Set<String> uniqueValues = new HashSet<String>();
+		    int rowCount = 0;
+		    
+		    int isTime = 0;
+		    int isGeographic = 0; //XXX:not done
+		    int isNumeric = 0;
+		    boolean isCategorical = false;
+		    int isOrdinal = 0; //XXX: not done
+
+		    while (rs.next()) {
+
+		    	uniqueValues.add(rs.getString(1));
+
+		    	try {
+		    		if (rs.getTimestamp(1) != null)  {
+		    			isTime++;
+			    	}
+		    	} catch (PSQLException e) {
+		    	}
+		    	
+		    	try {
+		    		if (rs.getBigDecimal(1) != null)  {
+		    			isNumeric++;
+		    		}			    		
+		    	} catch (PSQLException e) {
+		    	}
+		    	
+		    		
+	    		System.out.println(rs.getString(1));
+	    		String shit = new GeocodeImplementation().getJSONByGoogle(rs.getString(1));
+	    		System.out.println(shit);
+
+		    	
+		    	rowCount++;
+		    }
+		    
+		    if (uniqueValues.size() < 20 || uniqueValues.size() < 0.1 * rowCount) {
+		    	isCategorical = true;
+		    }
+		    
+		    return null;
+		    
+		} catch (Exception e) {
+			System.out.println(e);
+			return null;
+		}
+	}	
 
 }
