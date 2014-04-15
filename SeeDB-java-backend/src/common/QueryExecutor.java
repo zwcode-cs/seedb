@@ -21,9 +21,11 @@ import common.ExperimentalSettings.DifferenceOperators;
 import db_wrappers.DBConnection;
 
 public class QueryExecutor {
-	private static HashMap<DifferenceQuery, AggregateView> aggregateViewMap;
+	private HashMap<DifferenceQuery, AggregateView> aggregateViewMap;
 
-	public static List<View> execute(List<DifferenceQuery> optimizedQueries,
+	public QueryExecutor() {}
+	
+	public List<View> execute(List<DifferenceQuery> optimizedQueries,
 			List<DifferenceQuery> queries, DBConnection[] connections, int numDatasets) throws SQLException {
 		List<View> views = Lists.newArrayList();
 		for (DifferenceQuery optQuery : optimizedQueries) {
@@ -36,10 +38,10 @@ public class QueryExecutor {
 					aggregateViewMap = Maps.newHashMap();
 					// create dummy views for all the views we care about
 					for (DifferenceQuery query : queries) {
-						if (optQuery.op == DifferenceOperators.CARDINALITY) {
+						if (query.op == DifferenceOperators.CARDINALITY) {
 							aggregateViewMap.put(query, new CardinalityView(query));
 						}
-						if (optQuery.op == DifferenceOperators.AGGREGATE) {
+						if (query.op == DifferenceOperators.AGGREGATE) {
 							aggregateViewMap.put(query, new AggregateGroupByView(query));
 						}		
 					}
@@ -53,7 +55,7 @@ public class QueryExecutor {
 		return views;
 	}
 	
-	public static void executeAggregateDifferenceQuery(
+	public void executeAggregateDifferenceQuery(
 			DifferenceQuery optQuery, DBConnection[] connections) throws SQLException {
 		List<String> queries = optQuery.getSQLQuery();
 		if (optQuery.mergedQueries) { // single query
@@ -65,7 +67,7 @@ public class QueryExecutor {
 		}	
 	}
 
-	public static void executeQuery(DifferenceQuery optQuery, String query, 
+	public void executeQuery(DifferenceQuery optQuery, String query, 
 			DBConnection con, int group) throws SQLException {
 		ResultSet rs = null;
 		ResultSetMetaData rsmd = null;
@@ -130,7 +132,7 @@ public class QueryExecutor {
 		}		
 	}
 
-	public static View executeRowSampleDifferenceQuery(
+	public View executeRowSampleDifferenceQuery(
 			DifferenceQuery optQuery, DBConnection[] connections) 
 					throws SQLException {
 		RowSampleView view = new RowSampleView();
