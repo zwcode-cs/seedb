@@ -195,7 +195,7 @@ public class SeeDB {
 	 * registered with the system
 	 * @return List of serialized difference results
 	 */
-	public List<String> computeDifference() {
+	public List<View> computeDifference() {
 		// compute the attributes that we want to analyze
 		InputTablesMetadata[] queryMetadatas = this.getMetadata();
 		
@@ -224,8 +224,10 @@ public class SeeDB {
 		List<String> result = Lists.newArrayList(); 
 		for (View view : views) {
 			result.add(view.serializeView());
+			System.out.println(view.serializeView());
 		}
-		return result;
+		
+		return views;
 	}	
 	
 }

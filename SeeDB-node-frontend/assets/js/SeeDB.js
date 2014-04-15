@@ -53,31 +53,12 @@
       // send method call to socket
       _this.socket.emit("call", {methodName: methodName, args: javaArgs}, callback);
     }
-    
-    this.setTable = function(table) {
-      callJava("setTable", table, function () {
-        _this.getMetadata();
-        _this.getAllMeasureAggregatesForAllDimensionCombinations();
-      });
-    };
 
-    this.setDistanceMeasure = function(distanceMeasure) {
-      callJava("setDistanceMeasure", distanceMeasure);
-    };
-
-    this.getMetadata = function() {
-      var _this = this;
-      callJava("getMetadata", function (response) {
-        _this.trigger("Metadata", response);
-        _this.metadata = response;
-        _this.getAllMeasureAggregatesForAllDimensionCombinations();
-      });
-    };
-
-    this.submitQuery = function(query) {
-      callJava("setQuery", query, function () {
-        callJava("Process", function (response) {
-          _this.trigger("ProcessResult", response);
+    this.submitQueries = function(query1, query2) {
+      callJava("initialize", query1, query2, function () {
+        callJava("computeDifference", function (response) {
+          _this.trigger("views", response);
+          console.log(response);
         });
       });
     };
