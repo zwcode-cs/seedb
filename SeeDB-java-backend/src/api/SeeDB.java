@@ -213,8 +213,9 @@ public class SeeDB {
 				optimizer.optimizeQueries(queries);
 		
 		List<View> views = null;
+		QueryExecutor qe = new QueryExecutor();
 		try {
-			views = QueryExecutor.execute(optimizedQueries, queries, connections, numDatasets);
+			views = qe.execute(optimizedQueries, queries, connections, numDatasets);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
