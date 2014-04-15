@@ -9,8 +9,8 @@
         .controller("DatasetsController", function($scope) {
             $scope.twoDatasets = true;
 
-            $scope.query1 = "select * from election_data_full where cand_nm='Obama, Barack' and random()<0.1";
-            $scope.query2 = "select * from election_data_full where cand_nm='McCain, John S' and random()<0.1";
+            $scope.query1 = "select * from election_data where cand_nm='Cox, John H' and random()<0.1";
+            $scope.query2 = "select * from election_data where cand_nm='McCain, John S' and random()<0.1";
 
             $scope.toggleTwoDatasets = function () {
                 $scope.twoDatasets = ! $scope.twoDatasets;
