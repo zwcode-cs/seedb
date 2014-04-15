@@ -22,11 +22,11 @@ import difference_operators.DifferenceOperator;
 import api.SeeDB;
 
 public class SeeDBTest {
-	private String defaultQuery1 = "select * from table_10_2_2_3_2_1 where measure1 < 2000";
+	private String defaultQuery1 = "select * from election_data where cand_nm='McCain, John S'"; //"select * from table_10_2_2_3_2_1 where measure1 < 2000";
 	private String defaultQuery = "select * from table_10_2_2_3_2_1 where measure1 < 2000";
 	private String defaultQuery2 = "select * from table_10_2_2_3_2_1 where measure1 >= 2000";
 	
-	@Test
+	//@Test
 	public void initializeTest() {
 		SeeDB seedb = new SeeDB();
 		try {
@@ -49,14 +49,14 @@ public class SeeDBTest {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void connectToDatabaseTest() {
 		SeeDB seedb = new SeeDB();
 		seedb.connectToDatabase(1);
 		assertTrue(seedb.getConnections()[1] != null);
 	}
 	
-	@Test
+	//@Test
 	public void getMetadataTest() {
 		SeeDB seedb = new SeeDB();
 		try {
@@ -69,7 +69,7 @@ public class SeeDBTest {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void getDifferenceOperatorsTest() {
 		SeeDB seedb = new SeeDB();
 		try {
@@ -151,11 +151,13 @@ public class SeeDBTest {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void endToEndAggregateGroupByDifferenceWithSingleQueryFullComparisonTest() {
+		long start = System.currentTimeMillis();
 		SeeDB seedb = new SeeDB();
 		ExperimentalSettings settings = new ExperimentalSettings();
-		settings.mergeQueries = true;
+		settings.mergeQueries = false;//true; //false
+		settings.noAggregateQueryOptimization = true;
 		settings.differenceOperators = Lists.newArrayList();
 		settings.differenceOperators.add(DifferenceOperators.AGGREGATE);
 		settings.comparisonType = ComparisonType.ONE_DATASET_FULL;
@@ -166,6 +168,8 @@ public class SeeDBTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
+		} finally {
+			System.out.println("Time taken: " + (System.currentTimeMillis() - start));
 		}
 	}
 	
@@ -186,14 +190,14 @@ public class SeeDBTest {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void endToEndAggregateGroupByDifferenceWithSingleQueryDifferenceComparisonTest() {
 		SeeDB seedb = new SeeDB();
 		ExperimentalSettings settings = new ExperimentalSettings();
 		settings.mergeQueries = true;
 		settings.differenceOperators = Lists.newArrayList();
 		settings.differenceOperators.add(DifferenceOperators.AGGREGATE);
-		settings.comparisonType = ComparisonType.ONE_DATASET_DIFF;
+		settings.comparisonType = ComparisonType.TWO_DATASETS;
 		try {
 			seedb.initialize(defaultQuery1, null, settings);
 			List<View> result = seedb.computeDifference();

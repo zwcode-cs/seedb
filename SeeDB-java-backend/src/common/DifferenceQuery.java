@@ -34,31 +34,57 @@ public class DifferenceQuery {
 	public String getSQLQueryHelper(boolean combined, InputQuery q1, InputQuery q2) {
 		String result = "";
 		result += "SELECT";
+		boolean needsComma = false;
+		
 		if (!selectAttributes.isEmpty()) {
 			result += " " + Joiner.on(", ").join(
 					getAttributeNames(selectAttributes));
+			needsComma = true;
 		}
 		
-		if (!groupByAttributes.isEmpty()) {
+		if (needsComma) {
+			result += ", ";
+		} else {
+			result += " ";
+		}
+		needsComma = false;
+		
+		if (!groupByAttributes.isEmpty()) {	
 			result += " " + Joiner.on(", ").join(
 					getAttributeNames(groupByAttributes));
+			needsComma = true;
 		}
 		
+		if (needsComma) {
+			result += ", ";
+		} else {
+			result += " ";
+		}
+		needsComma = false;
+		
 		if (combined) {
-			result += " ," + "case when " + q1.whereClause + " then 1 else 0 end as seedb_group_1";
+			result += "case when " + q1.whereClause + " then 1 else 0 end as seedb_group_1";
 			result += " ,";
 			if (q2.whereClause == null || q2.whereClause.isEmpty()) {
 				result += "1 as seedb_group_2";
 			}
 			else {
 				result += "case when " + q2.whereClause + " then 1 else 0 end as seedb_group_2";
-			}				
+			}
+			needsComma = true;
 		}
+		
+		if (needsComma) {
+			result += ", ";
+		} else {
+			result += " ";
+		}
+		needsComma = false;
 		
 		if (!aggregateAttributes.isEmpty()) {
 			List<String> aggregates = 
 					applyAggregateFunctionsToAttributes(aggregateAttributes, aggregateFunctions);
-			result += " ," + Joiner.on(", ").join(aggregates);
+			result += Joiner.on(", ").join(aggregates);
 		}
 		
 		if (!combined) {
