@@ -2,6 +2,7 @@ package common;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import com.google.common.collect.Lists;
 import core.QueryExecutor;
@@ -18,7 +19,7 @@ import db_wrappers.DBConnection;
 public class InputTablesMetadata {
 	private List<Attribute> dimensionAttributes;
 	private List<Attribute> measureAttributes;
-	private InputQuery inputQuery;
+	private List<String> tables;
 	
 	public List<Attribute> getDimensionAttributes() {
 		return dimensionAttributes;
@@ -28,11 +29,11 @@ public class InputTablesMetadata {
 		return measureAttributes;
 	}
 
-	public InputTablesMetadata(InputQuery inputQuery, 
+	public InputTablesMetadata(List<String> tables, 
 			DBConnection connection) {
 		dimensionAttributes = Lists.newArrayList();
 		measureAttributes = Lists.newArrayList();
-		this.inputQuery = inputQuery;
+		this.tables = tables;
 		
 		if (connection.getDatabaseType().equalsIgnoreCase("PostgreSQL")) {
 			getAttributeMetadataByDescription(connection);
@@ -48,7 +49,7 @@ public class InputTablesMetadata {
 	}
 
 	private void getAttributeMetadataByDescription(DBConnection connection) {
-		for (String table : inputQuery.tables) {
+		for (String table : tables) {
 			ResultSet rs = connection.getTableColumns(table);
 			try {
 				while (rs.next()) {
@@ -68,13 +69,19 @@ public class InputTablesMetadata {
 		}
 	}
 
-	// TODO: flesh this out for not querying the same tables
-	public static void computeIntersection(
-			InputTablesMetadata inputTablesMetadata,
-			InputTablesMetadata inputTablesMetadata2) {
-		if (inputTablesMetadata.inputQuery.queriesSameTables(
-				inputTablesMetadata2.inputQuery))
-			return;
+	
+	/**
+	public boolean queriesSameTables(InputQuery q) {
+		if (!q.database.equalsIgnoreCase(this.database)) return false;
+		if (q.tables.size() != this.tables.size()) return false;
+		Collections.sort(q.tables);
+		Collections.sort(this.tables);
+		for (int i = 0; i < this.tables.size(); i++) {
+			if (!q.tables.get(i).equalsIgnoreCase(this.tables.get(i)))
+				return false;
+		}
+		return true;
 	}
+	*/
 
 }
