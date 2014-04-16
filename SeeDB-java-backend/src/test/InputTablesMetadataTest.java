@@ -30,7 +30,7 @@ public class InputTablesMetadataTest {
 		DBConnection con = new DBConnection();
 		con.connectToDatabase(DBSettings.getDefault());
 		InputTablesMetadata metadata = new InputTablesMetadata(
-				InputQuery.getDefault(), con);
+				InputQuery.getDefault().tables, con);
 		assertTrue(Utils.listEqual(metadata.getDimensionAttributes(), 
 				dimAttributes));
 		assertTrue(Utils.listEqual(metadata.getMeasureAttributes(), 
@@ -42,12 +42,12 @@ public class InputTablesMetadataTest {
 		DBConnection con = new DBConnection();
 		con.connectToDatabase(DBSettings.getDefault());
 		InputTablesMetadata metadata = new InputTablesMetadata(
-				InputQuery.getDefault(), con);
+				InputQuery.getDefault().tables, con);
 		DBConnection con2 = new DBConnection();
 		con2.connectToDatabase(DBSettings.getDefault());
 		InputTablesMetadata metadata2 = new InputTablesMetadata(
-				InputQuery.getDefault(), con2);
-		InputTablesMetadata.computeIntersection(metadata, metadata2);
+				InputQuery.getDefault().tables, con2);
+		//InputTablesMetadata.computeIntersection(metadata, metadata2);
 	}
 
 }
