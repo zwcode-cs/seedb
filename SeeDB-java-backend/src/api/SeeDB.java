@@ -94,6 +94,10 @@ public class SeeDB {
 				DBSettings.getDefault());
 	}
 	
+	public void setTable() {
+		
+	}
+	
 	/**
 	 * Initialize SeeDB engine with the two datasets and optionally experimental settings. 
 	 * Also sanitize the input
@@ -165,15 +169,20 @@ public class SeeDB {
 	 * Compute the metadata for both the queries
 	 * @return
 	 */
-	public InputTablesMetadata[] getMetadata() {
+	public InputTablesMetadata[] getMetadata(List<String> tables1, DBConnection conn1, 
+			List<String> tables2, DBConnection conn2, int numDatasets) {
 		InputTablesMetadata[] queryMetadatas = new InputTablesMetadata[] {null, null};
-		queryMetadatas[0] = new InputTablesMetadata(inputQueries[0], connections[0]);
+		queryMetadatas[0] = new InputTablesMetadata(tables1, conn1);
 		if (numDatasets == 2) {
-			queryMetadatas[1] = new InputTablesMetadata(inputQueries[1], connections[1]);
-			InputTablesMetadata.computeIntersection(queryMetadatas[0], 
-					queryMetadatas[1]);
+			queryMetadatas[1] = new InputTablesMetadata(tables2, conn2);
+			// TODO: need to ensure that same tables are being queried
 		}
 		return queryMetadatas;
+	}
+	
+	public InputTablesMetadata[] getMetadata() {
+		return this.getMetadata(inputQueries[0].tables, connections[0], 
+				inputQueries[1].tables, connections[1], this.numDatasets);
 	}
 	
 	public List<DifferenceOperator> getDifferenceOperators() {
@@ -197,7 +206,8 @@ public class SeeDB {
 	 */
 	public List<View> computeDifference() {
 		// compute the attributes that we want to analyze
-		InputTablesMetadata[] queryMetadatas = this.getMetadata();
+		InputTablesMetadata[] queryMetadatas = this.getMetadata(inputQueries[0].tables, connections[0], 
+				inputQueries[1].tables, connections[1], this.numDatasets);
 		
 		// compute queries we want to execute
 		List<DifferenceOperator> ops = this.getDifferenceOperators();

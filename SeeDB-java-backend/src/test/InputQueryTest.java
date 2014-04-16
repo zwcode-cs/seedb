@@ -10,7 +10,7 @@ import common.InputQuery;
 
 public class InputQueryTest {
 
-	@Test
+	/*
 	public void queriesSameTablesTest() {
 		InputQuery in1 = new InputQuery();
 		InputQuery in2 = new InputQuery();
@@ -27,5 +27,6 @@ public class InputQueryTest {
 		in1.database = "db'";
 		assertFalse(in2.queriesSameTables(in1));
 	}
+	*/
 
 }

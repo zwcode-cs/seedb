@@ -32,7 +32,7 @@ public class CardinalityView extends AggregateView implements CardinalityOutputV
 		if (dataset == 1) {
 			return this.groupByValues.get("none").get(0).get(0);
 		} else if (dataset == 2) {
-			return this.groupByValues.get("none").get(1).get(0);
+			return this.groupByValues.get("none").get(0).get(1);
 		} else return -1;
 	}
 
