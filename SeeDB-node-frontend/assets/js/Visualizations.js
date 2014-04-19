@@ -93,12 +93,11 @@
 
             var processData = function(response) {
                 $scope.$apply(function() {
-                    $scope.response = response;
-                    $scope.charts = response.map(setChartAttributes);
+                    $scope.views = response;
                 });
             };
 
-            SeeDB.on("ProcessResult", processData);
+            SeeDB.on("views", processData);
 
         })
         .directive("seedbChart", function() {
@@ -112,8 +111,48 @@
                     element = element.get(0);
 
                     // Instantiate and draw our chart, passing in some options.
-                    var googleChart = new google.visualization[chart.chartType](element);
-                    googleChart.draw(chart.dataTable, chart.options);
+                    // var googleChart = new google.visualization[chart.chartType](element);
+                    // googleChart.draw(chart.dataTable, chart.options);
+                }
+            };
+        })
+
+        // Cardinality View
+        .directive("cardinalityView", function () {
+            return {
+                scope: {
+                    view: "=view"
+                },
+                link: function (scope, element) {
+                    var data = google.visualization.arrayToDataTable([
+                      ['Value', 'Dataset 1', 'Dataset 2'],
+                      ['Cardinality',  scope.view.cardinalities[0], scope.view.cardinalities[1]]
+                    ]);
+
+                    var options = {
+                      title: 'Cardinality',
+                      vAxis: {
+                        textPosition: "none"
+                      },
+                      chartArea: {
+                        left: 0
+                      }
+                    };
+
+                    var chart = new google.visualization.BarChart(element.get(0));
+                    chart.draw(data, options);
+                }
+            };
+        })
+
+        // Cardinality View
+        .directive("dataSampleView", function () {
+            return {
+                scope: {
+                    view: "=view"
+                },
+                link: function (scope, element) {
+                    element.html("helloooo");
                 }
             };
         });

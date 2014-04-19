@@ -2,7 +2,6 @@
     "use strict";
 
     var SeeDB = window.SeeDB;
-    var google = window.google;
     var angular = window.angular;
 
     angular.module("seeDB")
@@ -17,7 +16,6 @@
             };
 
             $scope.submitQueries = function () {
-                console.log($scope.query1, $scope.query2);
                 SeeDB.submitQueries($scope.query1, $scope.query2);
             };
         });
