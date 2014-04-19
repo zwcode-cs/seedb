@@ -60,6 +60,7 @@
         },
         link: function (scope, element) {
           element.html("helloooo");
+          console.log("hello");
         }
       };
     })
