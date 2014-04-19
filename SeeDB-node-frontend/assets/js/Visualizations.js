@@ -84,19 +84,24 @@
           scope.sortedAggregateAttrs = sortedAggregateAttrs;
 
           scope.charts = _.map(scope.sortedAggregateAttrs, function (aggAttr) {
+            var index = scope.view.aggregateAttributeIndex[aggAttr];
+
+            var headerRow = [[scope.view.groupByAttributes[0], 'Dataset 1', 'Dataset 2']];
+            var dataRows = _.map(scope.view.result, function (aggValues, groupByValue) {
+              return [groupByValue, aggValues[0][index], aggValues[1][index]];
+            });
+
+            var headerAndData = headerRow.concat(dataRows);
+
+            console.log(headerAndData);
+
             return {
-              index: scope.view.aggregateAttributeIndex[aggAttr],
-              data: google.visualization.arrayToDataTable([
-                ['Value', 'Dataset 1', 'Dataset 2'],
-                ['Cardinality',  1, 2]
-              ]),
+              index: index,
+              data: google.visualization.arrayToDataTable(headerAndData),
               options: {
-                title: 'Cardinality',
-                vAxis: {
-                  textPosition: "none"
-                },
-                  chartArea: {
-                left: 0
+                title: aggAttr,
+                chartArea: {
+                  left: 0
                 }
               }
             };
