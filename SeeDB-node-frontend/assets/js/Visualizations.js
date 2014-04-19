@@ -53,14 +53,13 @@
     })
 
     // Data Sample View
-    .directive("dataSampleView", function () {
+    .directive("datasampleView", function () {
       return {
         scope: {
           view: "=view"
         },
         link: function (scope, element) {
-          element.html("helloooo");
-          console.log("hello");
+          console.log(element);
         }
       };
     })
