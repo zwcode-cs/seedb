@@ -17,18 +17,6 @@ public class InputQuery {
 	public String fromClause;
 	public String whereClause;
 	public List<String> tables;
-
-	public boolean queriesSameTables(InputQuery q) {
-		if (!q.database.equalsIgnoreCase(this.database)) return false;
-		if (q.tables.size() != this.tables.size()) return false;
-		Collections.sort(q.tables);
-		Collections.sort(this.tables);
-		for (int i = 0; i < this.tables.size(); i++) {
-			if (!q.tables.get(i).equalsIgnoreCase(this.tables.get(i)))
-				return false;
-		}
-		return true;
-	}
 	
 	public boolean equals(Object o) {
 		if ((o == null) || (o.getClass() != this.getClass()))

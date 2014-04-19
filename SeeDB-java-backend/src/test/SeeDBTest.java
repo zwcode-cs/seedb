@@ -25,6 +25,8 @@ public class SeeDBTest {
 	private String defaultQuery1 = "select * from election_data where cand_nm='McCain, John S'"; //"select * from table_10_2_2_3_2_1 where measure1 < 2000";
 	private String defaultQuery = "select * from table_10_2_2_3_2_1 where measure1 < 2000";
 	private String defaultQuery2 = "select * from table_10_2_2_3_2_1 where measure1 >= 2000";
+	private String defaultQuery3 = "select * from election_data where cand_nm='McCain, John S'";
+	private String defaultQuery4 = "select * from election_data where cand_nm='Cox, John H'";
 	
 	//@Test
 	public void initializeTest() {
@@ -99,7 +101,7 @@ public class SeeDBTest {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void endToEndCardinalityDifferenceTest() {
 		SeeDB seedb = new SeeDB();
 		ExperimentalSettings settings = new ExperimentalSettings();
@@ -107,7 +109,7 @@ public class SeeDBTest {
 		settings.differenceOperators.add(DifferenceOperators.CARDINALITY);
 		settings.comparisonType = ComparisonType.TWO_DATASETS;
 		try {
-			seedb.initialize(defaultQuery, defaultQuery, settings);
+			seedb.initialize(defaultQuery3, defaultQuery4, settings);
 			List<View> result = seedb.computeDifference();
 			Utils.printList(result);
 		} catch (Exception e) {
@@ -151,7 +153,7 @@ public class SeeDBTest {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void endToEndAggregateGroupByDifferenceWithSingleQueryFullComparisonTest() {
 		long start = System.currentTimeMillis();
 		SeeDB seedb = new SeeDB();
