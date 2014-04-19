@@ -39,9 +39,9 @@
           var options = {
             title: 'Cardinality',
             vAxis: {
-            textPosition: "none"
+              textPosition: "none"
             },
-            chartArea: {
+              chartArea: {
             left: 0
             }
           };
@@ -71,7 +71,51 @@
           view: "=view"
         },
         link: function (scope, element) {
-          element.html("aggregate");
+          // we need one graph per aggregate
+          var sortedByIndex = _.sortBy(
+            _.pairs(scope.view.aggregateAttributeIndex), function (pair) {
+              return pair[1];
+            });
+
+          var sortedAggregateAttrs = _.map(sortedByIndex, function (pair) {
+            return pair[0];
+          });
+
+          scope.sortedAggregateAttrs = sortedAggregateAttrs;
+
+          scope.charts = _.map(scope.sortedAggregateAttrs, function (aggAttr) {
+            return {
+              index: scope.view.aggregateAttributeIndex[aggAttr],
+              data: google.visualization.arrayToDataTable([
+                ['Value', 'Dataset 1', 'Dataset 2'],
+                ['Cardinality',  1, 2]
+              ]),
+              options: {
+                title: 'Cardinality',
+                vAxis: {
+                  textPosition: "none"
+                },
+                  chartArea: {
+                left: 0
+                }
+              }
+            };
+          });
+        },
+        templateUrl: "aggregateView.html"
+      };
+    })
+
+    // Aggregate View
+    .directive("googleChart", function () {
+      return {
+        scope: {
+          data: "=",
+          options: "="
+        },
+        link: function (scope, element) {
+          var chart = new google.visualization.ColumnChart(element.get(0));
+          chart.draw(scope.data, scope.options);
         }
       };
     });
