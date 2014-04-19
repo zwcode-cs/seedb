@@ -39,9 +39,6 @@ public class DifferenceQuery {
 		if (!selectAttributes.isEmpty()) {
 			result += " " + Joiner.on(", ").join(
 					getAttributeNames(selectAttributes));
-			if (selectAttributes.size() > 1) {
-				needsComma = true;
-			}
 		}
 		
 		if (needsComma) {
