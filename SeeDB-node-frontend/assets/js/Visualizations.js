@@ -59,7 +59,23 @@
           view: "=view"
         },
         link: function (scope, element) {
-          console.log(element);
+          var data = google.visualization.arrayToDataTable([
+            scope.view.columnNames,
+            ['Cardinality',  scope.view.cardinalities[0], scope.view.cardinalities[1]]
+          ]);
+
+          var options = {
+            title: 'Data Sample',
+            vAxis: {
+              textPosition: "none"
+            },
+              chartArea: {
+            left: 0
+            }
+          };
+
+          var chart = new google.visualization.Table(element.get(0));
+          chart.draw(data, options);
         }
       };
     })

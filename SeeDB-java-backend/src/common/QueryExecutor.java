@@ -137,6 +137,11 @@ public class QueryExecutor {
 					throws SQLException {
 		RowSampleView view = new RowSampleView();
 		List<String> queries = optQuery.getSQLQuery();
+		List<String> limitedQueries = Lists.newArrayList();
+		
+		for (String query : queries) {
+			limitedQueries.add(query + " LIMIT 50");
+		}
 		ResultSet rs = connections[0].executeQuery(
 				queries.get(0));
 		ResultSetMetaData rsmd = rs.getMetaData();
