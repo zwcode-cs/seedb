@@ -1,12 +1,22 @@
 <div ng-controller="VisualizationsController">
     <h3> Visualizations </h3>
 
-    <div ng-repeat="chart in charts">
+    <div ng-repeat="view in views" ng-switch="view.operator">
+      <div ng-switch-when="CARDINALITY">
+        <div cardinality-view view="view"></div>
+      </div>
+
+      <div ng-switch-when="DATA_SAMPLE">
+        <div data-sample-view view="view"></div>
+      </div>
+
+      <div ng-switch-when="AGGREGATE">
         <h4>Graph [[$index]] </h4>
         <b>Utility:</b> [[chart.utility]] <br>
         <b>Group by:</b>  [[chart.groupBy]] <br>
         <b>Aggregate by:</b> [[chart.aggregateBy]]
 
         <seedb-chart chart="chart"></seedb-chart>
+      </div>
     </div>
 </div>
