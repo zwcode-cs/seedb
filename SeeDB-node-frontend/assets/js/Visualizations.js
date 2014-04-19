@@ -7,7 +7,7 @@
 
   // Draw Google Charts 
   google.load('visualization', '1.0', {
-    'packages': ['corechart']
+    'packages': ['corechart', 'table']
   });
 
   angular.module("seeDB")
@@ -53,29 +53,30 @@
     })
 
     // Data Sample View
-    .directive("datasampleView", function () {
+    .directive("sampleView", function () {
       return {
         scope: {
           view: "=view"
         },
+        templateUrl: "sampleView.html",
         link: function (scope, element) {
-          var data = google.visualization.arrayToDataTable([
-            scope.view.columnNames,
-            ['Cardinality',  scope.view.cardinalities[0], scope.view.cardinalities[1]]
-          ]);
+          // iterate over datasets
+          scope.charts = _.map(scope.view.rows, function (rowsOfDataset, index) {
+            var headerRow = [scope.view.columnNames];
+            var dataRows = rowsOfDataset;
 
-          var options = {
-            title: 'Data Sample',
-            vAxis: {
-              textPosition: "none"
-            },
-              chartArea: {
-            left: 0
-            }
-          };
+            var headerAndData = headerRow.concat(dataRows);
 
-          var chart = new google.visualization.Table(element.get(0));
-          chart.draw(data, options);
+            return {
+              data: google.visualization.arrayToDataTable(headerAndData),
+              options: {
+                title: "Dataset " + (index + 1) + " Sample Rows",
+                height: "300px",
+                width: "100%"
+              },
+              type: "Table"
+            };
+          });
         }
       };
     })
@@ -119,7 +120,8 @@
                 chartArea: {
                   left: 0
                 }
-              }
+              },
+              type: "ColumnChart"
             };
           });
         },
@@ -132,10 +134,11 @@
       return {
         scope: {
           data: "=",
-          options: "="
+          options: "=",
+          type: "="
         },
         link: function (scope, element) {
-          var chart = new google.visualization.ColumnChart(element.get(0));
+          var chart = new google.visualization[scope.type](element.get(0));
           chart.draw(scope.data, scope.options);
         }
       };
