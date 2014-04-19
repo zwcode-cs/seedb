@@ -143,7 +143,7 @@ public class QueryExecutor {
 			limitedQueries.add(query + " LIMIT 50");
 		}
 		ResultSet rs = connections[0].executeQuery(
-				queries.get(0));
+				limitedQueries.get(0));
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int columnCount = rsmd.getColumnCount();
 
@@ -160,7 +160,7 @@ public class QueryExecutor {
 			view.rows1.add(row);
 		}
 		rs = connections[1].executeQuery(
-				queries.get(1));
+				limitedQueries.get(1));
 		
 		while (rs.next()) {
 			List<String> row = Lists.newArrayList();
