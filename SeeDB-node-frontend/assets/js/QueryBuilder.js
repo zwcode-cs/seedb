@@ -25,22 +25,7 @@
             SeeDB.setTable($scope.tableName);
           };
 
-          $scope.setMetadata = function(metadata) {
-            var dimensionAttributes = metadata.dimensionAttributes.map(function(element) {
-              return element;
-            });
-            var measureAttributes = metadata.measureAttributes.map(function(element) {
-              return element;
-            });
-
-            var allAttributes = dimensionAttributes.concat(measureAttributes);
-
-            $scope.$apply(function() {
-              $scope.columnNames = allAttributes;
-            });
-          };
-
-          SeeDB.on("Metadata", $scope.setMetadata);
+          $scope.columnNames = ["cand_nm", "contbr_zip"];
 
           $scope.addPredicate = function () {
             this.predicates.push({
