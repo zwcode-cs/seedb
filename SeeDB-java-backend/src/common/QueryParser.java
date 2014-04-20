@@ -16,6 +16,11 @@ import db_wrappers.DBConnection;
 public class QueryParser {
 
 	public static InputQuery parse(String query, String database) throws Exception {
+		// string semicolon from the end of the query
+		if (query.endsWith(";")) {
+			query = query.substring(0, query.length() - 1);
+		}
+		
 		InputQuery in = new InputQuery();
 		in.rawQuery = query.trim();
 		String lowerCase = query.toLowerCase();
