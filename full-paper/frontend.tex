@@ -8,14 +8,22 @@ backend.
 To provide the analyst maximum flexibility in issuing queries, \SeeDB\
 provides the analyst with three
 mechanisms for specifying an input query: 
-(a) directly filling in SQL into a text box, 
-(b) using a query builder tool that allows analysts
-unfamiliar with SQL to formulate queries through a form-based interface, and (c)
-using pre-defined query templates which encode commonly performed operations,
+\vspace{5 mm}
+
+ \squishlist
+   \item directly filling in SQL into a text box
+   \item sing a query builder tool that allows analysts
+unfamiliar with SQL to formulate queries through a form-based interface
+   \item using pre-defined query templates which encode commonly performed operations,
 e.g., selecting outliers in a particular column. 
-%We find that pre-defined query
-%templates are particularly useful since analysts are often interested in
-%anomalous data points.
+ \squishend
+
+\vspace{5 mm}
+
+
+We find that pre-defined query templates are particularly useful since analysts are often interested in anomalous data points. Additionally, \SeeDB\
+'s pre-defined templates and query building tool enable analysts who are relatively unfamilar with the SQL syntax or the dataset being considered are still able to gain valuable insights into the dataset in one glance. This way, we have both simplified the process of insight identification as well as making it more accessible to less experienced data analysts.
+
 
 Once the analyst issues a query via the \SeeDB\ frontend, the backend
 evaluates various views and delivers the most interesting ones (based on
@@ -30,22 +38,11 @@ detail via drill-downs,
 %by hovering and clicking on various portions of the view, 
 and study metadata for each view (e.g. size of result, sample data, value with
 maximum change and other statistics). 
-%The analyst can also slice-and-dice views further by performing drill-downs on
-%specific attributes in the view. 
 Figure~\ref{fig:frontend1} shows a screenshot of the \SeeDB\ frontend (showing
 the query builder) in action.
- 
-\begin{figure}[htb]
-\vspace{-10pt}
-\centerline{
-\hbox{\resizebox{5cm}{!}{\includegraphics[trim=15mm 0mm 120mm 0mm,
-clip=true]{Images/sql_builder.pdf}}}
-\hbox{\resizebox{!}{6cm}{\includegraphics[trim=50mm 30mm 150mm 52mm,
-clip=true]{Images/viz_panel.pdf}}}}
-\caption{SeeDB Frontend: Query Builder (left) and Example Visualizations
-(right)}
-\label{fig:frontend1}
-\vspace{-10pt}
-\end{figure} 
 
-\mpv{Interactivity. Ship all data to client?}
+After an analyst sees the resulting graphs returned by \SeeDB\ frontend, they can also slice-and-dice views further by performing drill-downs on specific attributes in the view by (a) interactively selecting sections of the graph or (b) selecting a different group by or aggregate value. As such, an analyst is able to actively interact with the system to get to the most interesting results. \SeeDB\ reduces the latency of these interactions by preemptively sending the results of all possible group-bys and aggregates to the frontend. When the analyst changes the value they want to aggregate or group by, the new graphs are rendered instantaneously using the data that has already been sent to frontend, as opposed to making another round trip to the backend and database server.
+
+\SeeDB\'s frontend is designed intentionally to be simple and intuitive, such that an analyst who has limited SQL syntax knowledge and is not previously familiar with the dataset can easily identify insights in the database that they might not be able to find manually. For the advanced analysts, \SeeDB\ allows them to directly enter queries, reduce manual labor, and speed up the insight identification process.
+
+

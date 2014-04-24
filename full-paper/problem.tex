@@ -72,40 +72,16 @@ The utility of a view is our measure for whether the target view is
 ``potentially interesting'' as compared to the comparison view:
 the higher the utility, the more the deviation
 from the comparison view, and the more likely the view is to be interesting.
-% Computing distance between probability distributions has
-% been well studied in the literature, and \SeeDB\ supports a variety of metrics
-% to compute utility, including Earth Movers Distance~\cite{wikipedia-prob-dist}, 
-% Euclidean Distance, Kullback-Leibler Divergence (K-L
-% divergence)~\cite{wikipedia-KL}, and Jenson-Shannon
-% Distance~\cite{wikipedia-JS,entropy-vis}. 
 Computing distance between probability distributions has
 been well studied, and \SeeDB\ supports a variety of metrics
 to compute utility, including Earth Movers Distance, 
 Euclidean Distance, Kullback-Leibler (K-L) Divergence, and Jenson-Shannon
 Distance. 
-In our demonstration, conference attendees can experiment with
-different distance metrics and examine how the choice of metric affects view
-quality.
-% \agp{can make the following into a comma separated list
-% of metrics without giving details if you want to save space. I would also get
-% rid of the citations, not necessary to cite everything in a demo paper.}
-% \squishlist
-%   \item {\bf Earth Movers Distance (EMD)}~\cite{wikipedia-prob-dist}: Commonly used to
-%   measure differences between color histograms from images, EMD is a popular metric for comparing
-%   discrete distributions.
-%   \item {\bf Euclidean Distance}: The L2 norm or
-%   Euclidean distance considers the two distributions to be points in a high
-%   dimensional space and measures the distance between them.
-%   \item {\bf Kullback-Leibler Divergence}(K-L divergence)~\cite{wikipedia-KL}:
-%   K-L divergence measures the information lost when one probability distribution is used to approximate
-%   the other one.
-%   \item {\bf Jenson-Shannon Distance}~\cite{wikipedia-JS,entropy-vis}: Based on
-%   the K-L divergence, this distance measures the similarity between two probability distributions.
-% \squishend
+
 Finally, we note that while other definitions of the comparison views and
 utility metrics are possible, for our initial exploration into 
 visualization recommendations, we chose to focus on the intuitive definitions above.
-%we choose the above definitions in this demo.
+
 \begin{problem}
 \vspace{-5pt}
 Given an analyst-specified query $Q$ on a database $D$, a distance function $S$,
@@ -114,17 +90,19 @@ have the largest values of $U(V)$ among all the views that can be represented
 using a triple $(a, m, f)$, while minimizing total computation time.
 \vspace{-5pt}
 \end{problem}
-%Thus, \SeeDB\ aims to find the $k$ views (obtained by adding a single aggregate
-% and group-by operator) that have the largest utility based on the function $U$.
 
-\mpv{Define measure and dimension attributes?} \\
-\mpv{Define the various distance metrics?}
+Thus, \SeeDB\ aims to find the $k$ views (obtained by adding a single aggregate
+and group-by operator) that have the largest utility based on the function $U$.
+
+
 
 \subsection{Extensions}
-\mpv{Make this clearer}
 There are two important variations of the problem that can be addressed exactly
 by the same techniques discussed in the paper. These are:
-\begin{denselist}
+
+\vspace{5 mm}
+
+\squishlist
 \item {\bf Group-by clauses with multiple dimension attributes}: It is
 straightforward to extend the \SeeDB\ techniques  to group-by clauses with multiple attributes.
 However, for ease of exposition and visualization, we limit the number of
@@ -136,7 +114,7 @@ sales of ``Printers''). This simply involves replacing the dataset parameter $D$
 with a second query $Q'$. This variation is important since it can help users
 find interesting differences in data. Our techniques apply to this variation
 unchanged and we show experimental results for this variation.
-\end{denselist} 
+\squishend
 
 
 %Trend in the subset of the data that deviates from the corresponding trend in

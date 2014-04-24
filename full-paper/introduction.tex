@@ -88,10 +88,8 @@ recommends interesting views, the analyst can evaluate this small
 subset of views using domain knowledge and limit further
 exploration to these views.  
 
-\mpv{Add second example with medical data?}
-
 We described our vision for \SeeDB, along with the associated research
-challenges in a companion vision paper~\cite{DBLP:conf/vldb/Parameswaran2013}.
+challenges in a companion vision paper~\cite{parameswaran2013seedb}.
 In this demonstration proposal, we present our first \SeeDB\ prototype
 addressing some of the challenges listed in that vision paper.
 In particular, our current prototype of \SeeDB\ is built as a ``wrapper'' that
@@ -113,9 +111,6 @@ computation as much as possible. For example,
 we can compute multiple views and measure their deviation 
 all together in one query. Independent execution,
 on the other hand, will be expensive and wasteful;
-% Queries to compute views and their
-% deviation are highly similar and therefore
-% independent execution is expensive and wasteful; 
 (d) Since
 analysis must happen in real-time, we must trade-off accuracy
 of visualizations or estimation of ``interestingness'' for reduced latency.
@@ -246,7 +241,6 @@ Section~\ref{sec:system_architecture} describes how we address these challenges.
 % trends. (Since it may be more appropriate to compare the high-cost patients with
 % other patients having the same disease but lower cost, so \SeeDB\ allows the
 % user to specify what dataset to compare with).
-\mpv{Add list of contributions}
 
 
 % \noindent There are several technical challenges that need to be addressed:

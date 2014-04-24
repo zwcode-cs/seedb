@@ -4,6 +4,7 @@
 %\documentstyle[amsmath,amsthm,amssymb,twocolumn]{article}
 \usepackage{times}
 
+\usepackage{graphicx, array, blindtext}
 
 
 \usepackage{MnSymbol} 
@@ -23,7 +24,6 @@
 
 \usepackage[font={scriptsize,it}]{caption}
 \usepackage{floatrow}
-
 
 \begin{document}
 
@@ -88,27 +88,81 @@
 
 
 
-%\numberofauthors{3}
-%\author{
-%}
+\numberofauthors{4} 
+\author{
+\alignauthor
+\hspace{-30pt}Manasi Vartak  \\ 
+\affaddr{\hspace{-30pt}MIT} \\
+\affaddr{\hspace{-30pt}mvartak@mit.edu} 
+\alignauthor 
+\hspace{-80pt}Angela Zhang\\ 
+\affaddr{\hspace{-80pt}MIT} \\ 
+\affaddr{\hspace{-80pt}angelaz@mit.edu}
+\alignauthor
+\hspace{-105pt}Aditya Parameswaran \\ 
+\affaddr{\hspace{-105pt}MIT \& U. Illinois (UIUC)} \\
+\affaddr{\hspace{-105pt}adityagp@illinois.edu} 
+\alignauthor 
+\hspace{-130pt}Samuel Madden \\ 
+\affaddr{\hspace{-130pt}MIT} \\ 
+\affaddr{\hspace{-130pt}madden@csail.mit.edu} 
+}
 
 \maketitle
 \begin{abstract}
 \input{abstract.tex}
 \end{abstract}
 \input{introduction.tex}
+
+
+
 \input{problem.tex}
+
 \input{related_work.tex} 
+
+\begin{figure*}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{images/seedb-architecture.pdf}
+  \caption{SeeDB Architecture}
+  \label{fig:sys-arch}
+\end{figure*}
+
 \input{architecture.tex}
+
+
+\begin{figure*}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{images/frontend}
+  \caption{SeeDB Frontend: Query Builder (left) and Example Visualizations
+(right)}
+\label{fig:frontend1}
+\end{figure*}
+
+
 \input{frontend.tex}
 \input{backend.tex}
 % 
 % 
-\section{Handling attributes of different kinds}
-\mpv{Numerical, Temporal, Categorical, Gepgraphical}\\
-\mpv{Binning}
+% \section{Handling attributes of different kinds}
+% \mpv{Numerical, Temporal, Categorical, Gepgraphical}\\
+% \mpv{Binning}
 %\section{Handling distribution of single attributes}
 \input{user_study.tex}
-\input{experiments.tex}
+% \input{experiments.tex}
+
+\section{conclusion}
+\label{sec:related_work}
+
+In the paper, we discussed \SeeDB\ : a system that provides analysts with visualizations highlighting interesting aspects of the query result. We defined several concrete problems in \SeeDB\ and their solutions, ranging from multi-query optimization and approximation to multi-criteria optimization. 
+
+
+
+
+
+
+
+
+
+
 
 \end{document}

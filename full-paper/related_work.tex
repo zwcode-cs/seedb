@@ -1,7 +1,6 @@
 \section{State-of-the-Art Approaches}
 \label{sec:related_work}
 
-\stitle{Related Work:}
 Over the past few years, the research community has introduced 
 a number of interactive data analytics tools such as ShowMe, Polaris, and
 Tableau~\cite{DBLP:journals/cacm/StolteTH08, DBLP:journals/tvcg/MackinlayHS07}
@@ -18,7 +17,40 @@ DBLP:conf/vldb/SatheS01, DBLP:conf/vldb/Sarawagi00}.
 While we may be able to reuse the metrics from that line of work,
 the same techniques will not directly apply to visualizations.
 
-\subsection{Viz papers and tools}
+\subsection{Data Visualization}
+
+Fusion tables~\cite{} allows users to create visualizations layered on top of web databases; they do not consider the problem on automatically generating insightful visualizations. 
+
+Devise~\cite{devise} translated user-manipulated visualizations into database queries. 
+
+
+Polaris/Tableau~\cite{tableau} is an interface for users to explore large multi-dimensional databases by visually inspecting possible visualizations. However, it places the burden of specifying visualizations to be generated onto the users. Unlike Polaris/Tableau, \SeeDB\ automatically select visualizations of interest to the analyst.
+
 \subsection{Data Cubes}
-\subsection{General ML and stats references}
-\subsection{Multi-query optimization}
+
+There has been some work on browsing data cubes: allowing analysts to find "explanations" for why two cube values were different to various degrees of detail, to find which neighboring cubes have similar properties to the the cube under consideration, or get suggestions on what unexplored data cubes show be looked at next. 
+
+
+\subsection{Multi-Query Optimization}
+
+Multi query optimization on relationship databases allows multiple queries to be executed more efficiently by employing techniques such as executing them in parallel or executing a combined query has been studied in depth. These studies have shown that using multiple query processing algorithms are able to reduce query execution cost considerably.
+
+\subsection{Utility Measurement}
+
+There are many well-established utility measurements for comparing sets of distributions. These utility measurement techniques are generally based on the distance between these distrbutions, since distance is an effective indication of the difference between datasets. This difference is then used to determine the utility of the comparison between these distributions. \SeeDB\ utilizes the following distance measurements: \\
+
+
+ \squishlist
+   \item {\bf Earth Movers Distance (EMD)}~\cite{wikipedia-prob-dist}: Commonly used to
+   measure differences between color histograms from images, EMD is a popular metric for comparing
+   discrete distributions.
+   \item {\bf Euclidean Distance}: The L2 norm or
+   Euclidean distance considers the two distributions to be points in a high
+   dimensional space and measures the distance between them.
+   \item {\bf Kullback-Leibler Divergence}(K-L divergence)~\cite{wikipedia-KL}:
+   K-L divergence measures the information lost when one probability distribution is used to approximate
+   the other one.
+   \item {\bf Jenson-Shannon Distance}~\cite{wikipedia-JS,entropy-vis}: Based on
+   the K-L divergence, this distance measures the similarity between two probability distributions.
+ \squishend
+ 
