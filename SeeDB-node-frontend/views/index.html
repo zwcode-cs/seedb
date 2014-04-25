@@ -13,18 +13,16 @@
       <h1>SeeDB</h1>
 
       <div ng-controller="DatasetsController">
-        <button type="button" ng-click="toggleTwoDatasets()"
-          class="btn btn-primary btn-sm">
-            Two Datasets?</button>
-
         <div class="row">
           <div class="col-md-6">
-            <label>Query 1</label>
-            <input type="text" class="form-control" ng-model="query1" />
+            <h3>Dataset 1</h3>
+            <div query-builder query="query1"></div>
+            <input type="text" class="form-control hidden" ng-model="query1" />
           </div>
           <div class="col-md-6">
-            <label>Query 2</label>
-            <input type="text" class="form-control" ng-model="query2" />
+            <h3>Dataset 2</h3>
+            <div query-builder query="query2"></div>
+            <input type="text" class="form-control hidden" ng-model="query2" />
           </div>
         </div>
 
@@ -32,6 +30,8 @@
           class="btn btn-primary btn-lg">
             Submit Queries</button>
       </div>
+
+      <hr />
 
       {{> visualizations}}
     </div>

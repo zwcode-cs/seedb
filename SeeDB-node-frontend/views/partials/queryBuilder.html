@@ -1,20 +1,10 @@
 <div>
-  <h2>Query Builder</h2>
-
-  <ul class="nav nav-tabs" id="builder_type">
-    <li class="active"><a href="#">SQL</a></li>
-    <li><a href="#">Visual Selection</a></li>
-    <li><a href="#">File Upload</a></li>
-  </ul>
-
   <strong>Table Name:</strong>
   <select ng-model="tableName">
     <option ng-repeat="tableNameOption in tableNames">[[tableNameOption]]</option>
   </select>
 
   <br /> <br />
-
-  <strong>Predicates:</strong>
 
   <table class="table">
     <tr><th></th><th>Column Name</th><th>Operator</th><th>Value</th><th></th></tr>
@@ -49,18 +39,5 @@
     </tr>
   </table>
 
-
-  <strong>Distance Measure:</strong>
-  <select ng-model="distanceMeasure">
-    <option ng-repeat="distanceMeasureOption in distanceMeasures">[[distanceMeasureOption]]</option>
-  </select>
-
-  <br />
-  <br />
-
-  <pre ng-bind="query"></pre>
-
-  <div>
-    <a href="" ng-click="submitQuery()" class="btn btn-primary">Submit Query</a>
-  </div>
+  <pre ng-bind="query" class="query"></pre>
 </div>
