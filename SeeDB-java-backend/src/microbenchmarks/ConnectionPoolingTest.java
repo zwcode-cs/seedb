@@ -13,7 +13,7 @@ public class ConnectionPoolingTest {
 			for (int nconn : nconns) {
 				for (String table : tables) {
 					ConnectionPooling cp = new ConnectionPooling(nconn, "postgresql", 
-							"istc2.csail.mit.edu/seedb_data", "mvartak", "mvkpostpwd");
+							"host/db", "username", "password");
 					try {
 						cp.runQueriesOnMultipleConnections(table);
 					} catch (SQLException e) {

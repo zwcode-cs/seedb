@@ -11,7 +11,7 @@ public class MultipleAggregateTest {
 		for (int mem : working_mem) {
 			for (int i = 0; i < tables.length; i++) {
 				MultipleAggregate mg = new MultipleAggregate(tables[i], mem, selectedDimAttribute[i], nMeasures,
-						"postgresql", "istc2.csail.mit.edu:5432/seedb_data", "mvartak", "mvkpostpwd");
+						"postgresql", "host/db", "username", "password");
 				try {
 					mg.runMultipleAggregateTest();
 				} catch (SQLException e) {
