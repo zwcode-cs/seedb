@@ -1,0 +1,60 @@
+\begin{thebibliography}{10}
+
+\bibitem{election_data}
+Fec presidential campaign finance.
+\newblock [Online; accessed 3-March-2014].
+
+\bibitem{mimic}
+Mimic ii database.
+\newblock [Online; accessed 3-March-2014].
+
+\bibitem{tableau}
+Tableau public.
+\newblock [Online; accessed 3-March-2014].
+
+\bibitem{superstore}
+Tableau superstore data.
+\newblock [Online; accessed 3-March-2014].
+
+\bibitem{DBLP:conf/sigmod/GonzalezHJLMSSG10}
+H.~Gonzalez et~al.
+\newblock Google fusion tables: web-centered data management and collaboration.
+\newblock In {\em SIGMOD Conference}, pages 1061--1066, 2010.
+
+\bibitem{DBLP:conf/sigmod/LivnyRBCDLMW97}
+M.~Livny et~al.
+\newblock Devise: Integrated querying and visualization of large datasets.
+\newblock In {\em SIGMOD Conference}, pages 301--312, 1997.
+
+\bibitem{DBLP:journals/tvcg/MackinlayHS07}
+J.~D. Mackinlay et~al.
+\newblock Show me: Automatic presentation for visual analysis.
+\newblock {\em IEEE Trans. Vis. Comput. Graph.}, 13(6):1137--1144, 2007.
+
+\bibitem{DBLP:conf/vldb/Parameswaran2013}
+A.~Parameswaran, N.~Polyzotis, and H.~Garcia-Molina.
+\newblock Seedb: Visualizing database queries efﬁciently.
+\newblock In {\em VLDB}, volume~7, pages 325--328, 2013.
+
+\bibitem{DBLP:conf/vldb/Sarawagi99}
+S.~Sarawagi.
+\newblock Explaining differences in multidimensional aggregates.
+\newblock In {\em VLDB}, pages 42--53, 1999.
+
+\bibitem{DBLP:conf/vldb/Sarawagi00}
+S.~Sarawagi.
+\newblock User-adaptive exploration of multidimensional data.
+\newblock In {\em VLDB}, pages 307--316, 2000.
+
+\bibitem{DBLP:conf/vldb/SatheS01}
+G.~Sathe and S.~Sarawagi.
+\newblock Intelligent rollups in multidimensional olap data.
+\newblock In {\em VLDB}, pages 531--540, 2001.
+
+\bibitem{DBLP:journals/cacm/StolteTH08}
+C.~Stolte et~al.
+\newblock Polaris: a system for query, analysis, and visualization of
+  multidimensional databases.
+\newblock {\em Commun. ACM}, 51(11):75--84, 2008.
+
+\end{thebibliography}

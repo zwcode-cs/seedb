@@ -12,7 +12,7 @@ import com.google.common.collect.Lists;
  */
 public class ExperimentalSettings {
 	public enum ComparisonType {TWO_DATASETS, ONE_DATASET_FULL, 
-		ONE_DATASET_DIFF};
+		ONE_DATASET_DIFF, MANUAL_VIEW};
 	public ComparisonType comparisonType = ComparisonType.ONE_DATASET_FULL;
 	public enum DifferenceOperators {ALL, AGGREGATE, CARDINALITY, A_B_TESTING, CLASSIFICATION, DATA_SAMPLE};
 	public List<DifferenceOperators> differenceOperators;
@@ -26,6 +26,8 @@ public class ExperimentalSettings {
 	public int groupBySize = 1;
 	public boolean useBinPacking = false;
 	public int maxGroupBySize = 2;
+	public int maxDBConnections = 100;
+	public boolean useParallelExecution = false;
 	
 	/**
 	 * Get default settings for SeeDB

@@ -17,7 +17,6 @@ import common.ExperimentalSettings.DifferenceOperators;
 import common.InputTablesMetadata;
 import common.QueryParser;
 import common.Utils;
-import difference_operators.CardinalityDifferenceOperator;
 import difference_operators.DifferenceOperator;
 import api.SeeDB;
 
@@ -54,8 +53,8 @@ public class SeeDBTest {
 	//@Test
 	public void connectToDatabaseTest() {
 		SeeDB seedb = new SeeDB();
-		seedb.connectToDatabase(1);
-		assertTrue(seedb.getConnections()[1] != null);
+		seedb.connectToDatabase();
+		assertTrue(seedb.getConnection() != null);
 	}
 	
 	//@Test
@@ -101,7 +100,7 @@ public class SeeDBTest {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void endToEndCardinalityDifferenceTest() {
 		SeeDB seedb = new SeeDB();
 		ExperimentalSettings settings = new ExperimentalSettings();
@@ -225,6 +224,20 @@ public class SeeDBTest {
 			e.printStackTrace();
 			return;
 		}
+	}
+	
+	@Test
+	public void endToEndComputeManualTest() {
+		SeeDB seedb = new SeeDB();
+		try {
+			seedb.initializeManual(defaultQuery);
+			View v = seedb.computeManualView("dim1_3", "measure2", "count");
+			v.toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
+		}
+		
 	}
 
 }

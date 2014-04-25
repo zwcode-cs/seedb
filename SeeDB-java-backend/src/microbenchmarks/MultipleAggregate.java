@@ -20,6 +20,8 @@ public class MultipleAggregate {
 	private int working_mem;
 	private String table;
 	private Connection connection;
+	private String selectedDimAttribute;
+	private int nMeasures;
 	
 	public Connection getConnection(String dbType, String dbAddress, String dbUser, String dbPassword) {
 		Connection connection = null;
@@ -46,70 +48,42 @@ public class MultipleAggregate {
 		return connection;
 	}
 	
-	public MultipleAggregate(String table, int working_mem, String dbType, String dbAddress, String dbUser, String dbPassword) {
+	public MultipleAggregate(String table, int working_mem, String selectedDimAttribute, int nMeasures, 
+			String dbType, String dbAddress, String dbUser, String dbPassword) {
 		this.table = table;
 		this.working_mem = working_mem;
 		this.connection = this.getConnection(dbType, dbAddress, dbUser, dbPassword);
+		this.selectedDimAttribute = selectedDimAttribute;
+		this.nMeasures = nMeasures;
 	}
 	
 	public void runMultipleAggregateTest() throws SQLException {
-
 		if (connection == null) {
 			System.out.println("Connection null. Quit");
 		}
 		
-		DatabaseMetaData dbmd = null;
+		Statement stmt = connection.createStatement();
 		ResultSet rs = null;
-		try {
-			dbmd = connection.getMetaData();
-			rs = dbmd.getColumns(null, null, table, null);
-
-		} catch (SQLException e) {
-			System.out.println("Error in executing metadata query");
-			e.printStackTrace();
-			return;
-		}
-		
-		List<String> dimensionAttributes = Lists.newArrayList();
-		HashMap<String, Integer> dimensionAttributeDistinctValues = Maps.newHashMap();
-		List<String> measureAttributes = Lists.newArrayList();
-		
-		while (rs.next()) {
-			String attribute = rs.getString("COLUMN_NAME");
-			if (attribute.startsWith("dim")) {
-				dimensionAttributes.add(attribute);
-				dimensionAttributeDistinctValues.put(attribute, Integer.parseInt(attribute.split("_")[1])); // col names are dim10_50
+		stmt.execute("set work_mem=" + working_mem + ";");
+		for (int i = 1; i <= nMeasures; i=i+2) {
+			List<String> aggList = Lists.newArrayList();
+			for (int j = 1; j <= i; j++) {
+				aggList.add("count(measure"+j + ")");
 			}
-			else if (attribute.startsWith("measure")) measureAttributes.add(attribute);
-		}
-		
-		for (String dimensionAttribute : dimensionAttributes) {
-			for (int i = 0; i < measureAttributes.size() ; i++) {
-				List<List<String>> combinations = CommonOperations.getCombinations(i + 1, measureAttributes);
-				
-				for (List<String> combo : combinations) {
-					List<String> sumCombo = new ArrayList <String>();
-					for (String measure : combo) {
-						sumCombo.add("count(" + measure + ")");
-					}
-				
-					String sqlQuery = "SELECT " + Joiner.on(", ").join(sumCombo) + " FROM " + table + " GROUP BY " + dimensionAttribute;
-					Statement stmt = null;
-					rs = null;
-					try {
-						stmt = connection.createStatement();
-						stmt.execute("set work_mem=" + working_mem + ";");
-						long start = System.nanoTime();
-					    rs = stmt.executeQuery(sqlQuery);
-					    System.out.print("working mem: " + working_mem + ", table: " + table + ", # aggregates: " + sumCombo.size() + ", ");
-					    System.out.println("Time taken: " + (System.nanoTime() - start));
-					} catch (Exception e) {
-						System.out.println("Error in executing query");
-					}
-				}
+			String sqlQuery = "SELECT " + selectedDimAttribute + "," + Joiner.on(", ").join(aggList) 
+					+ " FROM " + table + " GROUP BY " + selectedDimAttribute;
+			long combinedTime = System.nanoTime();
+			rs = stmt.executeQuery(sqlQuery);
+			combinedTime = System.nanoTime() - combinedTime;
+			
+			long individualTime = System.nanoTime();
+			for (String singleAttr : aggList) {
+				sqlQuery = "SELECT " + selectedDimAttribute + "," + singleAttr + " FROM " + table + 
+						" GROUP BY " + selectedDimAttribute;
+				rs = stmt.executeQuery(sqlQuery);
 			}
-		}	
+			individualTime = System.nanoTime() - individualTime;
+			System.out.println(table + "," + working_mem + "," + i + "," + combinedTime + "," + individualTime);
+		}
 	}
-	
-
 }

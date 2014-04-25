@@ -19,7 +19,16 @@ public class DBConnection {
 	private Connection connection = null;
 	public String databaseType;
 	public String database;
+	public String username;
+	public String password;
 	
+	public DBConnection() {
+		
+	}
+	
+	public DBConnection(Connection c) {
+		this.connection = c;
+	}
 	/**
 	 * Is this DBMS supported
 	 * @param databaseType
@@ -69,6 +78,8 @@ public class DBConnection {
 		}
 		this.databaseType = databaseType;
 		this.database = database;
+		this.username = username;
+		this.password = password;
 		return true;
 	}
 
@@ -156,5 +167,9 @@ public class DBConnection {
 		return rs;
 	}
 	
-	
+	public DBConnection clone() {
+		DBConnection copy = new DBConnection();
+		copy.connectToDatabase(database, databaseType, username, password);
+		return copy;
+	}
 }

@@ -4,21 +4,24 @@ import java.sql.SQLException;
 
 public class ConnectionPoolingTest {
 	
+	// vary the number of connections and tables and run the queries
 	public static void main(String[] args) {
-		//String[] tables = new String[] { "xs_1", "xs_2", "xs_3", "s_1", "s_2", "s_3" };
-		String[] tables = new String[] {"table_10_2_2_3_2_1"};
+		String[] tables = new String[] { "s_2"};
 		int[] nconns = new int[] {1, 10, 50, 90};
-		for (int nconn : nconns) {
-			for (String table : tables) {
-				ConnectionPooling cp = new ConnectionPooling(nconn, "postgresql", 
-						"127.0.0.1/seedb_data", "postgres", "postgrespwd");
-				try {
-					cp.runQueriesOnMultipleConnections(table); //"table_1m_10_10_test"); //"table_10_2_2_3_2_1");
-				} catch (SQLException e) {
-					e.printStackTrace();
-					System.out.println("exception in sql execution");
+		
+		for (int i = 0; i <1; i++) {
+			for (int nconn : nconns) {
+				for (String table : tables) {
+					ConnectionPooling cp = new ConnectionPooling(nconn, "postgresql", 
+							"istc2.csail.mit.edu/seedb_data", "mvartak", "mvkpostpwd");
+					try {
+						cp.runQueriesOnMultipleConnections(table);
+					} catch (SQLException e) {
+						e.printStackTrace();
+						System.out.println("exception in sql execution");
+					}
 				}
-			}
+			}		
 		}
 	}
 }

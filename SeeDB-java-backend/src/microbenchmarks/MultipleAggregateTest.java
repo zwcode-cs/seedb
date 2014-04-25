@@ -4,15 +4,21 @@ import java.sql.SQLException;
 
 public class MultipleAggregateTest {
 	public static void main(String[] args) {
-		MultipleAggregate mg = new MultipleAggregate("table_1000_4_2_10_10_5_5_1", 1000, // table_1m_10_10_test, table_10_2_2_3_2_1
-				"postgresql", "127.0.0.1/seedb_data", "postgres", "postgrespwd");
-		try {
-			mg.runMultipleAggregateTest();
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		int[] working_mem = new int[]{1000, 10000, 100000, 1000000};
+		String[] tables = new String[]{"m_1", "m_2", "m_3"};
+		String[] selectedDimAttribute = new String[] {"dim9_5000", "dim49_5000", "dim55_5000"};
+		int nMeasures = 10;
+		for (int mem : working_mem) {
+			for (int i = 0; i < tables.length; i++) {
+				MultipleAggregate mg = new MultipleAggregate(tables[i], mem, selectedDimAttribute[i], nMeasures,
+						"postgresql", "istc2.csail.mit.edu:5432/seedb_data", "mvartak", "mvkpostpwd");
+				try {
+					mg.runMultipleAggregateTest();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 	}
-
 }

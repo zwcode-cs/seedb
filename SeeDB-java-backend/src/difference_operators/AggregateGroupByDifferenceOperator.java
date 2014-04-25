@@ -21,6 +21,8 @@ public class AggregateGroupByDifferenceOperator implements DifferenceOperator {
 		List<Attribute> dimAttr = queryMetadatas[0].getDimensionAttributes();
 		List<Attribute> aggAttr = queryMetadatas[0].getMeasureAttributes();
 		
+		// may want to do some view pruning based on metadata here
+		
 		// get group bys
 		int gbSize = settings.groupBySize;
 		List<List<Attribute>> gbs = Utils.getGroups(dimAttr, gbSize);

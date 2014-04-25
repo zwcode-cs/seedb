@@ -1,5 +1,6 @@
 package common;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -21,16 +22,19 @@ import common.ExperimentalSettings.DifferenceOperators;
 import db_wrappers.DBConnection;
 
 public class QueryExecutor {
-	private HashMap<DifferenceQuery, AggregateView> aggregateViewMap;
+	private HashMap<DifferenceQuery, AggregateView> aggregateViewMap; // doesn't need locking because each thread accesses different keys
+	private ConnectionPool pool;
 
-	public QueryExecutor() {}
+	public QueryExecutor(ConnectionPool pool) {
+		this.pool = pool;
+	}
 	
 	public List<View> execute(List<DifferenceQuery> optimizedQueries,
-			List<DifferenceQuery> queries, DBConnection[] connections, int numDatasets) throws SQLException {
+			List<DifferenceQuery> queries, DBConnection connection, int numDatasets) throws SQLException {
 		List<View> views = Lists.newArrayList();
 		for (DifferenceQuery optQuery : optimizedQueries) {
 			if (optQuery.op == ExperimentalSettings.DifferenceOperators.DATA_SAMPLE) {
-				views.add(executeRowSampleDifferenceQuery(optQuery, connections));
+				views.add(executeRowSampleDifferenceQuery(optQuery, connection));
 			}
 			else if (optQuery.op == DifferenceOperators.CARDINALITY ||
 					optQuery.op == DifferenceOperators.AGGREGATE) {
@@ -46,7 +50,7 @@ public class QueryExecutor {
 						}		
 					}
 				}
-				executeAggregateDifferenceQuery(optQuery, connections);
+				executeAggregateDifferenceQuery(optQuery, connection);
 			}
 		}
 		if (aggregateViewMap != null) {
@@ -56,15 +60,39 @@ public class QueryExecutor {
 	}
 	
 	public void executeAggregateDifferenceQuery(
-			DifferenceQuery optQuery, DBConnection[] connections) throws SQLException {
+			DifferenceQuery optQuery, DBConnection connection) throws SQLException {
 		List<String> queries = optQuery.getSQLQuery();
-		if (optQuery.mergedQueries) { // single query
-			executeQuery(optQuery, queries.get(0), connections[0], -1);
+		if (pool == null) {
+			if (optQuery.mergedQueries) { 
+				executeQuery(optQuery, queries.get(0), connection, -1);
+			} else {
+				executeQuery(optQuery, queries.get(0), connection, 1);
+				executeQuery(optQuery, queries.get(1), connection, 2);
+			}
+		} else {
+			List<Thread> threads = Lists.newArrayList();
+			if (optQuery.mergedQueries) { 
+				Thread t = new Thread(new ExecuteParallelQuery(optQuery, queries.get(0), -1));
+				threads.add(t);
+				t.start();
+			} else {
+				Thread t = new Thread(new ExecuteParallelQuery(optQuery, queries.get(0), 1));
+				threads.add(t);
+				t.start();
+				t = new Thread(new ExecuteParallelQuery(optQuery, queries.get(0), 2));
+				threads.add(t);
+				t.start();
+			}
+			for (Thread t : threads) {
+				try {
+					t.join();
+				} catch (InterruptedException e) {
+					System.out.println("Thread join interrupted");
+					e.printStackTrace();
+				}
+			}
+			pool.closeAllConnections();
 		}
-		else {
-			executeQuery(optQuery, queries.get(0), connections[0], 1);
-			executeQuery(optQuery, queries.get(1), connections[1], 2);
-		}	
 	}
 
 	public void executeQuery(DifferenceQuery optQuery, String query, 
@@ -133,7 +161,7 @@ public class QueryExecutor {
 	}
 
 	public View executeRowSampleDifferenceQuery(
-			DifferenceQuery optQuery, DBConnection[] connections) 
+			DifferenceQuery optQuery, DBConnection connection) 
 					throws SQLException {
 		RowSampleView view = new RowSampleView();
 		List<String> queries = optQuery.getSQLQuery();
@@ -142,8 +170,9 @@ public class QueryExecutor {
 		for (String query : queries) {
 			limitedQueries.add(query + " LIMIT 50");
 		}
-		ResultSet rs = connections[0].executeQuery(
-				limitedQueries.get(0));
+		ResultSet rs = connection.executeQuery(
+				queries.get(0));
+
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int columnCount = rsmd.getColumnCount();
 
@@ -159,9 +188,9 @@ public class QueryExecutor {
 			}
 			view.rows1.add(row);
 		}
-		rs = connections[1].executeQuery(
-				limitedQueries.get(1));
-		
+
+		rs = connection.executeQuery(
+				queries.get(1));
 		while (rs.next()) {
 			List<String> row = Lists.newArrayList();
 			for (int i = 1; i < columnCount + 1; i++ ) {
@@ -170,6 +199,53 @@ public class QueryExecutor {
 			view.rows2.add(row);
 		}
 		return view;
+	}
+
+	public View executeSingle(DifferenceQuery dq, DBConnection connection,
+			int numDatasets) throws SQLException {
+		aggregateViewMap = Maps.newHashMap();
+		AggregateView v = new AggregateGroupByView(dq);
+		aggregateViewMap.put(dq, v);
+		String query = dq.getSQLQueryHelper(false, dq.inputQueries[0], null);
+		executeQuery(dq, query, connection, 1);
+		return v;
+	}
+	
+	private class ExecuteParallelQuery implements Runnable {
+		DifferenceQuery optQuery;
+		String query; 
+		int group;
+		
+		public ExecuteParallelQuery(DifferenceQuery optQuery, String query, 
+				int group) {
+			this.optQuery = optQuery;
+			this.query = query;
+			this.group = group;
+		}
+
+		@Override
+		public void run() {
+			Connection c;
+			try {
+				c = pool.getAvailableConnection();
+			} catch (InterruptedException e) {
+				c = null;
+				e.printStackTrace();
+			}
+			if (c==null) {
+				System.out.println("Cannot get connection to database");
+				return;
+			}
+			DBConnection con = new DBConnection(c);
+			try {
+				executeQuery(optQuery, query, con, group);
+			} catch (SQLException e) {
+				System.out.println("Error executing query: " + query);
+				e.printStackTrace();
+				return;
+			}
+		}
+		
 	}
 	
 }

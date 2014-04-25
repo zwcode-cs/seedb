@@ -3,15 +3,17 @@ package api;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
-
 import optimizer.Optimizer;
 import views.View;
 
 import com.google.common.collect.Lists;
 
+import common.Attribute;
 import common.DBSettings;
 import common.DifferenceQuery;
+import common.ExperimentalSettings.ComparisonType;
 import common.ExperimentalSettings.DifferenceOperators;
+import common.ConnectionPool;
 import common.InputQuery;
 import common.InputTablesMetadata;
 import common.QueryExecutor;
@@ -31,7 +33,7 @@ import difference_operators.RowSampleDifferenceOperator;
  */
 public class SeeDB {
 	public static enum Datasets { DATASET1, DATASET2 };
-	private DBConnection[] connections;
+	private DBConnection connection;
 	private InputQuery[] inputQueries;
 	private int numDatasets;
 	private ExperimentalSettings settings;
@@ -39,10 +41,10 @@ public class SeeDB {
 		DifferenceOperator> supportedOperators = new HashMap<
 			ExperimentalSettings.DifferenceOperators, 
 			DifferenceOperator>();
+	private ConnectionPool pool;
 	
 	public SeeDB() {
-		connections = new DBConnection[]{new DBConnection(), 
-				new DBConnection()};
+		connection = new DBConnection();
 		inputQueries = new InputQuery[]{null, null};
 		numDatasets = 0;
 		supportedOperators.put(DifferenceOperators.CARDINALITY, new CardinalityDifferenceOperator());
@@ -50,8 +52,8 @@ public class SeeDB {
 		supportedOperators.put(DifferenceOperators.DATA_SAMPLE, new RowSampleDifferenceOperator());
 	}
 	
-	public DBConnection[] getConnections() {
-		return connections;
+	public DBConnection getConnection() {
+		return connection;
 	}
 	
 	public int getNumDatasets() {
@@ -65,6 +67,7 @@ public class SeeDB {
 	public InputQuery[] getInputQueries() {
 		return inputQueries;
 	}
+	
 	/**
 	 * Connect to a database. Each dataset can connect to only one database
 	 * @param database String with which to connect to the database
@@ -76,24 +79,34 @@ public class SeeDB {
 	 * @return true if connection is successful    	
 	 */
 	public boolean connectToDatabase(String database, String databaseType, 
-			String username, String password, int datasetNum) {
-		if (!(datasetNum > 0 && datasetNum <= Datasets.values().length))
-			return false;
-		return connections[datasetNum].connectToDatabase(database, databaseType, 
+			String username, String password) {
+		return connection.connectToDatabase(database, databaseType, 
 				username, password);
 	}
+	
 	/**
 	 * connectToDatabase with default settings
 	 * @param datasetNum
 	 * @return
 	 */
-	public boolean connectToDatabase(int datasetNum) {
-		return connections[datasetNum].connectToDatabase(
-				DBSettings.getDefault());
+	public boolean connectToDatabase() {
+		return connection.connectToDatabase(DBSettings.getDefault());
 	}
-	
-	public void setTable() {
-		
+
+	public boolean initializeManual(String query) throws Exception {
+		if (query == null) return false;
+		if (connection.hasConnection()) {
+			// populate connection from settings
+			if (connection.connectToDatabase(DBSettings.getDefault()))
+				return false;
+		}
+		inputQueries[0] = QueryParser.parse(query, 
+				connection.getDatabaseName());
+		this.numDatasets = 1;
+		this.settings = ExperimentalSettings.getDefault();
+		this.settings.comparisonType = ComparisonType.MANUAL_VIEW;
+		this.settings.differenceOperators = Lists.newArrayList();
+		return true;
 	}
 	
 	/**
@@ -112,33 +125,24 @@ public class SeeDB {
 		if (query1 == null) {
 			throw new Exception("query1 cannot be null");
 		}
-		
-		// query 1 not null
-		if (!connections[0].hasConnection()) {
+		if (connection.hasConnection()) {
 			// populate connection from settings
-			if (!connections[0].connectToDatabase(DBSettings.getDefault()))
+			if (!connection.connectToDatabase(DBSettings.getDefault()))
 				return false;
 		}
 		inputQueries[0] = QueryParser.parse(query1, 
-				connections[0].getDatabaseName());
+				connection.getDatabaseName());
 
 		// if dataset2 is not empty
 		if (query2 != null) {
-			if (!connections[1].hasConnection()) {
-				// populate connection from settings
-				if (!connections[1].connectToDatabase(DBSettings.getDefault()))
-					return false;
-			}
 			this.numDatasets = 2;
 			settings.comparisonType = ExperimentalSettings.ComparisonType.TWO_DATASETS;
-			inputQueries[1] = QueryParser.parse(query2, 
-					connections[1].getDatabaseName());
+			inputQueries[1] = QueryParser.parse(query2, connection.getDatabaseName());
 		}
 		// there is only 1 dataset
 		else {
 			this.numDatasets = 1;
-			connections[1] = connections[0]; // share the connection
-			if (settings.comparisonType == ExperimentalSettings.ComparisonType.TWO_DATASETS)
+				if (settings.comparisonType == ExperimentalSettings.ComparisonType.TWO_DATASETS)
 				settings.comparisonType = 
 					ExperimentalSettings.ComparisonType.ONE_DATASET_FULL;
 			if (settings.comparisonType == ExperimentalSettings.ComparisonType.ONE_DATASET_FULL) {
@@ -152,6 +156,10 @@ public class SeeDB {
 			}
 		}
 		this.settings = settings;
+		if (this.settings.useParallelExecution) {
+			this.pool = new ConnectionPool(settings.maxDBConnections, connection.database, connection.databaseType,
+					connection.username, connection.password);
+		}
 		return true;
 	}
 	
@@ -168,22 +176,22 @@ public class SeeDB {
 	
 	/**
 	 * Compute the metadata for both the queries
+	 * TODO: to update with data needed at frontend
 	 * @return
 	 */
-	public InputTablesMetadata[] getMetadata(List<String> tables1, DBConnection conn1, 
-			List<String> tables2, DBConnection conn2, int numDatasets) {
+	public InputTablesMetadata[] getMetadata(List<String> tables1,
+			List<String> tables2, int numDatasets) {
 		InputTablesMetadata[] queryMetadatas = new InputTablesMetadata[] {null, null};
-		queryMetadatas[0] = new InputTablesMetadata(tables1, conn1);
+		queryMetadatas[0] = new InputTablesMetadata(tables1, this.connection);
 		if (numDatasets == 2) {
-			queryMetadatas[1] = new InputTablesMetadata(tables2, conn2);
+			queryMetadatas[1] = new InputTablesMetadata(tables2, this.connection);
 			// TODO: need to ensure that same tables are being queried
 		}
 		return queryMetadatas;
 	}
 	
 	public InputTablesMetadata[] getMetadata() {
-		return this.getMetadata(inputQueries[0].tables, connections[0], 
-				inputQueries[1].tables, connections[1], this.numDatasets);
+		return this.getMetadata(inputQueries[0].tables, inputQueries[1].tables, this.numDatasets);
 	}
 	
 	public List<DifferenceOperator> getDifferenceOperators() {
@@ -207,8 +215,8 @@ public class SeeDB {
 	 */
 	public List<View> computeDifference() {
 		// compute the attributes that we want to analyze
-		InputTablesMetadata[] queryMetadatas = this.getMetadata(inputQueries[0].tables, connections[0], 
-				inputQueries[1].tables, connections[1], this.numDatasets);
+		InputTablesMetadata[] queryMetadatas = this.getMetadata(inputQueries[0].tables,
+				inputQueries[1].tables, this.numDatasets);
 		
 		// compute queries we want to execute
 		List<DifferenceOperator> ops = this.getDifferenceOperators();
@@ -224,9 +232,9 @@ public class SeeDB {
 				optimizer.optimizeQueries(queries);
 		
 		List<View> views = null;
-		QueryExecutor qe = new QueryExecutor();
+		QueryExecutor qe = new QueryExecutor(pool);
 		try {
-			views = qe.execute(optimizedQueries, queries, connections, numDatasets);
+			views = qe.execute(optimizedQueries, queries, connection, numDatasets);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
@@ -236,5 +244,24 @@ public class SeeDB {
 		
 		return views;
 	}	
-	
+
+	public View computeManualView(String x_axis, String y_axis, String aggFunction) {
+		DifferenceQuery dq = new DifferenceQuery(null, this.inputQueries);
+		dq.groupByAttributes.add(new Attribute(x_axis)); // group by attribute
+		List<String> aggFuncs = Lists.newArrayList();
+		aggFuncs.add(aggFunction);
+		dq.addAggregateAttribute(new Attribute(y_axis), aggFuncs);
+		List<DifferenceQuery> derivedFrom = Lists.newArrayList();
+		derivedFrom.add(dq);
+		dq.derivedFrom = derivedFrom;
+		View view = null;
+		QueryExecutor qe = new QueryExecutor(null);
+		try {
+			view = qe.executeSingle(dq, connection, numDatasets);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return view;
+	}
 }

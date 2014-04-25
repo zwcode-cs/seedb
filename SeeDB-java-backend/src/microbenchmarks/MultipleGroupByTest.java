@@ -4,12 +4,18 @@ import java.sql.SQLException;
 
 public class MultipleGroupByTest {
 	public static void main(String[] args) {
-		//String[] tables = new String[] { "xs_1", "xs_2", "xs_3", "s_1", "s_2", "s_3" };
-		String[] tables = new String[] {"table_10_2_2_3_2_1"};
-		for (int mem = 1000; mem < 10000000; mem=mem*10) {
-			for (String table : tables) {
-				MultipleGroupBy mgb = new MultipleGroupBy(table, mem, // table_1m_10_10_test, table_10_2_2_3_2_1
-						"postgresql", "127.0.0.1/seedb_data", "postgres", "postgrespwd");
+		String[] tables = new String[] { "s_1"}; // "xs_2", "xs_3", "s_2", "s_3" 
+		String[][] attrs = new String[][] { {"dim4_5", "dim11_10", "dim27_50"},
+											{"dim5_50", "dim11_10", "dim27_50"}, 
+											{"dim5_50", "dim27_50", "dim25_100"}, 
+											{"dim5_50", "dim25_100", "dim20_500"},
+											{"dim25_100", "dim20_500", "dim24_500"},
+											{"dim20_500", "dim24_500", "dim23_1000"}};
+		long[] ngroups = new long[] {2500, 25000, 250000, 2500000, 25000000, 250000000};
+		for (int mem = 1000; mem <= 1000000; mem=mem*10) {
+			for (int i=0; i < attrs.length; i++){
+				MultipleGroupBy mgb = new MultipleGroupBy(tables[0], mem, attrs[i], ngroups[i],
+						"postgresql", "istc2.csail.mit.edu:5432/seedb_data", "mvartak", "mvkpostpwd");
 				try {
 					mgb.runMultipleGroupByTest();
 				} catch (SQLException e) {
@@ -17,8 +23,6 @@ public class MultipleGroupByTest {
 					e.printStackTrace();
 				}
 			}
-		}
-		
+		}	
 	}
-
 }

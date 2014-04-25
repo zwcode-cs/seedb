@@ -1,5 +1,9 @@
-package microbenchmarks;
+/**
+ * This class implements connection pooling to run multiple queries in parallel
+ * on the DBMS backend. 
+ */
 
+package microbenchmarks;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -7,10 +11,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import com.google.common.collect.Lists;
+import common.ConnectionPool;
 
 public class ConnectionPooling {	
 	private ConnectionPool pool;
 	private int nDBconnections;
+	private String table;
+	private long totalTime = 0;
+	private int totalQueries = 0;
 	
 	public ConnectionPooling(int nDBConnections, String dbType, String dbAddress, 
 			String dbUser, String dbPassword) {
@@ -30,6 +38,7 @@ public class ConnectionPooling {
 	}
 	
 	public void runQueriesOnMultipleConnections(String table) throws SQLException {
+		this.table = table;
 		// get connection for metadata about the table
 		Connection c = getConnectionFromPool();
 		if (c == null) return;
@@ -47,27 +56,15 @@ public class ConnectionPooling {
 		
 		List<String> dimensionAttributes = Lists.newArrayList();
 		List<String> measureAttributes = Lists.newArrayList();
-		
+		Statement stmt = c.createStatement();
+		stmt.execute("set work_mem=" + 1000000 + ";");
 		while (rs.next()) {
 			String attribute = rs.getString("COLUMN_NAME");
 			if (attribute.startsWith("dim")) dimensionAttributes.add(attribute);
 			else if (attribute.startsWith("measure")) measureAttributes.add(attribute);
 		}
 		pool.returnConnectionToPool(c);
-		
-		Statement stmt = null;
-		rs = null;
-		try {
-			stmt = c.createStatement();
-			//stmt.execute("set max_connections=" + nDBconnections+1 + ";");
-			System.out.println(stmt.execute("show max_connections;"));
-			rs = stmt.getResultSet();
-			while (rs.next()) {
-				System.out.println(rs.getString(1));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		totalQueries = dimensionAttributes.size() * measureAttributes.size();
 		
 		long start = System.nanoTime();
 		List<Thread> threads = Lists.newArrayList();
@@ -89,7 +86,7 @@ public class ConnectionPooling {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("Total time: " + (System.nanoTime() - start));
+		System.out.println(table + "," + nDBconnections + "," + totalTime/totalQueries + "," + (System.nanoTime() - start));
 		pool.closeAllConnections();
 	}
 
@@ -126,7 +123,7 @@ public class ConnectionPooling {
 				stmt = c.createStatement();
 				long start = System.nanoTime();
 			    rs = stmt.executeQuery(query);
-			    System.out.println(nDBconnections + ", Time taken: " + (System.nanoTime() - start));
+			    totalTime += System.nanoTime() - start;
 			} catch (Exception e) {
 				System.out.println("Error in executing query");
 			}
