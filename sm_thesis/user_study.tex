@@ -1,0 +1,75 @@
+\section{User Study: is this useful?}
+\subsection{Comparison with other tools - Tableau, Spotfire}
+\subsection{Lessons from different datasets}
+\mpv{Fix -- copied form demo paper}
+We propose to demonstrate the functionality of \SeeDB\ through hands-on
+interaction with a variety of datasets. Our goals are two fold: (1) demonstrate
+the utility of \SeeDB\ in surfacing interesting trends for a query
+and (2) demonstrate that we can return high quality views efficiently for
+a range of datasets. We will use four different datasets in our demonstration:
+
+\begin{denselist}
+  \item {\bf Store Orders dataset}~\cite{superstore}: This dataset is
+    often used by Tableau~\cite{tableau} as a canonical dataset for
+    business intelligence applications. It consists of information
+    about orders placed in a store including products, prices, ship
+    dates, geographical information, and profits. Interesting trends in
+    this dataset have been very well studied, and attendees will use
+    \SeeDB\ to quickly re-identify these trends. 
+    %This dataset will also
+    %enable us to demonstrate how \SeeDB can correctly deal with
+    %numeric, categorical, and geographic data.
+  \item {\bf Election Contribution dataset}~\cite{election_data}: This
+  is an example of a dataset typically analyzed by
+    non-expert data analysts like journalists or historians. With this
+    dataset, we demonstrate how non-experts can use \SeeDB\ to quickly
+    arrive at interesting visualizations.
+  \item {\bf Medical dataset}~\cite{mimic}: This real-world dataset exemplifies
+  a dataset that a clinical researcher might use. The schema of the dataset is
+  significantly complex and it is of larger size.  
+    \item {\bf Synthetic data:} We provide a set of synthetic datasets with
+    varying sizes, number of attributes, and data distributions to help
+    attendees evaluate \SeeDB\ performance on diverse datasets.
+\end{denselist}
+
+\subsection {Scenario 1: Demonstrating Utility.} Attendees are provided with
+three diverse, real-world datasets to explore using \SeeDB. For each dataset,
+attendees can issue ad-hoc or pre-formulated queries to \SeeDB. \SeeDB\ will
+then intelligently explore the view space and optimize query execution to return the
+most interesting visualizations with low latency. Attendees can examine the
+returned queries visually, via the associated view metadata, and via
+drill-downs. To aid the evaluation of visualizations, the demo system will 
+be configured to also show the user ``bad'' views (views with low utility) that were not selected
+by \SeeDB.
+Similarly, we provide pre-selected queries (and
+previously known information about their results) to allow attendees to
+confirm that \SeeDB\ does indeed reproduce known information about these
+queries. Attendees will also be able to experiment with a
+variety of distance metrics for computing utility and observe the effects on the
+resulting views.
+
+% \stitle{Demonstrating Utility:} To show the utility of \SeeDB\ in a real-world
+% scenario, we will provide conference attendees three diverse datasets that they
+% can explore and interact with. Attendees can pose ad-hoc or pre-selected queries
+% on various datasets and evaluate the visualizations returned. The
+% evaluation is based on whether the visualizations surface ``interesting''
+% aspects of the queried data and whether the right visualizations have been
+% selected. To aid the evaluation of visualizations, the demo version of \SeeDB\
+% will have the option of showing ``bad'' visualizations too, i.e. visualizations
+% that were predicted to have low utility.  The attendees will also have the option of
+% trying various utility metrics as described in Section
+% \ref{sec:problem_statement}. The demo datasets will include:
+
+\subsection{Scenario 2: Demonstrating Performance and Optimizations.} This
+scenario will use an enhanced user interface and synthetic datasets mentioned above.
+Attendees will be able to easily experiment with a range of synthetic datasets and input
+queries by adjusting various ``knobs'' such as data size, number of attributes, and
+data distribution. In addition, attendees will also be able to select the
+optimizations that \SeeDB\ applies and observe the effect on response times and
+accuracy.
+
+Thus, through our demonstration of \SeeDB\, we seek to illustrate that (a) it is
+possible to automate labor-intensive parts of data analysis, (b) aggregate
+and grouping-based views are a powerful means to identify interesting trends
+in data, and (c) the right set of optimizations can enable real-time data
+analysis of large datasets.

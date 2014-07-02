@@ -1,0 +1,28 @@
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {1-1}{\ignorespaces Data: Total Sales by Store for Laserwave\relax }}{11}
+\contentsline {figure}{\numberline {1-2}{\ignorespaces Scenario A: Total Sales by Store\relax }}{12}
+\contentsline {figure}{\numberline {1-3}{\ignorespaces Scenario B: Total Sales by Store\relax }}{13}
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3-1}{\ignorespaces SeeDB Architecture\relax }}{20}
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4-1}{\ignorespaces SeeDB Frontend: Query Builder (left) and Example Visualizations (right)\relax }}{23}
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {6-1}{\ignorespaces Baseline Performance\relax }}{31}
+\contentsline {figure}{\numberline {6-2}{\ignorespaces Effect of Multiple Aggregate Optimization\relax }}{32}
+\contentsline {figure}{\numberline {6-3}{\ignorespaces Effect of Parallelism on Per View Execution Time\relax }}{33}
+\contentsline {figure}{\numberline {6-4}{\ignorespaces Effect of Parallelism on Total Execution Time\relax }}{34}
+\contentsline {figure}{\numberline {6-5}{\ignorespaces Average Temp Table Creation Time\relax }}{35}
+\contentsline {figure}{\numberline {6-6}{\ignorespaces Total Temp Table Creation Time\relax }}{35}
+\contentsline {figure}{\numberline {6-7}{\ignorespaces Average Temp Table Query Time\relax }}{37}
+\contentsline {figure}{\numberline {6-8}{\ignorespaces Total Temp Table Query Time\relax }}{38}
+\contentsline {figure}{\numberline {6-9}{\ignorespaces Total Execution Time\relax }}{39}
+\contentsline {figure}{\numberline {6-10}{\ignorespaces Total Execution Time vs. Number of Distinct Values\relax }}{40}
+\contentsline {figure}{\numberline {6-11}{\ignorespaces Actual and Estimated Temp Table Query Time\relax }}{41}
+\contentsline {figure}{\numberline {6-12}{\ignorespaces Actual and Estimated Temp Table Query Time\relax }}{42}
+\contentsline {figure}{\numberline {6-13}{\ignorespaces Actual and Estimated Total Execution Time\relax }}{43}
+\contentsline {figure}{\numberline {6-14}{\ignorespaces Performance Speedup With Optimizations\relax }}{44}
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }

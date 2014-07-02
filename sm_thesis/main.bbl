@@ -1,0 +1,149 @@
+\newcommand{\noopsort}[1]{} \newcommand{\printfirst}[2]{#1}
+  \newcommand{\singleletter}[1]{#1} \newcommand{\switchargs}[2]{#2#1}
+\begin{thebibliography}{10}
+
+\bibitem{glpk}
+Glpk for java, 2014.
+\newblock [Online; accessed 20-May-2014].
+
+\bibitem{DBLP:conf/vldb/AbrahamABB13}
+Lior Abraham, John Allen, Oleksandr Barykin, Vinayak Borkar, Bhuwan Chopra,
+  Ciprian Gerea, Daniel Merl, Josh Metzler, David Reiss, Subbu Subramanian,
+  Janet~L. Wiener, and Okay Zed.
+\newblock Scuba: Diving into data at facebook.
+\newblock {\em Proc. VLDB Endow.}, 6(11):1057--1067, August 2013.
+
+\bibitem{DBLP:conf/sigmod/GonzalezHJLMSSG10}
+Hector Gonzalez et~al.
+\newblock Google fusion tables: web-centered data management and collaboration.
+\newblock In {\em SIGMOD Conference}, pages 1061--1066, 2010.
+
+\bibitem{DBLP:jounral/DMKD/GrayCBLR97}
+Jim Gray, Surajit Chaudhuri, Adam Bosworth, Andrew Layman, Don Reichart, Murali
+  Venkatrao, Frank Pellow, and Hamid Pirahesh.
+\newblock Data cube: A relational aggregation operator generalizing group-by,
+  cross-tab, and sub-totals.
+\newblock {\em Data Min. Knowl. Discov.}, 1(1):29--53, January 1997.
+
+\bibitem{DBLP:conf/SIGMOD/HarinarayanRU96}
+Venky Harinarayan, Anand Rajaraman, and Jeffrey~D. Ullman.
+\newblock Implementing data cubes efficiently.
+\newblock In {\em Proceedings of the 1996 ACM SIGMOD International Conference
+  on Management of Data}, SIGMOD '96, pages 205--216, New York, NY, USA, 1996.
+  ACM.
+
+\bibitem{DBLP:conf/VLDB/HellersteinRSWF12}
+Joseph~M. Hellerstein, Christoper R{\'e}, Florian Schoppmann, Daisy~Zhe Wang,
+  Eugene Fratkin, Aleksander Gorajek, Kee~Siong Ng, Caleb Welton, Xixuan Feng,
+  Kun Li, and Arun Kumar.
+\newblock The madlib analytics library: Or mad skills, the sql.
+\newblock {\em Proc. VLDB Endow.}, 5(12):1700--1711, August 2012.
+
+\bibitem{DBLP:conf/AVI/KandelPPHH12}
+Sean Kandel et~al.
+\newblock Profiler: integrated statistical analysis and visualization for data
+  quality assessment.
+\newblock In {\em AVI}, pages 547--554, 2012.
+
+\bibitem{DBLP:conf/CIDR/KraskaTDGFJ2013}
+Tim Kraska, Ameet Talwalkar, John~C Duchi, Rean Griffith, Michael~J Franklin,
+  and Michael~I Jordan.
+\newblock Mlbase: A distributed machine-learning system.
+\newblock In {\em CIDR}, 2013.
+
+\bibitem{DBLP:conf/sigmod/LivnyRBCDLMW97}
+Miron Livny et~al.
+\newblock Devise: Integrated querying and visualization of large datasets.
+\newblock In {\em SIGMOD Conference}, pages 301--312, 1997.
+
+\bibitem{DBLP:journals/tvcg/MackinlayHS07}
+Jock~D. Mackinlay et~al.
+\newblock Show me: Automatic presentation for visual analysis.
+\newblock {\em IEEE Trans. Vis. Comput. Graph.}, 13(6):1137--1144, 2007.
+
+\bibitem{DBLP:conf/SIGKDD/OrdonezC09}
+Carlos Ordonez and Zhibo Chen.
+\newblock Exploration and visualization of olap cubes with statistical tests.
+\newblock In {\em Proceedings of the ACM SIGKDD Workshop on Visual Analytics
+  and Knowledge Discovery: Integrating Automated Analysis with Interactive
+  Exploration}, VAKD '09, pages 46--55, New York, NY, USA, 2009. ACM.
+
+\bibitem{DBLP:conf/vldb/Parameswaran2013}
+Aditya Parameswaran, Neoklis Polyzotis, and Hector Garcia-Molina.
+\newblock Seedb: Visualizing database queries efﬁciently.
+\newblock In {\em VLDB}, volume~7, pages 325--328, 2013.
+
+\bibitem{Postgres_wiki}
+Postgresql.org.
+\newblock Postgresql: Number of database connections, 2014.
+\newblock [Online; accessed 20-May-2014].
+
+\bibitem{DBLP:conf/vldb/Sarawagi99}
+Sunita Sarawagi.
+\newblock Explaining differences in multidimensional aggregates.
+\newblock In {\em VLDB}, pages 42--53, 1999.
+
+\bibitem{DBLP:conf/vldb/Sarawagi00}
+Sunita Sarawagi.
+\newblock User-adaptive exploration of multidimensional data.
+\newblock In {\em VLDB}, pages 307--316, 2000.
+
+\bibitem{DBLP:conf/vldb/SatheS01}
+Gayatri Sathe and Sunita Sarawagi.
+\newblock Intelligent rollups in multidimensional olap data.
+\newblock In {\em VLDB}, pages 531--540, 2001.
+
+\bibitem{DBLP:journal/TODS/Sellis1988}
+Timos~K. Sellis.
+\newblock Multiple-query optimization.
+\newblock {\em ACM Trans. Database Syst.}, 13(1):23--52, March 1988.
+
+\bibitem{DBLP:journals/cacm/StolteTH08}
+Chris Stolte et~al.
+\newblock Polaris: a system for query, analysis, and visualization of
+  multidimensional databases.
+\newblock {\em Commun. ACM}, 51(11):75--84, 2008.
+
+\bibitem{entropy-vis}
+Chaoli Wang and Han-Wei Shen.
+\newblock Information theory in scientific visualization.
+\newblock {\em Entropy}, 13(1):254--273, 2011.
+
+\bibitem{wikipedia-JS}
+Wikipedia.
+\newblock Jensen shannon divergence --- wikipedia{,} the free encyclopedia,
+  2013.
+\newblock [Online; accessed 16-July-2013].
+
+\bibitem{wikipedia-KL}
+Wikipedia.
+\newblock Kullback leibler divergence --- wikipedia{,} the free encyclopedia,
+  2013.
+\newblock [Online; accessed 16-July-2013].
+
+\bibitem{wikipedia-prob-dist}
+Wikipedia.
+\newblock Statistical distance --- wikipedia{,} the free encyclopedia, 2013.
+\newblock [Online; accessed 16-July-2013].
+
+\bibitem{DBLP:conf/VLDB/WuCHN13}
+Wentao Wu, Yun Chi, Hakan Hac\'{\i}g\"{u}m\"{u}\c{s}, and Jeffrey~F. Naughton.
+\newblock Towards predicting query execution time for concurrent and dynamic
+  database workloads.
+\newblock {\em Proc. VLDB Endow.}, 6(10):925--936, August 2013.
+
+\bibitem{DBLP:conf/SCC/ZahariaCFSS10}
+Matei Zaharia, Mosharaf Chowdhury, Michael~J. Franklin, Scott Shenker, and Ion
+  Stoica.
+\newblock Spark: Cluster computing with working sets.
+\newblock In {\em Proceedings of the 2Nd USENIX Conference on Hot Topics in
+  Cloud Computing}, HotCloud'10, pages 10--10, Berkeley, CA, USA, 2010. USENIX
+  Association.
+
+\bibitem{DBLP:conf/VLDB/ZukowskiHNB07}
+Marcin Zukowski, S\'{a}ndor H{\'e}man, Niels Nes, and Peter Boncz.
+\newblock Cooperative scans: Dynamic bandwidth sharing in a dbms.
+\newblock In {\em Proceedings of the 33rd International Conference on Very
+  Large Data Bases}, VLDB '07, pages 723--734. VLDB Endowment, 2007.
+
+\end{thebibliography}

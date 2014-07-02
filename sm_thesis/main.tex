@@ -1,0 +1,100 @@
+% -*- Mode:TeX -*-
+
+%% The documentclass options along with the pagestyle can be used to generate
+%% a technical report, a draft copy, or a regular thesis.  You may need to
+%% re-specify the pagestyle after you \include  cover.tex.  For more
+%% information, see the first few lines of mitthesis.cls. 
+
+\documentclass[12pt]{mitthesis}
+%\usepackage{lgrind}
+%\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+%\usepackage{latexsym} 
+%\newcommand{\agp}[1]{\textcolor{red}{Aditya: #1}}
+\newcommand{\mpv}[1]{Manasi: #1}
+\newcommand{\SeeDB}{{\sc SeeDB}}
+%\newcommand{\calQ}{\mathcal{Q}}
+%\newcommand{\calR}{\mathcal{R}}
+%\newcommand{\att}[1]{{\text{#1}}}
+%\usepackage{floatrow}
+\usepackage{caption} 
+%\usepackage{times}
+%\usepackage{MnSymbol} 
+%\usepackage{multirow}
+%\usepackage{pgfplots}
+%\usepackage{subfigure}
+\usepackage{graphicx}  
+%\usepackage{color}
+
+%\newtheorem{definition}{Definition}[section]
+%\newtheorem{example}[definition]{Example}
+\newtheorem{problem}{Problem}[chapter]
+
+\newcommand{\squishlist}{
+   \begin{list}{$\bullet$}
+    { \setlength{\itemsep}{0pt}
+      \setlength{\parsep}{2pt}
+      \setlength{\topsep}{0pt}
+      \setlength{\partopsep}{0pt}
+      \leftmargin=25pt
+\rightmargin=0pt
+\labelsep=5pt
+\labelwidth=10pt
+\itemindent=0pt
+\listparindent=0pt
+\itemsep=\parsep
+    }
+}
+\newcommand{\squishend}{\end{list}}
+
+\newenvironment{denselist}{
+    \begin{list}{\tiny{$\bullet$}}%
+    {\setlength{\itemsep}{0ex} \setlength{\topsep}{0ex}
+    \setlength{\parsep}{0pt} \setlength{\itemindent}{0pt}
+    \setlength{\leftmargin}{0.5em}
+    \setlength{\partopsep}{0pt}}}%
+    {\end{list}}
+\newcommand\ha{\hat{a}}
+
+\newtheorem{theorem}{Theorem}
+% 
+% \newcommand{\eat}[1]{}
+% \newcommand{\papertext}[1]{#1}
+% \newcommand{\techreport}[1]{}
+% 
+% \newcommand{\techreporttext}[1]{}
+% \newcommand{\stitle}[1]{\vspace{0.25em}\noindent\textbf{#1}}
+
+\pagestyle{plain}
+
+%% This bit allows you to either specify only the files which you wish to
+%% process, or `all' to process all files which you \include.
+%% Krishna Sethuraman (1990).
+
+%\typein [\files]{Enter file names to process, (chap1,chap2 ...), or `all' to
+%process all files:}
+\def\all{all}
+\def\files{all}
+\ifx\files\all \typeout{Including all files.} \else \typeout{Including only \files.} \includeonly{\files} \fi
+
+\begin{document}
+\include{cover}
+\pagestyle{plain}
+\include{contents}
+\include{introduction}
+\include{problem_definition}
+\include{architecture}
+\include{frontend}
+\include{backend}
+%\include{user_study}
+\include{experiments}
+\include{related_work}
+\include{discussion}
+\include{conclusion}
+\appendix
+%\include{appa}
+%\include{appb}
+\include{biblio}
+\end{document}
+

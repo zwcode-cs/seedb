@@ -1,0 +1,137 @@
+\chapter{Problem Definition}
+\label{sec:problem_statement}
+
+Now that we have defined the goal of \SeeDB, we formally describe the problem
+that \SeeDB\ seeks to address. Given a database $D$ and a query $Q$, \SeeDB\
+considers a number of views that can be generated from $Q$ by adding relational
+operators to group and aggregate query results.
+For the purpose of this discussion, we will refer to views and visualizations
+interchangeably, since it is straightforward to translate views into
+visualizations automatically. For example, there are straightforward rules that
+dictate how the view in Table~\ref{tab:staplerX} (Example 1) can be transformed
+to give a visualization like Figure~\ref{fig:staplerX}.
+Furthermore, we limit the set of candidate views to those
+that generate a two-column result via a single-attribute grouping and
+aggregation (e.g. Table~\ref{tab:staplerX}). However, \SeeDB\ techniques can
+directly be used to recommend visualizations for
+multiple column views ($> 2$ columns) that are generated via multi-attribute
+grouping and aggregation.
+
+%Lastly, for simplicity, 
+%we ignore {\em binning}: that is, given a view to be visualized,
+%there are many ways of binning values to give the view. 
+%For instance, if we have average profits per day, we can bin the days into
+%months, into weeks, or into years.
+
+We consider a database $D$ with a snowflake schema,
+with dimension attributes $A$, measure attributes $M$, and potential
+aggregate functions $F$ over the measure attributes.
+We limit the class of queries $Q$ posed over $D$ to be
+those that select one or more rows from the fact table, and denote the results
+as $D_Q$. 
+%select a horizontal fragment of the fact table:
+%this selection can be done using selection predicates on the fact
+%table, or on dimension tables via key-foreign-key joins.
+%Overall, this class of queries allows the analyst to express their interest
+%in examining facts (i.e., a slice of the dataset)
+%that satisfy specific conditions.
+%We denote the result of $Q(D)$ as $D_Q$.
+
+Given such a query $Q$, \SeeDB\ considers all views $V_i$ that perform a
+single-attribute group-by and aggregation on $D_Q$. We represent $V_i$ as a
+triple $(a, m, f)$, where $m \in M, a \in A, f \in F$, i.e., the view
+performs a group-by on $a$ and applies the aggregation function $f$ on a measure
+attribute $m$. We call this the {\em target view}.
+%Thus, $V_i (D_Q)$ can be expressed as the following SQL query:
+$${\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D_Q\  {\tt GROUP \ \ BY} \ a$$ 
+As discussed in the previous section, \SeeDB\ evaluates
+whether a view $V_i$ is interesting
+by computing the deviation between the view applied to the selected data (i.e., $D_Q$) 
+and the view applied to the entire database.
+The equivalent view on the entire database $V_i (D)$ can be expressed as shown
+below that we call the {\em comparison view}. 
+$${\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt GROUP \ \ BY} \ a$$
+The results of both the above views are tables with two columns, namely $a$ and
+$f(m)$. We normalize each result table into a probability distribution, such
+that the values of $f(m)$ sum to $1$.
+% over the various values of $a$ and the tables can be normalized into
+%probability distributions for comparison. To convert each result table 
+For our example in Table~\ref{tab:staplerX}, the probability distribution of
+$V_i(D_Q)$, denoted as $P[V_i (D_Q)]$, is: (Jan: 180.55/538.18, Feb:
+145.50/538.18, March: 122.00/538.18,  April: 90.13/538.18). A similar
+probability distribution can be derived for $P[V_i (D)]$.
+
+Given a view $V_i$ and probability distributions for the
+target view  ($P[V_i (D_Q)]$) and comparison view ($P[V_i (D)]$), the
+{\em utility} of $V_i$ is defined as the distance between these two probability
+distributions. Formally, if $S$ is a distance function,
+$$ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$$
+
+The utility of a view is our measure for whether the target view is
+``potentially interesting'' as compared to the comparison view:
+the higher the utility, the more the deviation
+from the comparison view, and the more likely the view is to be interesting.
+% Computing distance between probability distributions has
+% been well studied in the literature, and \SeeDB\ supports a variety of metrics
+% to compute utility, including Earth Movers Distance~\cite{wikipedia-prob-dist}, 
+% Euclidean Distance, Kullback-Leibler Divergence (K-L
+% divergence)~\cite{wikipedia-KL}, and Jenson-Shannon
+% Distance~\cite{wikipedia-JS,entropy-vis}. 
+Computing distance between probability distributions has
+been well studied, and \SeeDB\ supports a variety of metrics
+to compute utility. These include:
+\squishlist
+  \item {\bf Earth Movers Distance (EMD)}~\cite{wikipedia-prob-dist}: Commonly used to
+  measure differences between color histograms from images, EMD is a popular metric for comparing
+  discrete distributions.
+  \item {\bf Euclidean Distance}: The L2 norm or
+  Euclidean distance considers the two distributions to be points in a high
+  dimensional space and measures the distance between them.
+  \item {\bf Kullback-Leibler Divergence}(K-L divergence)~\cite{wikipedia-KL}:
+  K-L divergence measures the information lost when one probability distribution is used to approximate
+  the other one.
+  \item {\bf Jenson-Shannon Distance}~\cite{wikipedia-JS,entropy-vis}: Based on
+  the K-L divergence, this distance measures the similarity between two probability distributions.
+\squishend
+%Finally, we note that while other definitions of the comparison views and
+%utility metrics are possible, for this work, we chose the intuitive
+%definitions above.
+%we choose the above definitions in this demo.
+
+While we set the default \SeeDB\ distance metric as EMD (due to its simplicity),
+users can choose to use any of the distance metrics defined above. We note that
+the above definition of a view and its utility is merely one of many possible
+definitions and we choose this particular definition for simplicity and its
+intuitive nature. We describe other view definitions and utility metrics in
+Section \ref{sec:discussion}.
+
+%functions that can be used to measure the
+%``interesting''-ness of a view.
+%For instance, a view might be interesting because the attributes shown in the
+% view are popular or the most interesting ones. Similarly, a view
+
+\begin{problem}
+
+Given an analyst-specified query $Q$ on a database $D$, a distance function $S$,
+and a positive integer $k$, find $k$ views $V \equiv (a, m, f)$ that
+have the largest values of $U(V)$ among all the views that can be represented
+using a triple $(a, m, f)$, while minimizing total computation time.
+
+\end{problem}
+%Thus, \SeeDB\ aims to find the $k$ views (obtained by adding a single aggregate
+% and group-by operator) that have the largest utility based on the function $U$.
+
+While the problem definition above
+assumes that we have been provided with a query $Q$ and we compare views on $Q$
+with corresponding views on the entire database $D$, other settings are also
+possible. For instance, in Example 2 (medical research), we are provided with
+query $Q$ and we must compare views on it to the remaining dataset, i.e.
+$D$$\setminus$$Q$. Similarly, in Example 3 (product analysis), we are comparing
+equivalent views on two separate queries $Q1$ and $Q2$. The \SeeDB\ framework is
+agnostic to where the comparison dataset is coming from and its contents. It
+merely provides a point of comparison for the target view, and therefore \SeeDB\
+can be used unchanged for any of these settings.
+
+
+%Trend in the subset of the data that deviates from the corresponding trend in
+%the overall data.

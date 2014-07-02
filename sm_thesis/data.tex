@@ -1,0 +1,68 @@
+\chapter{Data and Processing}
+
+In this chapter we will discuss the data used to build our recommender system
+and the processing for the data.
+
+\section{Clothing Item Data and Processing}
+
+The primary data for our system is data about clothing items. This data has been
+scraped from retail websites, specifically Topshop\footnote{www.topshop.com} and
+Abercrombie\footnote{www.abercrombie.com}. The scraped data includes product
+images, type, description, prices and any auxilary information such as color,
+size etc. 
+
+For instance, image XXX shows an example of clothing item data obtained from
+Topshop. Our database includes 5000 clothing items from the above websites.
+Along with the core features obtained form the scraped data (e.g.
+type of item such as shorts, tops etc), we further process this data to extract
+features from the images and text as described below. Note that scraping and
+post-processing of scraped data varies with the retail store.
+
+\subsection{Derived Information}
+
+We process the scraped data to obtain features such as material, weather index,
+casual index, price index etc. We also process the image to obtain features such
+as colors, texture etc.
+
+Text-based Features:
+\begin{itemize}
+  \item Material: Item descriptions are processed to identify materials for the
+  item (e.g. silk, cotton, leather etc)
+  \item Weather index: Type of the item (e.g. shorts, tees) and material is used
+  to determine the weather index for a particular item (e.g. shorts = Hot,
+  Cardigan = Cool)
+  \item Casual index: Similar to weather, item type and material are used to
+  determine the casual index for an item (0 = not casual, 1 = any, 2 = not
+  casual)
+  \item Price index: We aggregate the price of certain type of items in a
+  store to determine the min and max price for that item type and use it to
+  determine the relative price of that item as 0 = Low, 1 = Medium, and 2 =
+  High.
+  \item Type specific features: depending on the item type, we process the text
+  to define type-specific features such as sleeve length for tops and heel
+  height for shoes
+\end{itemize}
+
+Image-based Features:
+\begin{itemize}
+  \item Color: We use MATLAB to binarize the product image to remove background
+  and then process the image to determine the colors present in the image and
+  the \% of the image occupied by the color. As in \cite{}, we record the
+  primary, secondary and decorative colors, in addition to the total number of
+  colors.
+  \item Texture: We use Gabor filters to determine if the item has texture
+  \item Pattern: We combine color and texture information to determine if there
+  is a pattern on the clothing item.
+\end{itemize}
+
+\section{Combination Data and Processing}
+
+The second component of our dataset is the data about combinations. Using
+information about ``Collections'' available on retail websites (examples of
+combinations put together by retailers) and examples of combinations from
+fashion blogs, we obtain examples of good combinations. Our dataset includes
+examples of 200 good combinations of clothing items. Note that our dataset
+includes examples only of ``positive training examples.'' The reasons for this
+are two-fold: (a) most readily available, real-world examples are of good
+fashion and (b) fashion is extremely subjective and hence we would like to
+minimize subjective biases in defining good fashion.

@@ -1,0 +1,15 @@
+\chapter{Conclusion}
+
+In this thesis, we described a prototype of the \SeeDB\ system used to find
+interesting visualizations of any database query. Given a query Q, \SeeDB\
+identifies and highlights the top-k most interesting views of Q using techniques
+based on deviation. We implement \SeeDB\ as a layer on top of a relational DBMS
+and describe the various optimizations strategies used to provide
+near-interactive response times for a range of datasets. Our experimental
+evaluation demonstrates the benefits of each of the different optimizations. We
+build a model to predict the performance of \SeeDB\ as a function of \SeeDB\
+and the DBMS parameters. We then use this model to pick optimal
+parameters for \SeeDB\ over a range of diverse datasets. Finally, we
+demonstrate that the combination of \SeeDB\ optimizations offers almost a 100X
+speedup in total execution time and allows automatic visualization to be
+performed in an interactive manner.
