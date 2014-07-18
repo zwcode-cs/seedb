@@ -1,8 +1,13 @@
+%!TEX root=document.tex
+
+
 \section{{\large \SeeDB\ } Design}
 \label{sec:system_architecture}
 
 In this section, we present the \SeeDB\ architecture, starting with an
-overview followed by a detailed discussion of its components.
+overview followed by a detailed discussion of its frontend component.
+The backend component, which does the heavy lifting for \SeeDB\ is described
+in detail in the next section.
 
 \subsection{{\large \SeeDB} architecture overview}
 \label{subsec:overview}
@@ -14,8 +19,9 @@ database, our design permits \SeeDB\ to be used in conjunction with a variety of
 existing database systems. 
 \SeeDB\ is comprised of two parts: a frontend and a backend. 
 The frontend is a ``thin client'' that
-is used to issue queries and display visualizations. The backend, in
-contrast, performs all the computation required to generate and select views
+is used to issue queries, display visualizations  and allow basic interactions
+with the visualizations. 
+The backend, in contrast, performs all the computation required to generate and select views
 to be recommended. Figure \ref{fig:sys-arch}
 depicts the architecture of our system.
 

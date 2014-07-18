@@ -1,24 +1,62 @@
-\section{State-of-the-Art Approaches}
+%!TEX root=document.tex
+
+
+\section{Related Work}
 \label{sec:related_work}
 
-\stitle{Related Work:}
-Over the past few years, the research community has introduced 
-a number of interactive data analytics tools such as ShowMe, Polaris, and
-Tableau~\cite{DBLP:journals/cacm/StolteTH08, DBLP:journals/tvcg/MackinlayHS07}
-as well as tools like Profiler allow analysts to detect anomalies in data.
-Unlike \SeeDB, which recommends visualizations automatically, the tools place the
-onus on the analyst to specify the visualization to be generated.
-Similar visualization specification tools have also been introduced
-by the database community, including Fusion Tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10} 
-and the Devise~\cite{DBLP:conf/sigmod/LivnyRBCDLMW97} toolkit.
-There has been some work on browsing data cubes in OLAP, allowing
-analysts to find explanations, get suggestions for next cubes to visit,
-or identify generalizations or patterns starting from a single cube~\cite{DBLP:conf/vldb/Sarawagi99, 
-DBLP:conf/vldb/SatheS01, DBLP:conf/vldb/Sarawagi00}. 
-While we may be able to reuse the metrics from that line of work,
-the same techniques will not directly apply to visualizations.
 
-\subsection{Viz papers and tools}
-\subsection{Data Cubes}
-\subsection{General ML and stats references}
-\subsection{Multi-query optimization}
+\SeeDB\ is related to work from many fields:
+
+\subsubsection*{Interactive Data Visualization Tools}
+Over the past few years, the research community has introduced a number of
+interactive data analytics tools such as ShowMe, Polaris, and 
+Tableau~\cite{DBLP:journals/cacm/StolteTH08, DBLP:journals/tvcg/MackinlayHS07}.
+Unlike \SeeDB, which recommends visualizations automatically, these tools place
+the onus on the analyst to specify the visualization to be generated.
+For datasets with a large number of attributes, it is not possible
+for the analyst to manually study all the attributes; hence, interactive
+visualization needs to be augmented with automated techniques of visualization.
+Profiler is one such automated tool that allows analysts to detect anomalies in
+data \cite{DBLP:conf/AVI/KandelPPHH12}.
+
+Similar visualization specification tools have also been introduced by the
+database community, including Fusion
+Tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10} and the
+Devise~\cite{DBLP:conf/sigmod/LivnyRBCDLMW97} toolkit.
+
+Our work is also similar to VizDeck \agp{say something here.}
+
+\subsubsection*{Data Cubes}
+The work done in \SeeDB\ is of a flavor similar to previous literature in
+building and browsing OLAP data cubes. Data cubes have been very well studied in
+the literature \cite{DBLP:conf/SIGMOD/HarinarayanRU96,
+DBLP:jounral/DMKD/GrayCBLR97}, and work such as
+~\cite{DBLP:conf/vldb/Sarawagi99, DBLP:conf/vldb/SatheS01,
+DBLP:conf/vldb/Sarawagi00, DBLP:conf/SIGKDD/OrdonezC09} has explored the
+questions of allowing analysts to find explanations for trends, get suggest for
+cubes to visist, identify generalizations or patterns starting from a single
+cube. While we can reuse some of the similarlity metrics proposed in these
+papers, the exact techniques are different because of the specific problem
+setup.
+
+\subsubsection*{General Purpose Data Analysis Tools}
+Our work is also related to work on building general purpose data analysis tools
+on top of databases. For example, MADLib \cite{DBLP:conf/VLDB/HellersteinRSWF12}
+implements various analytic functions inside the database. MLBase
+\cite{DBLP:conf/CIDR/KraskaTDGFJ2013} provides a platform that allows users to
+run various machine learning algorithms on top of the Spark system
+\cite{DBLP:conf/SCC/ZahariaCFSS10}.
+Similarly, statistical analysis packages such as R, SAS and Matlab could also be
+used to perform analysis similar to \SeeDB.
+
+
+\subsubsection*{Multi-query optimization}
+Since \SeeDB\ must execute a large number of queries, there are several
+opportunities for performing multi-query optimization and we explore some of
+these strategies in Section \ref{subsec:seedb_backend} and build an analytical model of
+\SeeDB\ performance. For this, we draw upon work in the areas of multi-query
+optimization and modeling parallel query execution \cite{DBLP:conf/VLDB/WuCHN13,
+DBLP:journal/TODS/Sellis1988, DBLP:conf/VLDB/ZukowskiHNB07}.
+
+
+

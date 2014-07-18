@@ -5,6 +5,981 @@
 %% Created for Neoklis Polyzotis at 2012-08-12 00:43:46 +0300 
 
 
+@preamble{ "\newcommand{\noopsort}[1]{} "
+	# "\newcommand{\printfirst}[2]{#1} "
+	# "\newcommand{\singleletter}[1]{#1} "
+	# "\newcommand{\switchargs}[2]{#2#1} " }
+
+@ARTICLE{article-minimal,
+   author = {L[eslie] A. Aamport},
+   title = {The Gnats and Gnus Document Preparation System},
+   journal = {\mbox{G-Animal's} Journal},
+   year = 1986,
+}
+
+@ARTICLE{article-full,
+   author = {L[eslie] A. Aamport},
+   title = {The Gnats and Gnus Document Preparation System},
+   journal = {\mbox{G-Animal's} Journal},
+   year = 1986,
+   volume = 41,
+   number = 7,
+   pages = "73+",
+   month = jul,
+   note = "This is a full ARTICLE entry",
+}
+
+The KEY field is here to override the KEY field in the journal being
+cross referenced (so is the NOTE field, in addition to its imparting
+information).
+
+@ARTICLE{article-crossref,
+   crossref = {WHOLE-JOURNAL},
+   key = "",
+   author = {L[eslie] A. Aamport},
+   title = {The Gnats and Gnus Document Preparation System},
+   pages = "73+",
+   note = "This is a cross-referencing ARTICLE entry",
+}
+
+@ARTICLE{whole-journal,
+   key = "GAJ",
+   journal = {\mbox{G-Animal's} Journal},
+   year = 1986,
+   volume = 41,
+   number = 7,
+   month = jul,
+   note = {The entire issue is devoted to gnats and gnus
+		(this entry is a cross-referenced ARTICLE (journal))},
+}
+
+@INBOOK{inbook-minimal,
+   author = "Donald E. Knuth",
+   title = "Fundamental Algorithms",
+   publisher = "Addison-Wesley",
+   year = "{\noopsort{1973b}}1973",
+   chapter = "1.2",
+}
+
+@INBOOK{inbook-full,
+   author = "Donald E. Knuth",
+   title = "Fundamental Algorithms",
+   volume = 1,
+   series = "The Art of Computer Programming",
+   publisher = "Addison-Wesley",
+   address = "Reading, Massachusetts",
+   edition = "Second",
+   month = "10~" # jan,
+   year = "{\noopsort{1973b}}1973",
+   type = "Section",
+   chapter = "1.2",
+   pages = "10--119",
+   note = "This is a full INBOOK entry",
+}
+
+@INBOOK{inbook-crossref,
+   crossref = "whole-set",
+   title = "Fundamental Algorithms",
+   volume = 1,
+   series = "The Art of Computer Programming",
+   edition = "Second",
+   year = "{\noopsort{1973b}}1973",
+   type = "Section",
+   chapter = "1.2",
+   note = "This is a cross-referencing INBOOK entry",
+}
+
+@BOOK{book-minimal,
+   author = "Donald E. Knuth",
+   title = "Seminumerical Algorithms",
+   publisher = "Addison-Wesley",
+   year = "{\noopsort{1973c}}1981",
+}
+
+@BOOK{book-full,
+   author = "Donald E. Knuth",
+   title = "Seminumerical Algorithms",
+   volume = 2,
+   series = "The Art of Computer Programming",
+   publisher = "Addison-Wesley",
+   address = "Reading, Massachusetts",
+   edition = "Second",
+   month = "10~" # jan,
+   year = "{\noopsort{1973c}}1981",
+   note = "This is a full BOOK entry",
+}
+
+@BOOK{book-crossref,
+   crossref = "whole-set",
+   title = "Seminumerical Algorithms",
+   volume = 2,
+   series = "The Art of Computer Programming",
+   edition = "Second",
+   year = "{\noopsort{1973c}}1981",
+   note = "This is a cross-referencing BOOK entry",
+}
+
+@BOOK{whole-set,
+   author = "Donald E. Knuth",
+   publisher = "Addison-Wesley",
+   title = "The Art of Computer Programming",
+   series = "Four volumes",
+   year = "{\noopsort{1973a}}{\switchargs{--90}{1968}}",
+   note = "Seven volumes planned (this is a cross-referenced set of BOOKs)",
+}
+
+@BOOKLET{booklet-minimal,
+   key = "Kn{\printfirst{v}{1987}}",
+   title = "The Programming of Computer Art",
+}
+
+@BOOKLET{booklet-full,
+   author = "Jill C. Knvth",
+   title = "The Programming of Computer Art",
+   howpublished = "Vernier Art Center",
+   address = "Stanford, California",
+   month = feb,
+   year = 1988,
+   note = "This is a full BOOKLET entry",
+}
+
+@INCOLLECTION{incollection-minimal,
+   author = "Daniel D. Lincoll",
+   title = "Semigroups of Recurrences",
+   booktitle = "High Speed Computer and Algorithm Organization",
+   publisher = "Academic Press",
+   year = 1977,
+}
+
+@INCOLLECTION{incollection-full,
+   author = "Daniel D. Lincoll",
+   title = "Semigroups of Recurrences",
+   editor = "David J. Lipcoll and D. H. Lawrie and A. H. Sameh",
+   booktitle = "High Speed Computer and Algorithm Organization",
+   number = 23,
+   series = "Fast Computers",
+   chapter = 3,
+   type = "Part",
+   pages = "179--183",
+   publisher = "Academic Press",
+   address = "New York",
+   edition = "Third",
+   month = sep,
+   year = 1977,
+   note = "This is a full INCOLLECTION entry",
+}
+
+@INCOLLECTION{incollection-crossref,
+   crossref = "whole-collection",
+   author = "Daniel D. Lincoll",
+   title = "Semigroups of Recurrences",
+   pages = "179--183",
+   note = "This is a cross-referencing INCOLLECTION entry",
+}
+
+@BOOK{whole-collection,
+   editor = "David J. Lipcoll and D. H. Lawrie and A. H. Sameh",
+   title = "High Speed Computer and Algorithm Organization",
+   booktitle = "High Speed Computer and Algorithm Organization",
+   number = 23,
+   series = "Fast Computers",
+   publisher = "Academic Press",
+   address = "New York",
+   edition = "Third",
+   month = sep,
+   year = 1977,
+   note = "This is a cross-referenced BOOK (collection) entry",
+}
+
+@MANUAL{manual-minimal,
+   key = "Manmaker",
+   title = "The Definitive Computer Manual",
+}
+
+@MANUAL{manual-full,
+   author = "Larry Manmaker",
+   title = "The Definitive Computer Manual",
+   organization = "Chips-R-Us",
+   address = "Silicon Valley",
+   edition = "Silver",
+   month = apr # "-" # may,
+   year = 1986,
+   note = "This is a full MANUAL entry",
+}
+
+@MASTERSTHESIS{mastersthesis-minimal,
+   author = "{\'{E}}douard Masterly",
+   title = "Mastering Thesis Writing",
+   school = "Stanford University",
+   year = 1988,
+}
+
+@MASTERSTHESIS{mastersthesis-full,
+   author = "{\'{E}}douard Masterly",
+   title = "Mastering Thesis Writing",
+   school = "Stanford University",
+   type = "Master's project",
+   address = "English Department",
+   month = jun # "-" # aug,
+   year = 1988,
+   note = "This is a full MASTERSTHESIS entry",
+}
+
+@MISC{misc-minimal,
+   key = "Missilany",
+   note = "This is a minimal MISC entry",
+}
+
+@MISC{misc-full,
+   author = "Joe-Bob Missilany",
+   title = "Handing out random pamphlets in airports",
+   howpublished = "Handed out at O'Hare",
+   month = oct,
+   year = 1984,
+   note = "This is a full MISC entry",
+}
+
+@STRING{STOC-key = "OX{\singleletter{stoc}}"}
+
+@STRING{ACM = "The OX Association for Computing Machinery"}
+
+@STRING{STOC = " Symposium on the Theory of Computing"}
+
+@INPROCEEDINGS{inproceedings-minimal,
+   author = "Alfred V. Oaho and Jeffrey D. Ullman and Mihalis Yannakakis",
+   title = "On Notions of Information Transfer in {VLSI} Circuits",
+   booktitle = "Proc. Fifteenth Annual ACM" # STOC,
+   year = 1983,
+}
+
+@INPROCEEDINGS{inproceedings-full,
+   author = "Alfred V. Oaho and Jeffrey D. Ullman and Mihalis Yannakakis",
+   title = "On Notions of Information Transfer in {VLSI} Circuits",
+   editor = "Wizard V. Oz and Mihalis Yannakakis",
+   booktitle = "Proc. Fifteenth Annual ACM" # STOC,
+   number = 17,
+   series = "All ACM Conferences",
+   pages = "133--139",
+   month = mar,
+   year = 1983,
+   address = "Boston",
+   organization = ACM,
+   publisher = "Academic Press",
+   note = "This is a full INPROCEDINGS entry",
+}
+
+@INPROCEEDINGS{inproceedings-crossref,
+   crossref = "whole-proceedings",
+   author = "Alfred V. Oaho and Jeffrey D. Ullman and Mihalis Yannakakis",
+   title = "On Notions of Information Transfer in {VLSI} Circuits",
+   organization = "",
+   pages = "133--139",
+   note = "This is a cross-referencing INPROCEEDINGS entry",
+}
+
+@PROCEEDINGS{proceedings-minimal,
+   key = STOC-key,
+   title = "Proc. Fifteenth Annual" # STOC,
+   year = 1983,
+}
+
+@PROCEEDINGS{proceedings-full,
+   editor = "Wizard V. Oz and Mihalis Yannakakis",
+   title = "Proc. Fifteenth Annual" # STOC,
+   number = 17,
+   series = "All ACM Conferences",
+   month = mar,
+   year = 1983,
+   address = "Boston",
+   organization = ACM,
+   publisher = "Academic Press",
+   note = "This is a full PROCEEDINGS entry",
+}
+
+@PROCEEDINGS{whole-proceedings,
+   key = STOC-key,
+   organization = ACM,
+   title = "Proc. Fifteenth Annual" # STOC,
+   address = "Boston",
+   year = 1983,
+   booktitle = "Proc. Fifteenth Annual ACM" # STOC,
+   note = "This is a cross-referenced PROCEEDINGS",
+}
+
+@PHDTHESIS{phdthesis-minimal,
+   author = "F. Phidias Phony-Baloney",
+   title = "Fighting Fire with Fire: Festooning {F}rench Phrases",
+   school = "Fanstord University",
+   year = 1988,
+}
+
+@PHDTHESIS{phdthesis-full,
+   author = "F. Phidias Phony-Baloney",
+   title = "Fighting Fire with Fire: Festooning {F}rench Phrases",
+   school = "Fanstord University",
+   type = "{PhD} Dissertation",
+   address = "Department of French",
+   month = jun # "-" # aug,
+   year = 1988,
+   note = "This is a full PHDTHESIS entry",
+}
+
+@TECHREPORT{techreport-minimal,
+   author = "Tom Terrific",
+   title = "An {$O(n \log n / \! \log\log n)$} Sorting Algorithm",
+   institution = "Fanstord University",
+   year = 1988,
+}
+
+@TECHREPORT{techreport-full,
+   author = "Tom T{\'{e}}rrific",
+   title = "An {$O(n \log n / \! \log\log n)$} Sorting Algorithm",
+   institution = "Fanstord University",
+   type = "Wishful Research Result",
+   number = "7",
+   address = "Computer Science Department, Fanstord, California",
+   month = oct,
+   year = 1988,
+   note = "This is a full TECHREPORT entry",
+}
+
+@UNPUBLISHED{unpublished-minimal,
+   author = "Ulrich {\"{U}}nderwood and Ned {\~N}et and Paul {\={P}}ot",
+   title = "Lower Bounds for Wishful Research Results",
+   note = "Talk at Fanstord University (this is a minimal UNPUBLISHED entry)",
+}
+
+@UNPUBLISHED{unpublished-full,
+   author = "Ulrich {\"{U}}nderwood and Ned {\~N}et and Paul {\={P}}ot",
+   title = "Lower Bounds for Wishful Research Results",
+   month = nov # ", " # dec,
+   year = 1988,
+   note = "Talk at Fanstord University (this is a full UNPUBLISHED entry)",
+}
+
+@MISC{random-note-crossref,
+   key = {Volume-2},
+   note = "Volume~2 is listed under Knuth \cite{book-full}"
+}
+
+@inproceedings{DBLP:conf/vldb/Parameswaran2013,
+  author    = {Aditya Parameswaran and Neoklis Polyzotis and Hector Garcia-Molina},
+  title     = {SeeDB: Visualizing Database Queries Efﬁciently},
+  booktitle = {VLDB},
+  volume    = {7},
+  year      = {2013},
+  pages		= {325-328},
+  ee        = {http://www.vldb.org/pvldb/vol7/p325-parameswaran.pdf},
+}
+
+
+
+@misc{mimic,
+   title = "Mimic II Database",
+   url = "http://mimic.physionet.org/",
+   note = "[Online; accessed 3-March-2014]"
+ }
+
+
+@misc{tableau,
+   title = "Tableau Public",
+   url = "www.tableaupublic.com/",
+   note = "[Online; accessed 3-March-2014]"
+ }
+ 
+ @misc{superstore,
+   title = "Tableau SuperStore Data",
+   url = "http://community.tableausoftware.com/docs/DOC-1236",
+   note = "[Online; accessed 3-March-2014]"
+ }
+ 
+ @misc{election_data,
+   title = "FEC Presidential Campaign Finance",
+   url = "http://fec.gov/disclosurep/pnational.do",
+   note = "[Online; accessed 3-March-2014]"
+ }
+
+@inproceedings{DBLP:conf/vldb/Sarawagi99,
+  author    = {Sunita Sarawagi},
+  title     = {Explaining Differences in Multidimensional Aggregates},
+  booktitle = {VLDB},
+  year      = {1999},
+  pages     = {42-53},
+  ee        = {http://www.vldb.org/conf/1999/P4.pdf},
+  crossref  = {DBLP:conf/vldb/99},
+  bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+
+@article{count-min-sketches,
+  author    = {Graham Cormode and
+               S. Muthukrishnan},
+  title     = {An improved data stream summary: the count-min sketch and
+               its applications},
+  journal   = {J. Algorithms},
+  volume    = {55},
+  number    = {1},
+  year      = {2005},
+  pages     = {58-75},
+  ee        = {http://dx.doi.org/10.1016/j.jalgor.2003.12.001},
+  bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+
+
+@article{dbo,
+  author 	= {Chris Jermaine and others},
+  author    = {Chris Jermaine and
+               Subramanian Arumugam and
+               Abhijit Pol and
+               Alin Dobra},
+  title     = {Scalable approximate query processing with the DBO engine},
+  journal   = {ACM Trans. Database Syst.},
+  volume    = {33},
+  number    = {4},
+  year      = {2008},
+  ee        = {http://doi.acm.org/10.1145/1412331.1412335},
+  bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+
+@inproceedings{wavelets,
+  author 	= {Kaushik Chakrabarti and others},
+  author    = {Kaushik Chakrabarti and
+               Minos N. Garofalakis and
+               Rajeev Rastogi and
+               Kyuseok Shim},
+  title     = {Approximate Query Processing Using Wavelets},
+  booktitle = {VLDB},
+  year      = {2000},
+  pages     = {111-122},
+  ee        = {http://www.vldb.org/conf/2000/P111.pdf},
+  crossref  = {DBLP:conf/vldb/2000},
+  bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+
+@article{tr,
+  author    = {Aditya Parameswaran and Neoklis Polyzotis and Hector Garcia-Molina},
+  title     = {{SeeDB: Visualizing Database Queries Efficiently}},
+  journal   = {Stanford Infolab},
+  year      = {2013},
+}
+
+
+@article{DBLP:journals/tods/Sellis88,
+  author    = {Timos K. Sellis},
+  title     = {Multiple-Query Optimization},
+  journal   = {ACM TODS},
+  volume    = {13},
+  number    = {1},
+  year      = {1988},
+  pages     = {23-52},
+  ee        = {http://doi.acm.org/10.1145/42201.42203},
+  bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+
+
+
+@inproceedings{DBLP:conf/sigmod/HellersteinHW97,
+  author    = {Joseph M. Hellerstein and
+               Peter J. Haas and
+               Helen J. Wang},
+  editor    = {Joan Peckham},
+  title     = {Online Aggregation},
+  booktitle = {SIGMOD 1997},
+  publisher = {ACM Press},
+  year      = {1997},
+  pages     = {171-182},
+}
+
+
+@inproceedings{DBLP:conf/vldb/Gibbons01,
+  author    = {Phillip B. Gibbons},
+  title     = {Distinct Sampling for Highly-Accurate Answers to Distinct
+               Values Queries and Event Reports},
+  booktitle = {VLDB},
+  year      = {2001},
+  pages     = {541-550},
+}
+
+@misc{ wikipedia-prob-dist,
+   author = "Wikipedia",
+   title = "Statistical distance --- Wikipedia{,} The Free Encyclopedia",
+   year = "2013",
+   url = "http://en.wikipedia.org/w/index.php?title=Statistical_distance&oldid=547827575",
+   note = "[Online; accessed 16-July-2013]"
+ }
+
+
+@misc{ wikipedia-KL,
+   author = "Wikipedia",
+   title = "Kullback Leibler divergence --- Wikipedia{,} The Free Encyclopedia",
+   year = "2013",
+   url = "http://en.wikipedia.org/w/index.php?title=Kullback_Leibler_divergence&oldid=556275957",
+   note = "[Online; accessed 16-July-2013]"
+ }
+
+ @misc{ wikipedia-JS,
+   author = "Wikipedia",
+   title = "Jensen Shannon divergence --- Wikipedia{,} The Free Encyclopedia",
+   year = "2013",
+   url = "http://en.wikipedia.org/w/index.php?title=Jensen_Shannon_divergence&oldid=563434492",
+   note = "[Online; accessed 16-July-2013]"
+ }
+
+
+
+@Article{entropy-vis,
+AUTHOR = {Wang, Chaoli and Shen, Han-Wei},
+TITLE = {Information Theory in Scientific Visualization},
+JOURNAL = {Entropy},
+VOLUME = {13},
+YEAR = {2011},
+NUMBER = {1},
+PAGES = {254--273},
+URL = {http://www.mdpi.com/1099-4300/13/1/254},
+ISSN = {1099-4300},
+DOI = {10.3390/e13010254}
+}
+
+
+
+@article{olap,
+ author = {Chaudhuri, Surajit and Dayal, Umeshwar},
+ title = {An overview of data warehousing and OLAP technology},
+ journal = {SIGMOD Rec.},
+ issue_date = {March 1997},
+ volume = {26},
+ number = {1},
+ month = mar,
+ year = {1997},
+ issn = {0163-5808},
+ pages = {65--74},
+ numpages = {10},
+ url = {http://doi.acm.org/10.1145/248603.248616},
+ doi = {10.1145/248603.248616},
+ acmid = {248616},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+} 
+
+
+
+@article{friedhoff1990eye,
+  title={The eye of the beholder},
+  author={Friedhoff, Richard Mark and Kiely, Thomas},
+  journal={Computer Graphics World},
+  volume={13},
+  number={8},
+  pages={46--59},
+  year={1990}
+}
+
+@inproceedings{DBLP:conf/infovis/Yang-PelaezF00,
+  author    = {Julie Yang-Pel{\'a}ez and
+               Woodie Flowers},
+  title     = {Information Content Measures of Visual Displays},
+  booktitle = {INFOVIS},
+  year      = {2000},
+  pages     = {99-103},
+  ee        = {http://doi.ieeecomputersociety.org/10.1109/INFVIS.2000.885096},
+  bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+
+@inproceedings{DBLP:conf/infovis/WongCFJT00,
+  author    = {Pak Chung Wong and
+               Wendy Cowley and
+               Harlan Foote and
+               Elizabeth Jurrus and
+               Jim Thomas},
+  title     = {Visualizing Sequential Patterns for Text Mining},
+  booktitle = {INFOVIS},
+  year      = {2000},
+  pages     = {105-111},
+  ee        = {http://doi.ieeecomputersociety.org/10.1109/INFVIS.2000.885097},
+  bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+
+@inproceedings{Lin07selectingstars:,
+	Author = {Xuemin Lin and Yidong Yuan and Qing Zhang and Ying Zhang},
+	Booktitle = {in ICDE},
+	Date-Added = {2012-08-11 21:43:30 +0000},
+	Date-Modified = {2012-08-11 21:43:30 +0000},
+	Title = {Selecting Stars: the k Most Representative Skyline Operator},
+	Year = {2007}}
+
+@inproceedings{DBLP:conf/pods/PapadimitriouY01,
+	Author = {Christos H. Papadimitriou and Mihalis Yannakakis},
+	Bibsource = {DBLP, http://dblp.uni-trier.de},
+	Booktitle = {PODS},
+	Crossref = {DBLP:conf/pods/2001},
+	Date-Added = {2012-08-11 21:41:30 +0000},
+	Date-Modified = {2012-08-11 21:41:30 +0000},
+	Ee = {http://doi.acm.org/10.1145/375551.375560, http://www.acm.org/sigs/sigmod/pods/proc01/online/p35.pdf},
+	Title = {Multiobjective Query Optimization},
+	Year = {2001}}
+
+@proceedings{DBLP:conf/pods/2001,
+	Bibsource = {DBLP, http://dblp.uni-trier.de},
+	Date-Added = {2012-08-11 21:41:30 +0000},
+	Date-Modified = {2012-08-11 21:41:30 +0000},
+	Editor = {Peter Buneman},
+	Ee = {http://dl.acm.org/citation.cfm?id=375551},
+	Isbn = {1-58113-361-8},
+	Publisher = {ACM},
+	Title = {Proceedings of the Twentieth ACM SIGACT-SIGMOD-SIGART Symposium on Principles of Database Systems, May 21-23, 2001, Santa Barbara, California, USA},
+	Year = {2001}}
+
+@article{DBLP:journals/ftdb/DeshpandeIR07,
+	Author = {Amol Deshpande and Zachary G. Ives and Vijayshankar Raman},
+	Bibsource = {DBLP, http://dblp.uni-trier.de},
+	Date-Added = {2012-08-11 21:39:28 +0000},
+	Date-Modified = {2012-08-11 21:39:28 +0000},
+	Ee = {http://dx.doi.org/10.1561/1900000001},
+	Journal = {Foundations and Trends in Databases},
+	Number = {1},
+	Pages = {1-140},
+	Title = {Adaptive Query Processing},
+	Volume = {1},
+	Year = {2007}}
+
+@inproceedings{DBLP:conf/sigmod/GonzalezHJLMSSG10,
+	Author = {Hector Gonzalez and others},
+	Author = {Hector Gonzalez and Alon Y. Halevy and Christian S. Jensen and Anno Langen and Jayant Madhavan and Rebecca Shapley and Warren Shen and Jonathan Goldberg-Kidon},
+	Bibsource = {DBLP, http://dblp.uni-trier.de},
+	Booktitle = {SIGMOD Conference},
+	Ee = {http://doi.acm.org/10.1145/1807167.1807286},
+	Pages = {1061-1066},
+	Title = {Google fusion tables: web-centered data management and collaboration},
+	Year = {2010}}
+
+@inproceedings{DBLP:conf/sigmod/LivnyRBCDLMW97,
+	Author = {Miron Livny and others},
+	Author = {Miron Livny and Raghu Ramakrishnan and Kevin S. Beyer and Guangshun Chen and Donko Donjerkovic and Shilpa Lawande and Jussi Myllymaki and R. Kent Wenger},
+	Bibsource = {DBLP, http://dblp.uni-trier.de},
+	Booktitle = {SIGMOD Conference},
+	Ee = {http://doi.acm.org/10.1145/253260.253335, db/conf/sigmod/LivnyRBCDLMW97.html},
+	Pages = {301-312},
+	Title = {DEVise: Integrated Querying and Visualization of Large Datasets},
+	Year = {1997}}
+
+@article{DBLP:journals/tvcg/MackinlayHS07,
+	Author = {Jock D. Mackinlay and others},
+	Author = {Jock D. Mackinlay and Pat Hanrahan and Chris Stolte},
+	Bibsource = {DBLP, http://dblp.uni-trier.de},
+	Ee = {http://doi.ieeecomputersociety.org/10.1109/TVCG.2007.70594},
+	Journal = {IEEE Trans. Vis. Comput. Graph.},
+	Number = {6},
+	Pages = {1137-1144},
+	Title = {Show Me: Automatic Presentation for Visual Analysis},
+	Volume = {13},
+	Year = {2007}}
+
+@inproceedings{DBLP:conf/cikm/DashRMAL08,
+	Author = {Debabrata Dash and Jun Rao and Nimrod Megiddo and Anastasia Ailamaki and Guy M. Lohman},
+	Bibsource = {DBLP, http://dblp.uni-trier.de},
+	Booktitle = {CIKM},
+	Ee = {http://doi.acm.org/10.1145/1458082.1458087},
+	Pages = {3-12},
+	Title = {Dynamic faceted search for discovery-driven analysis},
+	Year = {2008}}
+
+@inproceedings{DBLP:conf/vldb/SatheS01,
+	Author = {Gayatri Sathe and Sunita Sarawagi},
+	Bibsource = {DBLP, http://dblp.uni-trier.de},
+	Booktitle = {VLDB},
+	Ee = {http://www.vldb.org/conf/2001/P531.pdf},
+	Pages = {531-540},
+	Title = {Intelligent Rollups in Multidimensional OLAP Data},
+	Year = {2001}}
+
+@inproceedings{DBLP:conf/sigmod/Sarawagi00,
+	Author = {Sunita Sarawagi and Gayatri Sathe},
+	Bibsource = {DBLP, http://dblp.uni-trier.de},
+	Booktitle = {SIGMOD Conference},
+	Ee = {http://doi.acm.org/10.1145/342009.336564, db/conf/sigmod/Sarawagi00.html},
+	Pages = {589},
+	Title = {i$^{\mbox{3}}$: Intelligent, Interactive Investigaton of OLAP data cubes},
+	Year = {2000}}
+
+@inproceedings{DBLP:conf/vldb/Sarawagi00,
+	Author = {Sunita Sarawagi},
+	Bibsource = {DBLP, http://dblp.uni-trier.de},
+	Booktitle = {VLDB},
+	Ee = {db/conf/vldb/Sarawagi00.html},
+	Pages = {307-316},
+	Title = {User-Adaptive Exploration of Multidimensional Data},
+	Year = {2000}}
+
+@article{DBLP:journals/cacm/StolteTH08,
+	Author = {Chris Stolte and others},
+	Author = {Chris Stolte and Diane Tang and Pat Hanrahan},
+	Bibsource = {DBLP, http://dblp.uni-trier.de},
+	Ee = {http://doi.acm.org/10.1145/1400214.1400234},
+	Journal = {Commun. ACM},
+	Number = {11},
+	Pages = {75-84},
+	Title = {Polaris: a system for query, analysis, and visualization of multidimensional databases},
+	Volume = {51},
+	Year = {2008}}
+
+@inproceedings{DBLP:conf/sigmod/Hanrahan12,
+	Author = {Pat Hanrahan},
+	Bibsource = {DBLP, http://dblp.uni-trier.de},
+	Booktitle = {SIGMOD Conference},
+	Ee = {http://doi.acm.org/10.1145/2213836.2213902},
+	Pages = {577-578},
+	Title = {Analytic database technologies for a new kind of user: the data enthusiast},
+	Year = {2012}}
+
+@inproceedings{DBLP:conf/chi/KandelPHH11,
+	Author = {Sean Kandel and others},
+	Author = {Sean Kandel and Andreas Paepcke and Joseph Hellerstein and Jeffrey Heer},
+	Bibsource = {DBLP, http://dblp.uni-trier.de},
+	Booktitle = {CHI},
+	Ee = {http://doi.acm.org/10.1145/1978942.1979444},
+	Pages = {3363-3372},
+	Title = {Wrangler: interactive visual specification of data transformation scripts},
+	Year = {2011}}
+
+@article{DBLP:journals/pvldb/HeerH09,
+	Author = {Jeffrey Heer and Joseph M. Hellerstein},
+	Bibsource = {DBLP, http://dblp.uni-trier.de},
+	Ee = {http://www.vldb.org/pvldb/2/vldb09-tutorial2.pdf},
+	Journal = {PVLDB},
+	Number = {2},
+	Pages = {1656-1657},
+	Title = {Data visualization {\&} social data analysis},
+	Volume = {2},
+	Year = {2009}}
+
+@inproceedings{DBLP:conf/uist/GuoKHH11,
+	Author = {Philip J. Guo and Sean Kandel and Joseph M. Hellerstein and Jeffrey Heer},
+	Bibsource = {DBLP, http://dblp.uni-trier.de},
+	Booktitle = {UIST},
+	Ee = {http://doi.acm.org/10.1145/2047196.2047205},
+	Pages = {65-74},
+	Title = {Proactive wrangling: mixed-initiative end-user programming of data transformation scripts},
+	Year = {2011}}
+
+@inproceedings{DBLP:conf/avi/KandelPPHH12,
+	Author = {Sean Kandel and others},
+	Author = {Sean Kandel and Ravi Parikh and Andreas Paepcke and Joseph M. Hellerstein and Jeffrey Heer},
+	Bibsource = {DBLP, http://dblp.uni-trier.de},
+	Booktitle = {AVI},
+	Ee = {http://doi.acm.org/10.1145/2254556.2254659},
+	Pages = {547-554},
+	Title = {Profiler: integrated statistical analysis and visualization for data quality assessment},
+	Year = {2012}}
+
+@article{DBLP:conf/vldb/AbrahamABB13,
+ author = {Abraham, Lior and Allen, John and Barykin, Oleksandr and Borkar, Vinayak and Chopra, Bhuwan and Gerea, Ciprian and Merl, Daniel and Metzler, Josh and Reiss, David and Subramanian, Subbu and Wiener, Janet L. and Zed, Okay},
+ title = {Scuba: Diving into Data at Facebook},
+ journal = {Proc. VLDB Endow.},
+ issue_date = {August 2013},
+ volume = {6},
+ number = {11},
+ month = aug,
+ year = {2013},
+ issn = {2150-8097},
+ pages = {1057--1067},
+ numpages = {11},
+ url = {http://dl.acm.org/citation.cfm?id=2536222.2536231},
+ acmid = {2536231},
+ publisher = {VLDB Endowment},
+} 
+
+@misc{ Postgres_wiki,
+   author = "Postgresql.org",
+   title = "PostgreSQL: Number Of Database Connections",
+   year = "2014",
+   url = "http://wiki.postgresql.org/wiki/Number_Of_Database_Connections",
+   note = "[Online; accessed 20-May-2014]"
+ }
+ 
+ @inproceedings{DBLP:conf/AVI/KandelPPHH12,
+ author = {Kandel, Sean and Parikh, Ravi and Paepcke, Andreas and Hellerstein, Joseph M. and Heer, Jeffrey},
+ title = {Profiler: Integrated Statistical Analysis and Visualization for Data Quality Assessment},
+ booktitle = {Proceedings of the International Working Conference on Advanced Visual Interfaces},
+ series = {AVI '12},
+ year = {2012},
+ isbn = {978-1-4503-1287-5},
+ location = {Capri Island, Italy},
+ pages = {547--554},
+ numpages = {8},
+ url = {http://doi.acm.org/10.1145/2254556.2254659},
+ doi = {10.1145/2254556.2254659},
+ acmid = {2254659},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {anomaly detection, data analysis, data quality, visualization},
+} 
+
+@article{DBLP:conf/VLDB/WuCHN13,
+ author = {Wu, Wentao and Chi, Yun and Hac\'{\i}g\"{u}m\"{u}\c{s}, Hakan and Naughton, Jeffrey F.},
+ title = {Towards Predicting Query Execution Time for Concurrent and Dynamic Database Workloads},
+ journal = {Proc. VLDB Endow.},
+ issue_date = {August 2013},
+ volume = {6},
+ number = {10},
+ month = aug,
+ year = {2013},
+ issn = {2150-8097},
+ pages = {925--936},
+ numpages = {12},
+ url = {http://dl.acm.org/citation.cfm?id=2536206.2536219},
+ acmid = {2536219},
+ publisher = {VLDB Endowment},
+} 
+
+@article{DBLP:journal/TODS/Sellis1988,
+ author = {Sellis, Timos K.},
+ title = {Multiple-query Optimization},
+ journal = {ACM Trans. Database Syst.},
+ issue_date = {March 1988},
+ volume = {13},
+ number = {1},
+ month = mar,
+ year = {1988},
+ issn = {0362-5915},
+ pages = {23--52},
+ numpages = {30},
+ url = {http://doi.acm.org/10.1145/42201.42203},
+ doi = {10.1145/42201.42203},
+ acmid = {42203},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+} 
+
+@inproceedings{DBLP:conf/VLDB/ZukowskiHNB07,
+ author = {Zukowski, Marcin and H{\'e}man, S\'{a}ndor and Nes, Niels and Boncz, Peter},
+ title = {Cooperative Scans: Dynamic Bandwidth Sharing in a DBMS},
+ booktitle = {Proceedings of the 33rd International Conference on Very Large Data Bases},
+ series = {VLDB '07},
+ year = {2007},
+ isbn = {978-1-59593-649-3},
+ location = {Vienna, Austria},
+ pages = {723--734},
+ numpages = {12},
+ url = {http://dl.acm.org/citation.cfm?id=1325851.1325934},
+ acmid = {1325934},
+ publisher = {VLDB Endowment},
+} 
+
+@inproceedings{DBLP:conf/SIGMOD/HarinarayanRU96,
+ author = {Harinarayan, Venky and Rajaraman, Anand and Ullman, Jeffrey D.},
+ title = {Implementing Data Cubes Efficiently},
+ booktitle = {Proceedings of the 1996 ACM SIGMOD International Conference on Management of Data},
+ series = {SIGMOD '96},
+ year = {1996},
+ isbn = {0-89791-794-4},
+ location = {Montreal, Quebec, Canada},
+ pages = {205--216},
+ numpages = {12},
+ url = {http://doi.acm.org/10.1145/233269.233333},
+ doi = {10.1145/233269.233333},
+ acmid = {233333},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+} 
+
+@inproceedings{DBLP:conf/SIGKDD/OrdonezC09,
+ author = {Ordonez, Carlos and Chen, Zhibo},
+ title = {Exploration and Visualization of OLAP Cubes with Statistical Tests},
+ booktitle = {Proceedings of the ACM SIGKDD Workshop on Visual Analytics and Knowledge Discovery: Integrating Automated Analysis with Interactive Exploration},
+ series = {VAKD '09},
+ year = {2009},
+ isbn = {978-1-60558-670-0},
+ location = {Paris, France},
+ pages = {46--55},
+ numpages = {10},
+ url = {http://doi.acm.org/10.1145/1562849.1562855},
+ doi = {10.1145/1562849.1562855},
+ acmid = {1562855},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {cube, parametric test, visualization},
+} 
+
+@article{DBLP:jounral/DMKD/GrayCBLR97,
+ author = {Gray, Jim and Chaudhuri, Surajit and Bosworth, Adam and Layman, Andrew and Reichart, Don and Venkatrao, Murali and Pellow, Frank and Pirahesh, Hamid},
+ title = {Data Cube: A Relational Aggregation Operator Generalizing Group-By, Cross-Tab, and Sub-Totals},
+ journal = {Data Min. Knowl. Discov.},
+ issue_date = {1997},
+ volume = {1},
+ number = {1},
+ month = jan,
+ year = {1997},
+ issn = {1384-5810},
+ pages = {29--53},
+ numpages = {25},
+ url = {http://dx.doi.org/10.1023/A:1009726021843},
+ doi = {10.1023/A:1009726021843},
+ acmid = {593438},
+ publisher = {Kluwer Academic Publishers},
+ address = {Hingham, MA, USA},
+ keywords = {aggregation, analysis, data cube, data mining, database, query, summarization},
+} 
+
+@article{DBLP:conf/VLDB/HellersteinRSWF12,
+ author = {Hellerstein, Joseph M. and R{\'e}, Christoper and Schoppmann, Florian and Wang, Daisy Zhe and Fratkin, Eugene and Gorajek, Aleksander and Ng, Kee Siong and Welton, Caleb and Feng, Xixuan and Li, Kun and Kumar, Arun},
+ title = {The MADlib Analytics Library: Or MAD Skills, the SQL},
+ journal = {Proc. VLDB Endow.},
+ issue_date = {August 2012},
+ volume = {5},
+ number = {12},
+ month = aug,
+ year = {2012},
+ issn = {2150-8097},
+ pages = {1700--1711},
+ numpages = {12},
+ url = {http://dl.acm.org/citation.cfm?id=2367502.2367510},
+ acmid = {2367510},
+ publisher = {VLDB Endowment},
+} 
+
+@inproceedings{DBLP:conf/CIDR/KraskaTDGFJ2013,
+  title={MLbase: A Distributed Machine-learning System.},
+  author={Kraska, Tim and Talwalkar, Ameet and Duchi, John C and Griffith, Rean and Franklin, Michael J and Jordan, Michael I},
+  booktitle={CIDR},
+  year={2013}
+}
+
+@inproceedings{DBLP:conf/SCC/ZahariaCFSS10,
+ author = {Zaharia, Matei and Chowdhury, Mosharaf and Franklin, Michael J. and Shenker, Scott and Stoica, Ion},
+ title = {Spark: Cluster Computing with Working Sets},
+ booktitle = {Proceedings of the 2Nd USENIX Conference on Hot Topics in Cloud Computing},
+ series = {HotCloud'10},
+ year = {2010},
+ location = {Boston, MA},
+ pages = {10--10},
+ numpages = {1},
+ url = {http://dl.acm.org/citation.cfm?id=1863103.1863113},
+ acmid = {1863113},
+ publisher = {USENIX Association},
+ address = {Berkeley, CA, USA},
+} 
+
+@misc{ glpk,
+   title = "GLPK for Java",
+   year = "2014",
+   url = "http://glpk-java.sourceforge.net/",
+   note = "[Online; accessed 20-May-2014]"
+ }
+ 
+ @INBOOK{stats_book,
+   author = {Freedman, David and Pisani, Robert and Purves, Roger},
+   title = {Statistics},
+   publisher = {W W Norton {\&} Co Inc},
+   year = {1997}
+}
+
+
+
+
+ 
+
+
+
+
+
 %% Saved with string encoding Unicode (UTF-8) 
 
 @inproceedings{DBLP:conf/vldb/Parameswaran2013,

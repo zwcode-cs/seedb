@@ -1,47 +1,174 @@
+%!TEX root=document.tex
+
 \section{SeeDB Backend}
 \label{subsec:seedb_backend}
 
 The \SeeDB\ backend is responsible for all the computations for 
 generating and selecting views. 
-%\agp{next line can be deleted if needing space, repetitive.}
-% As shown in Figure~\ref{fig:sys-arch}, the \SeeDB\ backend is composed of four
-% modules that are respectively responsible for collecting metadata (Metadata Collector), pruning
-% the view space and generating view queries (Query Generator), optimizing view
-% queries (Optimizer), and processing query results to identify the top-$k$
-% interesting views (View Processor). 
 To achieve its goal of finding the most
 interesting views accurately and efficiently, the \SeeDB\ backend must not only accurately
-estimate the accuracy of a large number of views but also design ways in which
-the total processing time will be minimized.
-We first describe the basic \SeeDB\ backend framework and then briefly discuss our optimizations.
+estimate the quality of a large number of views but also minimize total processing time.
+We first describe the basic \SeeDB\ backend framework and then discuss our optimizations.
 
-% One of the chief challenges in \SeeDB\ is producing the most interesting views
-% of the query result in the least possible time. For achieve the above
-% performance goal, \SeeDB\ must perform optimizations at two stages: first, using
-% prior knowledge such as statistics to prune out uninteresting views without examining table data; and second, minimizing the
-% execution time for queries that are issued to the database. 
 
-%\subsubsection{Basic Framework}
-%\label{subsubsec:basic_framework}
-\stitle{Basic Framework:}
-Given a user query $Q$, the basic approach computes all
-possible two-column views obtained by adding a single-attribute aggregate and group-by clause to $Q$. 
-The target and comparison views corresponding to each view are then
-computed and each view query is executed independently on the DBMS. The query
-results for each view are normalized, and utility is computed as the
-distance between these two distributions (Section \ref{sec:problem_statement}).
-Finally, the top-$k$ views with the largest utility are chosen to be displayed. 
-The basic approach is clearly inefficient
-since it examines every possible view 
-and executes each view query independently.
-We next discuss how our optimizations fix these problems.
 
-%\subsubsection{View Space Pruning}
-%\label{subsubsec:view_space_pruning}
+
+\subsection{Basic Framework}
+\label{sec:basic_framework}
+Given a user query $Q$, the basic approach computes all possible two-column
+views obtained by adding a single-attribute aggregate and group-by clause to
+$Q$. (Remember from \ref{sec:problem_statement} that $Q$ is any query that
+selects one or more rows from the underlying table.) 
+\agp{Bring up problem, remind people of target and comparison views.}
+The target and comparison
+views corresponding to each view are then computed and each view query is
+executed independently on the DBMS. The query results for each view are
+normalized, and utility is computed as the distance between these two
+distributions (Section \ref{sec:problem_statement}).
+Finally, the top-$k$ views with the largest utility are chosen to be displayed.
+If the underlying table has $d$ dimension attributes and $m$ measure attributes,
+$2\ast d \ast m$ queries must be separately executed and their results
+processed. Even for modest size tables (1M tuples, $d$=50, $m$=5), this
+technique takes prohibitively long (700s on Postgres). The basic approach is
+clearly inefficient since it examines every possible view and executes each view
+query independently. We next discuss how our optimizations fix these problems. 
+
 
 \mpv{put microbenchmark pictures here}
 
-\stitle{View Space Pruning:}
+
+
+
+
+
+
+\subsection{Optimizations} \label{sec:optimizations}
+Since view queries tend to be very similar in structure (they differ in the aggregation attribute,
+grouping attribute or subset of data queried), \SeeDB\ uses multiple techniques
+to intelligently combine view queries. In addition, \SeeDB\ leverages
+parallelism and partitioning to further reduce query execution time. The
+ultimate goal of these optimizations is to minimize scans of the underlying
+dataset by sharing as many table scans as possible. 
+Furthermore, \SeeDB\ uses a range of criteria to prune away views even without evaluation,
+so that the remaining number can be suitably evaluated in interactive time. 
+
+\SeeDB\ supports the following
+optimizations as well as their combinations.
+
+
+
+
+
+\subsubsection{Combine target and comparison view query}
+\label{subsec:target_comparison_view}
+Since the target view and comparison views only differ in the subset of data
+that the query is executed on, we can easily rewrite these two view queries as
+one. For instance, for the target and comparison view queries $Q1$ and $Q2$
+shown below, we can add a group by clause to combine the two queries into $Q3$.
+\begin{align*} 
+Q1 = &{\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt WHERE \ \ x\ <\ 10\
+GROUP \ \ BY} \ a \\
+Q2 = &{\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt GROUP \ \ BY} \ a \\
+Q3 = &{\tt SELECT \ } a, f(m), {\tt CASE\ IF\ x\ <\ 10\ THEN\ 1\ ELSE\ 0\
+END}\ as\ group1,\ 1\ as\ group2\\ 
+&{\tt FROM} \ D\ {\tt GROUP \ \ BY} \ a,\ group1,\ group2
+\end{align*}
+This rewriting allows us to obtain results for both queries in a single table
+scan. The impact of this optimization will depend on the selectivity of the
+input query and the presence of indexes. When the input query is less selective,
+the query executor must do more work in running the two queries separately.
+In contrast, if the target and comparison views are both selective, and an index
+is present on their selection attributes, individual queries can run much
+faster than the combined query which must scan the entire table.
+\mpv{Effect of indexes?}  
+
+
+\subsubsection {Combine Multiple Aggregates} 
+A large number of view queries have the same group-by attribute but different
+aggregation attributes. In addition, the majority of real-world datasets,
+tables have few measure attributes but a large number of dimension attributes
+(e.g. the Super Store dataset has 5 measure attributes but tens of dimension
+attributes). Therefore, \SeeDB\ combines all view queries with the same group-by
+attribute into a single, combined view query. For instance, instead of executing
+queries for views $(a_1$, $m_1$, $f_1)$, $(a_1$, $m_2$, $f_2)$ \ldots $(a_1$, $m_k$, $f_k)$
+independently, we can combine the $n$ views into a single view represented by
+$(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$. We expect this
+optimization to offer a speed-up roughly linear in the number of measure
+attributes.
+
+\subsubsection {Combine Multiple Group-bys}
+\label{subsec:mult_gb}
+  Since \SeeDB\ computes a large number of group-bys, one significant
+  optimization is to combine queries with different group-by attributes into a
+  single query with multiple group-bys attributes.
+  For instance, instead of executing queries for views $(a_1$, $m_1$, $f_1)$,
+  $(a_2$, $m_1$, $f_1)$ \ldots $(a_n$, $m_1$, $f_1)$ independently, we can
+  combine the $n$ views into a single view represented by $(\{a_1, a_2\ldots
+  a_n\}$, $m_1$, $f_1)$ and post-process results at the backend. Alternatively,
+  if the SQL GROUPING SETS\footnote{GROUPING SETS allow the simultaneous
+  grouping of query results by multiple sets of attributes.} functionality is
+  available in the underlying DBMS, \SeeDB\ can leverage that as well.
+
+  While this optimization has the potential to significantly reduce query
+  execution time, the number of views that can be combined will depend on the
+  number of distinct groups present for the given combination of grouping
+  attributes. For a large number of distinct groups, the query executor must
+  keep track of a large number of aggregates. This increases computational time
+  as well as temporary storage requirements, making this technique ineffective.
+  The number of distinct groups in turn depends on the correlation between
+  values of attributes that are being grouped together. For instance, if two
+  dimension attributes $a_i$ and $a_j$ have $n_i$ and $n_j$ distinct values
+  respectively and a correlation coefficient of $c$, the number of distinct
+  groups when grouping by both $a_i$ and $a_j$ can be approximated by
+  $n_i$$\ast$$n_j$$\ast$(1-$c$) for $c$$\neq$1 and $n_i$ for $c$=1 ($n_i$ must
+  be equal to $n_j$ in this case).
+  As a result, we must combine group-by attributes such that the number of
+  distinct groups remains small enough. In Section \ref{sec:experiments}, we
+  characterize the performance of this optimization and devise strategies to
+  choose dimension attributes that can be grouped together.
+  
+  Given a set of candidate views, we model the
+  problem of finding the optimal combinations of views as a variant of
+  bin-packing and apply ILP techniques to obtain the best solution. \\
+  \mpv{Bin packing forumation details}
+  
+\agp{not clear if this is the right place to talk about this.}
+  If we choose a set of grouping attributes that creates a large number of
+  distinct groups, not only does the query executor need to do more work, the result
+  returned to the client is large and the client takes longer to process the
+  result. Since this process can be very inefficient, we choose to store
+  the intermediate results as temporary tables and then subsequently query the
+  temp tables to obtain the final results. For ease of further analysis, we
+  denote these two phases as {\it Temp Table Creation} (where the
+  intermediate results are created and stored) and {\it Temp Table Querying}
+  (where the temp tables are queried for final results) respectively.
+  
+%   (We discuss our model and
+%   algorithm in our full paper~\ref{}).\agp{if full paper is not available
+%   by the time of the demo, we can't cite it unfortunately..}
+%   A variation of this approach also implemented
+%   on \SeeDB\ is to send the results of the multiple group-by query to the front
+%   end and ask the \SeeDB\ frontend to compute utility and select views. The
+%   advantage of this approach is that it allows for more efficient interactive
+%   exploration of the views.
+
+  \subsubsection {Parallel Query Execution}
+  \label{subsec:parallel_exec}
+  While the above optimizations reduce the number of queries executed, we can
+  further speedup \SeeDB\ processing by executing view queries in parallel. When
+  executing queries in parallel, we expect co-executing queries to share pages in the
+  buffer pool for scans of the same table, thus reducing the total execution
+  time. However, a large number of parallel queries can lead to poor
+  performance for several reasons including buffer pool contention, locking and
+  cache line contention \cite{Postgres_wiki}. As a result, we must identify the
+  optimal number of parallel queries for our workload.
+  
+  % We do observe a reduction in the
+  %overall latency when a small number of queries are executing in parallel;
+  % however, the advantages disappear for larger number of queries running in
+  % parallel. We discuss this further in the evaluation subsection.
+  
+\subsubsection{View Space Pruning}
 In practice, most views for any query $Q$ have low utility since the target view
 distribution is very similar to the comparison view distribution. 
 \SeeDB\ uses this property to aggressively prune 
@@ -63,6 +190,11 @@ dimension attributes by $\mathcal{D}$ and measure by $\mathcal{M}$.
 
 We employ the following heuristics for pruning and ordering views based on the
 statistics above.
+These computations are done in advance. Based on the user's desired
+response time and the size and parameters of the dataset, these pruning knobs
+are likely to be more useful when the size of the dataset is large, or when
+the response time is specified to be small.
+
 
 \begin{table}
 {\scriptsize \center
@@ -82,7 +214,7 @@ $f_{C_i}, f_{C_i, C_j}$ & Frequency of access for each column and column pair \\
 }
 \end{table}
 
-\begin{denselist}
+\squishlist
 \item {\it Variance-based pruning}: Dimension attributes with low variance are
 likely to produce views having low utility (e.g. consider the extreme case where
 an attribute only takes a single value); \SeeDB\ therefore prunes views
@@ -99,84 +231,127 @@ We observe that for a set of
   dimension attribute with a hierarchial structure, $H_{C_{i\ldots k}}$, if a
   view $V$ at hierarchy level $h$ has utility $u$, then views at hierarchy level
   $h-1$ will have utility $\leq$ $u$. XXX: is this true for all utility
-  functions?
+  functions? \agp{nix.}
 \item {\it Access frequency-based pruning}: In tables with a large number of
 attributes, only a small subset of attributes are relevant to the analyst and
 are therefore frequently accessed for data analysis. \SeeDB\ tracks access patterns
 for each table to identify the most frequently accessed columns and combinations of
 columns. While creating views, \SeeDB\ uses this information to prune attributes
 that are rarely accessed and are thus likely to be unimportant.
-\end{denselist}
+\squishend
 
-%\subsubsection{View Query Optimizations}
-%\label{subsubsec:optimizations}
-\stitle{View Query Optimizations:}
-The second set of optimizations used by \SeeDB\ minimizes the execution time for
-view queries that haven't been pruned using the techniques described above.
-Since view queries tend to be very similar in structure (they differ in the aggregation
-attribute, grouping attribute or subset of data queried), \SeeDB\ uses multiple
-techniques to intelligently combine view queries.
-The ultimate goal is to minimize scans of the underlying dataset by sharing as
-many table scans as possible. Our strategies include:
 
-\begin{denselist}
-  \item {\it Combine target and comparison view query}: Since the target view
-  and comparison views only differ in the subset of data that the query is
-  executed on, we can easily rewrite these two view queries as one.
-  This simple optimization halves the time required to compute the results for
-  a single view. \mpv{Effect of indexes?}
-  \item {\it Combine Multiple Aggregates}: A large number of view
-  queries have the same group-by attribute but different aggregation attributes.
-  Therefore, \SeeDB\ combines all view queries with the same group-by attribute
-  into a single query. This rewriting provides a speed up linear in the
-  number of aggregate attributes.
-  \item {\it Combine Multiple Group-bys}: 
-  Since \SeeDB\ computes a large number of group-bys, one significant
-  optimization is to combine queries with different
-  group-by attributes into a single query with multiple group-bys attributes.
-  For instance, instead of executing queries for views $(a_1$, $m_1$, $f_1)$,
-  $(a_2$, $m_1$, $f_1)$ \ldots $(a_n$, $m_1$, $f_1)$ independently, 
-  we can combine the $n$ views into a single view represented by
-  $(\{a_1, a_2\ldots a_n\}$, $m_1$, $f_1)$ and post-process results at the
-  backend. Alternatively, if the SQL GROUPING SETS functionality is available in
-  the underlying DBMS, \SeeDB\ can leverage that as well. 
-  While this optimization has the potential to significantly reduce query
-  execution time, the number of views that can be combined depends
-  on the correlation between values of grouping attributes and system parameters like the
-  working memory. Given a set of candidate views, we model the
-  problem of finding the optimal combinations of views as a variant of
-  bin-packing and apply ILP techniques to obtain the best solution. \\
-  \mpv{Bin packing forumation details}
-%   (We discuss our model and
-%   algorithm in our full paper~\ref{}).\agp{if full paper is not available
-%   by the time of the demo, we can't cite it unfortunately..}
-%   A variation of this approach also implemented
-%   on \SeeDB\ is to send the results of the multiple group-by query to the front
-%   end and ask the \SeeDB\ frontend to compute utility and select views. The
-%   advantage of this approach is that it allows for more efficient interactive
-%   exploration of the views.
-  \item {\it Sampling}: For datasets of large size, an optimization that
-  affects performance significantly is employing sampling: we  
-  construct a sample of the dataset
-  that can fit in memory and run all view queries against the sample. However, as
-  expected, the sampling technique and size of the sample both affect
-  view accuracy. 
-  \item {\it Parallel Query Execution}: The final optimization that
-  \SeeDB\ employs is taking advantage of parallel query execution 
-  at the DBMS to reduce total latency.
-  We observe that as the number of queries executed in parallel
-  increases, the total latency decreases at the cost of
-  increased per query execution time (\mpv{discuss: thrashing}).
-\end{denselist}
+
+
+
+  
+% We next describe a scheme that allows us to associate upper and lower bounds for
+% views by evaluating them on a small sample of the dataset.
+% We describe the use of the scheme on a simple view where AVG(Y) for a given
+% attribute Y is being computed for each group in attribute X.
+% We can then depict this view using a bar chart or a histogram.
+% 
+% For this derivation, we assume that the AVG(Y) for any X = $x_i$, is normally
+% distributed around a certain mean $p$.
+% Given a number of samples for Y for X = $x_i$, we can employ the following
+% theorem \cite{stats_book} to bound $p$ within a confidence interval with
+% probability $1 - \delta$:
+% \begin{theorem}~\label{thm:confint}
+% If $\hat{p}$ and $s$ are the mean and standard deviation 
+% of a random sample of size $n$ from a normal distribution with unknown 
+% variance, a $1 - \delta$ probability confidence interval
+% on $p$ is given by:
+% $$\hat{p} - \frac{t_{\delta/2, n-1} s}{\sqrt{n}} \leq p \leq \hat{p} + \frac{t_{\delta/2, n-1} s}{\sqrt{n}}$$
+% where $t_{\delta/2, n-1}$ is the upper 100$\alpha/2$ percentage point
+% of the $t$-distribution with $n-1$ degrees of freedom.
+% \end{theorem}
+% 
+% Now, we demonstrate how we can use this theorem to establish an upper 
+% and lower bound for the utility of a view, with probability $1 - \delta$.
+% 
+% Let the distance vector corresponding to the target view be:
+% $\bar{a} = [a_1, a_2, \ldots, a_k]$ while the distance vector corresponding to
+% the comparison view is:
+% $\bar{b} = [b_1, b_2, \ldots, b_k]$.
+% Notice that on very large datasets, it may be beneficial to precompute the
+% distance vectors corresponding to the comparison views, so we assume that the
+% vector $\bar{b}$ is computed exactly and known in advance.
+% We let $a = \sum_i a_i$, and $ b = \sum_i b_i$.
+% 
+% Our goal is to use the sample to bound the values of the $a_i$ around $\ha_i$
+% such that we can establish upper and lower bounds for the utilities.
+% By applying Theorem~\ref{thm:confint}, we
+% can get values $c_i$ for which $a_i \in [\ha_i - c_i, \ha_i + c_i]$
+% with probability greater than $1 - \delta/k$.
+% (By union bound, we will be able to ensure that all $a_i$'s
+% are in their intervals with probability $1 - \delta$.)
+% 
+% Now, given these values $c_i$, we can establish an upper bound for the
+% EMD (and also similarly for other distance metrics) in the following manner:
+% We let $q_1(\bar{a}) = \sum_i \ha_i - c_i$, and $q_2(\bar{a}) = \sum_i \ha_i + c_i$.
+% 
+% 
+% \begin{align*}
+% EMD(\bar{a}, \bar{b}) & = \sum_i |a_i / a - b_i / b|\\
+%           & = \sum_i |a_i / a - b_i / b|\\
+%           & = 1/ab \sum_i \max (a_ib  - b_ia, b_ia - a_ib)\\
+% \end{align*}
+% Thus, we have:
+% \begin{align}
+% \frac{1}{b q_1(\bar{a})} \sum_i \max (a_ib  - b_ia, b_ia - a_ib) \leq & EMD(\bar{a}, \bar{b}) \leq \frac{1}{b q_2(\bar{a})} \sum_i \max (a_ib  - b_ia, b_ia - a_ib)\label{eq:emd}
+% \end{align}
+% 
+% Note that: 
+% \begin{align*}
+% (\ha_i - c_i)b  - b_i (\sum_i (\ha_i + c_i)) & \leq a_ib  - b_ia  \leq (\ha_i + c_i)b  - b_i (\sum_i (\ha_i - c_i)), \textrm{\ and} \\
+% b_i (\sum_i (\ha_i - c_i)) - (\ha_i + c_i) b & \leq b_i a  - a_i b  \leq  b_i (\sum_i (\ha_i + c_i)) - (\ha_i - c_i) b
+% \end{align*}
+% By plugging these quantities back into Eq~\ref{eq:emd},
+% we have upper and lower bounds on the EMD metric.
+% Similar mechanisms may be used to derive upper and lower bounds for other metrics.
+% 
+% Now that we have upper and lower bounds for the utility of each target view
+% by evaluating the query on a sample,
+% we can easily use it to prune away a number of views that are definitely not likely to be part 
+% of the top-K,
+% and instead focus on views that may be part of the top-K.
+
+%   \subsection {Partitioning Tables}
+%   The increase in the total execution time when a large number of queries are
+%   executed in parallel suggests that there is a ``sweet spot'' with respect to
+%   the maximum number of queries that can be run in parallel on a given table.
+%   Therefore, we uniformly partition large tables into smaller ones and run
+%   subsets of queries against each of the partitions. Note that the views
+%   returned are nor approximate because we are now executing views against
+%   subsets of the data. As a result, bounds developed in sampling now apply. We
+
+  \subsubsection {Pre-computing Comparison Views}
+  We notice that in the case where our comparison view is constructed from the
+  entire underlying table (Example 1 in Chapter \ref{sec:introduction}),
+  comparison views are the same irrespective of the input query.
+  In this case, we can precompute all possible comparison views once and store
+  them for use in all future comparisons. If the dataset has $d$ dimension and
+  $m$ measure attributes, pre-computing comparison views would add $d$$\ast$$m$
+  tables. This corresponds to an extra storage of $O(d\ast m \ast n)$ where $n$
+  is the maximum number of distinct values in any of the $d$ attributes. In this
+  case, we still need to evaluate each target view, and we can leverage previous
+  optimizations to speed up target view generation.
+  
+  Note that pre-computation cannot be used in situations where the comparison
+  view depends on the target view (Example 2) or is directly specified by the
+  user (Example 3).
 
 
 %If a dimension attribute $\mathcal{d}$ is highly correlated with measure
   %attribute $\mathcal{m}$, then?
 
-\mpv{also from full paper draft}
-It is possible to collect the above statistics at the dataset level too, as
-opposed to the entire table level. The advantage of table level statistics is
-that they have to be computed only once per table; however, dataset-level
-statistics are more accurate since they only consider the specific parts of the
-table. XXX: we use dataset-level statistics with table statistics do not result
-in aggressive pruning. 
+% \mpv{also from full paper draft}
+% It is possible to collect the above statistics at the dataset level too, as
+% opposed to the entire table level. The advantage of table level statistics is
+% that they have to be computed only once per table; however, dataset-level
+% statistics are more accurate since they only consider the specific parts of the
+% table. XXX: we use dataset-level statistics with table statistics do not result
+% in aggressive pruning. 
+
+
+

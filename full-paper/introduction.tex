@@ -1,4 +1,4 @@
-%!TEX root=demo-paper.tex
+%!TEX root=document.tex
 
 \section{Introduction}
 \label{sec:introduction}
@@ -12,8 +12,13 @@ analysts often use visualizations as a tool to identify
 these trends, insights, and anomalies.
 However, selecting the ``right'' visualization often 
 remains a laborious and time-consuming task. 
+We illustrate the data analysis
+process and challenges in choosing good visualizations using a few examples.
 
-We illustrate the data analysis process using an example. 
+
+
+
+\subsubsection*{Example 1: Business Intelligence}
 Consider a dataset containing sales records for a nation-wide
 chain of stores.
 Let's say the store's data analyst is interested
@@ -49,6 +54,59 @@ The result of the above query is a two-column table that can then be visualized
 as a bar-chart. Table \ref{tab:staplerX} and Figure
 \ref{fig:staplerX} respectively show an example of the results of this view and
 the associated visualization.
+
+
+
+\begin{figure}
+\vspace{-10pt}
+\CenterFloatBoxes
+\begin{floatrow}
+\ttabbox{%
+  \small
+  \begin{tabular}{cc} \hline
+  Store & Total Sales (\$) \\ \hline
+  Cambridge, MA & 180.55 \\ \hline
+  Seattle, WA &  145.50\\ \hline
+  New York, NY & 122.00 \\ \hline
+  San Francisco, CA & 90.13 \\ \hline
+  \end{tabular}
+}{%
+  \caption{Data: Total Sales by Store for Laserwave}\label{tab:staplerX}%
+}
+\killfloatstyle
+\ffigbox{%
+  \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist1.pdf}}}
+  
+}{%
+  \caption{Visualization: Total \\ Sales by Store for
+  Laserwave}\label{fig:staplerX}%
+}
+\end{floatrow}
+\end{figure}
+
+\begin{figure}
+\CenterFloatBoxes
+\begin{floatrow}
+\centering
+\ffigbox{%
+  \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist2.pdf}}}
+  
+}{%
+  \caption{Scenario A: Total Sales by Store}\label{fig:staplerX-a}%
+}
+\killfloatstyle
+\ffigbox{%
+  \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist3.pdf}}}
+  
+}{%
+  \caption{Scenario B: Total Sales by Store}\label{fig:staplerX-b}%
+}
+\end{floatrow}
+\vspace{-12pt}
+\end{figure}
+
+
+
 To explore the query results from different perspectives, the analyst generates
 a large number of views (and visualizations) of the form described above.
 (3) The analyst then manually examines each view and decides
@@ -88,27 +146,118 @@ recommends interesting views, the analyst can evaluate this small
 subset of views using domain knowledge and limit further
 exploration to these views.  
 
-\mpv{Add second example with medical data?}
+
+\subsubsection*{Example 2: Medical Data}
+Next, let us examine a use case in a completely different problem domain that
+also involves analyses similar to Example 1, and therefore, can benefit from the
+automatic construction of interesting views of a user query.
+
+Consider a medical researcher studying the cost of care for cancer
+patients\footnote{Real use scenario at an area hospital}. The goal of the study
+is to identify patients whose cost of care is significantly greater than
+average and try to explain the high cost of care. Potential reasons for
+high cost include treatments for late-stage cancers, old age of the
+population, longer survival time (chemotherapy for a longer duration), type of
+treatment etc.
+Note that the goal is {\it not} to build a predictive model for cost; rather, it
+is to perform exploratory analysis to explain {\it why} certain patients have
+high cost of care.
+As a first pass, assume that the researcher identifies high cost patients as those with
+cost that is greater than two standard deviations away from the average
+cost. This can be expressed via the following SQL query, assuming a table of
+patients with their treatment costs and other treatment-related information.
+\begin{align*}
+& \tt Q2\ = SELECT \ \ *\ FROM \ \ Patients \ \ where\ cost - \\
+  \ \ & \tt (SELECT\ AVG(cost)\ FROM\ Patients)\ >\\
+  \ \ & \tt 2\ *\ (SELECT\ STDDEV(cost)\ FROM\ Patients)
+\end{align*}
+
+Once these patients have been identified, the researcher can begin to analyze
+the data to find potential reasons for their high cost of care (This is similar
+to Step 1 in Example 1).
+One technique to find potential reasons for high cost is to compare the
+high-cost population of patients to the remaining set of patients (called
+``low-cost'' population).
+Similar to Example 1 above, we posit that the {\it characteristics that
+explain high cost are precisely those characteristics that are different between
+the high-cost and low-cost population}. 
+For instance, if the majority of
+high-cost patients were those with late-stage disease (sicker patients) while
+the low-cost patients were not, the researcher could reason that the sicker
+patients needed more medications or procedures, leading
+to higher cost overall. 
+Note that this analysis is similar to Example 1 where we
+compared the ``total sales by year'' for $Laserwave$ $oven$ vs. all store
+products.
+In this setup, we want to compare the ``total patients by disease stage'' for
+high-cost patients vs. low-cost patients. The only change in the problem
+formulation is that we are now comparing views of query Q2 against views of the
+remaining table, instead of views over the entire table. The rest of the
+framework remains unchanged. Therefore, \SeeDB\ can be used to automatically
+construct a large number of views of the high-cost population, compare
+each view to the corresponding view over the low-cost population, and
+identify views showing the highest difference between the two populations. These
+views identify potential causes for high cost. Once the researcher has identified views of interest, he or she
+can follow up with more complex analyses like statistical significance testing or machine
+learning.
+
+\subsubsection*{Example 3: Product Analysis}
+
+Consider a company like Facebook\footnote{www.facebook.com} that continuously
+deploys changes to its website and mobile apps, and tracks user interaction
+through detailed logging. Product specialists at Facebook use these logs to
+study how different Facebook users respond to changes to the web or mobile
+experience \cite{DBLP:conf/vldb/AbrahamABB13}. Each user can be characterized by a large number
+of features such as location, age, device used, number of friends etc.
+For each user, the logs note the actions taken on the website or app such
+as likes, shares, comments, page visits etc. For example, in order to study
+the user response to an update to the mobile app, the specialist compares user
+interaction metrics for a large number of mobile users before and after the
+update (usually a week on week comparison). The goal is to find patterns in the
+interaction metrics based on different user characteristics. Therefore, if it
+appears that the average number of app visits on the iOS app have reduced
+signficantly following the update, it would indicate a problem with the iOS app.
+
+In terms of the \SeeDB\ framework, log data from the week following the app
+update constitutes the query results we seek to analyze and the log data from
+the prior week comprises the comparison dataset. As in Examples 1 and 2, the
+analysis process requires the specialist to create diverse views of the query
+results, compare views to equivalent views on the comparison dataset, and
+pick the views showing the highest difference. 
+\SeeDB\ can therefore be used to automate this process and surface only the most
+interesting views.
+
+
+\subsubsection*{Challenges and Contributions}
+
+This paper describes a prototype of the \SeeDB\ system that finds interesting
+visualizations of query results. 
+Given a query $Q$ indicating the subset of data that the analyst is interested in, \SeeDB\ automatically {\em identifies and highlights to the
+analyst the most interesting views of the query results using methods based on
+deviation}. 
 
 We described our vision for \SeeDB, along with the associated research
-challenges in a companion vision paper~\cite{DBLP:conf/vldb/Parameswaran2013}.
-In this demonstration proposal, we present our first \SeeDB\ prototype
+challenges in a companion vision paper~\cite{DBLP:conf/vldb/Parameswaran2013},
+and demonstrated \SeeDB\ in a demonstration paper~\cite{XXX}.
+Here, we present our first \SeeDB\ prototype
 addressing some of the challenges listed in that vision paper.
 In particular, our current prototype of \SeeDB\ is built as a ``wrapper'' that
 can be overlaid on any relational database system. Given any query, \SeeDB\
 leverages special optimization algorithms and the underlying DBMS to generate
 and recommend interesting visualizations. To do so efficiently and accurately,
 we must address the following challenges:
-(a) We must determine metrics that accurately measure the ``deviation'' of a
+\squishlist
+\item We must determine metrics that accurately measure the ``deviation'' of a
 view with respect to the equivalent view on the entire database (e.g.,
 Figure~\ref{fig:staplerX} vs.~\ref{fig:staplerX-a}), while simultaneouly
-ensuring that \SeeDB\ is not tied to any particular metric(s); (b) We must
+ensuring that \SeeDB\ is not tied to any particular metric(s); 
+\item  We must
 intelligently explore the space of candidate views. Since the number of
 candidate views (or visualizations) increases as the square of the number of
 attributes in a table (we will demonstrate this in subsequent sections),
 generating and evaluating all views, even for a moderately sized dataset (e.g.
 1M rows, 100 attributes), can be prohibitively expensive;
-(c) While executing queries corresponding to different views, we must share
+\item While executing queries corresponding to different views, we must share
 computation as much as possible. For example, 
 we can compute multiple views and measure their deviation 
 all together in one query. Independent execution,
@@ -116,10 +265,28 @@ on the other hand, will be expensive and wasteful;
 % Queries to compute views and their
 % deviation are highly similar and therefore
 % independent execution is expensive and wasteful; 
-(d) Since
+\item Since
 analysis must happen in real-time, we must trade-off accuracy
 of visualizations or estimation of ``interestingness'' for reduced latency.
-Section~\ref{sec:system_architecture} describes how we address these challenges.
+\squishend
+
+
+The contributions of this paper are:
+\squishlist
+  \item We implement the \SeeDB\ system based on \cite{DBLP:conf/vldb/Parameswaran2013} to
+  automatically find interesting views of queries (Section~\ref{sec:system_architecture}).
+  \item We propose and implement a number of optimizations to
+  efficiently perform the search for interesting views and share
+  computation between multiple views simultaneously (Section~\ref{sec:optimizations}).
+  \item We evaluate the performance of our optimizations on a range of datasets
+  and demonstrate the resulting 100x speedup (Section~\ref{sec:experiments}).
+  \item We model the performance of \SeeDB\ in terms of various parameters of
+  \SeeDB\ and the underlying database, and use this model to identify optimal
+  parameter settings for \SeeDB\ (Section~\ref{sec:model}).
+  \item We present and evaluate different metrics for measuring deviation
+  \item ?? We study the usefulness of a tool like \SeeDB\ in finding
+  interesting visualizations of a dataset
+\squishend
 
 
 
@@ -184,53 +351,6 @@ Section~\ref{sec:system_architecture} describes how we address these challenges.
 % views.
 
 
-\begin{figure}
-\vspace{-10pt}
-\CenterFloatBoxes
-\begin{floatrow}
-\ttabbox{%
-  \small
-  \begin{tabular}{cc} \hline
-  Store & Total Sales (\$) \\ \hline
-  Cambridge, MA & 180.55 \\ \hline
-  Seattle, WA &  145.50\\ \hline
-  New York, NY & 122.00 \\ \hline
-  San Francisco, CA & 90.13 \\ \hline
-  \end{tabular}
-}{%
-  \caption{Data: Total Sales by Store for Laserwave}\label{tab:staplerX}%
-}
-\killfloatstyle
-\ffigbox{%
-  \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist1.pdf}}}
-  
-}{%
-  \caption{Visualization: Total \\ Sales by Store for
-  Laserwave}\label{fig:staplerX}%
-}
-\end{floatrow}
-\end{figure}
-
-\begin{figure}
-\CenterFloatBoxes
-\begin{floatrow}
-\centering
-\ffigbox{%
-  \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist2.pdf}}}
-  
-}{%
-  \caption{Scenario A: Total Sales by Store}\label{fig:staplerX-a}%
-}
-\killfloatstyle
-\ffigbox{%
-  \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist3.pdf}}}
-  
-}{%
-  \caption{Scenario B: Total Sales by Store}\label{fig:staplerX-b}%
-}
-\end{floatrow}
-\vspace{-12pt}
-\end{figure}
 
 
 % Since \SeeDB\ must rank views based on utility, accurately measuring 
@@ -246,7 +366,7 @@ Section~\ref{sec:system_architecture} describes how we address these challenges.
 % trends. (Since it may be more appropriate to compare the high-cost patients with
 % other patients having the same disease but lower cost, so \SeeDB\ allows the
 % user to specify what dataset to compare with).
-\mpv{Add list of contributions}
+
 
 
 % \noindent There are several technical challenges that need to be addressed:
