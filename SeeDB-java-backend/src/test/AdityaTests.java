@@ -29,12 +29,9 @@ public class AdityaTests {
 		settings.optimizeAll = false;
 		settings.noAggregateQueryOptimization = false;
 		settings.maxAggSize = 5; // max aggregate size
-		settings.useParallelExecution = false;
-		settings.useTempTables = false;
+		settings.useParallelExecution = true;
+		settings.useTempTables = true;
 		settings.maxDBConnections = 40;
-		settings.combineMultipleAggregates = true;
-		settings.combineMultipleGroupBys = true;
-		settings.mergeQueries = false;
 		try {
 			seedb.initialize("" /* insert query1 here*/, null /* insert query 2 here*/, settings);
 			List<View> result = seedb.computeDifference();
