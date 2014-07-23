@@ -20,6 +20,11 @@ public class InputTablesMetadata {
 	private List<Attribute> dimensionAttributes;
 	private List<Attribute> measureAttributes;
 	private List<String> tables;
+	private int numRows;
+	
+	public int getNumRows() {
+		return 1;
+	}
 	
 	public List<Attribute> getDimensionAttributes() {
 		return dimensionAttributes;
@@ -36,16 +41,54 @@ public class InputTablesMetadata {
 		this.tables = tables;
 		
 		if (connection.getDatabaseType().equalsIgnoreCase("PostgreSQL")) {
-			getAttributeMetadataByDescription(connection);
+			//getAttributeMetadataByDescription(connection);
+			getAttributeMetadataByName(connection);
 		}
 		else {
 			getAttributeMetadataByCount(connection);
 		}
+		
+		this.numRows = queryForNumRows(connection);
+	}
+	
+	
+
+	private int queryForNumRows(DBConnection connection) {
+		ResultSet rs = connection.getNumRows(tables.get(0));
+		try {
+			while (rs.next()) {
+				return rs.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return -1;
+		}
+		return -1;
+	}
+
+	private void getAttributeMetadataByName(DBConnection connection) {
+		for (String table : tables) {
+			ResultSet rs = connection.getTableColumns(table);
+			try {
+				while (rs.next()) {
+					String attribute = rs.getString("COLUMN_NAME");
+					if (attribute.startsWith("measure"))
+					{
+						this.measureAttributes.add(new Attribute(attribute));
+					}
+					else if (attribute.startsWith("dim")) {
+						this.dimensionAttributes.add(new Attribute(attribute));
+					}
+				}
+			} catch (SQLException e) {
+				continue;
+			}
+		}
+		
 	}
 
 	private void getAttributeMetadataByCount(DBConnection connection) {
-		// TODO Auto-generated method stub
-		
+		// TODO Auto-generated method stub	
 	}
 
 	private void getAttributeMetadataByDescription(DBConnection connection) {

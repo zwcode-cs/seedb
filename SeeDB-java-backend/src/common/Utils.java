@@ -1,11 +1,31 @@
 package common;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
 import com.google.common.collect.Lists;
 
 public class Utils {
+	public static void writeToFile(File file, String s) {
+		if (file == null) {
+			System.out.println(s);
+			return;
+		}
+		try {
+			FileWriter fw = new FileWriter(file.getAbsoluteFile(), true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write(s + "\n");
+			bw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
 	public static <T> boolean listEqual(List<T> list1, List<T> list2) {
 		if (((list1 == null) && (list2 != null)) || 
 				((list2 == null) && (list1 != null))) return false;
@@ -36,13 +56,13 @@ public class Utils {
 
 	public static <T> void printList(List<T> result) {
 		if (result == null) System.out.println(result);
-		System.out.print("List:");
+		System.out.println("List:");
 		for (T t : result) {
-			System.out.print(t.toString() + ";");
+			System.out.println(t.toString() + ";");
 		}
 		System.out.println();
 	}
-
+	
 	public static <T extends Comparable<T>> void combine(List<T> aggregateAttributes,
 			List<T> aggregateAttributes2) {	
 		aggregateAttributes.addAll(aggregateAttributes2);

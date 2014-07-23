@@ -42,4 +42,13 @@ public class CardinalityView extends AggregateView {
 		return output;
 	}
 
+	public String toString() {
+		String ret = "";
+		ret += "diff_type:cardinality_diff;";
+		ret += "dataset_num:1;";
+		ret += "cardinality:" + this.groupByValues.get("none").get(0).get(0) + ";";
+		ret += "dataset_num:2;";
+		ret += "cardinality:" + this.groupByValues.get("none").get(1).get(0) + ";";
+		return ret;
+	}
 }

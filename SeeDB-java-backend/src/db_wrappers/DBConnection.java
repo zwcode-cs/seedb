@@ -70,6 +70,8 @@ public class DBConnection {
 			connection = DriverManager.getConnection(
 					"jdbc:" + databaseType + "://" + database, username,
 					password);
+			Statement stmt = connection.createStatement();
+			stmt.execute("set work_mem=" + 1000000 + ";");
 		} catch (SQLException e) {
 			connection = null;
 			System.out.println("DB connection failed.");
@@ -121,6 +123,22 @@ public class DBConnection {
 		return this.database;
 	}
 	
+	public void executeQueryWithoutResult(String query) {
+		Statement stmt = null;
+		try {
+			// Get a statement from the connection
+		    stmt = connection.createStatement() ;
+
+		    // Execute the query
+		    stmt.execute(query) ;
+		}
+		catch(Exception e)
+		{
+			System.out.println("Error in executing query:" + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Execute query and return resultset
 	 * @param query
@@ -139,7 +157,7 @@ public class DBConnection {
 		}
 		catch(Exception e)
 		{
-			System.out.println("Error in executing query");
+			System.out.println("Error in executing query: " + e.getMessage());
 			e.printStackTrace();
 		}
 		return rs;
@@ -171,5 +189,18 @@ public class DBConnection {
 		DBConnection copy = new DBConnection();
 		copy.connectToDatabase(database, databaseType, username, password);
 		return copy;
+	}
+
+	public void close() {
+		try {
+			this.connection.close();
+		} catch (SQLException e) {
+			System.out.println("Unable to close connection");
+			e.printStackTrace();
+		}
+	}
+
+	public ResultSet getNumRows(String table) {
+		return this.executeQuery("SELECT COUNT (*) FROM " + table);
 	}
 }

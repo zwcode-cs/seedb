@@ -3,3 +3,12 @@
 *.log
 *.swp
 node_modules
+generator/table_*
+*/.project
+*/.texlipse
+*/tmp/*
+*/document.pdf
+*/document.synctex.gz
+*/*.aux
+*/*.bbl
+*/*.blg

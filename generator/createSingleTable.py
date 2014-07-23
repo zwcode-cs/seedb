@@ -23,7 +23,7 @@ def generate_single_table(nrows, ndims, nmeasures, mult, join=False,
   print nrows, ndims, nmeasures, mult, join, join_range, selectivity, ntable
   # figure out filename
   parts = ['table', str(nrows), str(ndims), str(nmeasures)] + \
-          [str(x) for x in mult] + [str(ntable)]
+          [str(ntable)]
   filename = '_'.join(parts)
   fdata = open(filename + '_data.txt', 'w')
   fqueries = open(filename + '_queries.txt', 'w')

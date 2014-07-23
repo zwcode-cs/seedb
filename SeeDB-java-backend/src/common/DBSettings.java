@@ -8,10 +8,19 @@ public class DBSettings {
 	
 	public static DBSettings getDefault() {
 		DBSettings s = new DBSettings();
-		s.database = "127.0.0.1/seedb_data";
+		s.database = "dbname";
 		s.databaseType = "postgresql";
-		s.username = "postgres";
-		s.password = "postgrespwd";
+		s.username = "";
+		s.password = "";
+		return s;
+	}
+	
+	public static DBSettings getISTCDefault() {
+		DBSettings s = new DBSettings();
+		s.database = "dbname";
+		s.databaseType = "postgresql";
+		s.username = "";
+		s.password = "";
 		return s;
 	}
 }

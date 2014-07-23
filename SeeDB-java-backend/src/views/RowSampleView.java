@@ -3,6 +3,7 @@ package views;
 import java.util.List;
 import com.google.common.collect.Lists;
 import common.ExperimentalSettings.DifferenceOperators;
+import common.Utils;
 
 public class RowSampleView implements View {
 	public List<String> columnNames; // assume that both datasets have same columns
@@ -26,6 +27,17 @@ public class RowSampleView implements View {
 
 	public List<List<List<String>>> getRows() {
 		return Lists.newArrayList(this.rows1, this.rows2);
+	}
+	
+	public String toString() {
+		String ret = "";
+		ret += "diff_type:row_sample_diff;";
+		ret += "columnNames:" + Utils.serializeList(columnNames) + ";";
+		ret += "dataset_num:1;";
+		ret += "rows:" + Utils.serializeListofLists(rows1) + ";";
+		ret += "dataset_num:2;";
+		ret += "rows:" + Utils.serializeListofLists(rows2) + ";";
+		return ret;
 	}
 	
 }

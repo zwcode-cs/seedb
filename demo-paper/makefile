@@ -1,3 +1,4 @@
+#!/bin/bash
 pdflatex demo-paper.tex
 bibtex demo-paper.aux
 pdflatex demo-paper.tex

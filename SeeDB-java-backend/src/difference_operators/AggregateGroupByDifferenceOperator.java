@@ -35,6 +35,7 @@ public class AggregateGroupByDifferenceOperator implements DifferenceOperator {
 				aggFuncs.add("COUNT");
 				aggFuncs.add("SUM");
 				dq.addAggregateAttribute(aggAttr.get(j), aggFuncs);
+				dq.derivedFrom.add(dq);
 				queries.add(dq);
 			}
 		}

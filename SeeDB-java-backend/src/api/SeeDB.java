@@ -1,5 +1,6 @@
 package api;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +20,7 @@ import common.InputTablesMetadata;
 import common.QueryExecutor;
 import common.ExperimentalSettings;
 import common.QueryParser;
+import common.Utils;
 import db_wrappers.DBConnection;
 import difference_operators.AggregateGroupByDifferenceOperator;
 import difference_operators.CardinalityDifferenceOperator;
@@ -42,6 +44,7 @@ public class SeeDB {
 			ExperimentalSettings.DifferenceOperators, 
 			DifferenceOperator>();
 	private ConnectionPool pool;
+	private File logFile;
 	
 	public SeeDB() {
 		connection = new DBConnection();
@@ -90,14 +93,14 @@ public class SeeDB {
 	 * @return
 	 */
 	public boolean connectToDatabase() {
-		return connection.connectToDatabase(DBSettings.getDefault());
+		return connection.connectToDatabase(DBSettings.getISTCDefault());
 	}
 
 	public boolean initializeManual(String query) throws Exception {
 		if (query == null) return false;
 		if (connection.hasConnection()) {
 			// populate connection from settings
-			if (connection.connectToDatabase(DBSettings.getDefault()))
+			if (connection.connectToDatabase(DBSettings.getISTCDefault()))
 				return false;
 		}
 		inputQueries[0] = QueryParser.parse(query, 
@@ -120,12 +123,18 @@ public class SeeDB {
 	 */
 	public boolean initialize(String query1, String query2, 
 			ExperimentalSettings settings) throws Exception {
-		
+		long start = System.currentTimeMillis();
+		if (settings.logFile != null) {
+			this.logFile = new File(settings.logFile);
+			if (!logFile.exists()) {
+				logFile.createNewFile();
+			}
+		}
 		// first process query1, this cannot be empty
 		if (query1 == null) {
 			throw new Exception("query1 cannot be null");
 		}
-		if (connection.hasConnection()) {
+		if (!connection.hasConnection()) {
 			// populate connection from settings
 			if (!connection.connectToDatabase(DBSettings.getDefault()))
 				return false;
@@ -160,6 +169,7 @@ public class SeeDB {
 			this.pool = new ConnectionPool(settings.maxDBConnections, connection.database, connection.databaseType,
 					connection.username, connection.password);
 		}
+		Utils.writeToFile(logFile, "Initialize: " + (System.currentTimeMillis()-start));
 		return true;
 	}
 	
@@ -198,15 +208,22 @@ public class SeeDB {
 		List<DifferenceOperator> ops = Lists.newArrayList();
 		for (ExperimentalSettings.DifferenceOperators op : 
 			settings.differenceOperators) {
-			if (op == ExperimentalSettings.DifferenceOperators.ALL) {	
-				ops.addAll(supportedOperators.values());
-				break;
-			}
 			ops.add(supportedOperators.get(op));
 		}
 		return ops;
 	}
 
+	public void fixSettings() {
+		if (settings.optimizeAll) {
+			settings.combineMultipleAggregates = true;
+			settings.combineMultipleGroupBys = true;
+			settings.mergeQueries = true;
+		} else if (settings.noAggregateQueryOptimization) {
+			settings.combineMultipleAggregates = false;
+			settings.combineMultipleGroupBys = false;
+			settings.mergeQueries = false;
+		}
+	}
 	/**
 	 * Computes the differences between the two datasets and returns the 
 	 * serialized results of calling each of the difference operators 
@@ -217,6 +234,7 @@ public class SeeDB {
 		// compute the attributes that we want to analyze
 		InputTablesMetadata[] queryMetadatas = this.getMetadata(inputQueries[0].tables,
 				inputQueries[1].tables, this.numDatasets);
+		fixSettings();
 		
 		// compute queries we want to execute
 		List<DifferenceOperator> ops = this.getDifferenceOperators();
@@ -226,13 +244,13 @@ public class SeeDB {
 					numDatasets, settings));
 		}
 		
-		// ask optimizer to optimize queries
-		Optimizer optimizer = new Optimizer(settings);
+		// ask optimizer to optimize queries  
+		Optimizer optimizer = new Optimizer(settings, logFile);
 		List<DifferenceQuery> optimizedQueries = 
-				optimizer.optimizeQueries(queries);
+				optimizer.optimizeQueries(queries, queryMetadatas[0]);
 		
 		List<View> views = null;
-		QueryExecutor qe = new QueryExecutor(pool);
+		QueryExecutor qe = new QueryExecutor(pool, settings, logFile);
 		try {
 			views = qe.execute(optimizedQueries, queries, connection, numDatasets);
 		} catch (SQLException e) {
@@ -240,8 +258,17 @@ public class SeeDB {
 			return null;
 		}
 		
-		System.out.println(views);
-		
+		//System.out.println(views);
+		if (settings.useParallelExecution) {
+			try {
+				pool.closeAllConnections();
+			} catch (SQLException e) {
+				e.printStackTrace();
+				System.out.println("Error in closing connections");
+			}
+		}
+		this.closeConnection();
+		// sort views
 		return views;
 	}	
 
@@ -255,7 +282,7 @@ public class SeeDB {
 		derivedFrom.add(dq);
 		dq.derivedFrom = derivedFrom;
 		View view = null;
-		QueryExecutor qe = new QueryExecutor(null);
+		QueryExecutor qe = new QueryExecutor(null, settings, logFile);
 		try {
 			view = qe.executeSingle(dq, connection, numDatasets);
 		} catch (SQLException e) {
@@ -263,5 +290,9 @@ public class SeeDB {
 			return null;
 		}
 		return view;
+	}
+	
+	public void closeConnection() {
+		this.connection.close();
 	}
 }
