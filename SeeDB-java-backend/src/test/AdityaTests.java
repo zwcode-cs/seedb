@@ -42,7 +42,10 @@ public class AdityaTests {
 			e.printStackTrace();
 			return;
 		} finally {
-			File f = new File(settings.logFile);
+			File f = null;
+			if (settings.logFile != null) {
+			 f = new File(settings.logFile);
+			}
 			Utils.writeToFile(f, "Total time: " + (System.currentTimeMillis() - start));
 		}
 	}
