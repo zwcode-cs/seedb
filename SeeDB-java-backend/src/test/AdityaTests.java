@@ -28,6 +28,7 @@ public class AdityaTests {
 		settings.comparisonType = ComparisonType.ONE_DATASET_FULL;
 		settings.optimizeAll = false;
 		settings.noAggregateQueryOptimization = false;
+		settings.maxAggSize = 5; // max aggregate size
 		settings.useParallelExecution = false;
 		settings.useTempTables = false;
 		settings.maxDBConnections = 40;
