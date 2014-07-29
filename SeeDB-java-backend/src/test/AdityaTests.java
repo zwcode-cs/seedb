@@ -17,16 +17,20 @@ import common.ExperimentalSettings.ComparisonType;
 import common.ExperimentalSettings.DifferenceOperators;
 
 public class AdityaTests {
+	
+	private String small 	= "table_10000000_20_5_1000_1000_1000_1000_1000_1000_1000_1000_100";
+	private String large 	= "table_100000000_20_5_1000_1000_1000_1000_1000_1000_1000_1000_10";
+	private String med	= "table_50000000_20_5_1000_1000_1000_1000_1000_1000_1000_1000_100";
 
-	private String small1 	= "select * from s where dim10_50='jm70ef'";
-	private String small2 	= "select * from s where dim1_100='35mtw7'";
-	private String small3 	= "select * from s where dim1_1000='vn2dp6'";
-	private String med1 	= "select * from m where dim1_10 ='b3ckzj'";
-	private String med2 	= "select * from m where dim15_50='adk7cz'";
-	private String med3 	= "select * from m where dim1_100='9ecz4e'";
-	private String large1 	= "select * from l where dim3_50='8g9oat'";
-	private String large2 	= "select * from l where dim3_50='rc7jz5'";
-	private String large3 	= "select * from l where dim7_50='c1s4u3'";
+	private String small1 	= "select * from "+ small + " where dim1_1000='2sqnug'";
+	private String small2 	= "select * from "+ small + " where dim1_1000='x3zt3y'";
+	private String small3 	= "select * from "+ small + " where dim1_1000='rnowj8'";
+	private String med1 	= "select * from "+ med	  + " where dim1_1000 ='3llj45'";
+	private String med2 	= "select * from "+ med   + " where dim1_1000='hkdd2g'";
+	private String med3 	= "select * from "+ med   + " where dim1_1000='knb6u5'";
+	private String large1 	= "select * from "+ large + " where dim1_1000='jc98tg'";
+	private String large2 	= "select * from "+ large + " where dim1_1000='otyhcj'";
+	private String large3 	= "select * from "+ large + " where dim1_1000='ccarhc'";
 	
 	private String[] small_queries 	= new String[]	{small1, 	small2, 	small3};
 	private String[] medium_queries = new String[] 	{med1, 		med2, 		med3};
@@ -37,9 +41,10 @@ public class AdityaTests {
 	private String[] tables 		= new String[]	{small, med, large};
 
 	private int[] nconns 	= new int[]{2, 5, 10, 15, 20, 25, 30, 35, 40};
-	private int[] ndistinct = new int[]{1, 3, 5, 10, 20, 25, 40, 50, 75, 100};
+	private int[] ndistinct = new int[]{1, 2, 5, 10, 15, 20};
+	//private int[] ndistinct = new int[]{1, 3, 5, 10, 20, 25, 40, 50, 75, 100};
 
-	private int[] agg_sizes = new int[]{10, 10, 10}; 
+	private int[] agg_sizes = new int[]{5, 5, 5}; 
 
 	@Test
 	public void allTestsNew() {
