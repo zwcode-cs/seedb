@@ -2,6 +2,7 @@ package test;
 
 import static org.junit.Assert.*;
 
+import java.io.*;
 import java.io.File;
 import java.util.List;
 
@@ -15,6 +16,11 @@ import common.ExperimentalSettings;
 import common.Utils;
 import common.ExperimentalSettings.ComparisonType;
 import common.ExperimentalSettings.DifferenceOperators;
+
+import common.DBSettings;
+import common.ConnectionPool;
+import common.InputTablesMetadata;
+import common.QueryExecutor;
 
 public class AdityaTests {
 	
@@ -40,8 +46,9 @@ public class AdityaTests {
 
 	private String[] tables 		= new String[]	{small, med, large};
 
-	private int[] nconns 	= new int[]{2, 5, 10, 15, 20, 25, 30, 35, 40};
-	private int[] ndistinct = new int[]{1, 2, 5, 10, 15, 20};
+	//private int[] nconns 	= new int[]{2, 5, 10, 15, 20, 25, 30, 35, 40};
+	private int[] nconns 	= new int[]{20, 30, 40};
+	private int[] ndistinct = new int[]{2, 5, 10, 20};
 	//private int[] ndistinct = new int[]{1, 3, 5, 10, 20, 25, 40, 50, 75, 100};
 
 	private int[] agg_sizes = new int[]{5, 5, 5}; 
@@ -61,7 +68,25 @@ public class AdityaTests {
 					for (int l = 0; l < ndistinct.length; l ++ ){
 						System.out.println("NGB:" + ndistinct[l]);
 
-						for (int ii = 0; ii <3; ii++) {
+						for (int ii = 0; ii <1; ii++) {
+							try {
+								String s = null;
+								Process p = Runtime.getRuntime().exec("echo 3 | sudo tee /proc/sys/vm/drop_caches");
+								BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+								BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+            							System.out.println("ok so far");
+								while ((s = stdInput.readLine()) != null) {
+                							System.out.println(s);		
+            							}
+            							while ((s = stdError.readLine()) != null) {
+                							System.out.println(s);
+           							}
+							}
+							catch (IOException e) {
+         			   				System.out.println("exception happened - here's what I know: ");
+            							e.printStackTrace();
+            							System.exit(-1);
+        						}
 							endToEndAggregateGroupByDifferenceParallelAllOpTest(queries[k][i], tables[k], ndistinct[l], agg_sizes[k], nconns[j]);
 						}
 					}
@@ -98,7 +123,7 @@ public class AdityaTests {
 
 		settings.maxGroupBySize 				= nGB;
 		
-		settings.logFile 						= "testResults/" + settings.getDescriptor() + "_" + table;
+		settings.logFile 						= "testResults/" + settings.getDescriptor() + "_" + table +"_" +query;
 
 		try {
 			seedb.initialize(query, null, settings);
