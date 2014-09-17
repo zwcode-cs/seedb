@@ -3,21 +3,20 @@ package test;
 import static org.junit.Assert.*;
 
 import java.io.*;
-import java.io.File;
 import java.util.List;
 
 import org.junit.Test;
 
+import settings.DBSettings;
+import settings.ExperimentalSettings;
+import settings.ExperimentalSettings.ComparisonType;
+import settings.ExperimentalSettings.DifferenceOperators;
 import views.View;
 import api.SeeDB;
 
 import com.google.common.collect.Lists;
-import common.ExperimentalSettings;
 import common.Utils;
-import common.ExperimentalSettings.ComparisonType;
-import common.ExperimentalSettings.DifferenceOperators;
 
-import common.DBSettings;
 import common.ConnectionPool;
 import common.InputTablesMetadata;
 import common.QueryExecutor;

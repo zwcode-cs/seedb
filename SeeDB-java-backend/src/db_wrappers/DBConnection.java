@@ -7,7 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import common.DBSettings;
+import settings.DBSettings;
+
 
 /**
  * Provides DB independent interface to the DBMS
@@ -71,7 +72,9 @@ public class DBConnection {
 					"jdbc:" + databaseType + "://" + database, username,
 					password);
 			Statement stmt = connection.createStatement();
-			stmt.execute("set work_mem=" + 1000000 + ";");
+			if (databaseType.equalsIgnoreCase("PostgreSQL")) {
+				stmt.execute("set work_mem=" + 1000000 + ";");
+			}
 		} catch (SQLException e) {
 			connection = null;
 			System.out.println("DB connection failed.");

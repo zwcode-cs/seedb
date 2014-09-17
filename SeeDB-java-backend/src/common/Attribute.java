@@ -3,9 +3,9 @@ package common;
 public class Attribute implements Comparable<Attribute>{
 	public String name;
 	public static enum AttributeType {ORDINAL, CARDINAL, NUMERIC, GEOGRAPHIC, 
-		TIME_SERIES, NONE};
-	public AttributeType type;
-	public int numDistinctValues;
+		TIME_SERIES, NONE}; 			// not used right now
+	public AttributeType type;			// not used right now
+	public int numDistinctValues;		// not used right now
 	
 	public Attribute(String name) {
 		this.name = name;

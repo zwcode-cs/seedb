@@ -2,11 +2,12 @@ package difference_operators;
 
 import java.util.List;
 
+import settings.ExperimentalSettings;
+
 import com.google.common.collect.Lists;
 
 import common.Attribute;
 import common.DifferenceQuery;
-import common.ExperimentalSettings;
 import common.InputQuery;
 import common.InputTablesMetadata;
 import common.Utils;
@@ -21,8 +22,6 @@ public class AggregateGroupByDifferenceOperator implements DifferenceOperator {
 		List<Attribute> dimAttr = queryMetadatas[0].getDimensionAttributes();
 		List<Attribute> aggAttr = queryMetadatas[0].getMeasureAttributes();
 		
-		// may want to do some view pruning based on metadata here
-		
 		// get group bys
 		int gbSize = settings.groupBySize;
 		List<List<Attribute>> gbs = Utils.getGroups(dimAttr, gbSize);
@@ -34,6 +33,7 @@ public class AggregateGroupByDifferenceOperator implements DifferenceOperator {
 				List<String> aggFuncs = Lists.newArrayList();
 				aggFuncs.add("COUNT");
 				aggFuncs.add("SUM");
+				aggFuncs.add("AVG");
 				dq.addAggregateAttribute(aggAttr.get(j), aggFuncs);
 				dq.derivedFrom.add(dq);
 				queries.add(dq);

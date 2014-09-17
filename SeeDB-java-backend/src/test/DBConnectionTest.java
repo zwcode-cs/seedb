@@ -4,7 +4,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import common.DBSettings;
+import settings.DBSettings;
+
 
 import db_wrappers.DBConnection;
 

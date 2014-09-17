@@ -2,11 +2,18 @@ package views;
 
 import java.util.List;
 
+import settings.ExperimentalSettings.DifferenceOperators;
+import settings.ExperimentalSettings.DistanceMetric;
+
 import com.google.common.collect.Lists;
 
 import common.DifferenceQuery;
-import common.ExperimentalSettings.DifferenceOperators;
 
+/**
+ * View that returns how many tuples are present in the full dataset
+ * @author manasi
+ *
+ */
 public class CardinalityView extends AggregateView {
 	public CardinalityView(DifferenceQuery dq) {
 		super(dq);
@@ -18,27 +25,26 @@ public class CardinalityView extends AggregateView {
 	}
 
 	public List<Double> getCardinalities() {
-		if (this.groupByValues == null || this.groupByValues.get("none") == null) {
+		if (this.aggregateValues == null || this.aggregateValues.get("none") == null) {
 			return Lists.newArrayList(null, null);
 		}
 		
-		List<List<Double>> cardinalityAggregates = this.groupByValues.get("none");
+		AggregateValuesWrapper cardinalityAggregates = this.aggregateValues.get("none");
 		
 		// do a bunch of stuff to avoid possible null pointer exceptions :[
 		List<Double> output = Lists.newArrayList(null, null);
 		
-		if (cardinalityAggregates.get(0) == null) {
+		if (cardinalityAggregates.datasetValues[0] == null) {
 			output.set(0, null);
 		} else {
-			output.set(0, cardinalityAggregates.get(0).get(0));
+			output.set(0, cardinalityAggregates.datasetValues[0].count);
 		}
 		
-		if (cardinalityAggregates.get(1) == null) {
+		if (cardinalityAggregates.datasetValues[1] == null) {
 			output.set(1, null);
 		} else {
-			output.set(1, cardinalityAggregates.get(1).get(0));
+			output.set(1, cardinalityAggregates.datasetValues[1].count);
 		}
-		
 		return output;
 	}
 
@@ -46,9 +52,14 @@ public class CardinalityView extends AggregateView {
 		String ret = "";
 		ret += "diff_type:cardinality_diff;";
 		ret += "dataset_num:1;";
-		ret += "cardinality:" + this.groupByValues.get("none").get(0).get(0) + ";";
+		ret += "cardinality:" + this.aggregateValues.get("none").datasetValues[0].count + ";";
 		ret += "dataset_num:2;";
-		ret += "cardinality:" + this.groupByValues.get("none").get(1).get(0) + ";";
+		ret += "cardinality:" + this.aggregateValues.get("none").datasetValues[1].count + ";";
 		return ret;
+	}
+
+	@Override
+	public double getUtility(DistanceMetric distanceMetric) {
+		return 0;
 	}
 }

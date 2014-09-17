@@ -7,8 +7,6 @@ import java.util.Set;
 
 import com.google.common.collect.Lists;
 
-import core_v1.ViewQueryResult;
-
 public class CommonOperations {
 	public static List<List<String>> divideList(List<String> listToDivide, 
 			int sizeOfDivision) {

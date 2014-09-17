@@ -14,7 +14,7 @@ public class QueryParserTest {
 		String query = "select * from a, b where a.id=b.id and b.value < 10";
 		InputQuery q;
 		try {
-			q = QueryParser.parse(query, "random");
+			q = QueryParser.parse(query);
 			assertEquals(q.fromClause, "a, b");
 			assertEquals(q.whereClause, "a.id=b.id and b.value < 10");
 			assertEquals(q.tables.size(), 2);

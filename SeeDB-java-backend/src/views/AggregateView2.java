@@ -1,24 +1,30 @@
 package views;
 
 import java.util.HashMap;
+import java.util.List;
 
 import settings.ExperimentalSettings.DifferenceOperators;
 import utils.Constants.AggregateFunctions;
 import views.AggregateValuesWrapper.AggregateValues;
+
+
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
 import common.DifferenceQuery;
+import common.Utils;
 
 /**
  * Generic view class for differences that are based on aggregates and group-bys
  * @author manasi
  *
  */
-public abstract class AggregateView implements View {
+public abstract class AggregateView2 implements View {
 	protected HashMap<String, AggregateValuesWrapper> aggregateValues;
 	protected String groupByAttribute;
 	protected String aggregateAttribute;
 	
-	public AggregateView(DifferenceQuery dq) {
+	public AggregateView2(DifferenceQuery dq) {
 		groupByAttribute = dq.groupByAttributes.get(0).name;
 		aggregateAttribute = dq.aggregateAttributes.get(0).name;
 		aggregateValues = Maps.newHashMap();

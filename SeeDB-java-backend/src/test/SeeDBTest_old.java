@@ -7,26 +7,26 @@ import java.util.List;
 
 import org.junit.Test;
 
+import settings.DBSettings;
+import settings.ExperimentalSettings;
+import settings.ExperimentalSettings.ComparisonType;
+import settings.ExperimentalSettings.DifferenceOperators;
 import views.View;
 
 import com.google.common.collect.Lists;
 
-import common.DBSettings;
-import common.ExperimentalSettings;
-import common.ExperimentalSettings.ComparisonType;
-import common.ExperimentalSettings.DifferenceOperators;
 import common.InputTablesMetadata;
 import common.QueryParser;
 import common.Utils;
 import difference_operators.DifferenceOperator;
 import api.SeeDB;
 
-public class SeeDBTest {
+public class SeeDBTest_old {
 	private String defaultQuery1 = "select * from election_data where cand_nm='McCain, John S'"; //"select * from table_10_2_2_3_2_1 where measure1 < 2000";
-	private String defaultQuery = "select * from table_10_2_2_3_2_1 where measure1 < 2000";
+	private String defaultQuery = "select * from table_10_2_2_3_2_1 where measure1 < 2000"; //"SELECT * FROM adult_census WHERE (dim_sex = 'Male')"; //
 	private String defaultQuery2 = "select * from table_10_2_2_3_2_1 where measure1 >= 2000";
-	private String defaultQuery3 = "select * from election_data where cand_nm='McCain, John S'";
-	private String defaultQuery4 = "select * from election_data where cand_nm='Cox, John H'";
+	private String defaultQuery3 = "select * from election_data where dim_cand_nm='McCain, John S'";
+	private String defaultQuery4 = "select * from election_data where dim_cand_nm='Cox, John H'";
 	private String defaultQuery6 = "select * from s_1 where dim12_50='tlr2n4'";
 	private String defaultQuery5 = "select * from xs_1_small where dim3_50='xcfhyb'";
 	private String defaultQuery7 = "select * from m_1 where dim11_50='t7y9nt'";
@@ -95,10 +95,10 @@ public class SeeDBTest {
 			assertEquals(seedb.getNumDatasets(), 1);
 			assertEquals(seedb.getSettings().comparisonType, 
 					ExperimentalSettings.ComparisonType.ONE_DATASET_FULL);
-			assertTrue(seedb.getInputQueries()[0].equals(QueryParser.parse(query1,
-					DBSettings.getDefault().database)));
-			seedb.initialize("select * from a where k", 
-					"select * from b where l");	
+			assertTrue(seedb.getInputQueries()[0].equals(QueryParser.parse(query1)));
+			seedb.initializeWeb("select * from a where k", 
+					"select * from b where l",
+					"EarthMoverDistance", "");	
 			assertEquals(seedb.getNumDatasets(), 2);
 			assertEquals(seedb.getSettings().comparisonType, 
 					ExperimentalSettings.ComparisonType.TWO_DATASETS);
@@ -211,18 +211,20 @@ public class SeeDBTest {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void endToEndAggregateGroupByDifferenceWithSingleQueryFullComparisonTest() {
+		System.out.println("testing here");
 		long start = System.currentTimeMillis();
 		SeeDB seedb = new SeeDB();
-		ExperimentalSettings settings = new ExperimentalSettings();
-		settings.mergeQueries = false;//true; //false
-		settings.noAggregateQueryOptimization = true;
-		settings.differenceOperators = Lists.newArrayList();
+		ExperimentalSettings settings = ExperimentalSettings.getDefault();
+		
+		//settings.mergeQueries = true; //false
+		//settings.noAggregateQueryOptimization = true;
+		//settings.differenceOperators = Lists.newArrayList();
 		settings.differenceOperators.add(DifferenceOperators.AGGREGATE);
 		settings.comparisonType = ComparisonType.ONE_DATASET_FULL;
 		try {
-			seedb.initialize(defaultQuery1, null, settings);
+			seedb.initialize(defaultQuery, null, settings);
 			List<View> result = seedb.computeDifference();
 			Utils.printList(result);
 		} catch (Exception e) {
@@ -284,21 +286,7 @@ public class SeeDBTest {
 			return;
 		}
 	}
-	
-	//@Test
-	public void endToEndComputeManualTest() {
-		SeeDB seedb = new SeeDB();
-		try {
-			seedb.initializeManual(defaultQuery);
-			View v = seedb.computeManualView("dim1_3", "measure2", "count");
-			v.toString();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return;
-		}
 		
-	}
-	
 	//@Test
 	public void endToEndAggregateGroupByDifferenceWithTempTablesTest() {
 		long start = System.currentTimeMillis();
@@ -379,7 +367,7 @@ public class SeeDBTest {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void allTestsNew() {
 		long start = System.currentTimeMillis();
 		SeeDB seedb = new SeeDB();

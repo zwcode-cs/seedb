@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
+import settings.ExperimentalSettings;
+import settings.ExperimentalSettings.DifferenceOperators;
+import utils.Constants.AggregateFunctions;
 import views.AggregateGroupByView;
 import views.AggregateView;
 import views.CardinalityView;
@@ -19,25 +22,40 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import common.ExperimentalSettings.DifferenceOperators;
 
 import db_wrappers.DBConnection;
 
 public class QueryExecutor {
-	private HashMap<DifferenceQuery, AggregateView> aggregateViewMap; // doesn't need locking because each thread accesses different keys
-	private ConnectionPool pool;
-	private ConnectionPool secondaryPool;
+	private HashMap<DifferenceQuery, AggregateView> aggregateViewMap; 	// keeps track of results for each view
+																		// doesn't need locking because each thread accesses different keys
+	private ConnectionPool pool;										// pool used by phase1 of the executor
+	private ConnectionPool secondaryPool;								// pool used by phase2 of the executor
 	private ExperimentalSettings settings;
-	private List<Thread> threads = Lists.newArrayList();
-	private int nqueries = 0;
-	private File logFile;
+	private List<Thread> threads = Lists.newArrayList();				// keep track of threads spawned by executor
+	private int nqueries = 0;											// tracking info
+	private File logFile;												// file to log to
 	
+	/**
+	 * constructor
+	 * @param pool
+	 * @param settings
+	 * @param logFile
+	 */
 	public QueryExecutor(ConnectionPool pool, ExperimentalSettings settings, File logFile) {
 		this.pool = pool;
 		this.settings = settings;
 		this.logFile = logFile;
 	}
 	
+	/**
+	 * 
+	 * @param optimizedQueries
+	 * @param queries
+	 * @param connection
+	 * @param numDatasets
+	 * @return
+	 * @throws SQLException
+	 */
 	public List<View> execute(List<DifferenceQuery> optimizedQueries,
 			List<DifferenceQuery> queries, DBConnection connection, int numDatasets) throws SQLException {
 		long start = System.currentTimeMillis();
@@ -64,6 +82,7 @@ public class QueryExecutor {
 			}
 		}
 		
+		// wait for any spawned threads to finish
 		for (Thread t : threads) {
 			try {
 				t.join();
@@ -72,44 +91,29 @@ public class QueryExecutor {
 				e.printStackTrace();
 			}
 		}
-		if (aggregateViewMap != null) {
-			views.addAll(aggregateViewMap.values());
-		}
+		
+		// clean up
 		if (secondaryPool != null) {
 			secondaryPool.closeAllConnections();
 		}
+		
+		// populate results
+		if (aggregateViewMap != null) {
+			views.addAll(aggregateViewMap.values());
+		}
+		
+		// log
 		Utils.writeToFile(logFile, "Executor: " + (System.currentTimeMillis() - start));
 		Utils.writeToFile(logFile, "nQueries: " + nqueries);
 		return views;
 	}
 	
-	public void executeAggregateDifferenceQueryWithTempTables(
-			DifferenceQuery optQuery, DBConnection connection) throws SQLException {
-		if (settings.useParallelExecution) {
-			if (secondaryPool == null) {
-				secondaryPool = new ConnectionPool(settings.maxDBConnections, connection.database, connection.databaseType, connection.username, connection.password);
-			}
-			Thread t = new Thread(new ExecuteParallelQueryWithTempTables(optQuery));
-			threads.add(t);
-			t.start();
-			//System.out.println("Created temp table " + optQuery.seqNum);
-		} else {
-			// execute query that puts results in temp table
-			List<String> optSQLQuery = optQuery.getSQLQuery(true);
-			long start = System.currentTimeMillis();
-			connection.executeQueryWithoutResult(optSQLQuery.get(0));
-			Utils.writeToFile(logFile, "DBMS execution put into temp tables: " + (System.currentTimeMillis() - start));
-			
-			// process the data from the temp table
-			List<String> queries = optQuery.getSQLForParentQueries(true);
-			for (int i = 0; i < optQuery.derivedFrom.size();i++) {
-				executeQuery(optQuery.derivedFrom.get(i), queries.get(i*2), connection, 1);
-				executeQuery(optQuery.derivedFrom.get(i), queries.get(i*2+1), connection, 2);
-			}
-			connection.executeQueryWithoutResult("DROP TABLE IF EXISTS " + "seedb_tmp_table_" + optQuery.seqNum);
-		}
-	}
-	
+	/**
+	 * master function for executing queries. has various paths depending on optimizations
+	 * @param optQuery
+	 * @param connection
+	 * @throws SQLException
+	 */
 	public void executeAggregateDifferenceQuery(
 			DifferenceQuery optQuery, DBConnection connection) throws SQLException {
 		// if intermediate results should be written to temp tables
@@ -122,6 +126,7 @@ public class QueryExecutor {
 			return;
 		}
 		
+		// each query is derived from itself
 		List<String> queries = optQuery.getSQLQuery();
 		if (optQuery.derivedFrom == null) {
 			optQuery.derivedFrom = Lists.newArrayList();
@@ -153,7 +158,49 @@ public class QueryExecutor {
 			}
 		}
 	}
+	
+	/**
+	 * execute view queries with temp tables
+	 * @param optQuery
+	 * @param connection
+	 * @throws SQLException
+	 */
+	public void executeAggregateDifferenceQueryWithTempTables(
+			DifferenceQuery optQuery, DBConnection connection) throws SQLException {
+		if (settings.useParallelExecution) {
+			// create secondary pool
+			if (secondaryPool == null) {
+				secondaryPool = new ConnectionPool(settings.maxDBConnections, connection.database, connection.databaseType, connection.username, connection.password);
+			}
+			Thread t = new Thread(new ExecuteParallelQueryWithTempTables(optQuery));
+			threads.add(t);
+			t.start();
+		} else {
+			// execute query that puts results in temp table
+			List<String> optSQLQuery = optQuery.getSQLQuery(true);
+			long start = System.currentTimeMillis();
+			System.out.println(optSQLQuery.get(0));
+			connection.executeQueryWithoutResult(optSQLQuery.get(0));
+			Utils.writeToFile(logFile, "DBMS execution put into temp tables: " + (System.currentTimeMillis() - start));
+			
+			// process the data from the temp table
+			List<String> queries = optQuery.getSQLForParentQueries(true);
+			for (int i = 0; i < optQuery.derivedFrom.size();i++) {
+				executeQuery(optQuery.derivedFrom.get(i), queries.get(i*2), connection, 1);
+				executeQuery(optQuery.derivedFrom.get(i), queries.get(i*2+1), connection, 2);
+			}
+			connection.executeQueryWithoutResult("DROP TABLE IF EXISTS " + "seedb_tmp_table_" + optQuery.seqNum);
+		}
+	}
 
+	/**
+	 * helper function to execute any query on the database
+	 * @param optQuery
+	 * @param query
+	 * @param con
+	 * @param group
+	 * @throws SQLException
+	 */
 	public void executeQuery(DifferenceQuery optQuery, String query, 
 			DBConnection con, int group) throws SQLException {
 		nqueries++;
@@ -208,23 +255,115 @@ public class QueryExecutor {
 				
 				for (String attr : aggAttrs) {
 					attr = attr.toLowerCase();
+					AggregateFunctions func = attr.endsWith("count") ? AggregateFunctions.COUNT : AggregateFunctions.SUM;
 					if (group == -1) {
 						if ((Integer) row.get("seedb_group_1") == 1) {
-							view.addAggregateValue(groupBy, attr, row.get(attr), 1);	
+							view.addAggregateValue(groupBy, func, row.get(attr), 1);	
 						}
 						if ((Integer) row.get("seedb_group_2") == 1) {
-							view.addAggregateValue(groupBy, attr, row.get(attr), 2);	
+							view.addAggregateValue(groupBy, func, row.get(attr), 2);	
 						}
 					}
 					else {
-						view.addAggregateValue(groupBy, attr, row.get(attr), group);
+						view.addAggregateValue(groupBy, func, row.get(attr), group);
 					}
 				}
 			}
 		}
 		Utils.writeToFile(logFile, "Client-side processing " + (group < 2 ? "target view" : "comparison view") + ":" + (System.currentTimeMillis() - start));
-	}
+	}	
+	
+	// class to execute queries on parallel threads
+	private class ExecuteParallelQuery implements Runnable {
+		DifferenceQuery optQuery;
+		String query; 
+		int group;
+		
+		public ExecuteParallelQuery(DifferenceQuery optQuery, String query, 
+				int group) {
+			this.optQuery = optQuery;
+			this.query = query;
+			this.group = group;
+		}
 
+		@Override
+		public void run() {
+			Connection c;
+			try {
+				c = pool.getAvailableConnection();
+			} catch (InterruptedException e) {
+				c = null;
+				e.printStackTrace();
+			}
+			if (c==null) {
+				System.out.println("Cannot get connection to database");
+				return;
+			}
+			DBConnection con = new DBConnection(c);
+			try {
+				executeQuery(optQuery, query, con, group);
+				pool.returnConnectionToPool(c);
+			} catch (SQLException e) {
+				System.out.println("Error executing query: " + query);
+				e.printStackTrace();
+				return;
+			}
+		}
+	}
+	
+	// class to execute queries on parallel threads
+	private class ExecuteParallelQueryWithTempTables implements Runnable {
+		DifferenceQuery optQuery;							// query to execute
+		List<Thread> localThreads = Lists.newArrayList();	// threads spawned
+		
+		public ExecuteParallelQueryWithTempTables(DifferenceQuery optQuery) {
+			this.optQuery = optQuery;
+		}
+
+		@Override
+		public void run() {
+			List<String> optSQLQuery = optQuery.getSQLQuery(true);
+			Connection c;
+			try {
+				c = secondaryPool.getAvailableConnection();
+			} catch (InterruptedException e) {
+				c = null;
+				e.printStackTrace();
+			}
+			if (c == null) {
+				System.out.println("Cannot get connection to database");
+				return;
+			}
+			
+			DBConnection con = new DBConnection(c);
+			long start = System.currentTimeMillis();
+			con.executeQueryWithoutResult(optSQLQuery.get(0));
+			System.out.println(optSQLQuery.get(0));
+			Utils.writeToFile(logFile, "DBMS execution put into temp tables: " + (System.currentTimeMillis() - start));
+			
+			// process the data from the temp table
+			List<String> queries = optQuery.getSQLForParentQueries(true);
+			for (int i = 0; i < optQuery.derivedFrom.size();i++) {
+				Thread t = new Thread(new ExecuteParallelQuery(optQuery.derivedFrom.get(i), queries.get(i*2), 1));
+				localThreads.add(t);
+				t.start();
+				t = new Thread(new ExecuteParallelQuery(optQuery.derivedFrom.get(i), queries.get(i*2+1), 2));
+				localThreads.add(t);
+				t.start();
+			}
+			
+			for (Thread t : localThreads) {
+				try {
+					t.join();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			con.executeQueryWithoutResult("DROP TABLE IF EXISTS " + optQuery.getTempTableName());
+			secondaryPool.returnConnectionToPool(c);	
+		}	
+	}
+	
 	// execute row sample query
 	public View executeRowSampleDifferenceQuery(
 			DifferenceQuery optQuery, DBConnection connection) 
@@ -266,110 +405,4 @@ public class QueryExecutor {
 		}
 		return view;
 	}
-
-	// test function for manual view
-	public View executeSingle(DifferenceQuery dq, DBConnection connection,
-			int numDatasets) throws SQLException {
-		aggregateViewMap = Maps.newHashMap();
-		AggregateView v = new AggregateGroupByView(dq);
-		aggregateViewMap.put(dq, v);
-		String query = dq.getSQLQueryHelper(false, dq.inputQueries[0], null, false, null, -1);
-		executeQuery(dq, query, connection, 1);
-		return v;
-	}
-	
-	
-	// class to execute queries on parallel threads
-	private class ExecuteParallelQuery implements Runnable {
-		DifferenceQuery optQuery;
-		String query; 
-		int group;
-		
-		public ExecuteParallelQuery(DifferenceQuery optQuery, String query, 
-				int group) {
-			this.optQuery = optQuery;
-			this.query = query;
-			this.group = group;
-		}
-
-		@Override
-		public void run() {
-			Connection c;
-			try {
-				c = pool.getAvailableConnection();
-			} catch (InterruptedException e) {
-				c = null;
-				e.printStackTrace();
-			}
-			if (c==null) {
-				System.out.println("Cannot get connection to database");
-				return;
-			}
-			DBConnection con = new DBConnection(c);
-			try {
-				executeQuery(optQuery, query, con, group);
-				pool.returnConnectionToPool(c);
-			} catch (SQLException e) {
-				System.out.println("Error executing query: " + query);
-				e.printStackTrace();
-				return;
-			}
-		}
-		
-	}
-	
-	// class to execute queries on parallel threads
-		private class ExecuteParallelQueryWithTempTables implements Runnable {
-			DifferenceQuery optQuery;
-			List<Thread> localThreads = Lists.newArrayList();
-			public ExecuteParallelQueryWithTempTables(DifferenceQuery optQuery) {
-				this.optQuery = optQuery;
-			}
-
-			@Override
-			public void run() {
-				List<String> optSQLQuery = optQuery.getSQLQuery(true);
-				Connection c;
-				try {
-					c = secondaryPool.getAvailableConnection();
-				} catch (InterruptedException e) {
-					c = null;
-					e.printStackTrace();
-				}
-				if (c==null) {
-					System.out.println("Cannot get connection to database");
-					return;
-				}
-				DBConnection con = new DBConnection(c);
-				long start = System.currentTimeMillis();
-				con.executeQueryWithoutResult(optSQLQuery.get(0));
-
-				Utils.writeToFile(logFile, "DBMS execution put into temp tables: " + (System.currentTimeMillis() - start));
-				
-				// process the data from the temp table
-				List<String> queries = optQuery.getSQLForParentQueries(true);
-				for (int i = 0; i < optQuery.derivedFrom.size();i++) {
-					Thread t = new Thread(new ExecuteParallelQuery(optQuery.derivedFrom.get(i), queries.get(i*2), 1));
-					localThreads.add(t);
-					t.start();
-					t = new Thread(new ExecuteParallelQuery(optQuery.derivedFrom.get(i), queries.get(i*2+1), 2));
-					localThreads.add(t);
-					t.start();
-				}
-				
-				for (Thread t : localThreads) {
-					try {
-						t.join();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-				con.executeQueryWithoutResult("DROP TABLE IF EXISTS " + optQuery.getTempTableName());
-				secondaryPool.returnConnectionToPool(c);
-				
-			}
-			
-		}
-	
 }

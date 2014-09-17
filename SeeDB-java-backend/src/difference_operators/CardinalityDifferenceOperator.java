@@ -2,11 +2,12 @@ package difference_operators;
 
 import java.util.List;
 
+import settings.ExperimentalSettings;
+
 import com.google.common.collect.Lists;
 
 import common.Attribute;
 import common.DifferenceQuery;
-import common.ExperimentalSettings;
 import common.InputQuery;
 import common.InputTablesMetadata;
 

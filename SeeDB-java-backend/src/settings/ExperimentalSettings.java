@@ -1,4 +1,4 @@
-package common;
+package settings;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ public class ExperimentalSettings {
 
 	public boolean mergeQueries = true;						// OPT3: combine comparison and target q
 	
-	public boolean useParallelExecution = false;			// OPT4: parallel execution
+	public boolean useParallelExecution = true;				// OPT4: parallel execution
 	public int maxDBConnections = 40;						// OPT4: actual is double; max POSTGRES = 100
 															// OPT4: do not set above 45	
 
@@ -46,6 +46,14 @@ public class ExperimentalSettings {
 	public String logFile = null;							// log file for profiling, set if you want
 															// else goes to stdout
 															// process using processTestOutput.py in scripts
+	public enum DistanceMetric {EARTH_MOVER_DISTANCE,
+		EUCLIDEAN_DISTANCE, COSINE_DISTANCE, 
+		FIDELITY_DISTANCE, CHI_SQUARED_DISTANCE,
+		KULLBACK_LEIBLER_DISTANCE}; 
+		
+	public DistanceMetric distanceMetric 
+		= DistanceMetric.EARTH_MOVER_DISTANCE;
+	
 	
 	//public String shared_buff="32MB";						
 
@@ -56,7 +64,7 @@ public class ExperimentalSettings {
 	 */
 	public static ExperimentalSettings getDefault() {
 		ExperimentalSettings settings = new ExperimentalSettings();
-		settings.differenceOperators = Lists.newArrayList(DifferenceOperators.DATA_SAMPLE, DifferenceOperators.AGGREGATE, DifferenceOperators.CARDINALITY);
+		settings.differenceOperators = Lists.newArrayList(DifferenceOperators.AGGREGATE);
 		return settings;
 	}
 	

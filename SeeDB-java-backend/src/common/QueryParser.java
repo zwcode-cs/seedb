@@ -15,7 +15,7 @@ import db_wrappers.DBConnection;
  */
 public class QueryParser {
 
-	public static InputQuery parse(String query, String database) throws Exception {
+	public static InputQuery parse(String query) throws Exception {
 		// string semicolon from the end of the query
 		if (query.endsWith(";")) {
 			query = query.substring(0, query.length() - 1);
@@ -38,7 +38,6 @@ public class QueryParser {
 			in.tables.add(table.trim());
 		}
 		Collections.sort(in.tables);
-		in.database = database;
 		return in;
 	}
 }

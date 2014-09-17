@@ -1,10 +1,18 @@
 package views;
 
 import java.util.List;
+
+import settings.ExperimentalSettings.DifferenceOperators;
+import settings.ExperimentalSettings.DistanceMetric;
+
 import com.google.common.collect.Lists;
-import common.ExperimentalSettings.DifferenceOperators;
 import common.Utils;
 
+/**
+ * View that shows a set of rows from each dataset
+ * @author manasi
+ *
+ */
 public class RowSampleView implements View {
 	public List<String> columnNames; // assume that both datasets have same columns
 	public List<List<String>> rows1;
@@ -38,6 +46,11 @@ public class RowSampleView implements View {
 		ret += "dataset_num:2;";
 		ret += "rows:" + Utils.serializeListofLists(rows2) + ";";
 		return ret;
+	}
+
+	@Override
+	public double getUtility(DistanceMetric distanceMetric) {
+		return 0;
 	}
 	
 }
