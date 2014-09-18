@@ -3,16 +3,21 @@ package test;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import settings.ExperimentalSettings;
 import settings.ExperimentalSettings.ComparisonType;
 import settings.ExperimentalSettings.DifferenceOperators;
+import views.AggregateGroupByView;
+import views.AggregateValuesWrapper;
+import views.AggregateValuesWrapper.AggregateValues;
 import views.View;
 import api.SeeDB;
 
@@ -27,11 +32,98 @@ public class EndToEndTests {
 	// we work with a single dataset
 	private String table = "seedb_e2e_test";
 	private String query1 = "select * from " + table + " where dim1='def'";
-	private Hashtable<String, Hashtable<String, List<Integer>>> expectedResults;
+	private HashMap<String, HashMap<String, AggregateValuesWrapper>> expectedResults;
 	
-	
+	// populate expected results
 	private void performSetup() {
-	
+		expectedResults = Maps.newHashMap();
+		String key = "dim2__measure1";
+		HashMap value = Maps.newHashMap();
+		AggregateValuesWrapper wrapper = new AggregateValuesWrapper();
+		String localKey = "abc";
+		wrapper.datasetValues[0] = wrapper.new AggregateValues(0, 0, 0);
+		wrapper.datasetValues[1] = wrapper.new AggregateValues(1, 100, 100);
+		value.put(localKey, wrapper);
+		wrapper = new AggregateValuesWrapper();
+		localKey = "def";
+		wrapper.datasetValues[0] = wrapper.new AggregateValues(3, 1700, 566.67);
+		wrapper.datasetValues[1] = wrapper.new AggregateValues(6, 3600, 600);
+		value.put(localKey, wrapper);
+		wrapper = new AggregateValuesWrapper();
+		localKey = "ghi";
+		wrapper.datasetValues[0] = wrapper.new AggregateValues(0, 0, 0);
+		wrapper.datasetValues[1] = wrapper.new AggregateValues(3, 2400, 800);
+		value.put(localKey, wrapper);
+		expectedResults.put(key, value);
+		
+		key = "dim3__measure2";
+		value = Maps.newHashMap();
+		wrapper = new AggregateValuesWrapper();
+		localKey = "abc";
+		wrapper.datasetValues[0] = wrapper.new AggregateValues(2, 5000, 2500);
+		wrapper.datasetValues[1] = wrapper.new AggregateValues(4, 12000, 3000);
+		value.put(localKey, wrapper);
+		wrapper = new AggregateValuesWrapper();
+		localKey = "ghi";
+		wrapper.datasetValues[0] = wrapper.new AggregateValues(1, 7000, 7000);
+		wrapper.datasetValues[1] = wrapper.new AggregateValues(1, 7000, 7000);
+		value.put(localKey, wrapper);
+		expectedResults.put(key, value);
+		wrapper = new AggregateValuesWrapper();
+		localKey = "jkl";
+		wrapper.datasetValues[0] = wrapper.new AggregateValues(0, 0, 0);
+		wrapper.datasetValues[1] = wrapper.new AggregateValues(1, 1500, 1500);
+		value.put(localKey, wrapper);
+		expectedResults.put(key, value);
+		wrapper = new AggregateValuesWrapper();wrapper = new AggregateValuesWrapper();
+		localKey = "mno";
+		wrapper.datasetValues[0] = wrapper.new AggregateValues(0, 0, 0);
+		wrapper.datasetValues[1] = wrapper.new AggregateValues(4, 25000, 6250);
+		value.put(localKey, wrapper);
+		expectedResults.put(key, value);
+		
+		key = "dim2__measure4";
+		value = Maps.newHashMap();
+		wrapper = new AggregateValuesWrapper();
+		localKey = "abc";
+		wrapper.datasetValues[0] = wrapper.new AggregateValues(0, 0, 0);
+		wrapper.datasetValues[1] = wrapper.new AggregateValues(1, 2500, 2500);
+		value.put(localKey, wrapper);
+		wrapper = new AggregateValuesWrapper();
+		localKey = "def";
+		wrapper.datasetValues[0] = wrapper.new AggregateValues(3, 14000, 4666.67);
+		wrapper.datasetValues[1] = wrapper.new AggregateValues(6, 27750, 4625);
+		value.put(localKey, wrapper);
+		wrapper = new AggregateValuesWrapper();
+		localKey = "ghi";
+		wrapper.datasetValues[0] = wrapper.new AggregateValues(0, 0, 0);
+		wrapper.datasetValues[1] = wrapper.new AggregateValues(3, 20500, 6833.33);
+		value.put(localKey, wrapper);
+		expectedResults.put(key, value);
+		
+		key = "dim4__measure3";
+		value = Maps.newHashMap();
+		wrapper = new AggregateValuesWrapper();
+		localKey = "pqr";
+		wrapper.datasetValues[0] = wrapper.new AggregateValues(0, 0, 0);
+		wrapper.datasetValues[1] = wrapper.new AggregateValues(1, 300, 300);
+		value.put(localKey, wrapper);
+		wrapper = new AggregateValuesWrapper();
+		localKey = "stu";
+		wrapper.datasetValues[0] = wrapper.new AggregateValues(1, 5000, 5000);
+		wrapper.datasetValues[1] = wrapper.new AggregateValues(2, 6000, 3000);
+		value.put(localKey, wrapper);
+		wrapper = new AggregateValuesWrapper();
+		localKey = "vwx";
+		wrapper.datasetValues[0] = wrapper.new AggregateValues(2, 1700, 850);
+		wrapper.datasetValues[1] = wrapper.new AggregateValues(3, 2400, 800);
+		value.put(localKey, wrapper);
+		wrapper = new AggregateValuesWrapper();
+		localKey = "yza";
+		wrapper.datasetValues[0] = wrapper.new AggregateValues(0, 0, 0);
+		wrapper.datasetValues[1] = wrapper.new AggregateValues(4, 6600, 1650);
+		value.put(localKey, wrapper);
+		expectedResults.put(key, value);
 	}
 	
 	@Test
@@ -64,6 +156,29 @@ public class EndToEndTests {
 	}
 	
 	private boolean checkCorrectness(List<View> result, String query) {
+		for (View v : result) {
+			if (v instanceof AggregateGroupByView) {
+				AggregateGroupByView v_ = (AggregateGroupByView) v;
+				String s = v_.getId();
+				if (expectedResults.containsKey(v_.getId())) {
+					HashMap<String, AggregateValuesWrapper> expected = expectedResults.get(v_.getId());
+					HashMap<String, AggregateValuesWrapper> actual = v_.getResult();
+					if (expected.size() != actual.size()) {
+						System.out.println("Sizes of dictionaries is different");
+						return false;
+					}
+					for (String key : expected.keySet()) {
+						if (!actual.containsKey(key)) {
+							System.out.println("Expected key: " + key + " not present in actual");
+							return false;
+						}
+						if (!expected.get(key).equals(actual.get(key))) {
+							return false;
+						}
+					}
+				}
+			}
+		}
 		return true;
 	}
 	

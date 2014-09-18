@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import settings.ExperimentalSettings.DifferenceOperators;
 import settings.ExperimentalSettings.DistanceMetric;
+import utils.Constants;
 import utils.UtilityMetrics;
 import views.AggregateValuesWrapper.AggregateValues;
 import common.DifferenceQuery;
@@ -80,5 +81,9 @@ public class AggregateGroupByView extends AggregateView {
 			return UtilityMetrics.EntropyDistance(this.aggregateValues);
 		}
 		return -1;
+	}
+	
+	public String getId() {
+		return this.groupByAttribute + Constants.spacer + Constants.spacer + this.aggregateAttribute;
 	}
 }
