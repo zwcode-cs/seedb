@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -33,6 +34,8 @@ public class EndToEndTests {
 	private String table = "seedb_e2e_test";
 	private String query1 = "select * from " + table + " where dim1='def'";
 	private HashMap<String, HashMap<String, AggregateValuesWrapper>> expectedResults;
+	private String viewOrder;
+	private String utilityOrder;
 	
 	// populate expected results
 	private void performSetup() {
@@ -190,6 +193,23 @@ public class EndToEndTests {
 			List<View> result = seedb.computeDifference();
 			Utils.printList(result);
 			assertTrue(checkCorrectness(result, query));
+			List<String> tmp1 = Lists.newArrayList();
+			List<String> tmp2 = Lists.newArrayList();
+			for (View v : result) {
+				AggregateGroupByView v_ = (AggregateGroupByView) v;
+				tmp1.add(v_.getId());
+				tmp2.add("" + v_.getUtility(settings.distanceMetric));
+			}
+			String localViewOrder =  Joiner.on(";").join(tmp1);
+			String localUtilityOrder = Joiner.on(";").join(tmp2);
+			if (this.viewOrder == null || this.viewOrder.isEmpty()) {
+				// populate
+				this.viewOrder = localViewOrder;
+				this.utilityOrder = localUtilityOrder;
+			} else {
+				// check
+				assertTrue(this.viewOrder.equals(localViewOrder) || this.utilityOrder.equals(localUtilityOrder));
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
