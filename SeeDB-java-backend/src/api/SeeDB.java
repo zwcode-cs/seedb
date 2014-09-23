@@ -1,6 +1,7 @@
 package api;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Comparator;
@@ -356,6 +357,32 @@ public class SeeDB {
 				}
 			}
 		});
+		
+		// spit out views
+		/*
+		 * separate file for each
+		 * dim_attr, measure_attr1, measure_attr2
+		 * val1, val2, val3
+		 */
+		for (View v : views) { // can select only the first k
+			AggregateGroupByView v_ = (AggregateGroupByView) v;
+			String viewFilePath = "/Users/manasi/Public/seedb_results/" + v_.getId() + ".txt";
+			File viewFile = new File(viewFilePath);
+			if (!viewFile.exists()) {
+				try {
+					viewFile.createNewFile();
+				} catch (IOException e) {
+					System.out.println("Couldn't create file: " + viewFile);
+					e.printStackTrace();
+				}
+			} 
+			String headerLine = v_.getGroupByAttributes() + ", query, full";
+			Utils.writeToFile(viewFile, headerLine);
+			for (String k : v_.getResult().keySet()) {
+				String toWrite = k + "," + v_.getResult().get(k).datasetValues[0].sum + "," + v_.getResult().get(k).datasetValues[1].sum;
+				Utils.writeToFile(viewFile, toWrite);
+			}
+		}
 		return views;
 	}	
 

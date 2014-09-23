@@ -129,7 +129,7 @@ public class EndToEndTests {
 		expectedResults.put(key, value);
 	}
 	
-	@Test
+	//@Test
 	public void allTest() {
 		performSetup();
 		
@@ -143,6 +143,12 @@ public class EndToEndTests {
 		allSystemOptimizationsParallel();
 		
 		// all systems optimizations with temp tables
+		allSystemOptimizationsTempTablesParallel();
+	}
+	
+	@Test
+	public void createCharts() {
+		performSetup();
 		allSystemOptimizationsTempTablesParallel();
 	}
 	
