@@ -15,13 +15,15 @@ public class ExperimentalSettings {
 	public enum ComparisonType {TWO_DATASETS, ONE_DATASET_FULL, 
 		ONE_DATASET_DIFF, MANUAL_VIEW}; 
 	public ComparisonType comparisonType = ComparisonType.ONE_DATASET_FULL; // Default SeeDB q vs. entire data
+	public enum Backend {POSTGRES, VERTICA, MAIN_MEMORY};
+	public enum MainMemoryPruningAlgorithm {NONE, TOP_K, RANDOM, MAB1, MAB2};
 	
 	public enum DifferenceOperators {AGGREGATE, CARDINALITY, DATA_SAMPLE}; //ALL, A_B_TESTING, CLASSIFICATION, 
 	public List<DifferenceOperators> differenceOperators; 	// ignore for basic tests	
 	public int rowSampleSize = 10; 							// ignore for basic tests
 
 	public boolean noAggregateQueryOptimization = false; 	// true = no optimizations
-	public boolean optimizeAll = true; 						// true = apply all optimizations
+	public boolean optimizeAll = false; 					// false = apply all optimizations
 	
 	public boolean combineMultipleAggregates = true;		// OPT1: true = multiple measures together
 	public int maxAggSize = 2;								// OPT1: combine aggregates UP to maxAggSize
@@ -53,7 +55,22 @@ public class ExperimentalSettings {
 		
 	public DistanceMetric distanceMetric 
 		= DistanceMetric.EARTH_MOVER_DISTANCE;
+	public boolean makeGraphs;								// whether to make graphs
+	public Backend backend;									// what backend to use
+	public boolean normalizeDistributions = true;			// whether to normalize distributions
 	
+	
+	
+	
+	
+	// used for in memory implementation
+	public int num_rows = -1;								// number of rows to process. default all
+	public boolean mainMemoryRandomSample = false;
+	public double mainMemorySampleFraction = 1;
+	public boolean mainMemoryReadFromFile = true;			// whether to read in from file or from memory
+	public MainMemoryPruningAlgorithm mainMemoryPruning = MainMemoryPruningAlgorithm.NONE;
+	public double mainMemoryRandomSamplingRate = 0.1;		// what percent of rows to sample
+	public int mainMemoryNumViewsToSelect = 10;			// how many top views to select
 	
 	//public String shared_buff="32MB";						
 
@@ -71,9 +88,8 @@ public class ExperimentalSettings {
 	// returns a description of the settings used to run the SeeDB test
 	public String getDescriptor() {
 		List<String> l = Lists.newArrayList();
-		l.add("istc");
-		l.add("final");
-		l.add(useParallelExecution ? "parallel_" + this.maxDBConnections : "seq");
+		l.add(backend == Backend.POSTGRES ? "row" : "column");
+		l.add(useParallelExecution ? "parallel" + this.maxDBConnections : "seq");
 		if (noAggregateQueryOptimization) {
 			l.add("NoOp");
 		}

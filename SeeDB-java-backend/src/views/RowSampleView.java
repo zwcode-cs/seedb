@@ -52,5 +52,12 @@ public class RowSampleView implements View {
 	public double getUtility(DistanceMetric distanceMetric) {
 		return 0;
 	}
+
+	@Override
+	public double getUtility(DistanceMetric distanceMetric,
+			boolean normalizeDistributions) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 	
 }

@@ -20,9 +20,9 @@ import common.Utils;
 public class Optimizer {
 	ExperimentalSettings settings;
 	File logFile;
-	static double ROW_TIME = 0;
-	static double COL_TIME = 0;
-	static double WRITE_TIME = 0;
+	static double ROW_TIME = 1;
+	static double COL_TIME = 1;
+	static double WRITE_TIME = 5;
 
 	public Optimizer(ExperimentalSettings settings, File logFile) {
 		this.settings = settings;
@@ -58,7 +58,7 @@ public class Optimizer {
 				 !settings.combineMultipleGroupBys)) 
 			return queries;
 		
-		System.out.println("Number of queries, no opt:" + queries.size());
+		//System.out.println("Number of queries, no opt:" + queries.size());
 		
 		List<DifferenceQuery> optimizedQueries = Lists.newArrayList();
 		// first combine queries with same group by attributes
@@ -82,7 +82,7 @@ public class Optimizer {
 		} else {
 			optimizedQueries.addAll(queries);
 		}
-		System.out.println("Number of queries after combining queries with same group-by:" + optimizedQueries.size());
+		//System.out.println("Number of queries after combining queries with same group-by:" + optimizedQueries.size());
 		
 		// then combine queries w.r.t. group by using bin-packing
 		if (settings.optimizeAll || settings.combineMultipleGroupBys) {
@@ -94,7 +94,7 @@ public class Optimizer {
 			else {
 				useBasicGroupByCombination(optimizedQueries);		
 			}
-			System.out.println("Number of queries after combining group-by:" + optimizedQueries.size());
+			//System.out.println("Number of queries after combining group-by:" + optimizedQueries.size());
 		}		
 		return optimizedQueries;
 	}
@@ -146,15 +146,15 @@ public class Optimizer {
 			List<List<Integer>> groups = Lists.newArrayList();
 			if (optimizedQueries.size() >= 2) {
 				List<Integer> l = Lists.newArrayList();
-				l.add(optimizedQueries.get(0).groupByAttributes.size());
-				l.add(optimizedQueries.get(1).groupByAttributes.size());
+				l.add(optimizedQueries.get(0).getMaxDistinct());
+				l.add(optimizedQueries.get(1).getMaxDistinct());
 				groups.add(l);
 			} else {
 				break;
 			}
 			for (int i = 2; i < optimizedQueries.size(); i++) {
 				List<Integer> l = Lists.newArrayList();
-				l.add(optimizedQueries.get(i).groupByAttributes.size());
+				l.add(optimizedQueries.get(i).getMaxDistinct());
 				groups.add(l);
 			}
 			// 3. estimate: better, go to 1
@@ -176,6 +176,7 @@ public class Optimizer {
 				}
 				// remove now redundant query
 				optimizedQueries.remove(1);
+				oldEstimate = newEstimate;
 			} else {
 				// cannot optimize further
 				break;
@@ -193,26 +194,22 @@ public class Optimizer {
 	 * @return
 	 */
  	private double estimate(List<List<Integer>> groups, int conn, int nAgg, int nDims, int nRows, boolean useAverage) {
-		double bcreate = Math.ceil(groups.size()/conn); // number of iterations of create
+		double bcreate = Math.ceil(groups.size() * 1.0 /conn); // number of iterations of create
 		double avg_dtt = 0;								// average number of dimensions in temp tables
 		double avg_ntt = 0;								// average number of rows in temp tables
 		
 		if (useAverage) {
 			for (List<Integer> group : groups) {
 				avg_dtt += group.size();
-				int product = 1;
-				for (Integer i : group) {
-					product *= i;
-				}
-				avg_ntt += product;
+				avg_ntt += getProductOfList(group);
 			}
 			avg_dtt /= groups.size();
 			avg_ntt /= groups.size();
-			double bquery = avg_dtt * nAgg * Math.min(conn, groups.size())/conn; 	// number of queries per table
-			double tcreate = avg_ntt * (ROW_TIME + COL_TIME*(avg_dtt + nAgg)); 		// time to create one temp table
-			double tquery = nRows * (ROW_TIME + COL_TIME*(nDims + nAgg)) + WRITE_TIME * avg_ntt * 
-						(ROW_TIME + COL_TIME*avg_dtt); 								// time to query a temp table
-			return tcreate + (bcreate-1)*Math.abs(tcreate - tquery*bquery) + tquery*bquery;
+			double bquery = Math.ceil(avg_dtt * nAgg * Math.min(conn, groups.size()) * 1.0/conn); 	// number of queries per table
+			double tquery = avg_ntt * (ROW_TIME + COL_TIME * (avg_dtt + nAgg)); 		// time to create one temp table
+			double tcreate = nRows * (ROW_TIME + COL_TIME * (nDims + nAgg)) + WRITE_TIME * avg_ntt * 
+						(ROW_TIME + COL_TIME * (avg_dtt + nAgg)); 								// time to query a temp table
+			return tcreate + (bcreate - 1) * Math.abs(tcreate - tquery * bquery) + tquery * bquery;
 		} else {
 			// use maximum across batches and sum up
 			List<List<List<Integer>>> batches = createBatches(groups, conn);
@@ -224,7 +221,7 @@ public class Optimizer {
 				int d_tt_max = -1;
 				int n_tt_max = -1;
 				for (List<Integer> group : batch) {
-					int curr_d_tt_max = Collections.max(group);
+					int curr_d_tt_max = group.size();
 					if (d_tt_max < curr_d_tt_max) {
 						d_tt_max = curr_d_tt_max;
 					}
@@ -243,47 +240,42 @@ public class Optimizer {
 			//		   + time to query last set of tables
 			double estimate = n_tt.get(0) * (ROW_TIME + COL_TIME*(d_tt.get(0) + nAgg));	// max create time for first batch
 			for (int i = 1; i < batches.size()-1; i++) {
-				 double queryTime = d_tt.get(i-1) * nAgg * Math.min(conn, batches.get(i-1).size()); 
-				 double createTime = n_tt.get(i) * (ROW_TIME + COL_TIME*(d_tt.get(i) + nAgg));	
+				 double queryTime = n_tt.get(i-1) * (ROW_TIME + COL_TIME * d_tt.get(i-1)) 
+						 * d_tt.get(i-1) * nAgg * Math.min(conn, batches.get(i-1).size()); 
+				 double createTime = n_tt.get(i) * (ROW_TIME + COL_TIME * (d_tt.get(i) + nAgg));	
 				 estimate += Math.abs(queryTime - createTime);
 			}
-			estimate += d_tt.get(batches.size()-1) * nAgg * Math.min(conn, batches.get(batches.size()-1).size());
+			estimate += n_tt.get(batches.size()-1) * (ROW_TIME + COL_TIME * d_tt.get(batches.size()-1)) 
+					 * d_tt.get(batches.size()-1) * nAgg * Math.min(conn, batches.get(batches.size()-1).size()); 
 			return estimate;
 		}
 	}
 
+ 	/**
+ 	 * figure out what groups of queries to run together based on size of group bys
+ 	 * @param groups
+ 	 * @param conn
+ 	 * @return
+ 	 */
 	private List<List<List<Integer>>> createBatches(List<List<Integer>> groups,
 			int conn) {
 		if (groups.isEmpty()) {
 			return Lists.newArrayList();
 		}
-		// sort groups and then batch into groups of size conn
+		// batch into groups of size conn (assume that groups are sorted)
 		List<List<List<Integer>>> ret = Lists.newArrayList();
-		
-		// sort groups
-		List<Integer> newGroup = groups.get(0);
-		int newGroupSize = getProductOfList(newGroup);
-		for (int i = 0; i < groups.size(); i++) {
-			if (newGroupSize < getProductOfList(groups.get(i))) {
-				groups.add(i, newGroup);
-			}
-		}
 		
 		// make batches
 		List<List<Integer>> temp = null;
-		int j = 0;
 		for (int i = 0; i < groups.size(); i++) {
-			j = j % conn;
-			if (j == 0) {
+			if (i % conn == 0) {
 				temp = Lists.newArrayList();
 				temp.add(groups.get(i));
 				ret.add(temp);
 			} else {
 				temp.add(groups.get(i));
 			}
-			j++;
 		}
-		
 		return ret;
 	}
 	
@@ -295,6 +287,14 @@ public class Optimizer {
 		return ret;
 	}
 
+	private int getSumOfList(List<Integer> l) {
+		int ret = 0;
+		for (Integer i : l) {
+			ret += i;
+		}
+		return ret;
+	}
+	
 	private void combineAggregates(Collection<List<DifferenceQuery>> values,
 			int maxAggSize) {
 		for (List<DifferenceQuery> l : values) {

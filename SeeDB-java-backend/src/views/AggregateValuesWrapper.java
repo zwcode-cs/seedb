@@ -8,6 +8,9 @@ public class AggregateValuesWrapper {
 		public double count;
 		public double sum;
 		public double average;
+		public double countNormalized;
+		public double sumNormalized;
+		public double averageNormalized;
 		
 		public AggregateValues() {
 			
@@ -19,14 +22,14 @@ public class AggregateValuesWrapper {
 			this.average = average;
 		}
 		
-		public double getValue(AggregateFunctions func) {
+		public double getValue(AggregateFunctions func, boolean normalize) {
 			switch (func) {
 			case COUNT:
-				return count;
+				return !normalize ? count : countNormalized;
 			case SUM:
-				return sum;
+				return !normalize ? sum : sumNormalized;
 			case AVG:
-				return average;
+				return !normalize ? average : averageNormalized;
 			}
 			return -1;
 		}

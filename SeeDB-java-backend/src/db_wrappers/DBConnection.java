@@ -16,7 +16,7 @@ import settings.DBSettings;
  *
  */
 public class DBConnection {
-	public static String[] supportedDatabases = new String[] {"PostgreSQL"};
+	public static String[] supportedDatabases = new String[] {"PostgreSQL", "vertica"};
 	private Connection connection = null;
 	public String databaseType;
 	public String database;
@@ -40,7 +40,7 @@ public class DBConnection {
 			if (db.equalsIgnoreCase(databaseType)) return true;
 		}
 		return false;
-	}
+	} 
 	
 	/**
 	 * Connect to the the given database
@@ -57,8 +57,11 @@ public class DBConnection {
 		if (!isDBSupported(databaseType)) return false;
 		//find driver
 		try {
-		    Class.forName("org." + databaseType + ".Driver");
-		    System.out.println("DB driver found");
+			if (databaseType.equalsIgnoreCase("PostgreSQL")) {
+				Class.forName("org." + databaseType + ".Driver");
+			} else if (databaseType.equalsIgnoreCase("vertica")) {
+				Class.forName("com.vertica.jdbc.Driver");
+			}
 		} catch (ClassNotFoundException e) {
 			connection = null;
 		    System.out.println("DB driver not found");

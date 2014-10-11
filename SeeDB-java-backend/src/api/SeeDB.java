@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import common.Attribute;
 import common.DifferenceQuery;
 import common.ConnectionPool;
+import common.GraphingUtils;
 import common.InputQuery;
 import common.InputTablesMetadata;
 import common.QueryExecutor;
@@ -326,7 +327,7 @@ public class SeeDB {
 		Optimizer optimizer = new Optimizer(settings, logFile);
 		List<DifferenceQuery> optimizedQueries = 
 				optimizer.optimizeQueries(queries, queryMetadatas[0]);
-		System.out.println(optimizedQueries.size());
+		//System.out.println(optimizedQueries.size());
 		
 		List<View> views = null;
 		QueryExecutor qe = new QueryExecutor(pool, settings, logFile);
@@ -351,7 +352,8 @@ public class SeeDB {
            @Override
 			public int compare(View arg0, View arg1) {
 				if (arg0 instanceof AggregateView || arg0 instanceof AggregateGroupByView) {
-					return arg0.getUtility(settings.distanceMetric) - arg1.getUtility(settings.distanceMetric) >= 0 ? -1 : 1;
+					return arg0.getUtility(settings.distanceMetric, settings.normalizeDistributions) - 
+							arg1.getUtility(settings.distanceMetric, settings.normalizeDistributions) >= 0 ? -1 : 1;
 				} else {
 					return 1;
 				}
@@ -364,29 +366,18 @@ public class SeeDB {
 		 * dim_attr, measure_attr1, measure_attr2
 		 * val1, val2, val3
 		 */
-		for (View v : views) { // can select only the first k
-			AggregateGroupByView v_ = (AggregateGroupByView) v;
-			String viewFilePath = "/Users/manasi/Public/seedb_results/" + v_.getId() + ".txt";
-			File viewFile = new File(viewFilePath);
-			if (!viewFile.exists()) {
-				try {
-					viewFile.createNewFile();
-				} catch (IOException e) {
-					System.out.println("Couldn't create file: " + viewFile);
-					e.printStackTrace();
-				}
-			} 
-			String headerLine = v_.getGroupByAttributes() + ", query, full";
-			Utils.writeToFile(viewFile, headerLine);
-			for (String k : v_.getResult().keySet()) {
-				String toWrite = k + "," + v_.getResult().get(k).datasetValues[0].sum + "," + v_.getResult().get(k).datasetValues[1].sum;
-				Utils.writeToFile(viewFile, toWrite);
-			}
+		if (settings.makeGraphs) {
+			GraphingUtils.createFilesForGraphs(views);
 		}
 		return views;
 	}	
 
 	public void closeConnection() {
 		this.connection.close();
+	}
+
+	public void connectToDatabase(DBSettings dbSetting) {
+		this.connectToDatabase(dbSetting.database, dbSetting.databaseType, dbSetting.username, dbSetting.password);
+		
 	}
 }

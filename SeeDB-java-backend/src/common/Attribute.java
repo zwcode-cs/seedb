@@ -5,12 +5,18 @@ public class Attribute implements Comparable<Attribute>{
 	public static enum AttributeType {ORDINAL, CARDINAL, NUMERIC, GEOGRAPHIC, 
 		TIME_SERIES, NONE}; 			// not used right now
 	public AttributeType type;			// not used right now
-	public int numDistinctValues;		// not used right now
+	public int numDistinctValues;
 	
 	public Attribute(String name) {
 		this.name = name;
 		this.type = AttributeType.NONE;
 		this.numDistinctValues = 0;
+	}
+	
+	public Attribute(String name, int numDistinct) {
+		this.name = name;
+		this.type = AttributeType.NONE;
+		this.numDistinctValues = numDistinct;
 	}
 	
 	public static Attribute selectAllAttribute() {

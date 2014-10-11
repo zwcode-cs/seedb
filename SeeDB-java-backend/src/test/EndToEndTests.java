@@ -7,13 +7,17 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
+import main_memory_implementation.MainMemorySeeDB;
+
 import org.junit.Test;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import settings.DBSettings;
 import settings.ExperimentalSettings;
+import settings.ExperimentalSettings.Backend;
 import settings.ExperimentalSettings.ComparisonType;
 import settings.ExperimentalSettings.DifferenceOperators;
 import views.AggregateGroupByView;
@@ -32,7 +36,8 @@ import common.Utils;
 public class EndToEndTests {
 	// we work with a single dataset
 	private String table = "seedb_e2e_test";
-	private String query1 = "select * from " + table + " where dim1='def'";
+	private String query1 = "select * from " + table + " where dim1_3='def'";
+	private String s_1_query1 = "select * from s_1 where dim10_50='jm70ef'";
 	private HashMap<String, HashMap<String, AggregateValuesWrapper>> expectedResults;
 	private String viewOrder;
 	private String utilityOrder;
@@ -40,8 +45,8 @@ public class EndToEndTests {
 	// populate expected results
 	private void performSetup() {
 		expectedResults = Maps.newHashMap();
-		String key = "dim2__measure1";
-		HashMap value = Maps.newHashMap();
+		String key = "dim2_3__measure1";
+		HashMap<String, AggregateValuesWrapper> value = Maps.newHashMap();
 		AggregateValuesWrapper wrapper = new AggregateValuesWrapper();
 		String localKey = "abc";
 		wrapper.datasetValues[0] = wrapper.new AggregateValues(0, 0, 0);
@@ -59,7 +64,7 @@ public class EndToEndTests {
 		value.put(localKey, wrapper);
 		expectedResults.put(key, value);
 		
-		key = "dim3__measure2";
+		key = "dim3_4__measure2";
 		value = Maps.newHashMap();
 		wrapper = new AggregateValuesWrapper();
 		localKey = "abc";
@@ -85,7 +90,7 @@ public class EndToEndTests {
 		value.put(localKey, wrapper);
 		expectedResults.put(key, value);
 		
-		key = "dim2__measure4";
+		key = "dim2_3__measure4";
 		value = Maps.newHashMap();
 		wrapper = new AggregateValuesWrapper();
 		localKey = "abc";
@@ -104,7 +109,7 @@ public class EndToEndTests {
 		value.put(localKey, wrapper);
 		expectedResults.put(key, value);
 		
-		key = "dim4__measure3";
+		key = "dim4_4__measure3";
 		value = Maps.newHashMap();
 		wrapper = new AggregateValuesWrapper();
 		localKey = "pqr";
@@ -129,13 +134,17 @@ public class EndToEndTests {
 		expectedResults.put(key, value);
 	}
 	
-	//@Test
+	@Test
 	public void allTest() {
 		performSetup();
 		
 		// no optimization
 		noOptimization();
 		
+		// main memory imeplementation
+		mainMemoryTest();
+		
+		if (true) return;
 		// parallel query execution
 		noOptimizationParallel();
 		
@@ -146,13 +155,26 @@ public class EndToEndTests {
 		allSystemOptimizationsTempTablesParallel();
 	}
 	
-	@Test
+	//@Test
+	public void mainMemoryTest() {
+		ExperimentalSettings settings 			= new ExperimentalSettings();
+		settings.comparisonType 				= ComparisonType.ONE_DATASET_FULL;
+		settings.differenceOperators 			= Lists.newArrayList();
+		settings.differenceOperators.add(DifferenceOperators.AGGREGATE);
+		settings.backend = Backend.MAIN_MEMORY;
+		settings.normalizeDistributions = false;
+		runSeeDB("", settings, null);
+	}
+	
+	//@Test
 	public void createCharts() {
 		performSetup();
 		allSystemOptimizationsTempTablesParallel();
 	}
 	
+	//@Test
 	public void noOptimization() {
+		performSetup();
 		ExperimentalSettings settings 			= new ExperimentalSettings();
 		settings.comparisonType 				= ComparisonType.ONE_DATASET_FULL;
 		settings.differenceOperators 			= Lists.newArrayList();
@@ -161,7 +183,8 @@ public class EndToEndTests {
 		settings.useTempTables = false;
 		settings.useParallelExecution = false;
 		settings.mergeQueries = false;
-		runSeeDB(query1, settings);
+		settings.normalizeDistributions = false;
+		runSeeDB(query1, settings, DBSettings.getLocalDefault());
 	}
 	
 	private boolean checkCorrectness(List<View> result, String query) {
@@ -172,7 +195,7 @@ public class EndToEndTests {
 				if (expectedResults.containsKey(v_.getId())) {
 					HashMap<String, AggregateValuesWrapper> expected = expectedResults.get(v_.getId());
 					HashMap<String, AggregateValuesWrapper> actual = v_.getResult();
-					if (expected.size() != actual.size()) {
+					if (expected.keySet().size() != actual.keySet().size()) {
 						System.out.println("Sizes of dictionaries is different");
 						return false;
 					}
@@ -191,41 +214,53 @@ public class EndToEndTests {
 		return true;
 	}
 	
-	private void runSeeDB(String query, ExperimentalSettings settings) {
+	private void runSeeDB(String query, ExperimentalSettings settings, DBSettings s) {
 		long start 	= System.currentTimeMillis();
-		SeeDB seedb = new SeeDB();
-		try {
-			seedb.initialize(query, null, settings);
-			List<View> result = seedb.computeDifference();
-			Utils.printList(result);
-			assertTrue(checkCorrectness(result, query));
-			List<String> tmp1 = Lists.newArrayList();
-			List<String> tmp2 = Lists.newArrayList();
-			for (View v : result) {
-				AggregateGroupByView v_ = (AggregateGroupByView) v;
-				tmp1.add(v_.getId());
-				tmp2.add("" + v_.getUtility(settings.distanceMetric));
+		
+		List<View> result = null;
+		if (settings.backend != Backend.MAIN_MEMORY) {
+			try {
+				SeeDB seedb = new SeeDB();
+				seedb.connectToDatabase(s.database, s.databaseType, s.username, s.password);
+				seedb.initialize(query, null, settings);
+				result = seedb.computeDifference();
+			} catch (Exception e) {
+				e.printStackTrace();
+				return;
+			} finally {
+				File f = null;
+				if (settings.logFile != null) {
+					f = new File(settings.logFile);
+				}
+				Utils.writeToFile(f, "Total time: " + (System.currentTimeMillis() - start));
 			}
-			String localViewOrder =  Joiner.on(";").join(tmp1);
-			String localUtilityOrder = Joiner.on(";").join(tmp2);
-			if (this.viewOrder == null || this.viewOrder.isEmpty()) {
-				// populate
-				this.viewOrder = localViewOrder;
-				this.utilityOrder = localUtilityOrder;
-			} else {
-				// check
-				assertTrue(this.viewOrder.equals(localViewOrder) || this.utilityOrder.equals(localUtilityOrder));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return;
-		} finally {
-			File f = null;
-			if (settings.logFile != null) {
-				f = new File(settings.logFile);
-			}
-			Utils.writeToFile(f, "Total time: " + (System.currentTimeMillis() - start));
+		} else {
+			MainMemorySeeDB seedb = new MainMemorySeeDB();
+			String filename = "/Users/manasi/Documents/workspace/seedb/SeeDB-java-backend/src/test/test.txt";
+			int q_idx = 0;
+			String q_value = "def";
+			result = seedb.processFile(filename, q_idx, q_value, settings);
 		}
+		
+		assertTrue(checkCorrectness(result, query));
+		List<String> tmp1 = Lists.newArrayList();
+		List<String> tmp2 = Lists.newArrayList();
+		for (View v : result) {
+			AggregateGroupByView v_ = (AggregateGroupByView) v;
+			tmp1.add(v_.getId());
+			tmp2.add("" + v_.getUtility(settings.distanceMetric, settings.normalizeDistributions));
+		}
+		String localViewOrder =  Joiner.on(";").join(tmp1);
+		String localUtilityOrder = Joiner.on(";").join(tmp2);
+		if (this.viewOrder == null || this.viewOrder.isEmpty()) {
+			// populate
+			this.viewOrder = localViewOrder;
+			this.utilityOrder = localUtilityOrder;
+		} else {
+			// check
+			assertTrue(this.viewOrder.equals(localViewOrder) || this.utilityOrder.equals(localUtilityOrder));
+		}
+		
 	}
 
 	public void noOptimizationParallel() {
@@ -235,7 +270,9 @@ public class EndToEndTests {
 		settings.differenceOperators.add(DifferenceOperators.AGGREGATE);
 		settings.noAggregateQueryOptimization 	= true;
 		settings.useParallelExecution 			= true;
-		runSeeDB(query1, settings);
+		settings.useTempTables 					= false;
+		System.out.println("using postgres");
+		runSeeDB(s_1_query1, settings, DBSettings.getPostgresDefault());
 	}
 	
 	public void allSystemOptimizationsParallel() {
@@ -252,7 +289,7 @@ public class EndToEndTests {
 		settings.useParallelExecution 			= true;
 		settings.useTempTables 					= false;
 		settings.maxGroupBySize 				= 3;
-		runSeeDB(query1, settings);
+		runSeeDB(s_1_query1, settings, DBSettings.getPostgresDefault());
 	}
 	
 	public void allSystemOptimizationsTempTablesParallel() {
@@ -263,12 +300,14 @@ public class EndToEndTests {
 		settings.noAggregateQueryOptimization 	= false;
 		settings.optimizeAll 					= true;
 		settings.combineMultipleAggregates 		= true;
-		settings.maxAggSize 					= 3;
+		settings.maxAggSize 					= 5;
 		settings.useBinPacking 					= false;
 		settings.useHeuristic 					= false;
 		settings.useParallelExecution 			= true;
 		settings.useTempTables 					= true;
 		settings.maxGroupBySize 				= 3;
-		runSeeDB(query1, settings);
+		//settings.useHeuristic					= true;
+		settings.maxDBConnections				= 4;
+		runSeeDB(s_1_query1, settings, DBSettings.getVerticaDefault());
 	}
 }

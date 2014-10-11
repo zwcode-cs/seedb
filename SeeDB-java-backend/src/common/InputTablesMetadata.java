@@ -64,12 +64,31 @@ public class InputTablesMetadata {
 			try {
 				while (rs.next()) {
 					String attribute = rs.getString("COLUMN_NAME");
+					String[] splitParts = attribute.split("_");
 					if (attribute.startsWith("measure"))
 					{
-						this.measureAttributes.add(new Attribute(attribute));
+						if (splitParts.length > 1) {
+							try {
+								this.measureAttributes.add(new Attribute(attribute, Integer.parseInt(splitParts[1])));
+							} catch (NumberFormatException e) {
+								this.measureAttributes.add(new Attribute(attribute));
+							}
+						}
+						else {
+							this.measureAttributes.add(new Attribute(attribute));
+						}
 					}
 					else if (attribute.startsWith("dim")) {
-						this.dimensionAttributes.add(new Attribute(attribute));
+						if (splitParts.length > 1) {
+							try {
+								this.dimensionAttributes.add(new Attribute(attribute, Integer.parseInt(splitParts[1])));
+							} catch (NumberFormatException e) {
+								this.dimensionAttributes.add(new Attribute(attribute));
+							}
+						}
+						else {
+							this.dimensionAttributes.add(new Attribute(attribute));
+						}
 					}
 				}
 			} catch (SQLException e) {

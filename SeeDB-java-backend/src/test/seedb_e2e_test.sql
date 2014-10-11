@@ -1,8 +1,8 @@
 CREATE TABLE seedb_e2e_test (
-	dim1 VARCHAR(40),
-	dim2 VARCHAR(40),
-	dim3 VARCHAR(40),
-	dim4 VARCHAR(40),
+	dim1_3 VARCHAR(40),
+	dim2_3 VARCHAR(40),
+	dim3_4 VARCHAR(40),
+	dim4_4 VARCHAR(40),
 	measure1 INTEGER,
 	measure2 INTEGER,
 	measure3 INTEGER,

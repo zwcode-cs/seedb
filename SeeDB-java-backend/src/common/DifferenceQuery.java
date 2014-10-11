@@ -38,6 +38,11 @@ public class DifferenceQuery implements Comparable<DifferenceQuery>{
 	 */
 	public DifferenceQuery() {
 		incrementSeqNum();
+		selectAttributes = Lists.newArrayList();
+		aggregateAttributes = Lists.newArrayList();
+		groupByAttributes = Lists.newArrayList();
+		derivedFrom = Lists.newArrayList();
+		aggregateFunctions = Lists.newArrayList();
 	}
 	
 	/**
@@ -46,14 +51,10 @@ public class DifferenceQuery implements Comparable<DifferenceQuery>{
 	 * @param inputQueries
 	 */
 	public DifferenceQuery(ExperimentalSettings.DifferenceOperators op, InputQuery[] inputQueries) {
+		this();
 		this.seqNum = seqNumCounter++;
 		this.op = op;
 		this.inputQueries = inputQueries;
-		selectAttributes = Lists.newArrayList();
-		aggregateAttributes = Lists.newArrayList();
-		groupByAttributes = Lists.newArrayList();
-		derivedFrom = Lists.newArrayList();
-		aggregateFunctions = Lists.newArrayList();
 	}
 	
 	private synchronized void incrementSeqNum() {

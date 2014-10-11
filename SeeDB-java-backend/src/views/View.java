@@ -12,5 +12,7 @@ public interface View {
 	
 	public DifferenceOperators getOperator();
 	public double getUtility(DistanceMetric distanceMetric);
+	public double getUtility(DistanceMetric distanceMetric,
+			boolean normalizeDistributions);
 
 }

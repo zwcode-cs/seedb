@@ -27,7 +27,11 @@ public class ConnectionPool {
 		for (int i = 0; i < nDBConnections; i++) {
 			Connection connection = null;
 			try {
-			    Class.forName("org." + dbType + ".Driver");
+				if (dbType.equalsIgnoreCase("PostgreSQL")) {
+					Class.forName("org." + dbType + ".Driver");
+				} else if (dbType.equalsIgnoreCase("vertica")) {
+					Class.forName("com.vertica.jdbc.Driver");
+				}
 			} catch (ClassNotFoundException e) {
 				connection = null;
 			    System.out.println("DB driver not found");
@@ -41,7 +45,9 @@ public class ConnectionPool {
 						"jdbc:" + dbType + "://" + dbAddress, dbUser,
 						dbPassword);
 				Statement stmt = connection.createStatement();
-				stmt.execute("set work_mem=" + 1000000 + ";");
+				if (dbType.equalsIgnoreCase("PostgreSQL")) {
+					stmt.execute("set work_mem=" + 1000000 + ";");
+				}
 			} catch (SQLException e) {
 				connection = null;
 				System.out.println("DB connection failed.");

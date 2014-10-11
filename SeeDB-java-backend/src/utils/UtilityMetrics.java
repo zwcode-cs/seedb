@@ -16,22 +16,23 @@ public class UtilityMetrics {
 	 * @param distributionForDataset
 	 * @return
 	 */
-	public static double EarthMoverDistance(HashMap<String, AggregateValuesWrapper> dist, AggregateFunctions func) {
+	public static double EarthMoverDistance(HashMap<String, AggregateValuesWrapper> dist, AggregateFunctions func, boolean normalize) {
 		if (dist.isEmpty()) {
 			return DISTRIBUTION_EMPTY;
 		}
 		
 		double utility = 0;
 		for (String key : dist.keySet()) {
-			utility += Math.abs(dist.get(key).datasetValues[0].getValue(func) - dist.get(key).datasetValues[1].getValue(func));
+			utility += Math.abs(dist.get(key).datasetValues[0].getValue(func, normalize) - 
+					dist.get(key).datasetValues[1].getValue(func, normalize));
 		}
 
 		utility /= 2;
 		return utility;
 	}
 	
-	public static double EarthMoverDistance(HashMap<String, AggregateValuesWrapper> dist) {
-		return EarthMoverDistance(dist, AggregateFunctions.SUM);
+	public static double EarthMoverDistance(HashMap<String, AggregateValuesWrapper> dist, boolean normalize) {
+		return EarthMoverDistance(dist, AggregateFunctions.SUM, normalize);
 	}
 	
 	
@@ -41,23 +42,23 @@ public class UtilityMetrics {
 	 * @param distributionForDataset
 	 * @return
 	 */
-	public static double EuclideanDistance(HashMap<String, AggregateValuesWrapper> dist, AggregateFunctions func) {
+	public static double EuclideanDistance(HashMap<String, AggregateValuesWrapper> dist, AggregateFunctions func, boolean normalize) {
 		if (dist.isEmpty()) {
 			return DISTRIBUTION_EMPTY;
 		}
 		
 		double utility = 0;
 		for (String key : dist.keySet()) {
-			utility += Math.pow(dist.get(key).datasetValues[0].getValue(func) - 
-									dist.get(key).datasetValues[1].getValue(func), 
+			utility += Math.pow(dist.get(key).datasetValues[0].getValue(func, normalize) - 
+									dist.get(key).datasetValues[1].getValue(func, normalize), 
 								2);
 		}
 		utility = Math.sqrt(utility);
 		return utility;
 	}
 	
-	public static double EuclideanDistance(HashMap<String, AggregateValuesWrapper> dist) {
-		return EuclideanDistance(dist, AggregateFunctions.SUM);
+	public static double EuclideanDistance(HashMap<String, AggregateValuesWrapper> dist, boolean normalize) {
+		return EuclideanDistance(dist, AggregateFunctions.SUM, normalize);
 	}
 	
 	/**
@@ -66,7 +67,7 @@ public class UtilityMetrics {
 	 * @param distributionForDataset
 	 * @return
 	 */
-	public static double CosineDistance(HashMap<String, AggregateValuesWrapper> dist, AggregateFunctions func) {
+	public static double CosineDistance(HashMap<String, AggregateValuesWrapper> dist, AggregateFunctions func, boolean normalize) {
 		if (dist.isEmpty()) {
 			return DISTRIBUTION_EMPTY;
 		}
@@ -77,16 +78,17 @@ public class UtilityMetrics {
 		double datasetInDenominator = 0;
 		
 		for (String key : dist.keySet()) {
-			numerator += Math.abs(dist.get(key).datasetValues[0].getValue(func) * dist.get(key).datasetValues[1].getValue(func));
-			queryInDenominator += Math.pow(dist.get(key).datasetValues[0].getValue(func), 2);
-			datasetInDenominator += Math.pow(dist.get(key).datasetValues[1].getValue(func), 2);
+			numerator += Math.abs(dist.get(key).datasetValues[0].getValue(func, normalize) * 
+					dist.get(key).datasetValues[1].getValue(func, normalize));
+			queryInDenominator += Math.pow(dist.get(key).datasetValues[0].getValue(func, normalize), 2);
+			datasetInDenominator += Math.pow(dist.get(key).datasetValues[1].getValue(func, normalize), 2);
 		}
 		utility = numerator/(queryInDenominator * datasetInDenominator);
 		return utility;
 	}
 	
-	public static double CosineDistance(HashMap<String, AggregateValuesWrapper> dist) {
-		return CosineDistance(dist, AggregateFunctions.SUM);
+	public static double CosineDistance(HashMap<String, AggregateValuesWrapper> dist, boolean normalize) {
+		return CosineDistance(dist, AggregateFunctions.SUM, normalize);
 	}
 	
 	/**
@@ -95,21 +97,21 @@ public class UtilityMetrics {
 	 * @param distributionForDataset
 	 * @return
 	 */
-	public static double FidelityDistance(HashMap<String, AggregateValuesWrapper> dist, AggregateFunctions func) {
+	public static double FidelityDistance(HashMap<String, AggregateValuesWrapper> dist, AggregateFunctions func, boolean normalize) {
 		if (dist.isEmpty()) {
 			return DISTRIBUTION_EMPTY;
 		}
 		double utility = 0;
 		
 		for (String key : dist.keySet()) {
-			utility += Math.pow(dist.get(key).datasetValues[0].getValue(func) * dist.get(key).datasetValues[1].getValue(func), 1/2);
+			utility += Math.pow(dist.get(key).datasetValues[0].getValue(func, normalize) * dist.get(key).datasetValues[1].getValue(func, normalize), 1/2);
 		}
 		utility = -1 * Math.log(Math.sqrt(utility));
 		return utility;
 	}
 	
-	public static double FidelityDistance(HashMap<String, AggregateValuesWrapper> dist) {
-		return FidelityDistance(dist, AggregateFunctions.SUM);
+	public static double FidelityDistance(HashMap<String, AggregateValuesWrapper> dist, boolean normalize) {
+		return FidelityDistance(dist, AggregateFunctions.SUM, normalize);
 	}
 	
 	/**
@@ -118,7 +120,7 @@ public class UtilityMetrics {
 	 * @param distributionForDataset
 	 * @return
 	 */
-	public static double ChiSquaredDistance(HashMap<String, AggregateValuesWrapper> dist, AggregateFunctions func) {
+	public static double ChiSquaredDistance(HashMap<String, AggregateValuesWrapper> dist, AggregateFunctions func, boolean normalize) {
 		if (dist.isEmpty()) {
 			return DISTRIBUTION_EMPTY;
 		}
@@ -127,15 +129,15 @@ public class UtilityMetrics {
 		double numerator = 0;
 		
 		for (String key : dist.keySet()) {
-			numerator = Math.pow(dist.get(key).datasetValues[0].getValue(func) - dist.get(key).datasetValues[1].getValue(func), 2);
-			denominator = Math.abs(dist.get(key).datasetValues[1].getValue(func));
+			numerator = Math.pow(dist.get(key).datasetValues[0].getValue(func, normalize) - dist.get(key).datasetValues[1].getValue(func, normalize), 2);
+			denominator = Math.abs(dist.get(key).datasetValues[1].getValue(func, normalize));
 			utility += numerator/denominator;
 		}
 		return utility;
 	}
 	
-	public static double ChiSquaredDistance(HashMap<String, AggregateValuesWrapper> dist) {
-		return ChiSquaredDistance(dist, AggregateFunctions.SUM);
+	public static double ChiSquaredDistance(HashMap<String, AggregateValuesWrapper> dist, boolean normalize) {
+		return ChiSquaredDistance(dist, AggregateFunctions.SUM, normalize);
 	}
 	
 	/**
@@ -144,20 +146,20 @@ public class UtilityMetrics {
 	 * @param distributionForDataset
 	 * @return
 	 */
-	public static double EntropyDistance(HashMap<String, AggregateValuesWrapper> dist, AggregateFunctions func) {
+	public static double EntropyDistance(HashMap<String, AggregateValuesWrapper> dist, AggregateFunctions func, boolean normalize) {
 		if (dist.isEmpty()) {
 			return DISTRIBUTION_EMPTY;
 		}
 		double utility = 0;
 		for (String key : dist.keySet()) {
-			utility += Math.log(Math.abs(dist.get(key).datasetValues[0].getValue(func)
-					- dist.get(key).datasetValues[1].getValue(func)))
-					* dist.get(key).datasetValues[0].getValue(func);
+			utility += Math.log(Math.abs(dist.get(key).datasetValues[0].getValue(func, normalize)
+					- dist.get(key).datasetValues[1].getValue(func, normalize)))
+					* dist.get(key).datasetValues[0].getValue(func, normalize);
 		}
 		return utility;
 	}
 	
-	public static double EntropyDistance(HashMap<String, AggregateValuesWrapper> dist) {
-		return EntropyDistance(dist, AggregateFunctions.SUM);
+	public static double EntropyDistance(HashMap<String, AggregateValuesWrapper> dist, boolean normalize) {
+		return EntropyDistance(dist, AggregateFunctions.SUM, normalize);
 	}
 }

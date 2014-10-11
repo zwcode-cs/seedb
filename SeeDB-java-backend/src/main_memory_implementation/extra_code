@@ -1,0 +1,129 @@
+	public List<View> processFile2(String filename, int q_idx, String q_value, final ExperimentalSettings settings) {
+		Map<Integer, String> dim_idx = Maps.newHashMap(); // map from index to name of dimension column
+		Map<Integer, String> measure_idx = Maps.newHashMap(); // map from index to name of measure column
+		Map<String, View> views = Maps.newHashMap(); // map from view id to view
+		
+		BufferedReader br;
+		int line_ctr = 0;
+		String specialKey = "";
+		File logFile = null;
+		try {
+			
+			br = new BufferedReader(new FileReader(filename));
+			String line;
+			boolean first = true;
+			while ((line = br.readLine()) != null) {
+			    if (settings.num_rows > 0 && line_ctr > settings.num_rows) {
+			    	break;
+			    }
+				line_ctr++;
+			   
+			   List<String> dims = Lists.newArrayList();
+			   List<String> measures = Lists.newArrayList();
+			   if (first) {
+				   // read in schema
+				   String parts[] = line.split(",");
+				   for (int i = 0 ; i < parts.length; i++) {
+					   if (i == q_idx) {
+						   continue;
+					   }
+					   String part = parts[i].trim();
+					   if (part.startsWith("dim")) {
+						   dims.add(part);
+						   dim_idx.put(i, part);
+					   } else if (part.startsWith("measure")) {
+						   measures.add(part);
+						   measure_idx.put(i, part);
+					   }
+				   }
+				   
+				   // create the views
+				   for (String dim : dims) {
+					   for (String measure : measures) {
+						   DifferenceQuery dq = new DifferenceQuery();
+						   dq.groupByAttributes.add(new Attribute(dim));
+						   dq.aggregateAttributes.add(new Attribute(measure));
+						   views.put(dim + "__" + measure, new AggregateGroupByView(dq));
+					   }
+				   }
+				   first = false;
+				   Random r = new Random(System.currentTimeMillis());
+				   int rn = Math.abs(r.nextInt());
+				   System.out.println(rn + "," + views.keySet().size());
+				   specialKey = (String) views.keySet().toArray()[rn % views.keySet().size()];
+				   logFile = new File("/Users/manasi/Public/distribution2_" + specialKey + ".txt");
+					if (!logFile.exists()) {
+						logFile.createNewFile();
+					}
+					
+				   System.out.println(specialKey);
+				   continue;
+			   }
+			   
+			   if (settings.mainMemoryRandomSample && Math.random() > settings.mainMemorySampleFraction) {
+			    	continue;
+			   }
+			   // read each line and populate views
+			   String parts[] = line.split(",");
+			   for (int i = 0; i < parts.length; i++) {
+				   parts[i] = parts[i].trim();
+			   }
+			   for (Integer ld : dim_idx.keySet()) {
+				   for (Integer lm : measure_idx.keySet()) {
+					   String key = dim_idx.get(ld) + "__" + measure_idx.get(lm);
+					   
+					   if (!views.containsKey(key)) {
+						   System.out.println("Something weird: all views should be precomputed");
+						   return null;
+					   }
+					   AggregateGroupByView view = (AggregateGroupByView) views.get(key);
+					   if (parts[q_idx].equalsIgnoreCase(q_value)) { // check if the row satisfies the query
+						   view.addAggregateValue(parts[ld], AggregateFunctions.COUNT, 1.0, 1);
+						   view.addAggregateValue(parts[ld], AggregateFunctions.SUM, new Double(Double.parseDouble(parts[lm].trim())), 1);
+					   } 
+					   view.addAggregateValue(parts[ld], AggregateFunctions.COUNT, 1.0, 2);
+					   view.addAggregateValue(parts[ld], AggregateFunctions.SUM, new Double(Double.parseDouble(parts[lm].trim())), 2); 
+					   
+					   /*
+					   if (key.equalsIgnoreCase(specialKey)) {
+						   Utils.writeToFile(logFile, line_ctr + "," + view.getUtility(settings.distanceMetric, true));
+					   }
+					   */
+				   }
+			   }
+			}
+			br.close();
+			
+			// process and sort the views
+			List<View> result_views = Lists.newArrayList();
+			for (String key : views.keySet()) {
+				if (key.equalsIgnoreCase(specialKey)) {
+					   Utils.writeToFile(logFile, settings.mainMemorySampleFraction + "," + views.get(key).getUtility(settings.distanceMetric, true));
+				  }
+				result_views.add(views.get(key));
+			}
+			
+			Collections.sort(result_views, new Comparator<View>() {
+		           @Override
+					public int compare(View arg0, View arg1) {
+						if (arg0 instanceof AggregateView || arg0 instanceof AggregateGroupByView) {
+							return arg0.getUtility(settings.distanceMetric, settings.normalizeDistributions) - arg1.getUtility(settings.distanceMetric, settings.normalizeDistributions) >= 0 ? -1 : 1;
+						} else {
+							return 1;
+						}
+					}
+				});
+			
+			if (settings.makeGraphs) {
+				GraphingUtils.createFilesForGraphs(result_views);
+			}
+			
+			return result_views;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}	
+	}
+	
+	

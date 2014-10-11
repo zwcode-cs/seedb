@@ -34,6 +34,11 @@ public class QueryExecutor {
 	private List<Thread> threads = Lists.newArrayList();				// keep track of threads spawned by executor
 	private int nqueries = 0;											// tracking info
 	private File logFile;												// file to log to
+	private long tempTableCreationTime = 0;								// time to create temp table
+	private long dbmsComparisonViewExecutionTime = 0;					// DBMS comparison view execution
+	private long dbmsTargetViewExecutionTime = 0;						// DBMS target view execution
+	private long clientComparisonViewExecutionTime = 0;					// Client comparison view execution
+	private long clientTargetViewExecutionTime = 0;						// Client target view execution
 	
 	/**
 	 * constructor
@@ -103,6 +108,11 @@ public class QueryExecutor {
 		}
 		
 		// log
+		Utils.writeToFile(logFile, "TempTableCreation: " + (tempTableCreationTime/nqueries));
+		Utils.writeToFile(logFile, "DBMSTargetViewExecutionTime: " + (dbmsTargetViewExecutionTime/nqueries));
+		Utils.writeToFile(logFile, "DBMSComparisonViewExecutionTime: " + (dbmsComparisonViewExecutionTime/nqueries));
+		Utils.writeToFile(logFile, "ClientTargetViewExecutionTime: " + (clientTargetViewExecutionTime/nqueries));
+		Utils.writeToFile(logFile, "ClientComparisonViewExecutionTime: " + (clientComparisonViewExecutionTime/nqueries));
 		Utils.writeToFile(logFile, "Executor: " + (System.currentTimeMillis() - start));
 		Utils.writeToFile(logFile, "nQueries: " + nqueries);
 		return views;
@@ -179,9 +189,9 @@ public class QueryExecutor {
 			// execute query that puts results in temp table
 			List<String> optSQLQuery = optQuery.getSQLQuery(true);
 			long start = System.currentTimeMillis();
-			System.out.println(optSQLQuery.get(0));
+			//System.out.println(optSQLQuery.get(0));
 			connection.executeQueryWithoutResult(optSQLQuery.get(0));
-			Utils.writeToFile(logFile, "DBMS execution put into temp tables: " + (System.currentTimeMillis() - start));
+			tempTableCreationTime += System.currentTimeMillis() - start;
 			
 			// process the data from the temp table
 			List<String> queries = optQuery.getSQLForParentQueries(true);
@@ -208,8 +218,11 @@ public class QueryExecutor {
 		ResultSetMetaData rsmd = null;
 		long start = System.currentTimeMillis();
 		rs = con.executeQuery(query);
-		Utils.writeToFile(logFile, "DBMS execution " + (group < 2 ? "target view" : "comparison view") + ":" + 
-				(System.currentTimeMillis() - start));
+		if (group < 2) {
+			dbmsTargetViewExecutionTime += System.currentTimeMillis() - start;	
+		} else {
+			dbmsComparisonViewExecutionTime += System.currentTimeMillis() - start;	
+		}
 		
 		// get metadata for query results
 		start = System.currentTimeMillis();
@@ -226,7 +239,7 @@ public class QueryExecutor {
 		// get actual query results
 		while (rs.next()) {
 			for (int i = 1; i < columnCount + 1; i++ ) {
-				String columnName = columnNames.get(i-1);
+				String columnName = columnNames.get(i-1).toLowerCase();
 				if (columnName.endsWith("count") || columnName.endsWith("sum")) {
 					row.put(columnName, rs.getDouble(i));
 				} else {
@@ -257,10 +270,10 @@ public class QueryExecutor {
 					attr = attr.toLowerCase();
 					AggregateFunctions func = attr.endsWith("count") ? AggregateFunctions.COUNT : AggregateFunctions.SUM;
 					if (group == -1) {
-						if ((Integer) row.get("seedb_group_1") == 1) {
+						if (row.get("seedb_group_1").equals(1) || row.get("seedb_group_1").equals(new Long(1))) {
 							view.addAggregateValue(groupBy, func, row.get(attr), 1);	
 						}
-						if ((Integer) row.get("seedb_group_2") == 1) {
+						if (row.get("seedb_group_2").equals(1) || row.get("seedb_group_2").equals(new Long(1))) {
 							view.addAggregateValue(groupBy, func, row.get(attr), 2);	
 						}
 					}
@@ -270,8 +283,12 @@ public class QueryExecutor {
 				}
 			}
 		}
-		Utils.writeToFile(logFile, "Client-side processing " + (group < 2 ? "target view" : "comparison view") + ":" + (System.currentTimeMillis() - start));
-	}	
+		if (group < 2) {
+			clientTargetViewExecutionTime += System.currentTimeMillis() - start;
+		} else {
+			clientComparisonViewExecutionTime += System.currentTimeMillis() - start;
+		}
+	}
 	
 	// class to execute queries on parallel threads
 	private class ExecuteParallelQuery implements Runnable {
@@ -338,8 +355,8 @@ public class QueryExecutor {
 			DBConnection con = new DBConnection(c);
 			long start = System.currentTimeMillis();
 			con.executeQueryWithoutResult(optSQLQuery.get(0));
-			System.out.println(optSQLQuery.get(0));
-			Utils.writeToFile(logFile, "DBMS execution put into temp tables: " + (System.currentTimeMillis() - start));
+			//System.out.println(optSQLQuery.get(0));
+			tempTableCreationTime += System.currentTimeMillis() - start;
 			
 			// process the data from the temp table
 			List<String> queries = optQuery.getSQLForParentQueries(true);

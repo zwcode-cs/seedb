@@ -62,4 +62,9 @@ public class CardinalityView extends AggregateView {
 	public double getUtility(DistanceMetric distanceMetric) {
 		return 0;
 	}
+	
+	@Override
+	public double getUtility(DistanceMetric distanceMetric, boolean normalizeDistributions) {
+		return 0;
+	}
 }
