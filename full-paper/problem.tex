@@ -16,7 +16,13 @@ that generate a two-column result via a single-attribute grouping and
 aggregation (e.g. Table~\ref{tab:staplerX}). However, \SeeDB\ techniques can
 directly be used to recommend visualizations for
 multiple column views ($> 2$ columns) that are generated via multi-attribute
-grouping and aggregation.
+grouping and aggregation. For this work, we classify attributes of a table into
+two types, {\it dimension attributes} and {\it measure attributes}. Dimension
+attributes are attributes that are nominal, ordinal or numeric but with a small
+number of distinct values. These are the attributes along which we can perform a
+group-by. Measure attributes on the other hand are numeric attributes will a
+large number of distinct values. We consider views where the groups are
+aggregated with respect to these attributes.
 
 
 
@@ -26,23 +32,12 @@ grouping and aggregation.
 %For instance, if we have average profits per day, we can bin the days into
 %months, into weeks, or into years.
 
-We consider a database $D$ with a snowflake schema,
+Consider a database $D$ with a snowflake schema,
 with dimension attributes $A$, measure attributes $M$, and potential
 aggregate functions $F$ over the measure attributes.
 We limit the class of queries $Q$ posed over $D$ to be
 those that select one or more rows from the fact table, and denote the results
 as $D_Q$. 
-%select a horizontal fragment of the fact table:
-%this selection can be done using selection predicates on the fact
-%table, or on dimension tables via key-foreign-key joins.
-%Overall, this class of queries allows the analyst to express their interest
-%in examining facts (i.e., a slice of the dataset)
-%that satisfy specific conditions.
-%We denote the result of $Q(D)$ as $D_Q$.
-
-\mpv{Define measure and dimension attributes?} \\
-
-
 Given such a query $Q$, \SeeDB\ considers all views $V_i$ that perform a
 single-attribute group-by and aggregation on $D_Q$. We represent $V_i$ as a
 triple $(a, m, f)$, where $m \in M, a \in A, f \in F$, i.e., the view
@@ -99,7 +94,6 @@ to compute utility, These include:
   \item {\bf Jenson-Shannon Distance}~\cite{wikipedia-JS,entropy-vis}: Based on
   the K-L divergence, this distance measures the similarity between two probability distributions.
 \squishend
-\mpv{Define the various distance metrics?}
 
 Finally, we note that while other definitions of the comparison views and
 utility metrics are possible, for our initial exploration into 

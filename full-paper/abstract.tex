@@ -1,13 +1,27 @@
 %!TEX root=document.tex
 
 
-Data analysts operating on large volumes of data 
-often rely on visualizations to interpret the results of queries. 
-However, finding the right visualization for a query is 
-a laborious and time-consuming task. 
-We propose \SeeDB, a system that partially automates 
-this task: 
-given a query, \SeeDB\ explores the space of all possible visualizations,
-and automatically identifies and recommends to the analyst those visualizations
-it finds to be most ``interesting'' or ``useful''.
-\agp{Say something about speedup of optimizations, and also about utility}
+Data analysts operating on large volumes of data often rely on visualizations to
+interpret the results of queries.
+However, finding the right visualization for a query is a laborious and
+time-consuming task.
+We propose \SeeDB, a system to partially automate this task:
+given a query, \SeeDB\ intelligently explores the space of all possible
+visualizations, evaluates promising visualizations, and automatically identifies
+and recommends to the analyst the most ``interesting'' or ``useful''
+visualizations. 
+In this paper, we present multiple implementations of \SeeDB,
+both on top of existing database systems and as a stand alone in-memory
+solution. 
+For each implementation, we develop and evaluate a suite of
+optimizations that leverage the underlying system implementations. 
+Our
+experiments  on a range of real world and synthetic datasets demonstrate that
+our optimizations speed up processing by upto XXX\% and do not sacrificing
+accuracy in case of heuristics. 
+Our end-to-end experiments also demonstrate that
+that \SeeDB\ can be used to find interesting visualizations in interactive
+times. 
+Finally, we present the results of a user study that evaluates our method
+for interesting visualizations, the relative quality of different distance
+metrics and the \SeeDB\ system.

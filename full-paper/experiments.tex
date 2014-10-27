@@ -2,10 +2,13 @@
 
 \section{Experimental Evaluation}
 
-We evaluated the performance of \SeeDB\ on a variety of datasets with different
-sizes and number of attributes. We now discuss in detail the effect of
-each of our optimization strategies and develop an analytical model that lets us
-pick the optimial settings of \SeeDB\ parameters.
+We evaluated the performance of \SeeDB\ on a variety of real and synthetic
+datasets as shown below. 
+In particular, we evaluated the performance of our
+DBMS-backed execution engine as well as our in-memory execution engine, and the
+respective optimizations. 
+For the DBMS-backed engine, we also built an analytical model to help pick
+parameters for \SeeDB.
 
 \subsection{Experimental Setup}
 
@@ -46,12 +49,14 @@ We ran experiments using Postgres as the backend database for \SeeDB\ and a sing
 machine with 32 Intel Xeon E7 processors with hyperthreading enabled and 256 GB
 RAM.
 
-\subsection{Effect of Optimizations}
-\label{sec:experiments}
+\subsection{DBMS-backed Execution Engine}
+
 We now present experimental characterization of the optimization
-strategies described in \ref{subsec:seedb_backend}. Our goal is to understand
-the effect of each strategy on \SeeDB\ performance in order to build an
-analytical model and predict the optimal set of parameters for \SeeDB.
+strategies described for the DBMS-backed execution engine (
+\ref{subsec:seedb_backend}).
+Our goal is to understand the effect of each strategy on \SeeDB\ performance. We
+also build an analytical model and predict the optimal set of
+parameters for \SeeDB.
 
 \subsubsection{Basic Framework}
 We first examined the baseline performance of \SeeDB\ without any optimizations.
@@ -73,7 +78,7 @@ execution takes 700s, a latency that is unacceptable for interactive queries.
       \label{fig:baseline_performance}
 \end{figure}
 
-\subsection{Combine target and comparison view query}
+\subsubsection{Combine target and comparison view query}
 Next, we study the effect of combining target and comparison view queries as
 described in Section \ref{subsec:target_comparison_view}. The goal of this
 optimization is to execute both queries in a single scan of the table.
@@ -136,7 +141,6 @@ We will take these two opposing forces into account when we develop an
 analytical model for \SeeDB\ execution time in Section \ref{sec:model}.
 
 \begin{figure}[h]
-
   \centering 
     \includegraphics[width=6cm]{Images/parallelism.pdf}
       \caption{Effect of Parallelism on Per View Execution Time} 
@@ -146,8 +150,6 @@ analytical model for \SeeDB\ execution time in Section \ref{sec:model}.
 
 
 \begin{figure}[h]
-
-
   \centering
     \includegraphics[width=6cm]{Images/parallelism2.pdf}
   \caption{Effect of Parallelism on Total Execution Time} 
@@ -308,7 +310,7 @@ table creation and query time.
 
 
 
-\subsection{Analytical Model}
+\subsubsection{Analytical Model}
 \label{sec:model}
 In this section, we use insights from the experimental characterization of
 various optimizations to develop an analytical model of \SeeDB\ performance.
@@ -479,7 +481,7 @@ such that $\sum_{j} log(n_{d_{j}})$, i.e. $\prod_{j} n_{d_{i}}$, $\leq$ $V$.
 Bin-packing has been well studied and we use off-the-shelf software
 \cite{glpk} to perform bin-packing on the dimension attributes.
 
-\subsection{Experimental Evaluation with All Optimizations}
+\subsubsection{Experimental Evaluation with All Optimizations}
 
 We now show performance results for \SeeDB\ using the optimal parameter settings
 described above. Specifically, we set $n_{conns}$=40, $n_{agg}$=$m$ (i.e.
@@ -499,8 +501,15 @@ taken together can enable \SeeDB\ to run at near-interactive response times.
   \label{fig:total_speed_up}
 \end{figure}
 
+\subsection{Main Memory Execution Engine}
 
+We next describe performance characteristics of our main memory implementation
+and the effect of our heuristics on performance and result accuracy.
 
+\subsubsection{Effect of Confidence Interval based Pruning}
 
+\subsubsection{Effect of MAB Pruning}
 
-\mpv{end-to-end testing with various parameter settings}
+\subsection{DBMS vs. Main Memory Execution Engine}
+
+\subsection{End-to-End Testing with Real Datasets}

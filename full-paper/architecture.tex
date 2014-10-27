@@ -12,54 +12,69 @@ in detail in the next section.
 \subsection{{\large \SeeDB} architecture overview}
 \label{subsec:overview}
 
-Our \SeeDB\ prototype is designed as a layer on top of a traditional
-relational database system.
-While optimization opportunities are restricted by virtue of being outside the
-database, our design permits \SeeDB\ to be used in conjunction with a variety of
-existing database systems. 
-\SeeDB\ is comprised of two parts: a frontend and a backend. 
-The frontend is a ``thin client'' that
-is used to issue queries, display visualizations  and allow basic interactions
-with the visualizations. 
-The backend, in contrast, performs all the computation required to generate and select views
-to be recommended. Figure \ref{fig:sys-arch}
-depicts the architecture of our system.
+In this work, we explored two distinct implementations of \SeeDB: one as a
+layer on top of a relational database system (row store as well as column
+store) and another as a stand alone in-memory system. 
+While the former
+implementation restricts optimization opportunities by virtue of being outside
+the database, our design permits \SeeDB\ to be used in conjunction with a
+variety of existing database systems.
+The in-memory implementation, on the other hand, allows us to finely control
+which views are evaluated in parallel and perform incremental pruning of views
+as the execution proceeds. 
+In this section, we present the high-level architecture of
+\SeeDB\ without focusing on the specific execution engine (DBMS-based or main
+memory). In the subsequent sections, we discuss both execution engines in
+detail.
 
 \begin{figure}[htb]
 \vspace{-10pt}
 \centerline{
-\hbox{\resizebox{9cm}{!}{\includegraphics[trim=10mm 50mm 10mm 50mm,
+\hbox{\resizebox{9cm}{!}{\includegraphics[trim=10mm 20mm 10mm 40mm,
 clip=true]{Images/seedb-architecture.pdf}}}}
 \caption{SeeDB Architecture}
 \label{fig:sys-arch}
 \vspace{-12pt}
 \end{figure} 
 
-An analyst uses the frontend to issue queries to \SeeDB. We provide three
-mechanisms for the analyst to issue queries (further discussion in
-Section \ref{subsec:seedb_frontend}).
+\SeeDB\ is comprised of two main parts: a frontend and a backend. 
+The frontend is a ``thin client''
+that is used to issue queries, display visualizations  and allow basic interactions
+with the visualizations. 
+The backend, in contrast, performs all the computation required to generate and select views
+to be recommended. 
+Figure \ref{fig:sys-arch}
+depicts the architecture of our system.
+
 Once the analyst issues a query via the frontend, the backend takes over.
-First, the Metadata Collector module queries metadata tables (a combination of
-database-provided and \SeeDB\ specific tables) for information such as table
-sizes, column types, data distribution, and table access patterns.
-The resulting metadata along with the analyst's query is then passed to the
-Query Generator module. The purpose of the Query Generator is two-fold:
-first, it uses metadata to prune the space of candidate views to only retain the
-most promising ones; and second, it generates target and comparison views for
-each view that has not been pruned.
-The SQL queries corresponding to the target and comparison views are then passed
-to the Optimizer module. We refer to these queries collectively as {\it view
-queries}.
-Next, the Optimizer module determines the best way to
-combine view queries intelligently so that the total execution time is
-minimized.
-(We discuss optimizations performed by \SeeDB\ in Section
-\ref{subsec:seedb_backend}.) Once the Optimizer module has generated the
-optimized queries, \SeeDB\ runs them on the underlying DBMS.
-Results of the optimized queries are processed by the View Processor in a
-streaming fashion to produce results for individual views. Individual view
-results are then normalized and the utility of each view is computed.
-Finally \SeeDB\ selects the top $k$ views with the highest utility and returns
-them to the \SeeDB\ frontend. The frontend generates 
-and displays visualizations for each of these view. We now discuss
-\SeeDB\ modules in detail.
+First, the View Generator queries the metadata information in the system for
+information such as table sizes, column types and correlations between column
+values. 
+It then uses this metadata and the incoming query to prune the space
+of possible views and generate stubs of the remaining views (discussed further
+in Section \ref{}). 
+The view stubs are then sent to the execution engine that evaluates the views to
+identify the top views of interest.
+
+In the DBMS-based execution engine (Section \ref{}), the view stubs are passed
+through the optimizer that identifies the best ways to combine the queries to minimize
+execution time.
+Once the views have been optimized, the views are rewritten as SQL queries and
+executed against the underlying database. 
+The results of these queries are
+processed to update the view stubs and compute view utility. 
+Once all the queries have been processed, the top-k views are returned to the
+frontend.
+
+In the main-memory execution engine, \SeeDB\ makes a single pass through the
+data (either read from disk or already present in memory) and keeps running
+estimates of utility for each of the views stubs obtained from the View
+Generator. 
+As the engine processes more of the data, the utility estimates become more
+accurate and \SeeDB\ uses various pruning heuristics to prune out views on the fly.
+By the time the full data has been processed, \SeeDB\ has identified the top-k
+views with the largest utility that are then returned to the frontend.
+
+Ones the \SeeDB\ backend has identified the best visualizations, the \SeeDB\
+frontend generates and displays visualizations for each of these views. We now
+discuss each \SeeDB\ module in detail.

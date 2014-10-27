@@ -230,34 +230,31 @@ interesting views.
 
 \subsubsection*{Challenges and Contributions}
 
-This paper describes a prototype of the \SeeDB\ system that finds interesting
-visualizations of query results. 
-Given a query $Q$ indicating the subset of data that the analyst is interested in, \SeeDB\ automatically {\em identifies and highlights to the
-analyst the most interesting views of the query results using methods based on
-deviation}. 
-
 We described our vision for \SeeDB, along with the associated research
 challenges in a companion vision paper~\cite{DBLP:conf/vldb/Parameswaran2013},
 and demonstrated \SeeDB\ in a demonstration paper~\cite{XXX}.
-Here, we present our first \SeeDB\ prototype
-addressing some of the challenges listed in that vision paper.
-In particular, our current prototype of \SeeDB\ is built as a ``wrapper'' that
-can be overlaid on any relational database system. Given any query, \SeeDB\
-leverages special optimization algorithms and the underlying DBMS to generate
-and recommend interesting visualizations. To do so efficiently and accurately,
-we must address the following challenges:
-\squishlist
-\item We must determine metrics that accurately measure the ``deviation'' of a
-view with respect to the equivalent view on the entire database (e.g.,
+In this paper, we explore and evaluate multiple implementations of \SeeDB, both
+on top of a database system and as a stand along in-memory solution. We develop
+implementation-specific optimizations that leverage the underlying system
+architecture.
+Given a query $Q$ indicating the subset of data that the analyst is interested
+in, \SeeDB\ automatically {\em identifies and highlights to the analyst the most
+interesting views of the query results using methods based on deviation}. 
+
+
+To efficiently and accurately produce the set of most interesting
+visualizations, we must address the following challenges: 
+(1) We must determine
+metrics that accurately measure the ``deviation'' of a view with respect to the equivalent view on the entire database (e.g.,
 Figure~\ref{fig:staplerX} vs.~\ref{fig:staplerX-a}), while simultaneouly
 ensuring that \SeeDB\ is not tied to any particular metric(s); 
-\item  We must
+(2)  We must
 intelligently explore the space of candidate views. Since the number of
 candidate views (or visualizations) increases as the square of the number of
 attributes in a table (we will demonstrate this in subsequent sections),
 generating and evaluating all views, even for a moderately sized dataset (e.g.
 1M rows, 100 attributes), can be prohibitively expensive;
-\item While executing queries corresponding to different views, we must share
+(3) While executing queries corresponding to different views, we must share
 computation as much as possible. For example, 
 we can compute multiple views and measure their deviation 
 all together in one query. Independent execution,
@@ -265,27 +262,39 @@ on the other hand, will be expensive and wasteful;
 % Queries to compute views and their
 % deviation are highly similar and therefore
 % independent execution is expensive and wasteful; 
-\item Since
+(4) Since
 analysis must happen in real-time, we must trade-off accuracy
 of visualizations or estimation of ``interestingness'' for reduced latency.
-\squishend
 
 
 The contributions of this paper are:
 \squishlist
-  \item We implement the \SeeDB\ system based on \cite{DBLP:conf/vldb/Parameswaran2013} to
-  automatically find interesting views of queries (Section~\ref{sec:system_architecture}).
-  \item We propose and implement a number of optimizations to
-  efficiently perform the search for interesting views and share
-  computation between multiple views simultaneously (Section~\ref{sec:optimizations}).
-  \item We evaluate the performance of our optimizations on a range of datasets
-  and demonstrate the resulting 100x speedup (Section~\ref{sec:experiments}).
-  \item We model the performance of \SeeDB\ in terms of various parameters of
-  \SeeDB\ and the underlying database, and use this model to identify optimal
-  parameter settings for \SeeDB\ (Section~\ref{sec:model}).
-  \item We present and evaluate different metrics for measuring deviation
-  \item ?? We study the usefulness of a tool like \SeeDB\ in finding
-  interesting visualizations of a dataset
+  \item In keeping with the \SeeDB\ vision from \cite{}, we explore and
+  evaluate multiple implementations of the system, both on top of the database
+  as well as a standalone solution.
+  \item We propose and implement a number of
+  implementation-specific optimizations and heristics to efficiently perform the
+  search for interesting views and share computation between multiple views
+  simultaneously. 
+  \item We evaluate the performance of our optimizations on a range of
+  real and synthetic datasets and demonstrate the resulting XXX speedup
+  (Section~\ref{sec:experiments}). We also demonstrate that our heuristics
+  improve performance without affecting system accuracy.
+  \item For the \SeeDB\ implementation on top of a DBMS, we model the
+  performance of \SeeDB\ in terms of various parameters of \SeeDB\ and the
+  underlying database, and use this model to identify optimal parameter settings
+  for \SeeDB\ (Section~\ref{sec:model}).
+  \item For the in-memory implementation of \SeeDB, we cast the problem of
+  finding the best visualizations as a variant of top-k ranking and multi-armed
+  bandits and adapt heuristics from both problem spaces.
+  \item We present and evaluate different metrics for measuring interesting-ness
+  of views.
+  \item We explore visualization pruning techniques based on data distribution
+  to prune views even before they are evaluated by the \SeeDB\ system.
+  \item We report the result of a user study conducted to evaluate the
+  \SeeDB\ concept of finding interesting views, the relative quality of
+  different metrics, and the usefulness of a tool like \SeeDB\ in finding
+  interesting visualizations of a dataset.
 \squishend
 
 
