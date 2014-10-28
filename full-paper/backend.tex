@@ -1,18 +1,8 @@
 %!TEX root=document.tex
 
-\section{SeeDB Backend}
-\label{subsec:seedb_backend}
+\section{View Pruning}
+\label{subsec:pruning}
 
-The \SeeDB\ backend is responsible for all the computations for 
-generating and selecting views. 
-To achieve its goal of finding the most
-interesting views accurately and efficiently, the \SeeDB\ backend must not only accurately
-estimate the quality of a large number of views but also minimize total processing time.
-We begin with a description of our View Generator module and then discuss our
-two execution engines in detail. 
-
-\subsection{View Generator}
-\label{subsec:view_generator}
 Given a user query $Q$, the goal of the view generator module is to use metadata
 to determine the space of all possible views and then use correlations between
 data distributions to prune views whose evaluation is unnecessary. \SeeDB\

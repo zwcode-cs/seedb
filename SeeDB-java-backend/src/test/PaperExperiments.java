@@ -124,8 +124,9 @@ public class PaperExperiments {
 	public void getGBOptimizedSerial() {
 		for (Backend b : backends) {
 			b = Backend.VERTICA;
-			for (int gb_idx = numGBAttrs.length - 1; gb_idx >= 0; gb_idx--) {
+			for (int gb_idx = numGBAttrs.length - 1; gb_idx >= 2; gb_idx--) {
 				for (int table_idx = 0; table_idx < tables.length; table_idx++) {
+					table_idx = 1;
 					if (numGBAttrs[gb_idx] > maxGBs[table_idx]) {
 						continue;
 					}
@@ -139,9 +140,7 @@ public class PaperExperiments {
 					settings.useTempTables 					= false;
 					settings.useParallelExecution 			= false;
 					settings.mergeQueries 					= false;
-					if (table_idx == 0) {
-						settings.makeGraphs = true;
-					}
+					
 					settings.differenceOperators.add(DifferenceOperators.AGGREGATE);
 					settings.logFile = "testResults/" + settings.getDescriptor() + "_" + tables[table_idx] +
 							"_" +queries[table_idx];

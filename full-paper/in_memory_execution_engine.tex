@@ -1,17 +1,30 @@
-\section{In Memory Execution Engine}
+\subsection{Custom Execution Engine}
 \label{sec:in_memory_execution_engine}
 
-While the DBMS-backed execution engine discussed in the previous section allows
-\SeeDB\ to be used with a variety of existing databases, optimization
-opportunities are limited by virtue of being outside the database. In this
-section, we describe our in-memory execution engine that offers the following
-advantages over the DBMS-backed engine: (1) complete sharing of table scans
-between views so that a single table scan sufficies to compute all views; (2)
-sharing of utility estimates between views so that low utility views can be
-pruned on the fly; (3) potential early stopping once the top views have been
-identified.
+While our first design of the \SeeDB\ execution engine allowed \SeeDB\ to be
+used with a variety of existing databases, optimization opportunities were
+limited by virtue of being outside the database.
+Even after applying all the optimizations discussed in the previous section, the
+\SeeDB\ engine took on the order of 10s of seconds to process a
+moderately sized dataset (Section \ref{}).
+This response time is too high for an interactive application, and hence we
+went about building a custom, minimal execution engine for \SeeDB.
 
-\subsection{Basic Framework}
+From the design of the DBMS-backed execution engine, we learnt that \SeeDB\
+wouldn't be able to execute efficiently unless we minimized scans of the data,
+and we significantly reduced resources wasted on views
+that were ultimately not among the top views.
+As a result, our goals with the custom execution engine were as follows:
+(1) complete sharing of table scans between views so that a single table scan
+sufficies to compute all views; 
+(2) sharing of intermediate results between views so that low utility views can
+be pruned on the fly; 
+(3) early stopping once the top views have been identified. 
+We now decribe the
+basic execution framework adopted by our engine followd by specific heuristics
+used to speed up the processing.
+
+\subsubsection{Basic Framework}
 \label{subsec:basic_framework}
 The basic in-memory solution works as follows: \SeeDB\ buffers the data file
 from disk and processes the file one record at a time. Specifically, for each
@@ -29,16 +42,13 @@ once we have identified the top records.
 We introduce two classes of heuristics to perform these optimizations.
 We discuss these next.
 
-\subsection{Heuristics}
-\label{subsec:heuristics}
-
 The general idea that is used in both heuristics is to keep running estimates of
 utility for each view under consideration, and perform pruning of low utility
 views based on these estimates. 
 As more records are scanned, the utility estimates become more accurate and we
 can have higher confidence in our pruning decisions.
 
-\subsubsection{Confidence Interval Based Pruning}
+\subsubsection{Heuristic I: Confidence Interval Based Pruning}
 This pruning strategy is based on the application of sampling and confidence
 intervals to utility estimates. 
 For each view in the running, \SeeDB\ keeps a
@@ -93,7 +103,7 @@ increasingly accurate distributions as in Figures \ref{}, \ref{}, and \ref{}.
 To correct for the fact that our samples are of varying sizes, we apply the
 following correction: \mpv{more}.
 
-\subsubsection{Multi-Armed Bandit Heuristic}
+\subsubsection{Heuristic II: Multi-Armed Bandit Heuristic}
 \label{subsubsec:multi_armed_bandit}
 The second set of heuristics we explore are derived by casting the problem of
 finding the top-k views as an instance of the multi-armed bandit (MAB) problem. 

@@ -1,36 +1,158 @@
-\section{DBMS-backed Execution Engine}
+\section{\SeeDB\ Execution Engine}
 In this section, we discuss the design and implementation of the \SeeDB\
-execution engine backed by a DBMS.
-The reason this implementation is appealing is that it enables \SeeDB\ to be
-used with a variety of existing database systems with only a thin wrapper around
-the DBMS.
+Execution Engine. 
+The input to the \SeeDB\ engine is a set of view stubs (tripes of the form
+$(a, m, f)$) and the output is the top-$k$ views with the highest utility.
+The goals of the \SeeDB\ engine are two fold:
+(1) to efficienctly compute the utility of a large number of views, and (2) to accurately rank views in order of
+utility to find the $k$ views with the highest utility.
+
+
+As discussed in the architecture overview, we explored two distinct
+implementations of the \SeeDB\ execution engine.
+Our first design implemented the \SeeDB\ engine as a wrapper on top of a
+vanilla database system.
+We chose this design so that \SeeDB\ could be used unchanged with a variety of
+existing DBMSs.
+Our goal was to study how far we could push existing systems to
+support a \SeeDB-type workload without making any changes to the underlying
+DBMS.
+Implemented as a wrapper over a DBMS, \SeeDB\ is limited to using the API
+exposed by the DBMS; essentially, \SeeDB\ is limited to opening/closing connections to the
+database and executing SQL queries. 
+Since we have no control over how queries are executed or access to intermediate
+results, {\it our optimizations minimize total execution time by minimizing the
+total number of scans of the underlying table}.
+We now discuss the basic framework used by \SeeDB\ to query the DBMS and various
+optimizations supported by \SeeDB.
 
 \subsection{Basic Framework}
 \label{sec:basic_framework}
 Given a set of view stubs provided to the execution engine, the basic framework
-works as follows: (1) for each view, we generate SQL queries for the target and
-comparison view, (2) we executing each view query independently on the DBMS, (3)
-the results of each query are processed and normalized to compute the target and
-comparison distributions, (4) we compute utility for each view and select
-the top-$k$ views with the largest utility.
+works as follows: 
+(1) for each view, we generate SQL queries for the target and
+comparison view (see queries in Section \ref{}), 
+(2) we execute each view query independently on the DBMS, 
+(3) the results of each query (i.e. aggregated values) are processed and
+normalized to compute the target and comparison distributions, 
+(4) we compute utility for each view and select the top-$k$ views with the largest utility.
 If the underlying table has $d$ dimension attributes and $m$ measure attributes,
 $2\ast d \ast m$ queries must be separately executed and their results
 processed. Even for modest size tables (1M tuples, $d$=50, $m$=5), this
 technique takes prohibitively long (700s on Postgres). The basic approach is
 clearly inefficient since it examines every possible view and executes each view
-query independently. We next discuss how our optimizations fix these problems. 
+query independently.
 
 \subsection{Optimizations} 
 \label{sec:optimizations}
-Since view queries tend to be very similar in structure (they differ in the
-aggregation attribute, grouping attribute or subset of data queried), \SeeDB\
-uses multiple techniques to intelligently combine view queries. 
-In addition, \SeeDB\ leverages
-parallelism and partitioning to further reduce query execution time. The
-ultimate goal of these optimizations is to minimize scans of the underlying
-dataset by sharing as many table scans as possible. 
-\SeeDB\ supports the following optimizations and their combinations.
+As discussed above, the basic framework performs one scan of the table for each
+query that is executed, causing {\it 2 * number of views} scans of the
+underlying table. Since our goal is to minimize the number of scans, our ideal
+operator $\mathcal{O}$ would perform a single scan of the data, compute all
+$d*m$ group-bys and aggregates in one pass, and return only the top-$k$
+views.
+Current database systems do not support this functionality. 
+The SQL GROUPING SETS\footnote{GROUPING SETS allow the simultaneous
+  grouping of query results by multiple sets of attributes.} functionality
+  available in a handful of systems can be used to support this operation;
+  however, it is unclear how this operator will scale to large number of groups
+  and as we show in Section \ref{}, evaluating all views for the entire dataset
+  is unnecessary and inefficient.
 
+Without this ideal operator $\mathcal{O}$,
+our optimizations minimize table scans in two ways: (1) minimize the total number of
+queries by intelligently combining queries, and (2) reduce the total
+execution time by running queries in parallel. \SeeDB\ supports the following
+optimizations and their combinations.
+
+\subsubsection {Combine Multiple Aggregates} 
+A large number of view queries have the same group-by attribute but different
+aggregation attributes. 
+Therefore, \SeeDB\ combines all view queries with the same
+group-by attribute into a single, combined view query. For instance, instead of executing
+queries for views $(a_1$, $m_1$, $f_1)$, $(a_1$, $m_2$, $f_2)$ \ldots $(a_1$, $m_k$, $f_k)$
+independently, we can combine the $n$ views into a single view represented by
+$(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$. We demonstrate this
+optimization offers a speed-up roughly linear in the number of measure
+attributes.
+
+\subsubsection {Combine Multiple Group-bys}
+\label{subsec:mult_gb}
+  Similar to the multiple aggregates optimization, another optimization
+  supported by \SeeDB\ is to combine queries with different group-by attributes
+  into a single query with multiple group-bys attributes.
+  For instance, instead of executing queries for views $(a_1$, $m_1$, $f_1)$,
+  $(a_2$, $m_1$, $f_1)$ \ldots $(a_n$, $m_1$, $f_1)$ independently, we can
+  combine the $n$ views into a single view represented by $(\{a_1, a_2\ldots
+  a_n\}$, $m_1$, $f_1)$ and post-process results.
+
+  While this optimization has the potential to significantly reduce query
+  execution time, we find (Section \ref{}) that the time to execute a query
+  with multiple group-by attributes depends on the number of distinct values
+  present in the resulting combination of dimension attributes.
+  This is expected because for a large number of distinct values, the query
+  executor must keep track of a large number of aggregates. 
+  This increases computational time (e.g. for sorting in sort-based aggregate)
+  as well as temporary storage requirements (e.g. for hashing in hash-based
+  aggregate), making this technique ineffective for large number of values.
+  As a result, we must combine group-by attributes such that the number of
+  distinct values remains {\it small enough}. 
+  The upper limit on the number distinct values for a given combination of
+  group-by attributes is given by the product of the number of distinct values
+  for each attribute.
+  For example, if we combine three dimension attributes $a_i$, $a_j$ and $a_k$
+  with $n_i$, $n_j$ and $n_k$ values respectively, the maximum number of
+  distinct groups is $n_i\ast n_j \ast n_k$.
+ % The number of distinct groups in turn depends on the correlation between
+ % values of attributes that are being grouped together. 
+ % For instance, if two
+ % dimension attributes $a_i$ and $a_j$ have $n_i$ and $n_j$ distinct values
+ % respectively and a correlation coefficient of $c$, the number of distinct
+ % groups when grouping by both $a_i$ and $a_j$ can be approximated by
+ % $n_i$$\ast$$n_j$$\ast$(1-$c$) for $c$$\neq$1 and $n_i$ for $c$=1 ($n_i$ must
+ % be equal to $n_j$ in this case).
+  
+  Therefore, our problem can be stated as follows:
+  given a set of dimension attributes $A$ = \{$a_1$\ldots$a_n$\}, divide the
+  dimension attributes in $A$ into groups $A_1$\ldots$A_l$ (where $A_i$ is some
+  subset of $A$ and $\bigcap A_i$=$A$) such that the number of distinct values
+  for each group is small. We designed two strategies to group dimension
+  attributes.
+  
+  \begin{itemize} 
+  \item {\bf Bin-packing}: In this trategy, we set an upper limit $V$ on the
+  number of distinct groups that any combination of dimension attributes can
+  produce.
+  Now, suppose that each dimension attribute $a_i$ $\in A$ has $n_i$ distinct
+  values.
+  We cast the problem of finding the optimal grouping of dimension attributes as
+  a version of bin-packing.
+  Let each dimension attribute $a_i$ be an item with volume $log(n_i)$ and
+  suppose that we are given bins of volume $log(V)$.
+  Then finding the optimal grouping of attributes is exactly equivalent to
+  finding the optimal packing of attribute items into the minimum number of
+  bins.
+  \item {\bf Incremental Grouping}: In this strategy, we do not set an
+  explicit upper limit on the number of distinct groups. 
+  Instead, we assume that
+  we are given a black box function that given a particular grouping of
+  attributes returns a value for the ``goodness'' of the combination. 
+  For instance, in
+  Section \ref{}, we develop an analytical model for the performance of the
+  DBMS-backed Execution Engine. 
+  This model predicts the execution time for the
+  \SeeDB\ engine and can be used in place of the black box function. 
+  A simpler
+  black box function maybe a combination of the maximum number of distinct
+  values across all the groups and the number of groups. 
+  Given a black box
+  function, our heuristic works as follows: until the ``goodness'' of the
+  grouping keeps increasing (or execution time keeps decreasing), repeat the
+  following -- (1) sort the attribute groups in ascending order of number of
+  distinct values, (2) combine the first two groups into a single group and
+  calculate the number of distinct values for this new group.
+\end{itemize} 
+We experimentally evaluate both strategies in Section \ref{}. 
 \subsubsection{Combine target and comparison view query}
 \label{subsec:target_comparison_view}
 Since the target view and comparison views only differ in the subset of data
@@ -53,68 +175,6 @@ the query executor must do more work if the two queries are run separately. In
 contrast, in the presence of an index, running selective queries independently
 may be faster.
 
-\subsubsection {Combine Multiple Aggregates} 
-A large number of view queries have the same group-by attribute but different
-aggregation attributes. 
-%In addition, the majority of real-world datasets,
-%tables have few measure attributes but a large number of dimension attributes
-(e.g. the Super Store dataset has 5 measure attributes but tens of dimension
-%attributes). 
-Therefore, \SeeDB\ combines all view queries with the same
-group-by attribute into a single, combined view query. For instance, instead of executing
-queries for views $(a_1$, $m_1$, $f_1)$, $(a_1$, $m_2$, $f_2)$ \ldots $(a_1$, $m_k$, $f_k)$
-independently, we can combine the $n$ views into a single view represented by
-$(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$. We demonstrate this
-optimization offers a speed-up roughly linear in the number of measure
-attributes.
-
-\subsubsection {Combine Multiple Group-bys}
-\label{subsec:mult_gb}
-  Since \SeeDB\ computes a large number of group-bys, one significant
-  optimization is to combine queries with different group-by attributes into a
-  single query with multiple group-bys attributes.
-  For instance, instead of executing queries for views $(a_1$, $m_1$, $f_1)$,
-  $(a_2$, $m_1$, $f_1)$ \ldots $(a_n$, $m_1$, $f_1)$ independently, we can
-  combine the $n$ views into a single view represented by $(\{a_1, a_2\ldots
-  a_n\}$, $m_1$, $f_1)$ and post-process results at the backend. Alternatively,
-  if the SQL GROUPING SETS\footnote{GROUPING SETS allow the simultaneous
-  grouping of query results by multiple sets of attributes.} functionality is
-  available in the underlying DBMS, \SeeDB\ can leverage that as well.
-
-  While this optimization has the potential to significantly reduce query
-  execution time, the number of views that can be combined depends on the
-  number of distinct groups present for the given combination of grouping
-  attributes. 
-  For a large number of distinct groups, the query executor must
-  keep track of a large number of aggregates. 
-  This increases computational time
-  as well as temporary storage requirements, making this technique ineffective.
-  The number of distinct groups in turn depends on the correlation between
-  values of attributes that are being grouped together. 
-  For instance, if two
-  dimension attributes $a_i$ and $a_j$ have $n_i$ and $n_j$ distinct values
-  respectively and a correlation coefficient of $c$, the number of distinct
-  groups when grouping by both $a_i$ and $a_j$ can be approximated by
-  $n_i$$\ast$$n_j$$\ast$(1-$c$) for $c$$\neq$1 and $n_i$ for $c$=1 ($n_i$ must
-  be equal to $n_j$ in this case).
-  As a result, we must combine group-by attributes such that the number of
-  distinct groups remains small enough. 
-  In Section \ref{sec:experiments}, we
-  characterize the performance of this optimization and devise strategies to
-  choose dimension attributes that can be grouped together.
-  
-  
-  \mpv{Talk about Huffman encoding based grouping}
-  
-%   (We discuss our model and
-%   algorithm in our full paper~\ref{}).\agp{if full paper is not available
-%   by the time of the demo, we can't cite it unfortunately..}
-%   A variation of this approach also implemented
-%   on \SeeDB\ is to send the results of the multiple group-by query to the front
-%   end and ask the \SeeDB\ frontend to compute utility and select views. The
-%   advantage of this approach is that it allows for more efficient interactive
-%   exploration of the views.
-
   \subsubsection {Parallel Query Execution}
   \label{subsec:parallel_exec}
   While the above optimizations reduce the number of queries executed, we can
@@ -134,16 +194,13 @@ attributes.
 
  \subsubsection {Pre-computing Comparison Views}
   We notice that in the case where our comparison view is constructed from the
-  entire underlying table (Example 1 in Chapter \ref{sec:introduction}),
+  entire underlying table (Example 1 in Section \ref{sec:introduction}),
   comparison views are the same irrespective of the input query.
   In this case, we can precompute all possible comparison views once and store
-  them for use in all future comparisons. If the dataset has $d$ dimension and
-  $m$ measure attributes, pre-computing comparison views would add $d$$\ast$$m$
-  tables. This corresponds to an extra storage of $O(d\ast m \ast n)$ where $n$
-  is the maximum number of distinct values in any of the $d$ attributes. In this
-  case, we still need to evaluate each target view, and we can leverage previous
-  optimizations to speed up target view generation.
-  
+  them for use in all future comparisons. If the dataset has $a$ dimension and
+  $m$ measure attributes, pre-computing comparison views would add $a$$\ast$$m$
+  tables. This corresponds to an extra storage of $O(a\ast m \ast n)$ where $n$
+  is the maximum number of distinct values in any of the $a$ attributes. 
   Note that pre-computation cannot be used in situations where the comparison
   view depends on the target view (Example 2) or is directly specified by the
   user (Example 3).
@@ -154,17 +211,13 @@ attributes.
   entire dataset (size of sample depends on desired accuracy). When a query is
   issued to \SeeDB, we run all view queries against the sample and pick the
   top-k views. Only these high-utility views are then computed on the entire
-  dataset. As expected, the accuracy of views depends on the size of the sample;
-  a larger sample generally produces more accurate results and we can develop
-  bounds on the accuracy of aggregates computed on samples.
+  dataset. \\
 
-\subsection{Row Stores vs. Column Stores}
-\label{sec:row_store_column_store}
-The DBMS-backed execution engine for \SeeDB\ is agnostic towards whether the
-DBMS is a row store or a column store. However, we expect that some of the above
-optimizations (e.g. combining a large number of aggregates) will be more
-powerful in row stores and may actually hurt performance in column stores. In
-our experimental evaluation, we study the relative advantages of each of our
-optimizations.
-
-We now discuss the in-memory implementation of the execution engine.
+\noindent{\bf Row Stores vs. Column Stores:}
+Our DBMS-backed execution engine for \SeeDB\ is agnostic towards the
+particular DBMS used to execute queries. 
+However, because of significant differences in the way that row stores and
+column stores organize data, some of the above optimizations (e.g. combining a
+large number of aggregates) will be more powerful in row stores and may actually
+hurt performance in column stores. In our experimental evaluation (Section
+\ref{}), we study the relative advantages of each of our optimizations.

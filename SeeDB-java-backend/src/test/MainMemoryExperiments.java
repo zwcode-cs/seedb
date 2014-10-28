@@ -113,7 +113,7 @@ public class MainMemoryExperiments {
 		for (int dataset_idx = 3; dataset_idx < 4; dataset_idx++) {
 			for (double i = sampleSize; i <= 1; i+= sampleSize) {
 				// 2. rerun, for every given percentage, get top k and compare how many are missing
-				settings.mainMemorySampleFraction = i;
+				settings.mainMemoryRandomSamplingRate = i;
 				result = seedb.processFile(datasets[dataset_idx], q_idxs[dataset_idx], 
 						q_values[dataset_idx], settings);
 			}
