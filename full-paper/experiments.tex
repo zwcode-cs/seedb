@@ -2,13 +2,13 @@
 
 \section{Experimental Evaluation}
 
-We evaluated the performance of \SeeDB\ on a variety of real and synthetic
+We evaluated the performance of \VizRecDB\ on a variety of real and synthetic
 datasets as shown below. 
 In particular, we evaluated the performance of our
 DBMS-backed execution engine as well as our in-memory execution engine, and the
 respective optimizations. 
 For the DBMS-backed engine, we also built an analytical model to help pick
-parameters for \SeeDB.
+parameters for \VizRecDB.
 
 \subsection{Experimental Setup}
 
@@ -33,7 +33,7 @@ parameters for \SeeDB.
 \end{table}
 
 Table \ref{tab:datasets} lists the datasets on which we evaluated the
-performance of \SeeDB. These datasets are synthetically generated and their size
+performance of \VizRecDB. These datasets are synthetically generated and their size
 varies from 100 MB to 100 GB and number of attributes ranges from 5 - 100 dimension attributes and 2 -
  10 measure attributes. The relative cardinality of dimension and measure attributes
 was chosen to model real-world datasets which usually have a large number of
@@ -42,10 +42,10 @@ effect of specific optimizations, for each dataset, we also created a
 supplemental dataset with the same specifications except that each attribute had
 the same number of distinct values (100).
 
-For each dataset, we used \SeeDB\ to find the top 20 views of the input query.
+For each dataset, we used \VizRecDB\ to find the top 20 views of the input query.
 Any run that took more than 1 hour was terminated. All experiments were repeated
 three times and the results were averaged.
-We ran experiments using Postgres as the backend database for \SeeDB\ and a single
+We ran experiments using Postgres as the backend database for \VizRecDB\ and a single
 machine with 32 Intel Xeon E7 processors with hyperthreading enabled and 256 GB
 RAM.
 
@@ -53,13 +53,13 @@ RAM.
 
 We now present experimental characterization of the optimization
 strategies described for the DBMS-backed execution engine (
-\ref{subsec:seedb_backend}).
-Our goal is to understand the effect of each strategy on \SeeDB\ performance. We
+\ref{subsec:VizRecDB_backend}).
+Our goal is to understand the effect of each strategy on \VizRecDB\ performance. We
 also build an analytical model and predict the optimal set of
-parameters for \SeeDB.
+parameters for \VizRecDB.
 
 \subsubsection{Basic Framework}
-We first examined the baseline performance of \SeeDB\ without any optimizations.
+We first examined the baseline performance of \VizRecDB\ without any optimizations.
 For each possible view, we executed the target and comparison view queries
 separately and sequentially, and then picked the top views. This corresponds to
 the basic framework described in Section \ref{sec:basic_framework}. The number
@@ -68,7 +68,7 @@ Table \ref{tab:datasets}. Figure \ref{fig:baseline_performance} shows the baseli
 performance for Small, Medium and Large datasets of size 1M. We observe that
 execution time increases super-linearly as the size of the dataset (number of dimension and
 measure attributes) increases. Moreover, as mentioned before, even for the
-Medium sized dataset (1M rows, 5 measure and 50 dimension attributes), \SeeDB\
+Medium sized dataset (1M rows, 5 measure and 50 dimension attributes), \VizRecDB\
 execution takes 700s, a latency that is unacceptable for interactive queries.
 
 \begin{figure}[h]
@@ -87,7 +87,7 @@ views possible for a given dataset. This optimization offers an average speed up
 of 1.7x across a range of selectivities for the input query.
 
 \subsubsection{Combine Multiple Aggregates}
-\SeeDB\ uses the parameter $n_{agg}$ to denote the number of aggregates that may
+\VizRecDB\ uses the parameter $n_{agg}$ to denote the number of aggregates that may
 be included in the same view query. Therefore, given a set of view queries with
 the same group-by attribute, view queries are combined so that each query has up
 to $n_{agg}$ aggregates. We varied $n_{agg} \in {2, 3, 5, 10}$ for each dataset
@@ -114,7 +114,7 @@ reasons include disk contention, RAM usage, lock contention, context switches
 and cache line contention
 \cite{Postgres_wiki}.
 Identifying the right amount of parallelism requires tuning for the particular
-workload. The \SeeDB\ workload consists of multiple parallel queries performing
+workload. The \VizRecDB\ workload consists of multiple parallel queries performing
 full sequential scans of a given table. To evaluate the
 effect of parallelism, we varied the number of queries that can be executed in
 parallel and measured its effect on the average time to execute a query as well
@@ -129,7 +129,7 @@ We observe that query execution time stays flat between 1 - 10 connections, sudd
 10 - 20 connections, and then increases linearly for more than 20 connections.
 This suggests that the benefits of parallel execution are outweighed by
 contention beyond 20 connections. Figure \ref{fig:parallelism_total} shows the
-total time (as opposed to per view execution time) taken by \SeeDB\ for varying
+total time (as opposed to per view execution time) taken by \VizRecDB\ for varying
 levels of parallelism. We observe that the minima occurs in the range between 10
 - 20 parallel queries and the execution times flatten out after 40 parallel
 queries.
@@ -138,7 +138,7 @@ increases contention, and therefore increases per query execution time, and (B)
 parallelism decreases the number of batches of queries that must be executed,
 thus reducing overall time.
 We will take these two opposing forces into account when we develop an
-analytical model for \SeeDB\ execution time in Section \ref{sec:model}.
+analytical model for \VizRecDB\ execution time in Section \ref{sec:model}.
 
 \begin{figure}[h]
   \centering 
@@ -176,8 +176,8 @@ of this query are stored in a temporary table which is then queried to get
 results for the original views, ($a_1$, $m$, $f$), ($a_2$, $m$, $f$) and ($a_3$,
 $m$, $f$).
 
-\SeeDB\ uses the parameter $n_{GB}$ to denote the number of attributes in the
-group-by clause. To evaluate the effect of combining group-bys, we ran \SeeDB\
+\VizRecDB\ uses the parameter $n_{GB}$ to denote the number of attributes in the
+group-by clause. To evaluate the effect of combining group-bys, we ran \VizRecDB\
 by varying number of group-by attributes, i.e. the $n_{GB}$ parameter, between 1
 and the number of dimensions $d$ in a given table. For each run, we measured the
 amount of time taken to create the temporary tables, the time taken to query the
@@ -218,10 +218,10 @@ We also observe that the ``sweet spot'' for temp table creation occurs between 1
 \end{figure}
 
 Figure \ref{fig:total_tt_creation_time} shows the total time spent in creating
-temporary tables in \SeeDB. As before, we see that the total time
+temporary tables in \VizRecDB. As before, we see that the total time
 flattens out after 10 group-bys; however, we observe a reordering of the the
 trend lines with respect to number of connections. While the average time taken
-to generate temp tables with 5 connections is the least, \SeeDB\ must run more
+to generate temp tables with 5 connections is the least, \VizRecDB\ must run more
 batches of queries to create the required number of temporary tables. We observe
 that that 40 connections is optimal for minimizing the total temp table creation
 time. As in the previous diagram, we observe a minima around $n_{GB}=2$.
@@ -269,9 +269,9 @@ and $n_{GB}=1-2$ achieves the best performance.
 
 
 
-{\bf Total Execution Time}: The total execution time for \SeeDB\ is the sum of
+{\bf Total Execution Time}: The total execution time for \VizRecDB\ is the sum of
 time required for the two phases above. Figure \ref{fig:total_time} shows the
-total \SeeDB\ execution time for different values of $n_{GB}$ and number of
+total \VizRecDB\ execution time for different values of $n_{GB}$ and number of
 connections. We observe that the best performance is obtained for
 $n_{GB}=2$ and 40 parallel connections.
 
@@ -313,7 +313,7 @@ table creation and query time.
 \subsubsection{Analytical Model}
 \label{sec:model}
 In this section, we use insights from the experimental characterization of
-various optimizations to develop an analytical model of \SeeDB\ performance.
+various optimizations to develop an analytical model of \VizRecDB\ performance.
 Table \ref{tab:model_params} defines the various parameters used in our model.
 
 \begin{table}
@@ -343,7 +343,7 @@ $n_{conns}$ & Number of queries executing in parallel \\ \hline
 \end{table}
 
 % As before, consider the two stages of processing: {\it Temp Table Creation} and
-% {\it Temp Table Querying}. In \SeeDB\, these two stages take place in parallel:
+% {\it Temp Table Querying}. In \VizRecDB\, these two stages take place in parallel:
 % first, we create a set of temp tables; then we query the temp tables and as we
 % finish querying existing tables, we create new tables. The creation of new
 % tables and querying of old tables happens in parallel. 
@@ -392,7 +392,7 @@ b_{query}\ \ =\ \ \frac{d_{tt} \ast nAgg \ast Min(\frac{d}{d_{tt}},
 n_{conn})}{n_{conn}}
 \end{equation*}
 
-Using the three definitions above, we can model the total time taken by \SeeDB\
+Using the three definitions above, we can model the total time taken by \VizRecDB\
 as shown in Equation \ref{eq:total_time}. If there are $b_{create}$ Phase 1
 batches, then the total execution time is equal to the time taken to complete
 one batch multiplied by $b_{create}$. In turn, the time taken to complete a
@@ -437,7 +437,7 @@ accuracy of our model for predicting total execution time as derived in Equation
     \label{fig:total_time_fitted}
 \end{figure}
 
-\subsection{Choosing \SeeDB\ parameters based on the model}
+\subsection{Choosing \VizRecDB\ parameters based on the model}
 
 {\bf Choosing Number of Parallel Queries:} The speed up offered by running
 queries in parallel depends on the DBMS parameters such as maximum number of
@@ -464,9 +464,9 @@ This parameter is used to pick dimension attributes that will be combined into a
 single view query. For a set of attributes $a_1$\ldots$a_n$, the maximum number
 of distinct groups that can be generated is $\prod_i a_i$. This is the worst
 case bound since correlation between two attributes can only decrease the number
-of distinct groups. \SeeDB\ models the problem of grouping attributes with a
+of distinct groups. \VizRecDB\ models the problem of grouping attributes with a
 constraint on number of groups as a variant of bin-packing.
-Specifically, \SeeDB\ adopts the following problem formulation.
+Specifically, \VizRecDB\ adopts the following problem formulation.
 
 Let $n_{d_{i}}$ be the number of distinct values for dimension attribute $d_i$.
 The traditional definition for bin packing states that given bins of size $V$
@@ -483,7 +483,7 @@ Bin-packing has been well studied and we use off-the-shelf software
 
 \subsubsection{Experimental Evaluation with All Optimizations}
 
-We now show performance results for \SeeDB\ using the optimal parameter settings
+We now show performance results for \VizRecDB\ using the optimal parameter settings
 described above. Specifically, we set $n_{conns}$=40, $n_{agg}$=$m$ (i.e.
 number of measure attributes) and $n_{groups}$=100,000 for bin-packing. Further,
 we apply the optimization of combinging target and comparison queries for each view. From
@@ -492,7 +492,7 @@ optimizations gives us a speedup of about 100X for the Medium and Large
 datasets (note the log scale on Y axis). Although the impact of optimizations is
 relatively small for the Small dataset, we still observe that the total
 execution time is halved. We thus see that the all the optimizations
-taken together can enable \SeeDB\ to run at near-interactive response times.
+taken together can enable \VizRecDB\ to run at near-interactive response times.
 
 \begin{figure}[h]
   \centering

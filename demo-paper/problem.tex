@@ -4,7 +4,7 @@
 \section{Problem Statement}
 \label{sec:problem_statement}
 
-Given a database $D$ and a query $Q$, \SeeDB\ considers a number of views that
+Given a database $D$ and a query $Q$, \VizRecDB\ considers a number of views that
 can be generated from $Q$ by adding relational operators.
 For the purposes of this discussion, we will refer to views and visualizations
 interchangeably, since it is straightforward to translate views into
@@ -13,7 +13,7 @@ dictate how the view in Table~\ref{tab:staplerX} can be transformed to give a
 visualization like Figure~\ref{fig:staplerX}.
 Furthermore, we limit the set of candidate views to those
 that generate a two-column result via a single-attribute grouping and
-aggregation (e.g. Table~\ref{tab:staplerX}). However, \SeeDB\ techniques can
+aggregation (e.g. Table~\ref{tab:staplerX}). However, \VizRecDB\ techniques can
 directly be used to recommend visualizations for
 multiple column views ($> 2$ columns) that are generated via multi-attribute
 grouping and aggregation.
@@ -38,14 +38,14 @@ as $D_Q$.
 %that satisfy specific conditions.
 %We denote the result of $Q(D)$ as $D_Q$.
 
-Given such a query $Q$, \SeeDB\ considers all views $V_i$ that perform a
+Given such a query $Q$, \VizRecDB\ considers all views $V_i$ that perform a
 single-attribute group-by and aggregation on $D_Q$. We represent $V_i$ as a
 triple $(a, m, f)$, where $m \in M, a \in A, f \in F$, i.e., the view
 performs a group-by on $a$ and applies the aggregation function $f$ on a measure
 attribute $m$. We call this the {\em target view}.
 %Thus, $V_i (D_Q)$ can be expressed as the following SQL query:
 $${\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D_Q\  {\tt GROUP \ \ BY} \ a$$ 
-As discussed in the previous section, \SeeDB\ evaluates
+As discussed in the previous section, \VizRecDB\ evaluates
 whether a view $V_i$ is interesting
 by computing the deviation between the view applied to the selected data (i.e., $D_Q$) 
 and the view applied to the entire database.
@@ -73,13 +73,13 @@ The utility of a view is our measure for whether the target view is
 the higher the utility, the more the deviation
 from the comparison view, and the more likely the view is to be interesting.
 % Computing distance between probability distributions has
-% been well studied in the literature, and \SeeDB\ supports a variety of metrics
+% been well studied in the literature, and \VizRecDB\ supports a variety of metrics
 % to compute utility, including Earth Movers Distance~\cite{wikipedia-prob-dist}, 
 % Euclidean Distance, Kullback-Leibler Divergence (K-L
 % divergence)~\cite{wikipedia-KL}, and Jenson-Shannon
 % Distance~\cite{wikipedia-JS,entropy-vis}. 
 Computing distance between probability distributions has
-been well studied, and \SeeDB\ supports a variety of metrics
+been well studied, and \VizRecDB\ supports a variety of metrics
 to compute utility, including Earth Movers Distance, 
 Euclidean Distance, Kullback-Leibler (K-L) Divergence, and Jenson-Shannon
 Distance. 
@@ -114,6 +114,6 @@ have the largest values of $U(V)$ among all the views that can be represented
 using a triple $(a, m, f)$, while minimizing total computation time.
 \vspace{-5pt}
 \end{problem}
-%Thus, \SeeDB\ aims to find the $k$ views (obtained by adding a single aggregate
+%Thus, \VizRecDB\ aims to find the $k$ views (obtained by adding a single aggregate
 % and group-by operator) that have the largest utility based on the function $U$.
 

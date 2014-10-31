@@ -1,72 +1,94 @@
 %!TEX root=document.tex
 
 \section{View Pruning}
-\label{subsec:pruning}
+\label{sec:pruning}
 
-Given a user query $Q$, the goal of the view generator module is to use metadata
-to determine the space of all possible views and then use correlations between
-data distributions to prune views whose evaluation is unnecessary. \SeeDB\
-utilizes the following metadata information: (1) data types of attributes, and
-their classification into measure and dimension attributes, (2) number of
-distinct values for dimension attributes, (3) the
-distributions for each measure attribute (mean, std deviation), and (4) the
-correlation between attributes.
+The previous sections described the \VizRecDB\ Execution Engine, the core part
+of our system.
+In this section, we discuss an important component of \VizRecDB\ that is invoked
+even before the Execution Engine runs, namely the View Generator.
+Given a user query $Q$, the purpose of the view generator module is to take the
+input query, obtain metadata about the underlying tables and use correlations
+between different columns in the table to prune views whose evaluation is
+unnecessary. 
+We distinguish between the pruning done in the execution engine and the pruning
+done in the view generator: the execution engine prunes away low-utility views
+while the view generator prunes away {\it redundant} views.
+So what are redundant views? Redundant views are views that have similar
+distributions and are therefore expected to have similar utility.
+An extreme example is that of sales of a product as measured in US
+Dollars and measured in Euros. Views with these measure attributes will be
+identical and have the same utility.
+Similarly, two dimension attributes, one corresponding to the airport name
+and another corresponding to the airport code are guaranteed to produce identical
+views irrespective of the measure attribute.
+In both of the above cases, it suffices to compute and show only a single view
+that is representative of multiple views (the frontend does list redundant
+views that have been omitted).
 
-The first metadata piece is essential for \SeeDB\ to determine the full space of
-views to consider. 
-Remember from Section \ref{}, that \SeeDB\ considers all
-views of the form $(a, m, f)$ where $a$ is a dimension attribute, $m$ is a
-measure attribute, and $f$ is the aggregate function. 
+The View Generator works in two stages: it performs view pruning offline and
+identifies the set of viable views; then, when a new user query comes in, it
+reads the set of viable views, performs pruning based on the input query and
+passes view stubs on to the Execution Engine. 
+The offline pruning does not depend on the input query and can therefore be
+perfomed only once.
+The offline stage works as follows. 
+First, for each table, the View Generator obtains various types of
+metadata including the data types of attributes, their classification into
+measure and dimension attributes, number of distinct values for dimension
+attributes, and the distributions for each measure attribute (mean, std
+deviation).
+The first piece of metadata is essential to determine the full space of
+views. 
 The number of distinct values for dimension attributes and the variance for
 measure attributes is used to perform basic pruning of views (e.g. views
 containing zero variance attributes will have low utility).
-<<INSERT PICTURE>>
-
-The most significant pruning power we obtain is by examining the correlation
-between views of different attributes.
-The idea is to identify views whose distributions are highly correlated so that
-instead of evaluating each one of those views independently, we can evaluate
-only a representative view. 
-We follow the following pruning technique: for all possible $(a, m, f)$ triples,
-we compute the distribution for each view over the entire data (i.e.
-the comparison view). 
-Once the distributions for all views have been computed, we compute the
-correlation between distributions of views containing the same dimension
-attribute. 
-Specifically, since the distributions are numeric, we compute the pairwise
-Pearson correlation between all views with the same dimension attribute.
-Next, we (conceptually) build a graph of all views containing the
-same dimension attribute. 
-The nodes of this graph are views and an edge exists between two nodes if the
-correlation between the two views is greater than a threshold (set to 0.95 in
+Next, the View Generator computes pairwise correlations between subsets of the
+entire set of possible views.
+To do so, the View Generator computes the aggregate distributions for all views
+over the entire data (i.e. the comparison view). 
+Once the distributions for all views have been computed, it calculates the
+correlation between distributions of views that contain dimension attributes
+with the same size (i.e. number of distinct values).
+Specifically, since the distributions are numeric, it computes the pairwise
+Pearson correlation between the distributions.
+Next, it (conceptually) builds a graph of all views. 
+The nodes of this graph correspond to views and an edge exists between two nodes
+if the correlation between the two views is greater than a threshold (set to 0.95 in
 our experiments). 
-We identify cliques (and almost cliques) in this graph and select a single node
-(i.e. view) from each clique as a representative view for that clique. 
-The
-remaining views are pruned as they will not provide extra information to the
-user. 
-Note that although these views are pruned during processing, the \SeeDB\
-frontend communicates this information to the user by providing a list of similar views.
-In real datasets, we find that this pruning significantly reduces the
-number of views that must be considered.
-For example, in the diabetes dataset discussed in Section \ref{}, the total
-number of views is reduced from XXX to XXX due to this pruning strategy, while
-for the banking dataset, the total views are reduced from XXX to XXX.
+In this graph, the View Generator then identifies cliques (and almost cliques).
+Observe that a clique in this graph is a set of highly correlated views,
+and therefore, these views are likely to have similar utility. 
+As a result, we select a
+single node from each clique as a representative view for that clique and
+prune the remaining views. 
+We can think of this procedure as clustering views based on similarity and
+choosing a representative view form each cluster.
+At the end of the offline step, the View Generator stores the list of
+viable views that must be evaluated at run time.
 
-The view generator uses the metadata and pruning strategies discussed above to
-create view stubs for each view that has not been pruned. 
-These are the views that will be evaluated by the execution engine in the next
-step.
-In the next section, we discuss in detail both the execution engines supported
-by \SeeDB\ and engine specific optimizations used.
+When the View Generator is invoked at runtime, it reads the list of viable
+views for the table, prunes them further based on the input query (e.g.
+attributes present in the where clause of the query should not be present in
+any view) and passes the remaining views to the Execution Engine for
+evaluation.
 
-\mpv{If two dimension attributes $a_i$ and $a_j$ have
-a high degree of correlation (e.g. full name of airport and abbreviated name of
-airport), the views generated by grouping the table on $a_i$ and $a_j$ will be
-very similar (and have almost equal utility). We can therefore generate and
-evaluate a single view representing both $a_i$ and $a_j$. \SeeDB\ clusters
-attributes based on correlation and evaluates a representative view per
-cluster.}
+In real datasets, we find that the offline processing significantly
+reduces the number of views that must be evaluated. 
+For example, in the
+diabetes dataset discussed in Section \ref{sec:experiments}, offline pruning
+reduces the total number of views from XXX to XXX due to our pruning
+strategy. Similarly, for the banking dataset, the total views are
+reduced from XXX to XXX. In Figure \ref{}, we show graphs generated by the
+View Generator for both datasets.
+
+% \mpv{If two dimension attributes $a_i$ and $a_j$ have
+% a high degree of correlation (e.g. full name of airport and abbreviated name of
+% airport), the views generated by grouping the table on $a_i$ and $a_j$ will be
+% very similar (and have almost equal utility). We can therefore generate and
+% evaluate a single view representing both $a_i$ and $a_j$. \VizRecDB\ clusters
+% attributes based on correlation and evaluates a representative view per
+% cluster.}
 
 
 

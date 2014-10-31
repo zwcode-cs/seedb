@@ -18,42 +18,88 @@ process and challenges in choosing good visualizations using a few examples.
 
 
 
-\subsubsection*{Example 1: Business Intelligence}
-Consider a dataset containing sales records for a nation-wide
-chain of stores.
-Let's say the store's data analyst is interested
-in examining how the newly-introduced heating device, the ``Laserwave
-Oven'', has been doing over the past year.
-The results of this analysis will inform business decisions
-for the chain, including marketing strategies, and the introduction of a similar
-``Saberwave Oven''.
+\subsection*{Motivating Example}
+Consider the (fictional) Android app analytics team at Google. 
+This team is tasked with studying the behavior of various apps on the Android
+app store to discover behavior trends for specific classes of apps, e.g.
+extremely popular apps, apps that behave badly etc.
+Suppose that App-A is a particular app that has been behaving badly and has
+received a lot of consumer complaints. 
+The app analytics team would like to discover the reason why App-A is
+behaving badly in order to provide feedback to the makers of App-A or to pull
+the app from the app store.
+The typical workflow to analyze App-A would proceed as follows:
+(1) An analyst would pose a query to the metrics database to pull all the
+metrics for App-A.
+For instance, the analyst may issue the following query:
+\noindent 
+\begin{align*}
+& \tt Q \ \ = \ \ SELECT \ * \ FROM \ \  AppMetrics \ \ WHERE \\
+& \tt AppName=``App-A''
+\end{align*}
 
-The analysis workflow proceeds as follows:
-(1) The analyst poses a query to select the subset of data that she is
-interested in exploring.
-For instance, for the example above, she may issue the query:
-\noindent $${\tt \ Q \ \ = \ \ SELECT \ * \ FROM \ \  Sales \ \ WHERE \ \
-Product=``Laserwave''} $$ \noindent Notice that the results for this query may
-have (say) several million records each with several dozen attributes.
+\noindent Notice that the results for this query may have millions of records
+(e.g. a record for each app session) each with several dozen attributes (e.g.
+network usage, power consumption, load time etc).
 Thus, directly perusing the query result is simply infeasible.
-(2) Next, the analyst studies various properties of the selected data by
-constructing diverse views or visualizations from the data. In this particular
-scenario, the analyst may want to study total sales by store, quantity in stock
-by region, or average profits by month. To construct these views, the analyst
-can use operations such as binning, grouping, and aggregation, and then generate
-visualizations from the view. For example, to generate the view `total sales by
-store', the analyst would group each sales record based on the store where the
-sale took place and sum up the sale amounts per store. This operation can easily
-be expressed as the familiar aggregation over group-by query:
+(2) Next, the analyst studies various properties of the selected metrics by
+constructing diverse views or visualizations from the data.
+In this particular scenario, the analyst may want to examine the average power
+consumption by device, total crashes grouped by session time, or average load
+times by carrier.
+To construct these views, the analyst can use operations such as binning,
+grouping, and aggregation, and then generate visualizations from the view.
+For example, to generate the view  for average load times by carrier, the
+analyst would group metrics based on the carrier and then average the app load
+times per carrier.
+This operation can easily be expressed as the familiar aggregation over group-by
+query:
 \noindent
 \begin{align*}
-& \tt Q' = SELECT \ \ store,\ SUM(amount) \ \ FROM \ \  Sales \ \ WHERE \\
-& \tt Product=``Laserwave" \ \ GROUP  \ \ BY \ \ store
+& \tt Q' = SELECT \ \ carrier,\ AVG(load\_time) \ \ FROM \ \  AppMetrics \\
+& \tt WHERE\ AppName=``App-A'' \ \ GROUP  \ \ BY \ \ carrier
 \end{align*}
 The result of the above query is a two-column table that can then be visualized
 as a bar-chart. Table \ref{tab:staplerX} and Figure
 \ref{fig:staplerX} respectively show an example of the results of this view and
 the associated visualization.
+
+%Consider a dataset containing sales records for a nation-wide
+%chain of stores.
+%Let's say the store's data analyst is interested
+%in examining how the newly-introduced heating device, the ``Laserwave
+%Oven'', has been doing over the past year.
+%The results of this analysis will inform business decisions
+%for the chain, including marketing strategies, and the introduction of a
+% similar ``Saberwave Oven''.
+
+%The analysis workflow proceeds as follows:
+%(1) The analyst poses a query to select the subset of data that she is
+%interested in exploring.
+%For instance, for the example above, she may issue the query:
+%\noindent $${\tt \ Q \ \ = \ \ SELECT \ * \ FROM \ \  Sales \ \ WHERE \ \
+%Product=``Laserwave''} $$ 
+% \noindent Notice that the results for this query may
+% have (say) several million records each with several dozen attributes.
+% Thus, directly perusing the query result is simply infeasible.
+% (2) Next, the analyst studies various properties of the selected data by
+% constructing diverse views or visualizations from the data. In this particular
+% scenario, the analyst may want to study total sales by store, quantity in stock
+% by region, or average profits by month. To construct these views, the analyst
+% can use operations such as binning, grouping, and aggregation, and then generate
+% visualizations from the view. For example, to generate the view `total sales by
+% store', the analyst would group each sales record based on the store where the
+% sale took place and sum up the sale amounts per store. This operation can easily
+% be expressed as the familiar aggregation over group-by query:
+% \noindent
+% \begin{align*}
+% & \tt Q' = SELECT \ \ store,\ SUM(amount) \ \ FROM \ \  Sales \ \ WHERE \\
+% & \tt Product=``Laserwave" \ \ GROUP  \ \ BY \ \ store
+% \end{align*}
+% The result of the above query is a two-column table that can then be visualized
+% as a bar-chart. Table \ref{tab:staplerX} and Figure
+% \ref{fig:staplerX} respectively show an example of the results of this view and
+% the associated visualization.
 
 
 
@@ -64,22 +110,22 @@ the associated visualization.
 \ttabbox{%
   \small
   \begin{tabular}{cc} \hline
-  Store & Total Sales (\$) \\ \hline
-  Cambridge, MA & 180.55 \\ \hline
-  Seattle, WA &  145.50\\ \hline
-  New York, NY & 122.00 \\ \hline
-  San Francisco, CA & 90.13 \\ \hline
+  Carrier & Load Times (ms) \\ \hline
+  AT\&T & 180.55 \\ \hline
+  Verizon &  145.50\\ \hline
+  T-Mobile & 122.00 \\ \hline
+  Metro & 90.13 \\ \hline
   \end{tabular}
 }{%
-  \caption{Data: Total Sales by Store for Laserwave}\label{tab:staplerX}%
+  \caption{Data: Average Load Times by Carrier for App-A}\label{tab:staplerX}%
 }
 \killfloatstyle
 \ffigbox{%
   \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist1.pdf}}}
   
 }{%
-  \caption{Visualization: Total \\ Sales by Store for
-  Laserwave}\label{fig:staplerX}%
+  \caption{Visualization: Average \\ Load Times by Carrier
+  for App-A}\label{fig:staplerX}%
 }
 \end{floatrow}
 \end{figure}
@@ -92,14 +138,14 @@ the associated visualization.
   \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist2.pdf}}}
   
 }{%
-  \caption{Scenario A: Total Sales by Store}\label{fig:staplerX-a}%
+  \caption{Scenario A: Average Load Times by Carrier}\label{fig:staplerX-a}%
 }
 \killfloatstyle
 \ffigbox{%
   \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist3.pdf}}}
   
 }{%
-  \caption{Scenario B: Total Sales by Store}\label{fig:staplerX-b}%
+  \caption{Scenario B: Average Load Times by Carrier}\label{fig:staplerX-b}%
 }
 \end{floatrow}
 \vspace{-12pt}
@@ -107,20 +153,22 @@ the associated visualization.
 
 
 
-To explore the query results from different perspectives, the analyst generates
+To explore the app behavior from different perspectives, the analyst generates
 a large number of views (and visualizations) of the form described above.
 (3) The analyst then manually examines each view and decides
 which ones are ``interesting''. This is a critical and time-consuming step.
 Naturally, what makes a view interesting depends on the 
 application semantics and the trend we are comparing against.
-For instance, the view of Laserwave sales by store, as shown in Figure
-\ref{fig:staplerX}, may be interesting if the overall sales of all products show
-the {\it opposite} trend (e.g. Figure \ref{fig:staplerX-a}). However, the same
-view may be uninteresting if the sales of all products follow a similar trend (Figure \ref{fig:staplerX-b}).
+For instance, the view of load times by carrier, as shown in Figure
+\ref{fig:staplerX}, may be interesting if the overall load times for all
+products showed the {\it opposite} trend (e.g. Figure \ref{fig:staplerX-a}).
+However, the same view may be uninteresting if the load times of all apps
+follow a similar trend (Figure \ref{fig:staplerX-b}).
 Thus, we posit that  a view is {\em potentially ``interesting'' if it shows 
 a trend in the subset of data selected by the analyst
-(i.e., Laserwave product-related data)
-that deviates from the equivalent trend in the overall dataset}.
+(i.e., metrics about App-A)
+that deviates from the equivalent trend in the overall dataset (i.e., metrics
+about all apps)}.
 Of course, the analyst must decide if this deviation 
 is truly an insight for this application.
 (4) Once the analyst has identified interesting views, the analyst may
@@ -130,124 +178,157 @@ start afresh with a new query.
 
 
 Of the four steps in the workflow described above, the 
-ones that are especially repetitive and tedious are steps (2) and (3),
+ones that are especially repetitive and tedious are steps (2) and (3)
 where the analyst generates a large number of candidate views, and examines each
-of them in turn. The goal of our system, \SeeDB, is to automate these
-labor-intensive steps of the workflow. Given a query $Q$ indicating the subset
-of data that the analyst is interested in, \SeeDB\ automatically {\em identifies and highlights to the analyst the most
-interesting views of the query results using methods based on
-deviation}. Specifically, \SeeDB\ explores the space of all possible views and
+of them in turn. 
+The goal of our system, \VizRecDB, is to automate these
+labor-intensive steps of the workflow. 
+Given a query $Q$ indicating the subset
+of data that the analyst is interested in, \VizRecDB\ automatically {\em
+identifies and highlights to the analyst the most interesting views of the query results using methods based on
+deviation}. 
+Specifically, \VizRecDB\ explores the space of all possible views and
 measures how much each view deviates from the corresponding view on the
 entire underlying dataset (e.g. Figure~\ref{fig:staplerX} vs.
-Figures~\ref{fig:staplerX-a} or \ref{fig:staplerX-b}.) By generating and
-scoring potential views automatically, \SeeDB\ effectively eliminates
-steps (2) and (3) that the analyst currently performs. Instead, once \SeeDB\
+Figures~\ref{fig:staplerX-a} or \ref{fig:staplerX-b}.) 
+By generating and
+scoring potential views automatically, \VizRecDB\ effectively eliminates
+steps (2) and (3) that the analyst currently performs. 
+Instead, once \VizRecDB\
 recommends interesting views, the analyst can evaluate this small
 subset of views using domain knowledge and limit further
 exploration to these views.  
 
+The above example illustrates one particular use case for \VizRecDB,
+particularly one where an analyst compares a subset of the data against all
+the underlying data.
+There are three use cases of \VizRecDB\ that are generalizations of the above
+model and are supported by \VizRecDB:
+\squishlist
+  \item {\it Use Case I: Comparison of a subset of data against the entire
+  underlying data}.
+  This is the Android metrics use case discussed above.
+  \item {\it Use Case II: Comparison of a subset of data against all the
+  remaining data}.
+  Imagine that a medical ressearcher is studying a medical records dataset and
+  wants to compare the set of patients with high medical expenses vs. the
+  all the remaining patients. The techniques from the first use case can be used
+  directly for this use case too.
+  \item {\it Use Case III: Comparison of two distinct datasets}. Finally,
+  imagine that in the Android metrics example, an analyst would like to compare
+  the metrics for two apps, say one app in the social category and another in
+  the music category. In this case, the analyst will select the datasets
+  by executing two different queries and \VizRecDB\ can be used to find
+  interesting differences between the two datasets.
+\squishend
 
-\subsubsection*{Example 2: Medical Data}
-Next, let us examine a use case in a completely different problem domain that
-also involves analyses similar to Example 1, and therefore, can benefit from the
-automatic construction of interesting views of a user query.
+In the rest of the paper, we center our discussion around Use Case I, however,
+all our techniques apply unchanged to Use Cases II and III.
 
-Consider a medical researcher studying the cost of care for cancer
-patients\footnote{Real use scenario at an area hospital}. The goal of the study
-is to identify patients whose cost of care is significantly greater than
-average and try to explain the high cost of care. Potential reasons for
-high cost include treatments for late-stage cancers, old age of the
-population, longer survival time (chemotherapy for a longer duration), type of
-treatment etc.
-Note that the goal is {\it not} to build a predictive model for cost; rather, it
-is to perform exploratory analysis to explain {\it why} certain patients have
-high cost of care.
-As a first pass, assume that the researcher identifies high cost patients as those with
-cost that is greater than two standard deviations away from the average
-cost. This can be expressed via the following SQL query, assuming a table of
-patients with their treatment costs and other treatment-related information.
-\begin{align*}
-& \tt Q2\ = SELECT \ \ *\ FROM \ \ Patients \ \ where\ cost - \\
-  \ \ & \tt (SELECT\ AVG(cost)\ FROM\ Patients)\ >\\
-  \ \ & \tt 2\ *\ (SELECT\ STDDEV(cost)\ FROM\ Patients)
-\end{align*}
+% \subsection*{Example 2: Medical Data}
+% Next, let us examine a use case in a completely different problem domain that
+% also involves analyses similar to Example 1, and therefore, can benefit from the
+% automatic construction of interesting views of a user query.
+% 
+% Consider a medical researcher studying the cost of care for cancer
+% patients\footnote{Real use scenario at an area hospital}. The goal of the study
+% is to identify patients whose cost of care is significantly greater than
+% average and try to explain the high cost of care. Potential reasons for
+% high cost include treatments for late-stage cancers, old age of the
+% population, longer survival time (chemotherapy for a longer duration), type of
+% treatment etc.
+% Note that the goal is {\it not} to build a predictive model for cost; rather, it
+% is to perform exploratory analysis to explain {\it why} certain patients have
+% high cost of care.
+% As a first pass, assume that the researcher identifies high cost patients as those with
+% cost that is greater than two standard deviations away from the average
+% cost. This can be expressed via the following SQL query, assuming a table of
+% patients with their treatment costs and other treatment-related information.
+% \begin{align*}
+% & \tt Q2\ = SELECT \ \ *\ FROM \ \ Patients \ \ where\ cost - \\
+%   \ \ & \tt (SELECT\ AVG(cost)\ FROM\ Patients)\ >\\
+%   \ \ & \tt 2\ *\ (SELECT\ STDDEV(cost)\ FROM\ Patients)
+% \end{align*}
+% 
+% Once these patients have been identified, the researcher can begin to analyze
+% the data to find potential reasons for their high cost of care (This is similar
+% to Step 1 in Example 1).
+% One technique to find potential reasons for high cost is to compare the
+% high-cost population of patients to the remaining set of patients (called
+% ``low-cost'' population).
+% Similar to Example 1 above, we posit that the {\it characteristics that
+% explain high cost are precisely those characteristics that are different between
+% the high-cost and low-cost population}. 
+% For instance, if the majority of
+% high-cost patients were those with late-stage disease (sicker patients) while
+% the low-cost patients were not, the researcher could reason that the sicker
+% patients needed more medications or procedures, leading
+% to higher cost overall. 
+% Note that this analysis is similar to Example 1 where we
+% compared the ``total sales by year'' for $Laserwave$ $oven$ vs. all store
+% products.
+% In this setup, we want to compare the ``total patients by disease stage'' for
+% high-cost patients vs. low-cost patients. The only change in the problem
+% formulation is that we are now comparing views of query Q2 against views of the
+% remaining table, instead of views over the entire table. The rest of the
+% framework remains unchanged. Therefore, \VizRecDB\ can be used to automatically
+% construct a large number of views of the high-cost population, compare
+% each view to the corresponding view over the low-cost population, and
+% identify views showing the highest difference between the two populations. These
+% views identify potential causes for high cost. Once the researcher has identified views of interest, he or she
+% can follow up with more complex analyses like statistical significance testing or machine
+% learning.
+% 
+% \subsection*{Example 3: Product Analysis}
+% 
+% Consider a company like Facebook\footnote{www.facebook.com} that continuously
+% deploys changes to its website and mobile apps, and tracks user interaction
+% through detailed logging. Product specialists at Facebook use these logs to
+% study how different Facebook users respond to changes to the web or mobile
+% experience \cite{DBLP:conf/vldb/AbrahamABB13}. Each user can be characterized by a large number
+% of features such as location, age, device used, number of friends etc.
+% For each user, the logs note the actions taken on the website or app such
+% as likes, shares, comments, page visits etc. For example, in order to study
+% the user response to an update to the mobile app, the specialist compares user
+% interaction metrics for a large number of mobile users before and after the
+% update (usually a week on week comparison). The goal is to find patterns in the
+% interaction metrics based on different user characteristics. Therefore, if it
+% appears that the average number of app visits on the iOS app have reduced
+% signficantly following the update, it would indicate a problem with the iOS app.
+% 
+% In terms of the \VizRecDB\ framework, log data from the week following the app
+% update constitutes the query results we seek to analyze and the log data from
+% the prior week comprises the comparison dataset. As in Examples 1 and 2, the
+% analysis process requires the specialist to create diverse views of the query
+% results, compare views to equivalent views on the comparison dataset, and
+% pick the views showing the highest difference. 
+% \VizRecDB\ can therefore be used to automate this process and surface only the most
+% interesting views.
 
-Once these patients have been identified, the researcher can begin to analyze
-the data to find potential reasons for their high cost of care (This is similar
-to Step 1 in Example 1).
-One technique to find potential reasons for high cost is to compare the
-high-cost population of patients to the remaining set of patients (called
-``low-cost'' population).
-Similar to Example 1 above, we posit that the {\it characteristics that
-explain high cost are precisely those characteristics that are different between
-the high-cost and low-cost population}. 
-For instance, if the majority of
-high-cost patients were those with late-stage disease (sicker patients) while
-the low-cost patients were not, the researcher could reason that the sicker
-patients needed more medications or procedures, leading
-to higher cost overall. 
-Note that this analysis is similar to Example 1 where we
-compared the ``total sales by year'' for $Laserwave$ $oven$ vs. all store
-products.
-In this setup, we want to compare the ``total patients by disease stage'' for
-high-cost patients vs. low-cost patients. The only change in the problem
-formulation is that we are now comparing views of query Q2 against views of the
-remaining table, instead of views over the entire table. The rest of the
-framework remains unchanged. Therefore, \SeeDB\ can be used to automatically
-construct a large number of views of the high-cost population, compare
-each view to the corresponding view over the low-cost population, and
-identify views showing the highest difference between the two populations. These
-views identify potential causes for high cost. Once the researcher has identified views of interest, he or she
-can follow up with more complex analyses like statistical significance testing or machine
-learning.
 
-\subsubsection*{Example 3: Product Analysis}
+\subsection*{Challenges and Contributions}
 
-Consider a company like Facebook\footnote{www.facebook.com} that continuously
-deploys changes to its website and mobile apps, and tracks user interaction
-through detailed logging. Product specialists at Facebook use these logs to
-study how different Facebook users respond to changes to the web or mobile
-experience \cite{DBLP:conf/vldb/AbrahamABB13}. Each user can be characterized by a large number
-of features such as location, age, device used, number of friends etc.
-For each user, the logs note the actions taken on the website or app such
-as likes, shares, comments, page visits etc. For example, in order to study
-the user response to an update to the mobile app, the specialist compares user
-interaction metrics for a large number of mobile users before and after the
-update (usually a week on week comparison). The goal is to find patterns in the
-interaction metrics based on different user characteristics. Therefore, if it
-appears that the average number of app visits on the iOS app have reduced
-signficantly following the update, it would indicate a problem with the iOS app.
-
-In terms of the \SeeDB\ framework, log data from the week following the app
-update constitutes the query results we seek to analyze and the log data from
-the prior week comprises the comparison dataset. As in Examples 1 and 2, the
-analysis process requires the specialist to create diverse views of the query
-results, compare views to equivalent views on the comparison dataset, and
-pick the views showing the highest difference. 
-\SeeDB\ can therefore be used to automate this process and surface only the most
-interesting views.
-
-
-\subsubsection*{Challenges and Contributions}
-
-We described our vision for \SeeDB, along with the associated research
-challenges in a companion vision paper~\cite{DBLP:conf/vldb/Parameswaran2013},
-and demonstrated \SeeDB\ in a demonstration paper~\cite{XXX}.
-In this paper, we explore and evaluate multiple implementations of \SeeDB, both
-on top of a database system and as a stand along in-memory solution. We develop
-implementation-specific optimizations that leverage the underlying system
-architecture.
-Given a query $Q$ indicating the subset of data that the analyst is interested
-in, \SeeDB\ automatically {\em identifies and highlights to the analyst the most
-interesting views of the query results using methods based on deviation}. 
-
+\cite{DBLP:conf/vldb/Parameswaran2013} described the vision for \VizRecDB, and
+\cite{XXX} demonstrated a prototype of the \VizRecDB\ system.
+In this work, we explored two distinct implementations of \VizRecDB, both on top
+of a database.
+First, we explore \VizRecDB\ as a wrapper on top of a database system and study
+how far we could push existing systems to support a \VizRecDB-type workload.
+Next, we overcome the constraints of the DBMS API by writing a custom system
+that extensively shares results between views and performs aggressive pruning
+based on intermediate results.
+For each implementation of \VizRecDB, we also develop implementation-specific
+optimizations that leverage the underlying system architecture.
+At its core, given a query $Q$ indicating the subset of data that the analyst is
+interested in, the goal of \VizRecDB\ automatically {\em identifies and
+highlights to the analyst the most interesting views of the query results using
+methods based on deviation}.
 
 To efficiently and accurately produce the set of most interesting
 visualizations, we must address the following challenges: 
-(1) We must determine
-metrics that accurately measure the ``deviation'' of a view with respect to the equivalent view on the entire database (e.g.,
-Figure~\ref{fig:staplerX} vs.~\ref{fig:staplerX-a}), while simultaneouly
-ensuring that \SeeDB\ is not tied to any particular metric(s); 
+(1) We must determine metrics that accurately measure the ``deviation'' of a
+view with respect to the equivalent view on the entire database (e.g.,
+Figure~\ref{fig:staplerX} vs.~\ref{fig:staplerX-a}); 
 (2)  We must
 intelligently explore the space of candidate views. Since the number of
 candidate views (or visualizations) increases as the square of the number of
@@ -262,38 +343,38 @@ on the other hand, will be expensive and wasteful;
 % Queries to compute views and their
 % deviation are highly similar and therefore
 % independent execution is expensive and wasteful; 
-(4) Since
-analysis must happen in real-time, we must trade-off accuracy
-of visualizations or estimation of ``interestingness'' for reduced latency.
+(4) We must prune low-utility views early on to avoid wasting resources and
+computation on these views; 
+(5) Since analysis must happen in interactive time scales, we must trade-off
+accuracy of visualizations or estimation of ``interestingness'' for reduced latency.
 
 
 The contributions of this paper are:
 \squishlist
-  \item In keeping with the \SeeDB\ vision from \cite{}, we explore and
-  evaluate multiple implementations of the system, both on top of the database
-  as well as a standalone solution.
+  \item In keeping with previously published \VizRecDB\ vision, we
+  explore and evaluate two distinct implementations of the system, one as a
+  wrapper around a database and another a custom solution.
   \item We propose and implement a number of
   implementation-specific optimizations and heristics to efficiently perform the
   search for interesting views and share computation between multiple views
   simultaneously. 
+  \item For the implementation of \VizRecDB\ on top of a DBMS, we model the
+  performance of \VizRecDB\ in terms of various parameters of \VizRecDB\ and the
+  underlying database, and use this model to identify optimal parameter settings
+  for \VizRecDB\ (Section~\ref{sec:model}).
+  \item For the custom implementation of \VizRecDB, we cast the problem of
+  finding the best visualizations as a variant of both top-k ranking and the
+  multi-armed bandit problem. We adapt heuristics from both problem spaces to
+  perform aggressive pruning of views.
+  \item We explore visualization pruning techniques based on data distribution
+  to prune views even before they are evaluated by the \VizRecDB\ system.
   \item We evaluate the performance of our optimizations on a range of
   real and synthetic datasets and demonstrate the resulting XXX speedup
   (Section~\ref{sec:experiments}). We also demonstrate that our heuristics
   improve performance without affecting system accuracy.
-  \item For the \SeeDB\ implementation on top of a DBMS, we model the
-  performance of \SeeDB\ in terms of various parameters of \SeeDB\ and the
-  underlying database, and use this model to identify optimal parameter settings
-  for \SeeDB\ (Section~\ref{sec:model}).
-  \item For the in-memory implementation of \SeeDB, we cast the problem of
-  finding the best visualizations as a variant of top-k ranking and multi-armed
-  bandits and adapt heuristics from both problem spaces.
-  \item We present and evaluate different metrics for measuring interesting-ness
-  of views.
-  \item We explore visualization pruning techniques based on data distribution
-  to prune views even before they are evaluated by the \SeeDB\ system.
   \item We report the result of a user study conducted to evaluate the
-  \SeeDB\ concept of finding interesting views, the relative quality of
-  different metrics, and the usefulness of a tool like \SeeDB\ in finding
+  \VizRecDB\ concept of finding interesting views, the relative quality of
+  different metrics, and the usefulness of a tool like \VizRecDB\ in finding
   interesting visualizations of a dataset.
 \squishend
 
@@ -305,25 +386,25 @@ The contributions of this paper are:
 
 
 
-% In this demo, we demonstrate a system called \SeeDB\
+% In this demo, we demonstrate a system called \VizRecDB\
 % \cite{DBLP:conf/vldb/Parameswaran2013} that automates the labor-intensive parts
 % of the aforementioned data analysis process by automatically identifying and
 % producing high-quality views for any input query. Specifically, given a query
-% $Q$ posed by the user, \SeeDB\ explores all possible views of $Q$, determines
+% $Q$ posed by the user, \VizRecDB\ explores all possible views of $Q$, determines
 % the ``interesting''-ness of each of the views based on deviation and returns to
 % the user the set of views that it deems the most interesting. The user can then
 % limit his analysis to this high-quality set of views.
 
 % In the process of automatically producing an interesting set of views for any
-% query, \SeeDB\ must address a few challenges: (a) the size of the space of
+% query, \VizRecDB\ must address a few challenges: (a) the size of the space of
 % potential views increases as the square of the number of attributes in a table,
 % and even for a moderately sized table (e.g. 1M rows, 100 attributes) generating
-% all views is prohibitively expensive; as a result, \SeeDB\ must intelligently
+% all views is prohibitively expensive; as a result, \VizRecDB\ must intelligently
 % explore this space; (b) computing each view and its utility independently is
-% expensive and wasteful, and hence \SeeDB\ must share computation between
-% queries; and (c) since visual analysis must happen in real-time, \SeeDB\ must
+% expensive and wasteful, and hence \VizRecDB\ must share computation between
+% queries; and (c) since visual analysis must happen in real-time, \VizRecDB\ must
 % tradeoff accuracy of views for reduced latency. In Section
-% \ref{sec:system_architecture}, we describe how \SeeDB\ addresses these
+% \ref{sec:system_architecture}, we describe how \VizRecDB\ addresses these
 % challenges.
 
 
@@ -362,8 +443,8 @@ The contributions of this paper are:
 
 
 
-% Since \SeeDB\ must rank views based on utility, accurately measuring 
-% utility is cruicial. \SeeDB\ is based on the principle
+% Since \VizRecDB\ must rank views based on utility, accurately measuring 
+% utility is cruicial. \VizRecDB\ is based on the principle
 % that it is the {\bf deviations from expected behavior that make a view
 % interesting}. For instance, in the above example, the researcher would be
 % interested in the fact that high-cost patients actually visit a specific set of
@@ -371,9 +452,9 @@ The contributions of this paper are:
 % would be interested in knowing that the high-cost patients have longer hospital
 % stays compared to the rest of the population. Thus, given a query, interesting
 % trends are those that differ significantly between the query and the underlying
-% dataset. \SeeDB\ therefore assigns higher utility to views that show divergent
+% dataset. \VizRecDB\ therefore assigns higher utility to views that show divergent
 % trends. (Since it may be more appropriate to compare the high-cost patients with
-% other patients having the same disease but lower cost, so \SeeDB\ allows the
+% other patients having the same disease but lower cost, so \VizRecDB\ allows the
 % user to specify what dataset to compare with).
 
 
@@ -400,7 +481,7 @@ The contributions of this paper are:
 % 
 % \item Since visualizations tend to convey approximate information, e.g., a trend
 % in a line plot may be more important than knowing the exact coordinates of each
-% point, we can introduce approximations as part of \SeeDB.  Thus, the utility of
+% point, we can introduce approximations as part of \VizRecDB.  Thus, the utility of
 % a discriminating view may be computed approximately but efficiently, and the
 % recommended discriminating views can be populated with approximate results,
 % based on synopses of the base data or of the query result, that can be generated

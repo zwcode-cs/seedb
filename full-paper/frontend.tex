@@ -1,14 +1,14 @@
 %!TEX root=document.tex
 
 
-\section{SeeDB Frontend}
-\label{sec:seedb_frontend}
+\section{VizRecDB Frontend}
+\label{sec:VizRecDB_frontend}
 
-The \SeeDB\ frontend, designed as a thin client, performs two main functions: it
-allows the analyst to issue a query to \SeeDB, 
-and it visualizes the results (views) produced by the \SeeDB\
+The \VizRecDB\ frontend, designed as a thin client, performs two main functions: it
+allows the analyst to issue a query to \VizRecDB, 
+and it visualizes the results (views) produced by the \VizRecDB\
 backend.
-To provide the analyst maximum flexibility in issuing queries, \SeeDB\
+To provide the analyst maximum flexibility in issuing queries, \VizRecDB\
 provides the analyst with three
 mechanisms for specifying an input query: 
 (a) directly filling in SQL into a text box, 
@@ -20,7 +20,7 @@ e.g., selecting outliers in a particular column.
 %templates are particularly useful since analysts are often interested in
 %anomalous data points.
 
-Once the analyst issues a query via the \SeeDB\ frontend, the backend
+Once the analyst issues a query via the \VizRecDB\ frontend, the backend
 evaluates various views and delivers the most interesting ones (based on
 utility) to the frontend.
 For each view delivered by the backend, the frontend creates a visualization
@@ -35,7 +35,7 @@ and study metadata for each view (e.g. size of result, sample data, value with
 maximum change and other statistics). 
 %The analyst can also slice-and-dice views further by performing drill-downs on
 %specific attributes in the view. 
-Figure~\ref{fig:frontend1} shows a screenshot of the \SeeDB\ frontend (showing
+Figure~\ref{fig:frontend1} shows a screenshot of the \VizRecDB\ frontend (showing
 the query builder and resulting visualizations) in action.
  
 \begin{figure}[htb]
@@ -45,14 +45,14 @@ the query builder and resulting visualizations) in action.
 clip=true]{Images/sql_builder.pdf}}}
 \hbox{\resizebox{!}{6cm}{\includegraphics[trim=50mm 30mm 150mm 52mm,
 clip=true]{Images/viz_panel.pdf}}}}
-\caption{SeeDB Frontend: Query Builder (left) and Example Visualizations
+\caption{VizRecDB Frontend: Query Builder (left) and Example Visualizations
 (right)}
 \label{fig:frontend1}
 \vspace{-10pt}
 \end{figure} 
 
-In this work, we focus on the \SeeDB\ backend and develop techniques to
+In this work, we focus on the \VizRecDB\ backend and develop techniques to
 speed up identification of interesting views. As a result, we leave the
-development of a more advanced and flexible \SeeDB\ frontend for future work. 
-In the next section, we describe the \SeeDB\ execution engine and discuss
+development of a more advanced and flexible \VizRecDB\ frontend for future work. 
+In the next section, we describe the \VizRecDB\ execution engine and discuss
 two implementations in detail.

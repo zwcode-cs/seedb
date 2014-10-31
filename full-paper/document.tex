@@ -20,9 +20,12 @@
 %\usepackage{verbatim}
 %\usepackage{framed}
 %\usepackage[ruled,vlined]{algorithm2e}
+\usepackage{floatrow}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
 
 \usepackage[font={scriptsize,it}]{caption}
-\usepackage{floatrow}
+
 
 
 \begin{document}
@@ -32,7 +35,7 @@
 \newcommand{\agp}[1]{\textcolor{red}{Aditya: #1}}
 \newcommand{\mpv}[1]{\textcolor{blue}{Manasi: #1}}
 %\newcommand{\alkis}[1]{\smallskip\noindent \textcolor{red}{\it $\Rightarrow$ Alkis: #1}}
-\newcommand{\SeeDB}{{\sc SeeDB}}
+\newcommand{\VizRecDB}{{\sc VizRecDB}}
 \newcommand{\calQ}{\mathcal{Q}}
 \newcommand{\calR}{\mathcal{R}}
 \newcommand{\att}[1]{{\text{#1}}}
@@ -83,11 +86,11 @@
 
 
 
-\title{{\LARGE \sc SeeDB}: Automatically Generating Query Visualizations}
+\title{{\LARGE \sc VizRecDB}: Automatically Generating Query Visualizations}
 %\subtitle{\vspace{-10pt}[Vision Paper]\vspace{5pt}}
 
 
-
+ 
 %\numberofauthors{3}
 %\author{
 %}
@@ -96,9 +99,9 @@
 \begin{abstract}
 \input{abstract.tex}
 \end{abstract}
-%\input{introduction.tex}
-%\input{problem.tex}
-%\input{related_work.tex} 
+\input{introduction.tex}
+\input{problem.tex}
+\input{related_work.tex} 
 \input{architecture.tex}
 \input{frontend.tex}
 \input{dbms_execution_engine.tex}
@@ -108,7 +111,7 @@
 %\input{user_study.tex}
 %\input{discussion.tex}
 
-\input{conclusions.tex}
+%\input{conclusions.tex}
 \vspace{-2mm}
 {\scriptsize
 \bibliographystyle{abbrv}

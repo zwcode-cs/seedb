@@ -1,37 +1,37 @@
-\section{\SeeDB\ Execution Engine}
-In this section, we discuss the design and implementation of the \SeeDB\
+\section{\VizRecDB\ Execution Engine}
+In this section, we discuss the design and implementation of the \VizRecDB\
 Execution Engine. 
-The input to the \SeeDB\ engine is a set of view stubs (tripes of the form
+The input to the \VizRecDB\ engine is a set of view stubs (tripes of the form
 $(a, m, f)$) and the output is the top-$k$ views with the highest utility.
-The goals of the \SeeDB\ engine are two fold:
+The goals of the \VizRecDB\ engine are two fold:
 (1) to efficienctly compute the utility of a large number of views, and (2) to accurately rank views in order of
 utility to find the $k$ views with the highest utility.
 
 
 As discussed in the architecture overview, we explored two distinct
-implementations of the \SeeDB\ execution engine.
-Our first design implemented the \SeeDB\ engine as a wrapper on top of a
+implementations of the \VizRecDB\ execution engine.
+Our first design implemented the \VizRecDB\ engine as a wrapper on top of a
 vanilla database system.
-We chose this design so that \SeeDB\ could be used unchanged with a variety of
+We chose this design so that \VizRecDB\ could be used unchanged with a variety of
 existing DBMSs.
 Our goal was to study how far we could push existing systems to
-support a \SeeDB-type workload without making any changes to the underlying
+support a \VizRecDB-type workload without making any changes to the underlying
 DBMS.
-Implemented as a wrapper over a DBMS, \SeeDB\ is limited to using the API
-exposed by the DBMS; essentially, \SeeDB\ is limited to opening/closing connections to the
+Implemented as a wrapper over a DBMS, \VizRecDB\ is limited to using the API
+exposed by the DBMS; essentially, \VizRecDB\ is limited to opening/closing connections to the
 database and executing SQL queries. 
 Since we have no control over how queries are executed or access to intermediate
 results, {\it our optimizations minimize total execution time by minimizing the
 total number of scans of the underlying table}.
-We now discuss the basic framework used by \SeeDB\ to query the DBMS and various
-optimizations supported by \SeeDB.
+We now discuss the basic framework used by \VizRecDB\ to query the DBMS and various
+optimizations supported by \VizRecDB.
 
 \subsection{Basic Framework}
 \label{sec:basic_framework}
 Given a set of view stubs provided to the execution engine, the basic framework
 works as follows: 
 (1) for each view, we generate SQL queries for the target and
-comparison view (see queries in Section \ref{}), 
+comparison view (see queries in Section \ref{sec:problem_statement}), 
 (2) we execute each view query independently on the DBMS, 
 (3) the results of each query (i.e. aggregated values) are processed and
 normalized to compute the target and comparison distributions, 
@@ -44,7 +44,7 @@ clearly inefficient since it examines every possible view and executes each view
 query independently.
 
 \subsection{Optimizations} 
-\label{sec:optimizations}
+\label{sec:dbms_optimizations}
 As discussed above, the basic framework performs one scan of the table for each
 query that is executed, causing {\it 2 * number of views} scans of the
 underlying table. Since our goal is to minimize the number of scans, our ideal
@@ -56,19 +56,19 @@ The SQL GROUPING SETS\footnote{GROUPING SETS allow the simultaneous
   grouping of query results by multiple sets of attributes.} functionality
   available in a handful of systems can be used to support this operation;
   however, it is unclear how this operator will scale to large number of groups
-  and as we show in Section \ref{}, evaluating all views for the entire dataset
-  is unnecessary and inefficient.
+  and as we show in Section \ref{sec:in_memory_execution_engine}, evaluating all
+  views for the entire dataset is unnecessary and inefficient.
 
 Without this ideal operator $\mathcal{O}$,
 our optimizations minimize table scans in two ways: (1) minimize the total number of
 queries by intelligently combining queries, and (2) reduce the total
-execution time by running queries in parallel. \SeeDB\ supports the following
+execution time by running queries in parallel. \VizRecDB\ supports the following
 optimizations and their combinations.
 
 \subsubsection {Combine Multiple Aggregates} 
 A large number of view queries have the same group-by attribute but different
 aggregation attributes. 
-Therefore, \SeeDB\ combines all view queries with the same
+Therefore, \VizRecDB\ combines all view queries with the same
 group-by attribute into a single, combined view query. For instance, instead of executing
 queries for views $(a_1$, $m_1$, $f_1)$, $(a_1$, $m_2$, $f_2)$ \ldots $(a_1$, $m_k$, $f_k)$
 independently, we can combine the $n$ views into a single view represented by
@@ -79,7 +79,7 @@ attributes.
 \subsubsection {Combine Multiple Group-bys}
 \label{subsec:mult_gb}
   Similar to the multiple aggregates optimization, another optimization
-  supported by \SeeDB\ is to combine queries with different group-by attributes
+  supported by \VizRecDB\ is to combine queries with different group-by attributes
   into a single query with multiple group-bys attributes.
   For instance, instead of executing queries for views $(a_1$, $m_1$, $f_1)$,
   $(a_2$, $m_1$, $f_1)$ \ldots $(a_n$, $m_1$, $f_1)$ independently, we can
@@ -87,8 +87,8 @@ attributes.
   a_n\}$, $m_1$, $f_1)$ and post-process results.
 
   While this optimization has the potential to significantly reduce query
-  execution time, we find (Section \ref{}) that the time to execute a query
-  with multiple group-by attributes depends on the number of distinct values
+  execution time, we find (Section \ref{sec:experiments}) that the time to
+  execute a query with multiple group-by attributes depends on the number of distinct values
   present in the resulting combination of dimension attributes.
   This is expected because for a large number of distinct values, the query
   executor must keep track of a large number of aggregates. 
@@ -138,10 +138,10 @@ attributes.
   we are given a black box function that given a particular grouping of
   attributes returns a value for the ``goodness'' of the combination. 
   For instance, in
-  Section \ref{}, we develop an analytical model for the performance of the
-  DBMS-backed Execution Engine. 
+  Section \ref{sec:analytical_model}, we develop an analytical model for the
+  performance of the DBMS-backed Execution Engine. 
   This model predicts the execution time for the
-  \SeeDB\ engine and can be used in place of the black box function. 
+  \VizRecDB\ engine and can be used in place of the black box function. 
   A simpler
   black box function maybe a combination of the maximum number of distinct
   values across all the groups and the number of groups. 
@@ -152,7 +152,8 @@ attributes.
   distinct values, (2) combine the first two groups into a single group and
   calculate the number of distinct values for this new group.
 \end{itemize} 
-We experimentally evaluate both strategies in Section \ref{}. 
+We experimentally evaluate both strategies in Section \ref{sec:experiments}.
+ 
 \subsubsection{Combine target and comparison view query}
 \label{subsec:target_comparison_view}
 Since the target view and comparison views only differ in the subset of data
@@ -178,7 +179,7 @@ may be faster.
   \subsubsection {Parallel Query Execution}
   \label{subsec:parallel_exec}
   While the above optimizations reduce the number of queries executed, we can
-  further speedup \SeeDB\ processing by executing view queries in parallel. When
+  further speedup \VizRecDB\ processing by executing view queries in parallel. When
   executing queries in parallel, we expect co-executing queries to share pages in the
   buffer pool for scans of the same table, thus reducing disk accesses and
   therefore the total execution time. 
@@ -207,17 +208,18 @@ may be faster.
   
 \subsubsection {Sampling}
   For large datasets, sampling can be used to significantly improve
-  performance. To use sampling with \SeeDB, we precompute a sample of the
+  performance. To use sampling with \VizRecDB, we precompute a sample of the
   entire dataset (size of sample depends on desired accuracy). When a query is
-  issued to \SeeDB, we run all view queries against the sample and pick the
+  issued to \VizRecDB, we run all view queries against the sample and pick the
   top-k views. Only these high-utility views are then computed on the entire
   dataset. \\
 
 \noindent{\bf Row Stores vs. Column Stores:}
-Our DBMS-backed execution engine for \SeeDB\ is agnostic towards the
+Our DBMS-backed execution engine for \VizRecDB\ is agnostic towards the
 particular DBMS used to execute queries. 
 However, because of significant differences in the way that row stores and
 column stores organize data, some of the above optimizations (e.g. combining a
 large number of aggregates) will be more powerful in row stores and may actually
 hurt performance in column stores. In our experimental evaluation (Section
-\ref{}), we study the relative advantages of each of our optimizations.
+\ref{sec:experiments}), we study the relative advantages of each of our
+optimizations.

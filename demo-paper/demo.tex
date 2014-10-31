@@ -3,9 +3,9 @@
 \section{Demo Walkthrough}
 \label{sec:demo-walkthrough}
  
-We propose to demonstrate the functionality of \SeeDB\ through hands-on
+We propose to demonstrate the functionality of \VizRecDB\ through hands-on
 interaction with a variety of datasets. Our goals are two fold: (1) demonstrate
-the utility of \SeeDB\ in surfacing interesting trends for a query
+the utility of \VizRecDB\ in surfacing interesting trends for a query
 and (2) demonstrate that we can return high quality views efficiently for
 a range of datasets. We will use four different datasets in our demonstration:
 
@@ -16,46 +16,46 @@ a range of datasets. We will use four different datasets in our demonstration:
     about orders placed in a store including products, prices, ship
     dates, geographical information, and profits. Interesting trends in
     this dataset have been very well studied, and attendees will use
-    \SeeDB\ to quickly re-identify these trends. 
+    \VizRecDB\ to quickly re-identify these trends. 
     %This dataset will also
-    %enable us to demonstrate how \SeeDB can correctly deal with
+    %enable us to demonstrate how \VizRecDB can correctly deal with
     %numeric, categorical, and geographic data.
   \item {\bf Election Contribution dataset}~\cite{election_data}: This
   is an example of a dataset typically analyzed by
     non-expert data analysts like journalists or historians. With this
-    dataset, we demonstrate how non-experts can use \SeeDB\ to quickly
+    dataset, we demonstrate how non-experts can use \VizRecDB\ to quickly
     arrive at interesting visualizations.
   \item {\bf Medical dataset}~\cite{mimic}: This real-world dataset exemplifies
   a dataset that a clinical researcher might use. The schema of the dataset is
   significantly complex and it is of larger size.  
     \item {\bf Synthetic data:} We provide a set of synthetic datasets with
     varying sizes, number of attributes, and data distributions to help
-    attendees evaluate \SeeDB\ performance on diverse datasets.
+    attendees evaluate \VizRecDB\ performance on diverse datasets.
 \end{denselist}
 
 \stitle {Scenario 1: Demonstrating Utility.} Attendees are provided with three
-diverse, real-world datasets to explore using \SeeDB. For each dataset,
-attendees can issue ad-hoc or pre-formulated queries to \SeeDB. \SeeDB\ will
+diverse, real-world datasets to explore using \VizRecDB. For each dataset,
+attendees can issue ad-hoc or pre-formulated queries to \VizRecDB. \VizRecDB\ will
 then intelligently explore the view space and optimize query execution to return the
 most interesting visualizations with low latency. Attendees can examine the
 returned queries visually, view the associated metadata, and perform
 drill-downs. To aid the evaluation of visualizations, the demo system will 
 be configured to also show the user ``bad'' views (views with low utility) that were not selected
-by \SeeDB.
+by \VizRecDB.
 Similarly, we provide pre-selected queries (and
 previously known information about their results) to allow attendees to
-confirm that \SeeDB\ does indeed reproduce known information about these
+confirm that \VizRecDB\ does indeed reproduce known information about these
 queries. Attendees will also be able to experiment with a
 variety of distance metrics for computing utility and observe the effects on the
 resulting views.
 
-% \stitle{Demonstrating Utility:} To show the utility of \SeeDB\ in a real-world
+% \stitle{Demonstrating Utility:} To show the utility of \VizRecDB\ in a real-world
 % scenario, we will provide conference attendees three diverse datasets that they
 % can explore and interact with. Attendees can pose ad-hoc or pre-selected queries
 % on various datasets and evaluate the visualizations returned. The
 % evaluation is based on whether the visualizations surface ``interesting''
 % aspects of the queried data and whether the right visualizations have been
-% selected. To aid the evaluation of visualizations, the demo version of \SeeDB\
+% selected. To aid the evaluation of visualizations, the demo version of \VizRecDB\
 % will have the option of showing ``bad'' visualizations too, i.e. visualizations
 % that were predicted to have low utility.  The attendees will also have the option of
 % trying various utility metrics as described in Section
@@ -66,19 +66,19 @@ will use an enhanced user interface and synthetic datasets mentioned above.
 Attendees will be able to easily experiment with a range of synthetic datasets and input
 queries by adjusting various ``knobs'' such as data size, number of attributes, and
 data distribution. In addition, attendees will also be able to select the
-optimizations that \SeeDB\ applies and observe the effect on response times and
+optimizations that \VizRecDB\ applies and observe the effect on response times and
 accuracy.
 
-Thus, through our demonstration of \SeeDB\, we seek to illustrate that (a) it is
+Thus, through our demonstration of \VizRecDB\, we seek to illustrate that (a) it is
 possible to automate labor-intensive parts of data analysis, (b) aggregate
 and grouping-based views are a powerful means to identify interesting trends
 in data, and (c) the right set of optimizations can enable real-time data
 analysis of large datasets.
 
 \eat{
-We propose to demonstrate the functionality of the SeeDB system by means of
+We propose to demonstrate the functionality of the VizRecDB system by means of
 analyzing three diverse datasets of practical importance. Users will be able to
-explore each of these datasets in real-time by using SeeDB to formulate
+explore each of these datasets in real-time by using VizRecDB to formulate
 queries and find interesting trends in the underlying dataset. Specifically, we
 will use the following datasets for demonstration purposes:
 
@@ -87,7 +87,7 @@ will use the following datasets for demonstration purposes:
   intelligence applications. It consists of information about orders placed in a
   store including products, prices, ship dates, geographical information,
   profits etc. The dataset is well known for its interesting trends and
-  richness of various data types. It will show off SeeDB capabilities to
+  richness of various data types. It will show off VizRecDB capabilities to
   correctly identify diverse trends in the data and the ability to deal with
   numeric, categorical, time series and geographic data.
   \item {\bf Election Contribution dataset}: This dataset is a great example of
@@ -107,11 +107,11 @@ will use the following datasets for demonstration purposes:
 
 We envision the demonstration workflow to be as follows: The user selects one of
 the three dataset from above for analysis. He/she formulates a selection query
-using the SeeDB query builder or by using ready-made queries (e.g. selecting
-outliers in a column etc.) and submits the query to SeeDB. SeeDB then searches
+using the VizRecDB query builder or by using ready-made queries (e.g. selecting
+outliers in a column etc.) and submits the query to VizRecDB. VizRecDB then searches
 through the entire space of possible views using techniques and heuristics
 described in Section \ref{optimizations} and returns the top-{\it k} views it
-considers most interesting. The SeeDB frontend then visualizes the top-{it k} views and
+considers most interesting. The VizRecDB frontend then visualizes the top-{it k} views and
 presents them to the user. The user can interact with each of these views and
 perform further exploration through operations such as drill-downs (graphically
 selecting subsets of data), comparisons of multiple views etc. The user will

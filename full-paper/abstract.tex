@@ -3,25 +3,25 @@
 
 Data analysts operating on large volumes of data often rely on visualizations to
 interpret the results of queries.
-However, finding the right visualization for a query is a laborious and
-time-consuming task.
-We propose \SeeDB, a system to partially automate this task:
-given a query, \SeeDB\ intelligently explores the space of all possible
-visualizations, evaluates promising visualizations, and automatically identifies
-and recommends to the analyst the most ``interesting'' or ``useful''
-visualizations. 
-In this paper, we present multiple implementations of \SeeDB,
-both on top of existing database systems and as a stand alone in-memory
-solution. 
-For each implementation, we develop and evaluate a suite of
-optimizations that leverage the underlying system implementations. 
-Our
-experiments  on a range of real world and synthetic datasets demonstrate that
-our optimizations speed up processing by upto XXX\% and do not sacrificing
-accuracy in case of heuristics. 
-Our end-to-end experiments also demonstrate that
-that \SeeDB\ can be used to find interesting visualizations in interactive
-times. 
-Finally, we present the results of a user study that evaluates our method
-for interesting visualizations, the relative quality of different distance
-metrics and the \SeeDB\ system.
+However, finding the right visualization given a query of interest is a
+laborious and time-consuming task.
+We propose \VizRecDB, a system to partially automate this task:
+given a query, \VizRecDB\ intelligently explores the space of all possible
+visualizations, evaluates promising visualizations, and automatically recommends
+the most ``interesting'' or ``useful'' visualizations to the analyst.
+In this paper, we present two implementations of \VizRecDB\ which make very
+different design choices: the first leverages existing database systems as the
+backend and aggressively optimizes queries to get the highest performance; the
+second is a proof-of-concept implementation that has been engineered from scratch and
+without the constraints of the DBMS API, can overcome many of the limitations of
+the first design.
+For both implementations, we develop and evaluate a suite of optimizations that
+leverage the underlying system properties.
+Our experiments  on a range of real world and synthetic datasets demonstrate
+that our optimizations speed up processing by upto XXX\% without sacrificing
+accuracy.
+Our end-to-end experiments also demonstrate that that \VizRecDB\ can be used to
+find interesting visualizations in interactive time scales.
+Finally, we present the results of a user study that evaluates our method for
+interesting visualizations, the relative quality of different distance metrics
+and the \VizRecDB\ system.
