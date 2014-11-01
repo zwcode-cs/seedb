@@ -3,7 +3,7 @@
 \section{Introduction}
 \label{sec:introduction}
 
-
+ 
 Data analysts must sift through very large volumes of data 
 to identify trends, insights, or anomalies. 
 Given the scale of data, and the relative ease and 
@@ -19,8 +19,9 @@ process and challenges in choosing good visualizations using a few examples.
 
 
 \subsection*{Motivating Example}
-Consider the (fictional) Android app analytics team at Google. 
-This team is tasked with studying the behavior of various apps on the Android
+Consider the (fictional) smartphone app analytics team at a company like Apple or Google,
+or one of several startups that provides performance analytics for app authors.
+This team is tasked with studying the behavior of various apps on the
 app store to discover behavior trends for specific classes of apps, e.g.
 extremely popular apps, apps that behave badly etc.
 Suppose that App-A is a particular app that has been behaving badly and has
@@ -43,13 +44,14 @@ For instance, the analyst may issue the following query:
 network usage, power consumption, load time etc).
 Thus, directly perusing the query result is simply infeasible.
 (2) Next, the analyst studies various properties of the selected metrics by
-constructing diverse views or visualizations from the data.
+aggregating the data along different dimensions and measures. 
 In this particular scenario, the analyst may want to examine the average power
 consumption by device, total crashes grouped by session time, or average load
 times by carrier.
-To construct these views, the analyst can use operations such as binning,
-grouping, and aggregation, and then generate visualizations from the view.
-For example, to generate the view  for average load times by carrier, the
+To construct these queries, the analyst uses operations such as binning,
+grouping, and aggregation.  Frequently he will generate visualizations to view
+the results of the data.
+For example, to generate extract the for average load times by carrier, the
 analyst would group metrics based on the carrier and then average the app load
 times per carrier.
 This operation can easily be expressed as the familiar aggregation over group-by
@@ -61,7 +63,7 @@ query:
 \end{align*}
 The result of the above query is a two-column table that can then be visualized
 as a bar-chart. Table \ref{tab:staplerX} and Figure
-\ref{fig:staplerX} respectively show an example of the results of this view and
+\ref{fig:staplerX} respectively show an example of the results of this query and
 the associated visualization.
 
 %Consider a dataset containing sales records for a nation-wide
@@ -125,7 +127,7 @@ the associated visualization.
   
 }{%
   \caption{Visualization: Average \\ Load Times by Carrier
-  for App-A}\label{fig:staplerX}%
+  for App-A}\label{fig:staplerX}% 
 }
 \end{floatrow}
 \end{figure}
@@ -145,7 +147,8 @@ the associated visualization.
   \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist3.pdf}}}
   
 }{%
-  \caption{Scenario B: Average Load Times by Carrier}\label{fig:staplerX-b}%
+  \caption{Scenario B: Average Load Times by Carrier \srm{These figures seem to be for stores
+and stapers}}\label{fig:staplerX-b}%
 }
 \end{floatrow}
 \vspace{-12pt}
@@ -154,45 +157,49 @@ the associated visualization.
 
 
 To explore the app behavior from different perspectives, the analyst generates
-a large number of views (and visualizations) of the form described above.
-(3) The analyst then manually examines each view and decides
+a large number of queries (and visualizations) of the form described above.
+(3) The analyst then manually examines each result and decides
 which ones are ``interesting''. This is a critical and time-consuming step.
-Naturally, what makes a view interesting depends on the 
-application semantics and the trend we are comparing against.
-For instance, the view of load times by carrier, as shown in Figure
+Naturally, what makes a result interesting depends on the 
+problem the analyst is trying to solve and the
+attributes being compared.
+For instance, the visualization of load times by carrier, as shown in Figure
 \ref{fig:staplerX}, may be interesting if the overall load times for all
-products showed the {\it opposite} trend (e.g. Figure \ref{fig:staplerX-a}).
-However, the same view may be uninteresting if the load times of all apps
+apps showed the {\it opposite} trend (e.g. Figure \ref{fig:staplerX-a}).
+However, the same visualization may be uninteresting if the load times of all apps
 follow a similar trend (Figure \ref{fig:staplerX-b}).
-Thus, we posit that  a view is {\em potentially ``interesting'' if it shows 
+Thus, we posit that  a visualization is {\em potentially ``interesting'' if it shows 
 a trend in the subset of data selected by the analyst
 (i.e., metrics about App-A)
 that deviates from the equivalent trend in the overall dataset (i.e., metrics
 about all apps)}.
 Of course, the analyst must decide if this deviation 
 is truly an insight for this application.
-(4) Once the analyst has identified interesting views, the analyst may
-then either share these views with others, further interact with
-the displayed views (e.g., by drilling down or rolling up), or
+(4) Once the analyst has identified interesting attributes and dimensions to query
+against, the analyst may
+then either share these result with others, further interact with
+the displayed results (e.g., by drilling down or rolling up), or
 start afresh with a new query.
 
 
 Of the four steps in the workflow described above, the 
 ones that are especially repetitive and tedious are steps (2) and (3)
-where the analyst generates a large number of candidate views, and examines each
-of them in turn. 
+where the analyst generates a large number of candidate queries, and examines each
+of them in turn through visualization.
 The goal of our system, \VizRecDB, is to automate these
 labor-intensive steps of the workflow. 
 Given a query $Q$ indicating the subset
 of data that the analyst is interested in, \VizRecDB\ automatically {\em
-identifies and highlights to the analyst the most interesting views of the query results using methods based on
-deviation}. 
-Specifically, \VizRecDB\ explores the space of all possible views and
+identifies and highlights to the analyst the most interesting queries to ask using methods based on
+deviation} (we formalize our notion of ``interestingness'' in Section~\ref{sec:problem_statement}.
+Specifically, \VizRecDB\ explores the space of all possible {\it views} and
 measures how much each view deviates from the corresponding view on the
 entire underlying dataset (e.g. Figure~\ref{fig:staplerX} vs.
 Figures~\ref{fig:staplerX-a} or \ref{fig:staplerX-b}.) 
+By {\it view} we mean a (possibly multidimensional) GROUP BY/aggregate with one or more
+measure attributes.
 By generating and
-scoring potential views automatically, \VizRecDB\ effectively eliminates
+scoring such views automatically, \VizRecDB\ effectively eliminates
 steps (2) and (3) that the analyst currently performs. 
 Instead, once \VizRecDB\
 recommends interesting views, the analyst can evaluate this small
@@ -207,15 +214,15 @@ model and are supported by \VizRecDB:
 \squishlist
   \item {\it Use Case I: Comparison of a subset of data against the entire
   underlying data}.
-  This is the Android metrics use case discussed above.
+  This is the smartphone app metrics use case discussed above.
   \item {\it Use Case II: Comparison of a subset of data against all the
   remaining data}.
-  Imagine that a medical ressearcher is studying a medical records dataset and
-  wants to compare the set of patients with high medical expenses vs. the
-  all the remaining patients. The techniques from the first use case can be used
+  Imagine that a medical researcher is studying a medical records dataset and
+  wants to compare the set of patients with high medical expenses vs. 
+  other patients. The techniques from the first use case can be used
   directly for this use case too.
   \item {\it Use Case III: Comparison of two distinct datasets}. Finally,
-  imagine that in the Android metrics example, an analyst would like to compare
+  imagine that in the app metrics example, an analyst would like to compare
   the metrics for two apps, say one app in the social category and another in
   the music category. In this case, the analyst will select the datasets
   by executing two different queries and \VizRecDB\ can be used to find
@@ -308,30 +315,34 @@ all our techniques apply unchanged to Use Cases II and III.
 
 \subsection*{Challenges and Contributions}
 
-\cite{DBLP:conf/vldb/Parameswaran2013} described the vision for \VizRecDB, and
-\cite{XXX} demonstrated a prototype of the \VizRecDB\ system.
-In this work, we explored two distinct implementations of \VizRecDB, both on top
-of a database.
-First, we explore \VizRecDB\ as a wrapper on top of a database system and study
+We previously described some of the vision for  \VizRecDB in \cite{DBLP:conf/vldb/Parameswaran2013},
+but formalize our notion of ``interestingness'' in this paper and demonstrate that we can build real
+systems that efficiently search for the most interesting views.
+%In this work, we explored two distinct implementations of \VizRecDB, both on top
+%of a database.
+Specifically, we describe two implementations.
+In the first, we implement \VizRecDB\ as a wrapper on top of a database system and study
 how far we could push existing systems to support a \VizRecDB-type workload.
-Next, we overcome the constraints of the DBMS API by writing a custom system
-that extensively shares results between views and performs aggressive pruning
+In the second, we overcome the constraints of the DBMS API by writing a custom system
+that  shares sequential scans and query results between views and employs statistical methods to 
+perform aggressive pruning
 based on intermediate results.
 For each implementation of \VizRecDB, we also develop implementation-specific
 optimizations that leverage the underlying system architecture.
-At its core, given a query $Q$ indicating the subset of data that the analyst is
-interested in, the goal of \VizRecDB\ automatically {\em identifies and
-highlights to the analyst the most interesting views of the query results using
-methods based on deviation}.
+% SRM already said
+%At its core, given a query $Q$ indicating the subset of data that the analyst is
+%interested in, the goal of \VizRecDB\ automatically {\em identifies and
+%highlights to the analyst the most interesting views of the query results using
+%methods based on deviation}.
 
 To efficiently and accurately produce the set of most interesting
-visualizations, we must address the following challenges: 
+views (aggregate queries), we must address the following challenges: 
 (1) We must determine metrics that accurately measure the ``deviation'' of a
 view with respect to the equivalent view on the entire database (e.g.,
 Figure~\ref{fig:staplerX} vs.~\ref{fig:staplerX-a}); 
 (2)  We must
 intelligently explore the space of candidate views. Since the number of
-candidate views (or visualizations) increases as the square of the number of
+candidate views increases as the square of the number of
 attributes in a table (we will demonstrate this in subsequent sections),
 generating and evaluating all views, even for a moderately sized dataset (e.g.
 1M rows, 100 attributes), can be prohibitively expensive;
@@ -351,11 +362,11 @@ accuracy of visualizations or estimation of ``interestingness'' for reduced late
 
 The contributions of this paper are:
 \squishlist
-  \item In keeping with previously published \VizRecDB\ vision, we
+  \item We
   explore and evaluate two distinct implementations of the system, one as a
   wrapper around a database and another a custom solution.
   \item We propose and implement a number of
-  implementation-specific optimizations and heristics to efficiently perform the
+  implementation-specific optimizations and heuristics to efficiently perform the
   search for interesting views and share computation between multiple views
   simultaneously. 
   \item For the implementation of \VizRecDB\ on top of a DBMS, we model the
@@ -363,10 +374,10 @@ The contributions of this paper are:
   underlying database, and use this model to identify optimal parameter settings
   for \VizRecDB\ (Section~\ref{sec:model}).
   \item For the custom implementation of \VizRecDB, we cast the problem of
-  finding the best visualizations as a variant of both top-k ranking and the
+  finding the best views as a variant of both top-k ranking and the
   multi-armed bandit problem. We adapt heuristics from both problem spaces to
   perform aggressive pruning of views.
-  \item We explore visualization pruning techniques based on data distribution
+  \item We explore view pruning techniques based on data distribution
   to prune views even before they are evaluated by the \VizRecDB\ system.
   \item We evaluate the performance of our optimizations on a range of
   real and synthetic datasets and demonstrate the resulting XXX speedup
@@ -377,6 +388,14 @@ The contributions of this paper are:
   different metrics, and the usefulness of a tool like \VizRecDB\ in finding
   interesting visualizations of a dataset.
 \squishend
+
+Finally, we note that although we are primarily motivated by efficiently 
+identifying interesting views for the purposes of producing visualizations, 
+the problem of finding aggregates of a dataset that display more (or less) variation
+than other aggregates is broadly applicable in settings beyond visualization, including
+outlier detection (finding outlier groups), data cleaning (finding erroneous 
+data), feature selection (finding attributes with the most variability), and 
+many others.
 
 
 
