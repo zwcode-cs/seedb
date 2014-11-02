@@ -56,6 +56,9 @@ technique takes prohibitively long (700s on Postgres). The basic approach is
 clearly inefficient since it examines every possible view and executes each view
 query independently.
 
+
+\srm{I mentioned this to Manasi, but there are several places in this section where we 0give a forward ref to performance.  I wonder if some kind of performance summary might help here -- to illustrate the bottom line of what we can get out of a relational engine w/ and w/out our optimizations and to make the point that it still isn't fast enough.}
+
 \subsection{RDBMS Optimizations} 
 \label{sec:dbms_optimizations}
 As discussed above, the basic approach essentially 
@@ -82,7 +85,20 @@ views for the entire dataset is unnecessary and inefficient.
 Without this ideal operator $\mathcal{O}$,
 our optimizations minimize table scans in two ways: (1) minimize the total number of
 queries by intelligently combining queries, and (2) reduce the total
-execution time by running queries in parallel. \VizRecDB\ supports the following
+execution time by running queries in parallel. 
+
+Our DBMS-backed execution engine for \VizRecDB\ is agnostic towards the
+particular DBMS used to execute queries. 
+However, because of significant differences in the way that row stores and
+column stores organize data, some of the above optimizations described below (e.g.,  combining a
+large number of aggregates) will be more powerful in row stores and may actually
+hurt performance in column stores. In our experimental evaluation (Section
+\ref{sec:experiments}), we study the relative advantages of each of our
+optimizations for row and column stores.
+
+
+
+Overall, \VizRecDB\ supports the following
 optimizations and their combinations.
 
 \subsubsection {Combine Multiple Aggregates} 
@@ -212,7 +228,9 @@ as follows: until the ``goodness'' of the grouping keeps increasing
 (i.e., the predicted execution time keeps decreasing),
 repeatedly combine the two smallest groups into a single group.
 We experimentally evaluate both strategies in Section \ref{sec:experiments}.
- 
+
+\srm{In 6.2.2., we mention the model.    Are we keeping this?  I think it could be ok to put the details in the appendix if we can show one graph that illustrates that the model can be used to predict how many groups to choose, etc.}
+
 \subsubsection{Combine target and comparison view query}
 \label{subsec:target_comparison_view}
 Since the target view and comparison views only differ in the subset of data
@@ -234,7 +252,8 @@ input query and the presence of indexes. When the input query is less selective,
 the query executor must do more work if the two queries are run separately. In
 contrast, in the presence of an index, running selective queries independently
 may be faster.
-
+\srm{In 4.2.3., I don't understand why the combined query wouldn't always be faster.  It seems like you are replacing two scans with one, which should just be better.  How could it not be (unless there are very selective filter predicates that aren't show in the example???)}
+\agp{I agree.}
   \subsubsection {Parallel Query Execution}
   \label{subsec:parallel_exec}
   While the above optimizations reduce the number of queries executed, we can
@@ -273,12 +292,4 @@ may be faster.
   top-k views. Only these high-utility views are then computed on the entire
   dataset. \\
 
-\noindent{\bf Row Stores vs. Column Stores:}
-Our DBMS-backed execution engine for \VizRecDB\ is agnostic towards the
-particular DBMS used to execute queries. 
-However, because of significant differences in the way that row stores and
-column stores organize data, some of the above optimizations (e.g. combining a
-large number of aggregates) will be more powerful in row stores and may actually
-hurt performance in column stores. In our experimental evaluation (Section
-\ref{sec:experiments}), we study the relative advantages of each of our
-optimizations.
+
