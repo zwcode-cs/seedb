@@ -2,64 +2,82 @@
 
 \section{{\large \VizRecDB\ } Execution Engine}
 In this section, we discuss the design and implementation of the \VizRecDB\
-Execution Engine. 
-The input to the \VizRecDB\ engine is a set of view stubs (tripes of the form
-$(a, m, f)$) and the output is the top-$k$ views with the highest utility.
+execution engine. 
+The input to the \VizRecDB\ engine is a set of view stubs (triples of the form
+$(a, m, f)$, where $a$ is the dimension attribute, $m$ is the measure,
+and $f$ is the aggregation function) and the output is the top-$k$ views with the highest utility.
 The goals of the \VizRecDB\ engine are two fold:
-(1) to efficienctly compute the utility of a large number of views, and (2) to accurately rank views in order of
+(1) to efficiently compute the utility of a large number of views, and 
+(2) to accurately rank views in order of
 utility to find the $k$ views with the highest utility.
 
 
-As discussed in the architecture overview, we explored two distinct
+As discussed in the architecture overview, we explore two distinct
 implementations of the \VizRecDB\ execution engine.
-Our first design implemented the \VizRecDB\ engine as a wrapper on top of a
-vanilla database system.
-We chose this design so that \VizRecDB\ could be used unchanged with a variety of
+Our first design implements the \VizRecDB\ engine as a wrapper on top of a
+traditional database system.
+This design enables \VizRecDB\ to be used unchanged with a variety of
 existing DBMSs.
-Our goal was to study how far we could push existing systems to
-support a \VizRecDB-type workload without making any changes to the underlying
-DBMS.
+Our goal is to study how far we can push existing systems to
+support a \VizRecDB-type workload 
+without making any changes to the underlying DBMS.
 Implemented as a wrapper over a DBMS, \VizRecDB\ is limited to using the API
-exposed by the DBMS; essentially, \VizRecDB\ is limited to opening/closing connections to the
-database and executing SQL queries. 
+exposed by the DBMS; essentially, 
+\VizRecDB\ is limited to opening/closing connections to the
+database and executing one or more SQL queries. 
 Since we have no control over how queries are executed or access to intermediate
 results, {\it our optimizations minimize total execution time by minimizing the
 total number of scans of the underlying table}.
 We now discuss the basic framework used by \VizRecDB\ to query the DBMS and various
 optimizations supported by \VizRecDB.
 
-\subsection{Basic Framework}
+\subsection{Execution in an RDBMS}
 \label{sec:basic_framework}
-Given a set of view stubs provided to the execution engine, the basic framework
-works as follows: 
+Given a set of view stubs provided to the execution engine, conceptually,
+the basic approach proceeds as follows:
 (1) for each view, we generate SQL queries for the target and
-comparison view (see queries in Section \ref{sec:problem_statement}), 
+comparison view---recall that these are aggregate queries, where
+the target view is the aggregate query corresponding 
+to the visualization being considered, and the comparison
+view is the aggregate query that is being compared against,
+for the purpose of utility computation;
+see Section \ref{sec:problem_statement}, 
 (2) we execute each view query independently on the DBMS, 
-(3) the results of each query (i.e. aggregated values) are processed and
+(3) the results of each query (i.e. the aggregated values) are processed and
 normalized to compute the target and comparison distributions, 
-(4) we compute utility for each view and select the top-$k$ views with the largest utility.
-If the underlying table has $d$ dimension attributes and $m$ measure attributes,
-$2\ast d \ast m$ queries must be separately executed and their results
-processed. Even for modest size tables (1M tuples, $d$=50, $m$=5), this
+(4) we compute utility for each target view 
+and select the top-$k$ views with the largest utility,
+which are then sent to the frontend.
+If the underlying table has $a$ dimension attributes, $m$ measure attributes,
+and $f$ aggregation functions, \agp{I changed $d$ to $a$ for consistency. Also, added $f$, else will raise questions.}
+$2\times f \times a \times  m$ queries must be separately executed and their results
+processed. Even for modest size tables (1M tuples, $f = 1, a = 50, m=5$), this
 technique takes prohibitively long (700s on Postgres). The basic approach is
 clearly inefficient since it examines every possible view and executes each view
 query independently.
 
-\subsection{Optimizations} 
+\subsection{RDBMS Optimizations} 
 \label{sec:dbms_optimizations}
-As discussed above, the basic framework performs one scan of the table for each
-query that is executed, causing {\it 2 * number of views} scans of the
+As discussed above, the basic approach essentially 
+performs one scan of the denormalized table for each
+view query that is executed (i.e., each candidate visualization), 
+causing {\it 2 $\times$ number of views} scans of the
 underlying table. Since our goal is to minimize the number of scans, our ideal
 operator $\mathcal{O}$ would perform a single scan of the data, compute all
-$d*m$ group-bys and aggregates in one pass, and return only the top-$k$
-views.
+$a \times m \times f$ query results in one pass, 
+and return only the top-$k$ views.
 Current database systems do not support this functionality. 
 The SQL GROUPING SETS\footnote{GROUPING SETS allow the simultaneous
-  grouping of query results by multiple sets of attributes.} functionality
-  available in a handful of systems can be used to support this operation;
-  however, it is unclear how this operator will scale to large number of groups
-  and as we show in Section \ref{sec:in_memory_execution_engine}, evaluating all
-  views for the entire dataset is unnecessary and inefficient.
+grouping of query results by multiple sets of attributes.} functionality
+available in a handful of systems can be used to support this operation;
+however, this operator too, will not scale to a large number of groups,
+since the size of the eventual result maintained in memory will be
+$2 \times a \times f \times m$ attributes, 
+multiplied by the total sum of the sizes of all the target
+and comparison view results. \agp{Manasi --- plz. verify this.}
+\srm{W.r.t. grouping sets do we know how much better this is?  Have we tried it?}
+Furthermore, as we show in Section \ref{sec:in_memory_execution_engine}, evaluating all
+views for the entire dataset is unnecessary and inefficient.
 
 Without this ideal operator $\mathcal{O}$,
 our optimizations minimize table scans in two ways: (1) minimize the total number of
@@ -74,37 +92,53 @@ Therefore, \VizRecDB\ combines all view queries with the same
 group-by attribute into a single, combined view query. For instance, instead of executing
 queries for views $(a_1$, $m_1$, $f_1)$, $(a_1$, $m_2$, $f_2)$ \ldots $(a_1$, $m_k$, $f_k)$
 independently, we can combine the $n$ views into a single view represented by
-$(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$. We demonstrate this
-optimization offers a speed-up roughly linear in the number of measure
+$(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$. We demonstrate later on 
+(\agp{give forward pointer})
+that this optimization offers a speed-up roughly linear in the number of measure
 attributes.
 
 \subsubsection {Combine Multiple Group-bys}
 \label{subsec:mult_gb}
   Similar to the multiple aggregates optimization, another optimization
   supported by \VizRecDB\ is to combine queries with different group-by attributes
-  into a single query with multiple group-bys attributes.
+  into a single query with multiple group-by attributes.
   For instance, instead of executing queries for views $(a_1$, $m_1$, $f_1)$,
   $(a_2$, $m_1$, $f_1)$ \ldots $(a_n$, $m_1$, $f_1)$ independently, we can
   combine the $n$ views into a single view represented by $(\{a_1, a_2\ldots
   a_n\}$, $m_1$, $f_1)$ and post-process results.
 
-  While this optimization has the potential to significantly reduce query
-  execution time, we find (Section \ref{sec:experiments}) that the time to
-  execute a query with multiple group-by attributes depends on the number of distinct values
-  present in the resulting combination of dimension attributes.
-  This is expected because for a large number of distinct values, the query
-  executor must keep track of a large number of aggregates. 
-  This increases computational time (e.g. for sorting in sort-based aggregate)
-  as well as temporary storage requirements (e.g. for hashing in hash-based
-  aggregate), making this technique ineffective for large number of values.
-  As a result, we must combine group-by attributes such that the number of
-  distinct values remains {\it small enough}. 
-  The upper limit on the number distinct values for a given combination of
-  group-by attributes is given by the product of the number of distinct values
-  for each attribute.
-  For example, if we combine three dimension attributes $a_i$, $a_j$ and $a_k$
-  with $n_i$, $n_j$ and $n_k$ values respectively, the maximum number of
-  distinct groups is $n_i\ast n_j \ast n_k$.
+Unlike the previous optimization, where the speed-up is linear in the number of 
+view queries combined, in this case, the situation is not as straightforward. 
+The reason for this is the following:
+since we now store the aggregate for every combination
+of $a_1, a_2, \ldots, a_n$, 
+the number of aggregates that need to be recorded for 
+$n$ views is the number of distinct combinations
+of $(a_1, \ldots, a_n)$, which, in the worst case, 
+is proportional to $\prod_i |a_i|$.
+Thus, the number of aggregates that need to be recorded 
+grows exponentially (in the worst case) in the
+number of group-by attributes. 
+We will show (Section \ref{sec:experiments}) that 
+the time to execute a query with multiple group-by attributes
+depends on the number of distinct values present in the resulting 
+combination of dimension attributes. 
+This is expected, because keeping track of a large number
+of aggregates impacts computational time (e.g. for sorting in sort-based aggregate)
+as well as temporary storage requirements (e.g. for hashing in hash-based
+aggregate), making this technique ineffective for large number of values.
+
+As a result, we must combine group-by attributes such that the number of
+distinct values remains {\it small enough}, below a specific 
+threshold $\tau$, that we determine based on system parameters \agp{true?}.
+Since we are unaware of the correlations between dimension attribute values,
+we must resort to worst-case estimates. 
+The upper limit on the number of distinct values for a given combination of
+group-by attributes is given by the product of the number of distinct values
+for each attribute.
+For example, if we combine three dimension attributes $a_i$, $a_j$ and $a_k$
+with $|a_i|$, $|a_j|$ and $|a_k|$ distinct values respectively, the maximum number of
+distinct groups is $|a_i|\times |a_j| \times |a_k|$.
  % The number of distinct groups in turn depends on the correlation between
  % values of attributes that are being grouped together. 
  % For instance, if two
@@ -114,46 +148,69 @@ attributes.
  % $n_i$$\ast$$n_j$$\ast$(1-$c$) for $c$$\neq$1 and $n_i$ for $c$=1 ($n_i$ must
  % be equal to $n_j$ in this case).
   
-  Therefore, our problem can be stated as follows:
-  given a set of dimension attributes $A$ = \{$a_1$\ldots$a_n$\}, divide the
-  dimension attributes in $A$ into groups $A_1$\ldots$A_l$ (where $A_i$ is some
-  subset of $A$ and $\bigcap A_i$=$A$) such that the number of distinct values
-  for each group is small. We designed two strategies to group dimension
-  attributes.
+Therefore, our problem can be stated as follows:
+\begin{problem}[Optimal Grouping Optimization]
+{\em Given a set of dimension attributes $A$ = \{$a_1$\ldots$a_n$\}, divide the
+dimension attributes in $A$ into groups $A_1, \ldots, A_l$ (where $A_i$ is some
+subset of $A$ and $\bigcap A_i$=$A$) such that the worst-case number of distinct values
+for each group is below $\tau$.}
+\end{problem}
+First, we note that the problem as stated above is isomorphic to the NP-Complete
+{\em bin-packing} problem~\cite{garey}: to see this, we let each dimension attribute
+$a_i$ correspond to an item in the bin-packing problem with weight $\log (|a_i|)$,
+and we set the threshold on the bin size to be $\log \tau$,
+then packing items into bins is identical to finding groups $A_1, \ldots, A_l$,
+such that the worst-case number of distinct values is below $\tau$.
+Thus, the problem as stated above is NP-Hard.
+
+Given that the problem is NP-Hard, we use two strategies to group dimension attributes;
+the first strategy is adapted from the standard first-fit approximation algorithm~\cite{first-fit}
+for bin-packing; the second strategy is adapted from Huffman coding~\cite{huffman-codes}.
   
-  \begin{itemize} 
-  \item {\bf Bin-packing}: In this trategy, we set an upper limit $V$ on the
-  number of distinct groups that any combination of dimension attributes can
-  produce.
-  Now, suppose that each dimension attribute $a_i$ $\in A$ has $n_i$ distinct
-  values.
-  We cast the problem of finding the optimal grouping of dimension attributes as
-  a version of bin-packing.
-  Let each dimension attribute $a_i$ be an item with volume $log(n_i)$ and
-  suppose that we are given bins of volume $log(V)$.
-  Then finding the optimal grouping of attributes is exactly equivalent to
-  finding the optimal packing of attribute items into the minimum number of
-  bins.
-  \item {\bf Incremental Grouping}: In this strategy, we do not set an
-  explicit upper limit on the number of distinct groups. 
-  Instead, we assume that
-  we are given a black box function that given a particular grouping of
-  attributes returns a value for the ``goodness'' of the combination. 
-  For instance, in
-  Section \ref{sec:analytical_model}, we develop an analytical model for the
-  performance of the DBMS-backed Execution Engine. 
-  This model predicts the execution time for the
-  \VizRecDB\ engine and can be used in place of the black box function. 
-  A simpler
-  black box function maybe a combination of the maximum number of distinct
-  values across all the groups and the number of groups. 
-  Given a black box
-  function, our heuristic works as follows: until the ``goodness'' of the
-  grouping keeps increasing (or execution time keeps decreasing), repeat the
-  following -- (1) sort the attribute groups in ascending order of number of
-  distinct values, (2) combine the first two groups into a single group and
-  calculate the number of distinct values for this new group.
-\end{itemize} 
+\squishlist 
+  \item {\bf First-Fit}: The algorithm is simple;
+  at first, all groups $A_1, \ldots, $ $A_l$ are empty.
+  For each dimension attribute, considered in an arbitrary order, place it in the first group
+  $A_i$ that it can ``fit into'', i.e., the worst case
+  number of distinct values for that $A_i < \tau$.
+  For bin-packing, this algorithm has a guarantee of using up to 1.7X more 
+  bins than necessary: here, this translates to up to 1.7X more groups than necessary.
+  % In this trategy, we set an upper limit $V$ on the
+  % number of distinct groups that any combination of dimension attributes can
+  % produce.
+  % Now, suppose that each dimension attribute $a_i$ $\in A$ has $n_i$ distinct
+  % values.
+  % We cast the problem of finding the optimal grouping of dimension attributes as
+  % a version of bin-packing.
+  % Let each dimension attribute $a_i$ be an item with volume $log(n_i)$ and
+  % suppose that we are given bins of volume $log(V)$.
+  % Then finding the optimal grouping of attributes is exactly equivalent to
+  % finding the optimal packing of attribute items into the minimum number of
+  % bins.
+  \item {\bf Huffman-Grouping}: Here, the algorithm works as follows:
+  we start by assigning each dimension attribute its own group,
+  and maintain these groups in sorted ascending order.
+  At each step, we take the two smallest groups out of this sorted list, combine
+  the dimension attributes in both of them into one new group, and then
+  add this new group to the mix and re-sort.
+  We keep doing this until we cannot combine the two smallest groups any more
+  without violating the threshold $\tau$.
+\squishend
+If this was vanilla bin-packing, the first-fit algorithm would be sufficient to
+find near-optimal groupings. 
+The advantage of having the huffman-grouping algorithm is the following: Instead
+of having a hard threshold $\tau$ on the worst-case number of distinct groups,
+the huffman-grouping algorithm can also adapt to the case where we
+are instead provided a black-box function that, given a particular
+grouping of attributes, returns a value for the ``goodness'' of the combination.
+As we will see in Section~\ref{sec:analytical_model}, 
+we develop an analytical model for the performance (i.e., the execution time)
+of the DBMS-backed execution engine. 
+This model can be used to derive this black-box function.
+Given a black-box function, the huffman-grouping algorithm operates
+as follows: until the ``goodness'' of the grouping keeps increasing 
+(i.e., the predicted execution time keeps decreasing),
+repeatedly combine the two smallest groups into a single group.
 We experimentally evaluate both strategies in Section \ref{sec:experiments}.
  
 \subsubsection{Combine target and comparison view query}
