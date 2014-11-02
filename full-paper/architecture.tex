@@ -30,31 +30,40 @@ frontend generates and displays visualizations for each of these views.
 \centerline{
 \hbox{\resizebox{9cm}{!}{\includegraphics[trim=10mm 45mm 55mm 60mm, 
 clip=true]{Images/SeeDB-architecture.pdf}}}}
-\caption{VizRecDB Architecture}
+\caption{VizRecDB Architecture\srm{In the architecture diagram (Fig 2), should somehow indicate that we have 2 variants of the execution engine.}}
 \label{fig:sys-arch}
 \vspace{-12pt}
 \end{figure} 
 
-In this work, we explored two distinct implementations of the \VizRecDB\ Execution
+In this work, we explore two distinct implementations of the \VizRecDB\ Execution
 Engine. 
-First, we built the Execution Engine as a wrapper on top of a database system. 
-Our goal was to study how far we could push existing systems to support a
-\VizRecDB-type workload.
-As described in the next section, we could get reasonable performance by
+Our first implementation of the execution engine is as a wrapper on top of a database
+system: the goal of this implementation is to study how far we can 
+push existing systems to support a \VizRecDB-type workload.
+As described in the next section, we obtain reasonable performance by
 intelligently combining queries and running queries in parallel. 
-However, existing systems do not provide a good means to share scans between
-queries or to access intermediate results during scans.
-As a result, optimization opportunities are limited.
-To overcome the constraints of existing database systems, we then implemented a
-simple, custom Execution Engine for \VizRecDB\ that was optimized to share scans
-across all views and perform pruning based on intermediate results. 
+Because evaluating a visualization query typically involves 
+performing a scan of a table to compute  a histogram or other distribution 
+over one or more dimensions, an obvious optimization would be to share 
+these scans between many queries.  
+Some of our relational optimizations attempt to do this, 
+but we find that having to operate through the SQL interface 
+limits the scalability of such approaches.  
+Therefore, we built a custom execution engine that exploits 
+shared scans and sampling to rapidly prune the space of views and 
+limit the number of passes that must be done over the data.
+% However, existing systems do not provide a good means to share scans between
+% queries or to access intermediate results during scans.
+% As a result, optimization opportunities are limited.
+% To overcome the constraints of existing database systems, we implement a
+% simple, custom Execution Engine for \VizRecDB\ optimized to share scans
+% across all views and perform pruning based on intermediate results. 
 In an ideal solution, shared scans and pruning would be implemented inside the
 database; however, for the purpose of this work, we implement the \VizRecDB\
-execution engine as a standalone component. 
+execution engine as a standalone proof-of-concept. 
 In Section \ref{sec:incorporating} we discuss how the \VizRecDB\ engine could be
 made part of a DBMS.
-
-Next we briefly examine the \VizRecDB\ frontend and describe the Execution Engines
+Next we briefly examine the \VizRecDB frontend and describe the execution engines
 in detail.
 
 

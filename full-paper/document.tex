@@ -23,7 +23,7 @@
 \usepackage{floatrow}
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
-
+\usepackage{xspace}
 \usepackage[font={scriptsize,it}]{caption}
 
 
@@ -35,7 +35,7 @@
 \newcommand{\agp}[1]{\textcolor{red}{Aditya: #1}}
 \newcommand{\mpv}[1]{\textcolor{blue}{Manasi: #1}}
 %\newcommand{\alkis}[1]{\smallskip\noindent \textcolor{red}{\it $\Rightarrow$ Alkis: #1}}
-\newcommand{\VizRecDB}{{\sc VizRecDB}}
+\newcommand{\VizRecDB}{{\sc VizRecDB}\xspace}
 \newcommand{\calQ}{\mathcal{Q}}
 \newcommand{\calR}{\mathcal{R}}
 \newcommand{\att}[1]{{\text{#1}}}
@@ -100,8 +100,8 @@
 \input{abstract.tex}
 \end{abstract}
 \input{introduction.tex}
-\input{problem.tex}
 \input{related_work.tex} 
+\input{problem.tex}
 \input{architecture.tex}
 \input{frontend.tex}
 \input{dbms_execution_engine.tex}
@@ -113,7 +113,7 @@
 
 %\input{conclusions.tex}
 \vspace{-2mm}
-{\scriptsize
+{
 \bibliographystyle{abbrv}
 \bibliography{visubib}
 }

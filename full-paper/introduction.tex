@@ -35,8 +35,7 @@ metrics for App-A.
 For instance, the analyst may issue the following query:
 \noindent 
 \begin{align*}
-& \tt Q \ \ = \ \ SELECT \ * \ FROM \ \  AppMetrics \ \ WHERE \\
-& \tt AppName=``App-A''
+& \tt Q \ \ = \ \ SELECT \ * \ FROM \ \  AppMetrics \ \ WHERE  \ Name=``App\text{-}A"
 \end{align*}
 
 \noindent Notice that the results for this query may have millions of records
@@ -49,7 +48,7 @@ In this particular scenario, the analyst may want to examine the average power
 consumption by device, total crashes grouped by session time, or average load
 times by carrier.
 To construct these queries, the analyst uses operations such as binning,
-grouping, and aggregation.  Frequently he will generate visualizations to view
+grouping, and aggregation.  Frequently, he will generate visualizations to view
 the results of the data.
 For example, to generate extract the for average load times by carrier, the
 analyst would group metrics based on the carrier and then average the app load
@@ -59,7 +58,7 @@ query:
 \noindent
 \begin{align*}
 & \tt Q' = SELECT \ \ carrier,\ AVG(load\_time) \ \ FROM \ \  AppMetrics \\
-& \tt WHERE\ AppName=``App-A'' \ \ GROUP  \ \ BY \ \ carrier
+& \tt \hspace{20pt} WHERE\ Name=``App\text{-}A" \ \ GROUP  \ \ BY \ \ carrier
 \end{align*}
 The result of the above query is a two-column table that can then be visualized
 as a bar-chart. Table \ref{tab:staplerX} and Figure
@@ -184,14 +183,15 @@ start afresh with a new query.
 
 Of the four steps in the workflow described above, the 
 ones that are especially repetitive and tedious are steps (2) and (3)
-where the analyst generates a large number of candidate queries, and examines each
+where the analyst generates a large number of candidate aggregate queries, 
+and examines each
 of them in turn through visualization.
 The goal of our system, \VizRecDB, is to automate these
 labor-intensive steps of the workflow. 
 Given a query $Q$ indicating the subset
 of data that the analyst is interested in, \VizRecDB\ automatically {\em
 identifies and highlights to the analyst the most interesting queries to ask using methods based on
-deviation} (we formalize our notion of ``interestingness'' in Section~\ref{sec:problem_statement}.
+deviation} (we formalize our notion of ``interestingness'' in Section~\ref{sec:problem_statement}).
 Specifically, \VizRecDB\ explores the space of all possible {\it views} and
 measures how much each view deviates from the corresponding view on the
 entire underlying dataset (e.g. Figure~\ref{fig:staplerX} vs.
@@ -315,9 +315,12 @@ all our techniques apply unchanged to Use Cases II and III.
 
 \subsection*{Challenges and Contributions}
 
-We previously described some of the vision for  \VizRecDB in \cite{DBLP:conf/vldb/Parameswaran2013},
-but formalize our notion of ``interestingness'' in this paper and demonstrate that we can build real
-systems that efficiently search for the most interesting views.
+We previously described some of the vision for  \VizRecDB in our (4 page) vision 
+paper~\cite{DBLP:conf/vldb/Parameswaran2013}---that paper described the challenges 
+at a high level without any real implementation; 
+in this paper, we demonstrate that we can build real systems that efficiently search for the most 
+interesting views, formalize the notion of ``interestingness'', and thoroughly
+explore the space of possible optimizations.
 %In this work, we explored two distinct implementations of \VizRecDB, both on top
 %of a database.
 Specifically, we describe two implementations.
@@ -366,7 +369,7 @@ The contributions of this paper are:
   explore and evaluate two distinct implementations of the system, one as a
   wrapper around a database and another a custom solution.
   \item We propose and implement a number of
-  implementation-specific optimizations and heuristics to efficiently perform the
+  implementation-specific optimizations to efficiently perform the
   search for interesting views and share computation between multiple views
   simultaneously. 
   \item For the implementation of \VizRecDB\ on top of a DBMS, we model the
