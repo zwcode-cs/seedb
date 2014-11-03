@@ -131,16 +131,16 @@ the views still in the running, and if the upper-bound for any of them
 is lower than the lower-bound for confidence intervals of $k$ or more other views,
 then those views are discarded.
 \begin{itemize}
-\item The first uses worst-case confidence intervals based on the
-Hoeffding-Serfling inequality~\cite{serfling1974probability}, 
-which is a generalization of Hoeffding's inequality~\cite{hoeffding1963probability}
-when the samples are randomly chosen without replacement.
-These confidence intervals are necessarily more conservative.
-\item The second uses normal confidence intervals, assuming that 
+\item The first uses normal confidence intervals, assuming that 
 the underlying distribution is Gaussian~\cite{all-of-statistics}.
 These confidence intervals are more ``aggressive'', because they make the assumption
 that the underlying distribution is normal.
 (For experiments evaluating this assumption, see Section~\ref{sec:evaluating_normal}.)
+\item The second uses worst-case confidence intervals based on the
+Hoeffding-Serfling inequality~\cite{serfling1974probability}, 
+which is a generalization of Hoeffding's inequality~\cite{hoeffding1963probability}
+when the samples are randomly chosen without replacement.
+These confidence intervals are necessarily more conservative.
 \end{itemize}
 \item The last is based on an adaptation of Multi-Armed Bandit (MAB) algorithms
 for top-$k$ arm identification from XXX~\cite{}. 
@@ -148,11 +148,6 @@ Multi-Armed Bandit algorithms are a well-studied stochastic control problem:
 in our scenario, the arms are the views, and pulling an arm corresponds
 to updating a view's utility.
 \end{itemize}
-\agp{potentially delete or bring up only for normal case.}
-As a result, as shown in Line 12 of Algorithm \ref{algo:custom_exec_engine},
-when a phase ends, we clear all statistics collected in that phase; we do not
-want less accurate estimates from previous phases to contaminate the more
-accurate estimates from subsequent phases.
 
 
 \subsubsection{Confidence Interval-Based Pruning}
@@ -192,57 +187,8 @@ clip=true]{Images/confidence_pruning.pdf}}}}
 \vspace{-12pt}
 \end{figure}
 
-
-\stitle{Worst-Case Confidence Intervals.} 
-Suppose we have $N$ values $y_1, \ldots, y_n$ in $[0, 1]$, and we are drawing
-from them without replacement. 
-Say we have drawn $m$ values so far, which are $Y_1, \ldots, Y_m$.
-Then, we use the Hoeffding-Serfling inequality~\cite{serfling1974probability} 
-to derive a running 
-confidence interval such that the actual mean of the $N$
-is always within the confidence interval with a probability of $\delta$:
-\begin{theorem}
-\label{thm:hs}
-Let $\calY = y_1,$ $\ldots,$ $y_N$ be a set of $N$ 
-values in $[0,1]$ with average value
-$\frac1N \sum_{i=1}^N y_i = \mu$.
-Let $Y_1,\ldots,Y_N$ be a 
-sequence of random variables drawn from $\calY$ without
-replacement.
-Fix any $\delta > 0$. For $1 \le m \le N-1$, define
-$$
-\varepsilon_m = \sqrt{\frac{(1-\frac{m-1}N)(2\log \log (m) + \log(\pi^2/3\delta))}{2m}}.
-$$
-$$
-\textrm{Then:} \ \   \Pr\left[ \exists m, 1 \le m \le N : 
-  \left|\frac{\sum_{i=1}^m Y_i}{m} - \mu\right| > \varepsilon_m \right] 
-\le \delta.
-$$
-\end{theorem}
-In our setting, the current mean, $\sum Y_i / m$ is the 
-the current estimate of the utility based on the samples seen thus far
-for each view. 
-Thus, to apply this pruning strategy, the only statistics
-we need are the current estimate of the utilities.
-
-Note that in this setting, we are assuming that since the
-utility estimate at any stage of processing is in $[0, 1]$, 
-the $Y_i$ values, i.e., the incremental contributions to the utility
-that come from reading each record, are also between $[0, 1]$,
-and are independent of the current value of the utility. 
-This need not always hold. 
-\agp{give example.}
-Thus, the guarantees do not directly apply to our setting. 
-
-
 \stitle{Normal Confidence Intervals.}
-To apply this pruning strategy, we track 
-
-
-\subsubsection{Normal Confidence Interval-Based Pruning}
-\label{sec:confident_interval}
-This pruning strategy is based on the application of sampling and confidence
-intervals to utility estimates. First, as described above, we must specify
+As described above, we must specify
 a set of statistics to track for each view and a rule that is used to
 prune views based on the statistic.
 For confidence interval based pruning, the statistics we track are the mean, 
@@ -322,6 +268,55 @@ of every phase) and we set the $z$ parameter to a value $\geq$ 1.96 (the normal
 empirically in Section \ref{sec:experiments}) that the confidence intervals
 always contain the mean and continually shrink as we read in more data.
 
+As shown in Line 12 of Algorithm \ref{algo:custom_exec_engine},
+when a phase ends, we clear all statistics collected in that phase; we do not
+want less accurate estimates from previous phases to contaminate the more
+accurate estimates from subsequent phases. \agp{deal with this.}
+
+
+
+\stitle{Worst-Case Confidence Intervals.} 
+Suppose we have $N$ values $y_1, \ldots, y_n$ in $[0, 1]$, and we are drawing
+from them without replacement. 
+Say we have drawn $m$ values so far, which are $Y_1, \ldots, Y_m$.
+Then, we use the Hoeffding-Serfling inequality~\cite{serfling1974probability} 
+to derive a running 
+confidence interval such that the actual mean of the $N$
+is always within the confidence interval with a probability of $\delta$:
+\begin{theorem}
+\label{thm:hs}
+Let $\calY = y_1,$ $\ldots,$ $y_N$ be a set of $N$ 
+values in $[0,1]$ with average value
+$\frac1N \sum_{i=1}^N y_i = \mu$.
+Let $Y_1,\ldots,Y_N$ be a 
+sequence of random variables drawn from $\calY$ without
+replacement.
+Fix any $\delta > 0$. For $1 \le m \le N-1$, define
+$$
+\varepsilon_m = \sqrt{\frac{(1-\frac{m-1}N)(2\log \log (m) + \log(\pi^2/3\delta))}{2m}}.
+$$
+$$
+\textrm{Then:} \ \   \Pr\left[ \exists m, 1 \le m \le N : 
+  \left|\frac{\sum_{i=1}^m Y_i}{m} - \mu\right| > \varepsilon_m \right] 
+\le \delta.
+$$
+\end{theorem}
+In our setting, the current mean, $\sum Y_i / m$ is the 
+the current estimate of the utility based on the samples seen thus far
+for each view. 
+Thus, to apply this pruning strategy, the only statistics
+we need are the current estimate of the utilities.
+
+Note that in this setting, we are assuming that since the
+utility estimate at any stage of processing is in $[0, 1]$, 
+the $Y_i$ values, i.e., the incremental contributions to the utility
+that come from reading each record, are also between $[0, 1]$,
+and are independent of the current value of the utility. 
+This need not always hold. 
+\agp{give example.}
+Thus, the guarantees do not directly apply to our setting. 
+
+
 
 
 % Now that we have a way of finding confidence intervals, we elaborate on how we
@@ -369,8 +364,8 @@ the total reward.
 Recently, variants of MAB have been proposed which instead of maximizing total
 reward, focus on finding the bandits with the highest
 mean reward (\cite{}).
-This is very similar to our setting: each possible view can be thought of as a
-one-armed bandit and our goal is find the views with the highest reward (i.e.
+This is very similar to our setting: each possible view can be thought of as
+one arm of a bandit and our goal is find the views with the highest reward (i.e.
 utility).
 As with the confidence interval based pruning, we consider the sequential
 reading of our file to be similar to random sampling with increasing sample
@@ -408,7 +403,7 @@ $\Delta_n$ is the difference between the lowest mean and the $k$th highest mean.
 If $\Delta_1$ is greater than $\Delta_n$, the view with the highest mean is
 {\it accepted} as being part of the the top-$k$ (and it no longer participates
 in pruning computations).
-On the otherhand, if $\Delta_n$ is higher, the view with the lowest mean is discarded
+On the other hand, if $\Delta_n$ is higher, the view with the lowest mean is discarded
 from the set of views in the running.
 Note again that if the number of views in the running is equal to $k$, it is
 possible to stop early and provide the user an approximate set of views.
