@@ -144,7 +144,7 @@ These confidence intervals are necessarily more conservative.
 \end{itemize}
 \item The last is based on an adaptation of Multi-Armed Bandit (MAB) algorithms
 for top-$k$ arm identification from XXX~\cite{}. 
-Multi-Armed Bandit algorithms are a well-studied stochastic control problem:
+Multi-Armed Bandit algorithms are well-studied in the field of stochastic control:
 in our scenario, the arms are the views, and pulling an arm corresponds
 to updating a view's utility.
 \end{itemize}
@@ -197,12 +197,12 @@ As \VizRecDB\ reads each record, it updates the data
 distributions for all views and calculates the current utility of each view. 
 Using past measures of utility, \VizRecDB\ also tracks the mean,
 variance and confidence intervals for the utility of each view.
-At the end of a phase, \VizRecDB\ uses the following rule for pruning low-utility
-views (stated more formally below): {\it if the upperbound on the utility
-of view $v_i$ is lesser than the least lowerbound on the utility of the
-top-$k$ views, view $v_i$ is discarded.}
+% At the end of a phase, \VizRecDB\ uses the following rule for pruning low-utility
+% views (stated more formally below): {\it if the upperbound on the utility
+% of view $v_i$ is lesser than the least lowerbound on the utility of the
+% top-$k$ views, view $v_i$ is discarded.}
 
-Let us dive deeper into this pruning rule.
+% Let us dive deeper into this pruning rule.
 Note that as we sequentially read records from a file, we are
 approximating a sampling process (remember that the records are in random order).
 For instance, suppose that we have read 10K records from a 1M record file.
