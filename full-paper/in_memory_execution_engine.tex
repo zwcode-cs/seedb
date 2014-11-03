@@ -1,25 +1,29 @@
+%!TEX root=document.tex
+
+
 \subsection{Custom Execution Engine}
 \label{sec:in_memory_execution_engine}
 
-While our first design of the execution engine allowed \VizRecDB\ to be
-used with a variety of existing databases, optimization opportunities were
+While our first design of the execution engine allows \VizRecDB\ to be
+used with a variety of existing databases, optimization opportunities are
 limited by virtue of being outside the database.
 Even after applying all the optimizations discussed in the previous section, the
-\VizRecDB\ engine took on the order of 10s of seconds to process a
-moderately sized dataset (Section \ref{sec:experiments}).
-This response time is too high for an interactive application, and hence we
-went about building a custom execution engine for \VizRecDB.
+\VizRecDB\ engine takes on the order of 10s of seconds to process a
+moderately sized dataset \agp{on?} (Section \ref{sec:experiments}).
+This response time is rather high for an interactive application, so we
+now focus our attention on building a 
+custom execution engine for \VizRecDB.
 
-From the design of the DBMS-backed execution engine, we learnt that \VizRecDB\
-wouldn't be able to execute efficiently unless (a) we minimized scans of the
+From the design of the DBMS-backed execution engine, we learned that \VizRecDB\
+wouldn't be able to execute efficiently unless (a) we minimize the number of scans of the
 data, and (b) we significantly reduced resources wasted on low-utility views.
-As a result, our goals with the custom execution engine were as follows:
+As a result, our goals with the custom execution engine are as follows:
 (1) complete sharing of table scans between views so that a single table scan
-sufficies to compute all views; 
+suffices to compute all views; 
 (2) sharing of intermediate results between views so that low utility views can
 be pruned on the fly; 
 (3) early stopping once the top views have been identified. 
-We now decribe the
+We now describe the
 basic execution framework adopted by our engine followed by specific heuristics
 used to speed up the processing.
 
@@ -33,19 +37,32 @@ We assume that {\it records in the file are in random order}; if they are not,
 we must apply a pre-processing step to get them in random order.
 For each record read in, \VizRecDB\ determines whether the record satisfies the
 input query, and then updates the target and comparison views for all views
-currently in the running.
+currently in the running or have been ``accepted'' as being in the top-$k$.
 It also updates the utility values and other algorithm-specific statistics for
 each view.
 To identify and prune low utility views, \VizRecDB\ processes the file in
 phases where each phase consists of processing a fixed number of records.
 At the end of each phase, \VizRecDB\ checks to see if any views can be pruned,
 i.e., discarded or ``accepted'' as being in the top-$k$.
+At one extreme, each phase consists of just one record, in which case views
+are pruned after ever record is read and the views are updated;
+at the other extreme, we use only one phase, in which case views are only pruned
+after all the records are read (i.e., effectively no pruning). 
 The list of views still in the running is updated and processing continues.
-If at the end of a given phase, \VizRecDB\ finds that the views in running satisfy
-the given stopping criteria, e.g. that \VizRecDB\ has already identified the
-top-$k$ views, the \VizRecDB\ engine can stop processing early.
+Once all views are either accepted or discarded (i.e.,
+\VizRecDB has identified the top-$k$), \VizRecDB\ can stop processing early.
 Once the engine has finished processing, $k$ views with the
 highest utility are returned to the frontend.
+
+Note that we have two alternatives for computing the visualizations for the top-$k$
+views, once processing has ceased: we can either compute the top-$k$ views to completion (i.e.,
+on the remaining unprocessed records),
+or we can display approximate visualizations for each view, as soon as we ``accept'' them
+as being in the top-$k$. We use the former option as the default, 
+and the latter as an additional optimization that may be employed.
+% If at the end of a given phase, \VizRecDB\ finds that the views in running satisfy
+% the given stopping criteria, e.g., that \VizRecDB\ has already identified the
+% top-$k$ views, the \VizRecDB\ engine can stop processing early.
 
 % \begin{algorithm}
 % \caption {ComputeAggregate(Query
@@ -95,26 +112,134 @@ highest utility are returned to the frontend.
 \end{algorithmic}
 \end{algorithm}
 
-We can use different heuristics to perform the pruning of views at the end of
-each phase.
-The general idea is to keep running estimates of utility for each view, and
+Thus, the general idea is to keep running estimates of utility for each view, and
 perform pruning of low utility views based on these estimates.
-To implement a pruning heuristic, we merely specify the two things: (1)
+To implement a pruning strategy, we merely specify the two things: (1)
 statistics to track for each view, and (2) the rule used to prune views at the
 end of a phase.
 An important side effect of our implementation is that
 as we scan more data from the file, our estimates of utilities become more
 accurate.
+
+
+In this paper, we evaluate three different strategies
+to perform the pruning of views at the end of each phase.
+\begin{itemize}
+\item The first two strategies are based on confidence interval-based top-$k$ algorithms.
+That is, at the end of each phase, confidence intervals are updated for all
+the views still in the running, and if the upper-bound for any of them
+is lower than the lower-bound for confidence intervals of $k$ or more other views,
+then those views are discarded.
+\begin{itemize}
+\item The first uses worst-case confidence intervals based on the
+Hoeffding-Serfling inequality~\cite{serfling1974probability}, 
+which is a generalization of Hoeffding's inequality~\cite{hoeffding1963probability}
+when the samples are randomly chosen without replacement.
+These confidence intervals are necessarily more conservative.
+\item The second uses normal confidence intervals, assuming that 
+the underlying distribution is Gaussian~\cite{all-of-statistics}.
+These confidence intervals are more ``aggressive'', because they make the assumption
+that the underlying distribution is normal.
+(For experiments evaluating this assumption, see Section~\ref{sec:evaluating_normal}.)
+\end{itemize}
+\item The last is based on an adaptation of Multi-Armed Bandit (MAB) algorithms
+for top-$k$ arm identification from XXX~\cite{}. 
+Multi-Armed Bandit algorithms are a well-studied stochastic control problem:
+in our scenario, the arms are the views, and pulling an arm corresponds
+to updating a view's utility.
+\end{itemize}
+\agp{potentially delete or bring up only for normal case.}
 As a result, as shown in Line 12 of Algorithm \ref{algo:custom_exec_engine},
 when a phase ends, we clear all statistics collected in that phase; we do not
 want less accurate estimates from previous phases to contaminate the more
 accurate estimates from subsequent phases.
 
-We implemented a dozen heuristics to perform pruning of views; below, we present
-two general classes of heuristics that performed well and have strong
-theoretical backing.
 
-\subsubsection{Confidence Interval Based Pruning}
+\subsubsection{Confidence Interval-Based Pruning}
+We first describe at a high-level our confidence interval-based pruning strategies,
+and then describe the two specific instantiations of these strategies,
+based on worst-case, and normal confidence intervals respectively.
+
+\VizRecDB keeps a number of statistics (described below), to compute
+the mean utility of a view $V_i$, as well as a confidence interval around that utility.
+We let our current estimate of 
+the mean utility of a view is $u_i$, and the confidence interval around 
+that mean utility be $u_i \pm c_i$.
+\VizRecDB uses the following rule to prune low-utility views:
+{\em If the upper bound of the utility of the view $V_i$ is lesser
+than the lower bound of the utility of $k$ or more views, then $V_i$ is discarded.}
+We illustrate this with an example. 
+Suppose at the end of phase $p$ the confidence intervals for the views in
+running have values shown in Figure \ref{fig:conf_interval} and we want to
+identify the two views with the highest utility.
+Consider view $V_3$, we see that its confidence interval overlaps with the
+confidence intervals of the current top views $V_1$ and $V_2$, making it possible
+that $V_3$ will be in the final top views. On the other hand, the confidence
+interval for $V_4$ lies entirely below the lowest bound of the top two
+intervals.
+Since we can claim with high probability (depending on the confidence threshold)
+that the utility of $V_4$ lies within its confidence interval, it follows that
+with high probability, $V_4$ will not appear in the top-$2$ views.
+This is essentially our pruning rule. 
+
+\begin{figure}[htb]
+\vspace{-10pt}
+\centerline{
+\hbox{\resizebox{9cm}{!}{\includegraphics[trim=10mm 100mm 55mm 35mm, 
+clip=true]{Images/confidence_pruning.pdf}}}}
+\caption{Confidence Interval based Pruning}
+\label{fig:conf_interval}
+\vspace{-12pt}
+\end{figure}
+
+
+\stitle{Worst-Case Confidence Intervals.} 
+Suppose we have $N$ values $y_1, \ldots, y_n$ in $[0, 1]$, and we are drawing
+from them without replacement. 
+Say we have drawn $m$ values so far, which are $Y_1, \ldots, Y_m$.
+Then, we use the Hoeffding-Serfling inequality~\cite{serfling1974probability} 
+to derive a running 
+confidence interval such that the actual mean of the $N$
+is always within the confidence interval with a probability of $\delta$:
+\begin{theorem}
+\label{thm:hs}
+Let $\calY = y_1,$ $\ldots,$ $y_N$ be a set of $N$ 
+values in $[0,1]$ with average value
+$\frac1N \sum_{i=1}^N y_i = \mu$.
+Let $Y_1,\ldots,Y_N$ be a 
+sequence of random variables drawn from $\calY$ without
+replacement.
+Fix any $\delta > 0$. For $1 \le m \le N-1$, define
+$$
+\varepsilon_m = \sqrt{\frac{(1-\frac{m-1}N)(2\log \log (m) + \log(\pi^2/3\delta))}{2m}}.
+$$
+$$
+\textrm{Then:} \ \   \Pr\left[ \exists m, 1 \le m \le N : 
+  \left|\frac{\sum_{i=1}^m Y_i}{m} - \mu\right| > \varepsilon_m \right] 
+\le \delta.
+$$
+\end{theorem}
+In our setting, the current mean, $\sum Y_i / m$ is the 
+the current estimate of the utility based on the samples seen thus far
+for each view. 
+Thus, to apply this pruning strategy, the only statistics
+we need are the current estimate of the utilities.
+
+Note that in this setting, we are assuming that since the
+utility estimate at any stage of processing is in $[0, 1]$, 
+the $Y_i$ values, i.e., the incremental contributions to the utility
+that come from reading each record, are also between $[0, 1]$,
+and are independent of the current value of the utility. 
+This need not always hold. 
+\agp{give example.}
+Thus, the guarantees do not directly apply to our setting. 
+
+
+\stitle{Normal Confidence Intervals.}
+To apply this pruning strategy, we track 
+
+
+\subsubsection{Normal Confidence Interval-Based Pruning}
 \label{sec:confident_interval}
 This pruning strategy is based on the application of sampling and confidence
 intervals to utility estimates. First, as described above, we must specify
@@ -198,32 +323,23 @@ empirically in Section \ref{sec:experiments}) that the confidence intervals
 always contain the mean and continually shrink as we read in more data.
 
 
-\begin{figure}[htb]
-\vspace{-10pt}
-\centerline{
-\hbox{\resizebox{9cm}{!}{\includegraphics[trim=10mm 100mm 55mm 35mm, 
-clip=true]{Images/confidence_pruning.pdf}}}}
-\caption{Confidence Interval based Pruning}
-\label{fig:conf_interval}
-\vspace{-12pt}
-\end{figure}
 
-Now that we have a way of finding confidence intervals, we elaborate on how we
-use them to perfom pruning.
-Suppose at the end of phase $p$ the confidence intervals for the views in
-running have values shown in Figure \ref{fig:conf_interval} and we want to
-identify the two views with the highest utility.
-Consider view $V_3$, we see that its confidence interval overlaps with the
-confidence intervals of the current top views $V_1$ and $V_2$, making it likely
-that $V_3$ will be in the final top views. On the other hand, the confidence
-interval for $V_4$ lies entirely below the lowest bound of the top two
-intervals.
-Since we can claim with high probability (depending on the confidence threshold)
-that the utility of $V_4$ lies within its confidence interval, it follows that
-with high probability, $V_4$ will not appear in the top-$2$ views.
-This is essentially our pruning rule. 
-We state the algorithm fomally in
-Algorithm \ref{algo:ci_based_pruning}.
+% Now that we have a way of finding confidence intervals, we elaborate on how we
+% use them to perfom pruning.
+% Suppose at the end of phase $p$ the confidence intervals for the views in
+% running have values shown in Figure \ref{fig:conf_interval} and we want to
+% identify the two views with the highest utility.
+% Consider view $V_3$, we see that its confidence interval overlaps with the
+% confidence intervals of the current top views $V_1$ and $V_2$, making it likely
+% that $V_3$ will be in the final top views. On the other hand, the confidence
+% interval for $V_4$ lies entirely below the lowest bound of the top two
+% intervals.
+% Since we can claim with high probability (depending on the confidence threshold)
+% that the utility of $V_4$ lies within its confidence interval, it follows that
+% with high probability, $V_4$ will not appear in the top-$2$ views.
+% This is essentially our pruning rule. 
+% We state the algorithm fomally in
+% Algorithm \ref{algo:ci_based_pruning}.
 
 \begin{algorithm}
 \caption{Confidence Interval Based Pruning}

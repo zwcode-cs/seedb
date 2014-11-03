@@ -277,9 +277,11 @@ may be faster.
   comparison views are the same irrespective of the input query.
   In this case, we can precompute all possible comparison views once and store
   them for use in all future comparisons. If the dataset has $a$ dimension and
-  $m$ measure attributes, pre-computing comparison views would add $a$$\ast$$m$
-  tables. This corresponds to an extra storage of $O(a\ast m \ast n)$ where $n$
-  is the maximum number of distinct values in any of the $a$ attributes. 
+  $m$ measure attributes, 
+  pre-computing comparison views would add $a \times m$
+  tables. This corresponds to an extra storage of $O(a\times m \times n \times f)$ where $n$
+  is the maximum number of distinct values in any of the $a$ attributes,
+  and $f$ is the number of aggregation functions. 
   Note that pre-computation cannot be used in situations where the comparison
   view depends on the target view (Example 2) or is directly specified by the
   user (Example 3).
@@ -287,9 +289,9 @@ may be faster.
 \subsubsection {Sampling}
   For large datasets, sampling can be used to significantly improve
   performance. To use sampling with \VizRecDB, we precompute a sample of the
-  entire dataset (size of sample depends on desired accuracy). When a query is
+  entire dataset (the size of sample depends on desired accuracy). When a query is
   issued to \VizRecDB, we run all view queries against the sample and pick the
-  top-k views. Only these high-utility views are then computed on the entire
+  top-k views. Only the high-utility views are then computed on the entire
   dataset. \\
 
 
