@@ -1,515 +1,461 @@
-%!TEX root=document.tex
-
 \section{Experimental Evaluation}
+\label{sec:experiments}
 
-We evaluated the performance of \VizRecDB\ on a variety of real and synthetic
-datasets as shown below. 
-In particular, we evaluated the performance of our
-DBMS-backed execution engine as well as our in-memory execution engine, and the
-respective optimizations. 
-For the DBMS-backed engine, we also built an analytical model to help pick
-parameters for \VizRecDB.
-
-\subsection{Experimental Setup}
-
-\begin{table}[htb]
-  \centering \scriptsize
-  \begin{tabular}{|c|c|c|c|c|c|c|} \hline
-  Type & Dataset & Num  & Num  & Num  & Size (GB) &
-  Num \\
-  & Name & Rows & Dimensions &  Measures & & Views \\ \hline 
-   & $Small_1$ & 1M & 5 & 2 &  0.1 & \\ 
-  Small & $Small_2$ & 10M & 5 & 2 &  1 & 10\\ 
-   & $Small_3$ & 100M & 5 & 2 &  10 & \\ \hline
-   & $Med_1$ & 1M & 50 & 5 &  0.4 & \\
-  Medium & $Med_2$ & 10M & 50 & 5 &  4 & 250\\ 
-   & $Med_3$ & 100M & 50 & 5 &  40 & \\ \hline
-   & $Large_1$ & 1M & 100 & 10 &  1 & \\
-  Large & $Large_2$ & 10M & 100 & 10 &  10 & 1000\\
-   & $Large_3$ & 100M & 100 & 10 &  100 & \\ \hline
-  \end{tabular}
-  \caption{Datasets used for testing}
-  \label{tab:datasets} 
-\end{table}
-
-Table \ref{tab:datasets} lists the datasets on which we evaluated the
-performance of \VizRecDB. These datasets are synthetically generated and their size
-varies from 100 MB to 100 GB and number of attributes ranges from 5 - 100 dimension attributes and 2 -
- 10 measure attributes. The relative cardinality of dimension and measure attributes
-was chosen to model real-world datasets which usually have a large number of
-dimension attributes but few measure attributes. To accurately estimate the
-effect of specific optimizations, for each dataset, we also created a
-supplemental dataset with the same specifications except that each attribute had
-the same number of distinct values (100).
-
-For each dataset, we used \VizRecDB\ to find the top 20 views of the input query.
-Any run that took more than 1 hour was terminated. All experiments were repeated
-three times and the results were averaged.
-We ran experiments using Postgres as the backend database for \VizRecDB\ and a single
-machine with 32 Intel Xeon E7 processors with hyperthreading enabled and 256 GB
+This this section we present our experimental evaluation of \VizRecDB.
+We performed a detailed analysis of both execution engines of \VizRecDB\ with
+respect to correctness and performance.
+We used a suite of real and synthetic datasets listed in Table \ref{} to test the
+performance of our techniques.
+All experiments were run on a single
+machine with XXX Intel Xeon E7 processors with 8 GB
 RAM.
 
+We begin with an evaluation of the DBMS-backed execution engine, followed by an
+evaluation of our custom solution.
+
 \subsection{DBMS-backed Execution Engine}
+\label{sec:dbms_execution_engine}
 
-We now present experimental characterization of the optimization
-strategies described for the DBMS-backed execution engine (
-\ref{subsec:VizRecDB_backend}).
-Our goal is to understand the effect of each strategy on \VizRecDB\ performance. We
-also build an analytical model and predict the optimal set of
-parameters for \VizRecDB.
+As mentioned in Section \ref{}, our DBMS-based execution engine leverages the
+DBMS API to execute queries corresponding to views using the existing DBMS
+infrastructure.
+While this approach has the advantage of agnostic of the underlying DBMS, its
+limitations include lack of fine grained control over sharing of table scans and
+lack of ability to prune low-utility views.
 
-\subsubsection{Basic Framework}
-We first examined the baseline performance of \VizRecDB\ without any optimizations.
-For each possible view, we executed the target and comparison view queries
-separately and sequentially, and then picked the top views. This corresponds to
-the basic framework described in Section \ref{sec:basic_framework}. The number
-of queries executed for each dataset was twice the number of views shown in
-Table \ref{tab:datasets}. Figure \ref{fig:baseline_performance} shows the baseline
-performance for Small, Medium and Large datasets of size 1M. We observe that
-execution time increases super-linearly as the size of the dataset (number of dimension and
-measure attributes) increases. Moreover, as mentioned before, even for the
-Medium sized dataset (1M rows, 5 measure and 50 dimension attributes), \VizRecDB\
-execution takes 700s, a latency that is unacceptable for interactive queries.
+We ran all our experiments in this section on two database systems: a
+row-oriented database (denoted as ROW in the following figures) and a
+column-oriented database (COL).
+The reason was evaluating both systems was that we expect certain
+optimizations to work better for row-stores vs. column stores.
+The main metric we are concerned with in this section is performance.
+Since this version of the execution engine exhaustively explores all views and
+then orders them by utility, we are guaranteed to get the top-$k$ views with
+perfect accuracy.
+All latency measurements were repeated three times and the results were
+averaged.
+
+We start with an evaluation of the basic framework and study the effect of
+adding each individual optimization.\\
+
+\noindent {\it Basic Framework}: The basic DBMS-backed execution engine
+sequentially executes individual view queries for each possible view.
+Figure \ref{fig:baseline_size} and Figure \ref{fig:baseline_views} show the
+\VizRecDB\ latency when using the basic framework.
+Figure \ref{fig:baseline_size} shows the change in latency with changes in table
+size while Figure \ref{fig:baseline_views} shows the impact of view number on
+the latency.
+In Figure \ref{fig:baseline_size}, we fixed the number of views at 250 and
+varied the number of rows from 100K to 1M, whereas in Figure
+\ref{fig:baseline_views}, we fixed the number of rows at 1M and varied the
+number of views from 50 - 250.
+As expected, we see that the latency of the basic framework is directly
+proportional to the number of rows as well as the number of views in the table.
+We see that the column store runs wildly faster than the row store in each run.
+This is expected because individual view queries only select one dimension
+attribute and one measure attribute at a time, making each query in the column
+store significantly faster than the same query in the row store which must load
+all columns.
+
+Finally, we note that the row and column store respectively take between 10-100s
+and between 50-500s to evaluate all views.
+These time scales are simply unacceptable for interactive applications, and
+therefore, we must aggressively optimize our queries. \\
+
+% \begin{figure}[h] 
+% \centerline{
+% \resizebox{4cm}{!} {\includegraphics {Images/baselines_by_size.pdf}}
+% \resizebox{4cm}{!} {\includegraphics {Images/baselines_by_views.pdf}}
+% }
+% \end{figure}
 
 \begin{figure}[h]
-  \centering
-    \includegraphics[width=6cm]{Images/baseline_performance.pdf}
-    \caption{Baseline Performance} 
-      \label{fig:baseline_performance}
+\centering
+\begin{subfigure}{0.49\linewidth}
+\centering
+{\includegraphics[width=4.2cm] {Images/baselines_by_size.pdf}}
+\caption{Latency vs. Table size}
+\label{fig:baseline_size}
+\end{subfigure}
+\begin{subfigure}{0.49\linewidth}
+\centering
+{\includegraphics[width=4.2cm] {Images/baselines_by_views.pdf}}
+\caption{Latency vs. Num Views}
+\label{fig:baseline_views}
+\end{subfigure}
+\label{fig:baselines}
+\caption{Latency of Basic Framework}
 \end{figure}
 
-\subsubsection{Combine target and comparison view query}
-Next, we study the effect of combining target and comparison view queries as
-described in Section \ref{subsec:target_comparison_view}. The goal of this
-optimization is to execute both queries in a single scan of the table.
-Therefore, the total number of queries executed is equal to the number of
-views possible for a given dataset. This optimization offers an average speed up
-of 1.7x across a range of selectivities for the input query.
-
-\subsubsection{Combine Multiple Aggregates}
-\VizRecDB\ uses the parameter $n_{agg}$ to denote the number of aggregates that may
-be included in the same view query. Therefore, given a set of view queries with
-the same group-by attribute, view queries are combined so that each query has up
-to $n_{agg}$ aggregates. We varied $n_{agg} \in {2, 3, 5, 10}$ for each dataset
-(Note that the Small and Medium dataset have only 2 and 5 measure attributes
-respectively).
-Figure \ref{fig:mult_agg} shows the performance gains achieved for the 1M row
-datasets. We see that for a given dataset, increasing $n_{agg}$, i.e. computing
-more aggregates in the same query, gives an almost linear speedup. We also
-notice that this optimization is slightly more effective for larger datasets.
+\noindent {\it Combining Multiple Aggregates}: Next, we study the impact of
+combining multiple aggregates within the same query.
+The goal of this optimization is to evaluate multiple views at once by keeping
+track of multiple aggregates for the same dimension attribute.
+For a synthetic dataset of 1M rows and 1000 views (50 dimension and 20 measure
+attributes), we varied the number of aggregations performed per query
+($n_{agg}$) between 1 and 20 and measured the impact on latency.
+As shown in Figure \ref{fig:multi_agg}, latency reduces as we increase the
+number of aggregations performed per query.
+This optimization shows promise both in the row store as well as the column
+store, athough we note that the optimization has diminishing returns as more
+state must be stored and, in the case of the column store, more columns must be
+read. \\
 
 \begin{figure}[h]
+\centering
+{\includegraphics[width=6cm] {Images/multi_agg.pdf}}
+\caption{Latency vs. number of aggregates}
+\label{fig:multi_agg}
+\end{figure} 
 
-  \centering
-    \includegraphics[width=6cm]{Images/mult_agg.pdf}
-    \caption{Effect of Multiple Aggregate Optimization} 
-      \label{fig:mult_agg}
+\noindent {\it Combining Multiple Group Bys}: In this set of experiments, we
+study the effect of combining multiple group by attributes into one query.
+Section \ref{} briefly discussed how the impact of this optimization was not
+clear since it increases the total number of groups significantly and therefore
+leads to higher cost of processing intermediate results.
+
+To evaluate this optimization, we generated a synthetic dataset with 1M rows, 1
+measure attribute and 20 dimension attributes such that each dimension attribute
+was independently generated and had exactly 10 distinct values.
+Since each dimension attribute is independent of the others and has 10 distinct
+values, the total number of distinct groups produced when we construct a query
+with $p$ group-by attributes is $10^p$.
+
+We ran \VizRecDB\ on this dataset and varied the number of group-by
+attributes in view queries ($n_{gb}$) between 1 and 20.
+Figure \ref{fig:multi_gb_same} shows the results for this experiment.
+We see that for the row-store, the best latency is obtained for number of
+groups=$10^4$.
+Beyond $10^5$, the performance degrades drastically. 
+For the column-store, we see a relatively small improvement in latency
+for $10^2$, however, once again, after $10^5$, the performance becomes
+much worse.
+The reason for this is as follows: as we combine group by attributes, the number
+of distinct groups increases exponentially ($10^{n_{gb}}$). 
+As a result, the memory required for the grouping (hash-based or sort based)
+also increases significantly.
+Once this memory requirement hits the pre-configured upper limit (e.g. say the
+memorycap in the column store or working memory in the row store), the
+performance degrades significantly.
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.49\linewidth}
+\centering
+{\includegraphics[width=4.2cm] {Images/multi_gb_same.pdf}}
+\caption{Latency vs. Num of Groups}
+\label{fig:multi_gb_same}
+\end{subfigure}
+\begin{subfigure}{0.49\linewidth}
+\centering
+{\includegraphics[width=4.2cm] {Images/multi_gb.pdf}}
+\caption{Latency vs. Num Dimensions}
+\label{fig:multi_gb_bp}
+\end{subfigure}
+\label{fig:multi_gb}
+\caption{Effect of combining multiple groups}
 \end{figure}
 
-\subsubsection {Parallel Query Execution}
-As discussed in Section \ref{subsec:parallel_exec}, executing view queries in
-parallel can provide significant performance gains; however, a high degree of
-parallelism can lead to a performance drop off for several reasons. Potential
-reasons include disk contention, RAM usage, lock contention, context switches
-and cache line contention
-\cite{Postgres_wiki}.
-Identifying the right amount of parallelism requires tuning for the particular
-workload. The \VizRecDB\ workload consists of multiple parallel queries performing
-full sequential scans of a given table. To evaluate the
-effect of parallelism, we varied the number of queries that can be executed in
-parallel and measured its effect on the average time to execute a query as well
-as the total execution time. Since our backend DBMS is Postgres, parallel query
-execution is implemented by opening multiple connections and running queries
-sequentially on each connection.
+We can guard against the above performance degradation by ensuring that the
+number of distinct groups never goes beyond a pre-configured upper limit.
+From Figure \ref{fig:multi_gb_same}, we see that this limit is approximately
+$10^5$ for both the row and column store.
+Since we now have an upperlimit on the number of distinct groups, we can apply
+the bin packing heuristic discussed in Section \ref{} to optimally group the
+attributes. 
+The heuristic ensures that the number of distinct groups produced by any
+query is less than $10^5$. 
+Figure \ref{fig:multi_gb_bp} shows the results of combining group-by attributes
+for the synthetic dataset SYN1 with  1M rows, 50 dimension, 5 measures and with varying
+number of distinct values in each dimension attribute. 
+% There are two opposing forces at work here: increasing the number of dimensions
+% in a query increases the execution time for that query, however, it reduces the
+% number of queries that must be executed and hence reduces execution time.
+We see trends similar to those in Figure \ref{fig:multi_gb_same}.
+The horizontal lines denote the performance of the bin-packing heuristic that
+optimally groups dimension attributes keep the number of groups below the
+upper limit.
+We see that the heuristic performs significantly better for the row-store but
+slightly worse for the column store.\\
 
-Figure \ref{fig:parallelism} shows the effect of parallelism on the average
-execution time per view (Medium dataset, 1M rows). Note the log scale on the
-y-axis.
-We observe that query execution time stays flat between 1 - 10 connections, suddenly increases between
-10 - 20 connections, and then increases linearly for more than 20 connections.
-This suggests that the benefits of parallel execution are outweighed by
-contention beyond 20 connections. Figure \ref{fig:parallelism_total} shows the
-total time (as opposed to per view execution time) taken by \VizRecDB\ for varying
-levels of parallelism. We observe that the minima occurs in the range between 10
-- 20 parallel queries and the execution times flatten out after 40 parallel
-queries.
-This trend is the effect of two opposing factors: (A) increased parallelism
-increases contention, and therefore increases per query execution time, and (B)
-parallelism decreases the number of batches of queries that must be executed,
-thus reducing overall time.
-We will take these two opposing forces into account when we develop an
-analytical model for \VizRecDB\ execution time in Section \ref{sec:model}.
+\noindent {\it Parallel Query Execution}: 
+Executing view queries in parallel can provide significant performance gains;
+however, a high degree of parallelism can lead to a performance drop off for
+several reasons. Potential reasons include disk contention, RAM usage, lock
+contention, context switches and cache line contention \cite{Postgres_wiki}. 
 
 \begin{figure}[h]
-  \centering 
-    \includegraphics[width=6cm]{Images/parallelism.pdf}
-      \caption{Effect of Parallelism on Per View Execution Time} 
-        \label{fig:parallelism}
+\centering
+{\includegraphics[width=6cm] {Images/parallel_noop.pdf}}
+\caption{Effect of parallelism}
+\label{fig:parallelism}
+\end{figure} 
+
+Figure \ref{fig:parallelism} illustrates this issue: we varied the number of
+queries running in parallel on the DBMS and measured the latency of our system.
+As expected, low levels of parallelism produce performance gains but high
+parallelism leads to degraded performance.
+For our system, the optimal number of queries to run in parallel is
+approximately $16$ (equal to the number of cores).
+For other systems, we recommend users that they set the number of parallel
+queries to the maximum number of parallel queries that can be run in
+their DBMS without performance degradation.
+If this number is not easily available, a simple experiment as shown in Figure
+\ref{fig:parallelism} can help approximate the right amount of parallelism. 
+
+\noindent {\it Combining Target and Comparison Views}:
+The last optimization we evaluate is that of combining the target and comparison
+views and running a single SQL query per view as opposed to two.
+We expected this optimization to roughly halve the latency since each query
+takes one table scan instead of two.\\
+
+\noindent {\it All optimizations}:
+Now that we have explored all our optimizations in detail, we pick the optimal
+parameters discovered above and combine our optimizations to get the maximum
+performance gain.
+Figure \ref{} shows the latency of \VizRecDB\ when all optimizations have been
+applied.
+As we can see, we obtain a XXX speedup for the row store and a YYY speed up for
+the column store.
+Our optimizations have reduced the basic framework latency from 100s of seconds
+to tens of seconds.
+
+As we can see from the experiments above, aggressive optimization of queries can
+give us speedups of several orders of magnitude.
+However, as discussed before, the DBMS-backed engine suffers from the
+limitations of the DBMS API and therefore cannot prune low-utility views.
+In the next section, we evaluate our custom execution engine and each of its
+heuristics to see how much speedup can be obtained by using these heuristics.
+
+\subsection{Custom Execution Engine}
+\label{sec:custom_execution_engine}
+
+As discussed in Section \ref{}, we built a custom execution engine for
+\VizRecDB\ to take advantage of sharing table scans and using intermediate
+results to prune low-utility views.
+
+In this section, we evaluate the various pruning heuristics developed for our
+custom execution engine.
+Our goal is to determine how effective our strategies are for pruning
+low-utility views and their effect on \VizRecDB\ latency.
+For each of our experiments, we measure three metrics: latency, accuracy and
+utility distance.
+As before, latency is the time taken by \VizRecDB\ to return the top-$k$ views.
+Accuracy is the number of views that are present
+both in the true top-$k$ views and the top-$k$ views returned by our algorithm.
+Finally, utility distance is the difference between the average utility of
+actual top-$k$ views and the average utility of the top-$k$ views generated by our algorithm.
+Since the accuracy and utility distance of our heuristic depends on the
+underlying data distribution, each run was repeated 20 times with the data
+randomized between each run. We report the average over 20 runs. 
+Note that we cannot directly compare the latency
+of our custom execution engine to the latency of the DBMS-backed execution engine.
+This is for multiple reasons including the fact that the custom engine must read
+data from a disk file and convert data to main memory format on the fly and that
+our implementation is in Java and not as optimized as a commercial DBMS.
+Our goal is to highlight the relative performance benefits that can be obtained
+by performing pruning.
+
+Since the performance of pruning strategies is necessarily dependent on the
+distribution of values in the underlying table, we evaluate our strategies on
+real-world datasets.
+These are shown in Table \ref{}.
+For each dataset, we evaluate 4 strategies: 
+(a) No Pruning (NO\_PRU): we make a
+single pass of the data and keep running estimates of the utility. Once we have
+seen all the data, we return the top-$k$ views; 
+(b) Hoeffding Intervals (HOEFF): pruning based on Hoeffding intervals (Section
+\ref{});
+(c) 95\% Confidence Intervals (95\_CI): pruning based on 95\% confidence
+intervals (Section \ref{}); and 
+(d) Multi-armed Bandit (MAB): pruning based on the multi-armed bandit
+formulation (Section \ref{}).
+For each of our datasets, we varied $k$, the number of views to choose, between
+1 and 25 (a realistic upper limit on the number of views presented to the user)
+and measured the latency, accuracy and utility distance for each of our
+heuristics.
+
+Let is first examine the accuracy and utility distance for our heuristics. \\
+
+\noindent {\it Accuracy and Utility Distance}:
+Figure \ref{fig:bank_accuracy} to \ref{fig:dia_accuracy} show the impact of
+heuristics on the accuracy of our results.
+We examine the banking dataset first.
+The true distribution of utilities for all views of the banking dataset is
+shown in Figure \ref{fig:bank_utility_distribution}. 
+In this chart, a vertical line corresponds to the $k$-th highest utility for
+$k$=\{1\ldots10,15,20,25\}.
+The highest utility corresponds to the right-most line while the 25-th highest
+utility corresponds to the left-most line.
+From the chart we see that the highest and second highest utility are spread
+well apart from the rest of the utility; then the top 3-9th utilities are rather
+similar, the 10th highest utility is separated from neighboring utilities by a
+large value and then the remaining utilities are again close together.
+We see that the impact of this utility distribution in the accuracy chart in
+Figure \ref{fig:bank_accuracy}.
+We find that the average accuracy of all three heuristics is pretty good for
+$k$=1 and 2.
+However, between $k$=3\ldots9, the accuracy suffers (consequence of similar
+utility values).
+After $k$=10, the performance of all our heuristics improves once again.
+
+Now, let us examine how ``bad'' are our errors in finding the top-$k$.
+We do so by looking at the utility distance (i.e. the average distance between
+the average utility of the real top-$k$ views and the average utility of the
+top-$k$ views picked by our heuristics).
+Figure \ref{fig:bank_utility_dist} shows the utility distance for all of our
+heuristics.
+Note that NO\_PRU necessarily has 0 utility distance. 
+We notice however, that all of our heuristics have 0 or almost 0 utility
+distance.
+That is, even when or top-$k$ heuristic picks a few incorrect views, the
+selected views have utility very close to the real top-$k$ views.
+This implies that even if our top-$k$ views are approximate, they are of high
+value.
+Another way to analyze mistakes in the top-$k$ views is by examining if the an
+incorrectly returned view for the top-$k$ views also appears in the top-$2k$,
+top-$3k$ or top-$4k$.
+Figure \ref{} shows the results for the banking dataset.
+We see that XXX,
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}{0.49\linewidth}
+\centering
+{\includegraphics[width=4.2cm] {Images/bank_in_memory_accuracy.pdf}}
+\caption{Accuracy of heuristic for bank dataset}
+\label{fig:bank_accuracy}
+\end{subfigure}
+\begin{subfigure}{0.49\linewidth}
+\centering
+{\includegraphics[width=4.2cm] {Images/dia_in_memory_accuracy.pdf}}
+\caption{Accuracy of heuristics for diabetes dataset}
+\label{fig:dia_accuracy}
+\end{subfigure}
+\label{fig:accuracy}
+\caption{Accuracy of Heuristics}
 \end{figure}
 
 
-
 \begin{figure}[h]
-  \centering
-    \includegraphics[width=6cm]{Images/parallelism2.pdf}
-  \caption{Effect of Parallelism on Total Execution Time} 
-    \label{fig:parallelism_total}
-\end{figure}
-
-\subsubsection {Combine Multiple Group-bys}
-\label{subsec:mult_gb_expt}
-Combining multiple attributes in a group-by clause can reduce the number of
-views that must be explored individually.
-However, the benefits of this optimization can be lost to high intermediate
-result cost if the number of distinct groups is large. As mentioned before, we
-divide this optimization into two phases:
-(1) {\it Temp Table Creation} and (2) {\it Temp Table Querying}. In the first
-phase, we run queries with grouping based on multiple attributes and store the
-results in temporary tables. In the second phase, we run single
-aggregate+group-by queries on the temp tables to obtain final results for views.
-For instance, suppose that we want to compute the results for views ($a_1$, $m$,
-$f$), ($a_2$, $m$, $f$) and ($a_3$, $m$, $f$). Instead of executing these views
-individually, we combine these three views into a single view, (\{$a_1$, $a_2$,
-$a_3$\}, $m$, $f$), which computes the aggregate for attribute $m$ using
-function $f$ and groups by the attributes \{$a_1$, $a_2$, $a_3$\}. The results
-of this query are stored in a temporary table which is then queried to get
-results for the original views, ($a_1$, $m$, $f$), ($a_2$, $m$, $f$) and ($a_3$,
-$m$, $f$).
-
-\VizRecDB\ uses the parameter $n_{GB}$ to denote the number of attributes in the
-group-by clause. To evaluate the effect of combining group-bys, we ran \VizRecDB\
-by varying number of group-by attributes, i.e. the $n_{GB}$ parameter, between 1
-and the number of dimensions $d$ in a given table. For each run, we measured the
-amount of time taken to create the temporary tables, the time taken to query the
-temporary tables and the total execution time. Figure
-\ref{fig:avg_tt_creation} to \ref{fig:total_time} show the
-results for the Medium dataset of size 1M tuples.
-
-{\bf Temp Table Creation Phase}: Figure \ref{fig:avg_tt_creation} shows the
-average time required to create temporary tables for $n_{GB}$=1\ldots50. There
-are several points to note in this graph: (1) for $n_{GB}>=10$, the number of
-connections does not have a significant impact of the temp table creation time.
-We see this behavior because for $n_{GB}>=10$, the number of temp tables created
-is $<=5$ and therefore a maximum of 5 connections is used irrespective of the
-number of connections that are open.
-We also note an upward trend in the total temp table creation time with
-increasing $n_{GB}$ because the temporary tables gradually become larger in size
-(the number of rows in the table is bounded by the number of rows in the input
-table but an increase in $n_{GB}$ increases the columns present in the table).
-We also observe that the ``sweet spot'' for temp table creation occurs between 1 -
-2 group-bys. 
-
-% Note that the time required for temp table creation is roughly
-% proportional to the size of the temp tables. We leverage this fact when we
-% develop the analytical model in the next section.
-
-\begin{figure}[h]
-  \centering
-    \includegraphics[width=6cm]{Images/mult_gb_tt_creation_single.pdf} 
-  \caption{Average Temp Table Creation Time} 
-    \label{fig:avg_tt_creation}
-\end{figure}
-
-\begin{figure}[h]
-  \centering
-    \includegraphics[width=6cm]{Images/mult_gb_tt_creation_total.pdf}
-  \caption{Total Temp Table Creation Time} 
-    \label{fig:total_tt_creation_time}
-\end{figure}
-
-Figure \ref{fig:total_tt_creation_time} shows the total time spent in creating
-temporary tables in \VizRecDB. As before, we see that the total time
-flattens out after 10 group-bys; however, we observe a reordering of the the
-trend lines with respect to number of connections. While the average time taken
-to generate temp tables with 5 connections is the least, \VizRecDB\ must run more
-batches of queries to create the required number of temporary tables. We observe
-that that 40 connections is optimal for minimizing the total temp table creation
-time. As in the previous diagram, we observe a minima around $n_{GB}=2$.
-
-{\bf Temp Table Query Phase}: Figures \ref{fig:avg_tt_query_time} and
-\ref{fig:total_tt_query_time} respectively show the average time required to run
-each view query on the temp tables and the total time to run all view queries.
-Note that for the Medium dataset, there are 250 possible views and therefore 500
-view queries that are to be run against the database.
-
-In Figure \ref{fig:avg_tt_query_time}, we see clear trends in  the average time
-taken to execute view queries on temp tables. Specifically: (1) The time taken
-to query a temp table increases non-linearly with the number of queries
-executing in parallel. We see that the trend lines are ordered by number of
-connections and the loss of performance grows with number of connections. (2) As
-before, we observe a slight increase in the execution time as the size of temp
-tables increases. This is not surprising since the query executor must scan and
-process more data. (3) Finally, we observe a minima at $n_{GB}=2$, similar the to
-two graphs above.
-
-
-\begin{figure}[h]
-  \centering
-    \includegraphics[width=6cm]{Images/mult_gb_tt_query_single.pdf}
-  \caption{Average Temp Table Query Time}
-  \label{fig:avg_tt_query_time}
-\end{figure}
-
-\begin{figure}[h]
-  \centering
-    \includegraphics[width=6cm]{Images/mult_gb_tt_query_total.pdf}
-     \caption{Total Temp Table Query Time} 
-       \label{fig:total_tt_query_time}
-\end{figure}
-
-Figure \ref{fig:total_tt_query_time} shows the total time taken to query the
-temp tables for all the final views. Note again that the trends in total query
-time are not identical to those in average query time because number of query
-batches required is inversely proportional to the number of connections.
-In Figure \ref{fig:total_tt_query_time}, we see that runs with 5 connections are
-slow not because of high average query time but because of the large number of
-batches of queries that must be executed. In contrast, runs with 40 connections
-require very few batches but have high average query time. 10 - 20 connections
-and $n_{GB}=1-2$ achieves the best performance.
-
-
-
-{\bf Total Execution Time}: The total execution time for \VizRecDB\ is the sum of
-time required for the two phases above. Figure \ref{fig:total_time} shows the
-total \VizRecDB\ execution time for different values of $n_{GB}$ and number of
-connections. We observe that the best performance is obtained for
-$n_{GB}=2$ and 40 parallel connections.
-
-\begin{figure}[h]
-     \centering
-    \includegraphics[width=6cm]{Images/mult_gb_total.pdf}
-    \caption{Total Execution Time}
-  \label{fig:total_time}
-\end{figure}
-
-\begin{figure}[h]
-  \centering
-    \includegraphics[width=6cm]{Images/mult_gb_diff_distinct.pdf}
-    \caption{Total Execution Time vs. Number of Distinct Values} 
-  \label{fig:total_time_diff_distinct}
-
-\end{figure}
-
-{\bf Effect of Number of Groups:} The above experiments suggest that $n_{GB}=2$
-is the optimal value for the number of group by attributes, both for temp table
-creation and querying.
-Next we study whether this constraint applies to the number of attributes in the
-group by clause or the number of distinct groups produced by the grouping. For
-this purpose, we created variants of the Medium dataset (1M rows) where each
-dimension attribute had $n$ distinct values with $n$=10\ldots1000. We then
-repeated the experiments combining multiple group-bys using these datasets.
-Figure \ref{fig:total_time_diff_distinct} shows the results of this test. In the
-test dataset, the total number of distinct groups for attributes $a_i$ and $a_j$
-is the product of the number of distinct groups for each attribute. We observe
-in \ref{fig:total_time_diff_distinct} that the previously-observed minima at
-$n_{GB}=2$ is actually a function of the number of distinct groups that are
-generated by the multiple-attribute grouping.
-Specifically, we observe that the optimal value for the number of distinct
-groups is in the range of 10,000 - 100,000. We observe similar trends for temp
-table creation and query time.
-
-
-
-\subsubsection{Analytical Model}
-\label{sec:model}
-In this section, we use insights from the experimental characterization of
-various optimizations to develop an analytical model of \VizRecDB\ performance.
-Table \ref{tab:model_params} defines the various parameters used in our model.
-
-\begin{table}
-{\center
-\vspace{-10pt}
-\begin{tabular}[h]{|c|p{5.5cm}|}
-\hline
-Parameter & Description \\ \hline
-$d$ & Number of dimension attributes in table \\
-$n$ & Number of rows in input table \\
-$n_{tt}$ & Number of rows in temporary table \\
-$c_{tt}$ & Number of columns in the temporary table \\
-$t_r$ & Time to access a single row of any table \\
-$t_c$ & Time to process a single column in a row \\
-$t_w$ & Time to write a single row of a table \\
-$n_{agg}$ & Number of aggregate attributes computed in a single query \\
-$n_{d_{i}}$ & Number of distinct values in attribute $d_i$ \\
-$T_{create}$ & Time required to create a temp table \\
-$T_{query}$ & Time required to query a temp table \\ 
-$b_{create}$ & Number of batches of queries required to create temp tables \\
-$b_{query}$ & Number of batches of queries required to query temp tables \\
-$n_{conns}$ & Number of queries executing in parallel \\ \hline
-\end{tabular}
-\vspace{-10pt}
-\caption{Analytical model parameters \label{tab:model_params}}
-}
-\end{table}
-
-% As before, consider the two stages of processing: {\it Temp Table Creation} and
-% {\it Temp Table Querying}. In \VizRecDB\, these two stages take place in parallel:
-% first, we create a set of temp tables; then we query the temp tables and as we
-% finish querying existing tables, we create new tables. The creation of new
-% tables and querying of old tables happens in parallel. 
-
-As before, we break our model into two parts, {\it Temp Table Creation} or {\it
-Phase 1} and {\it Temp Table Querying} or {\it Phase 2}. Note further that in
-each of these phases, multiple queries are executing in parallel. We call the
-set of queries executing in parallel as a ``batch'' of queries. Suppose that the
-total number of queries to be executed is $q$ and $n_{conn}$ queries can be
-executed in parallel. Then the total number of batches required to executed all
-the queries is $\frac{q}{n_{conn}}$. We denote the number of query batches used
-in temp table creation and querying as $b_{create}$ and $b_{query}$ respectively.
-
-We now describe the analytical model for Phase 1 or {\it Temp Table Creation}.
-The time required to create a temp table is proportional to the sum of the time
-required to query the input table, aggregate measure attributes and finally
-write the temp table. We claim that the time taken to process one row of any
-table is equal to the constant time to process any record plus the time required
-to process all the columns in the record.
-\begin{equation*}
-T_{create}\ \ =\ \ n \ast \frac{(t_r\ +\ t_c \ast c)}{n_{conn}} \ +\ t_w
-\ast n_{tt} \ast (t_r\ +\ t_c \ast c_{tt})
-\label{eq:create_time}
-\end{equation*}
-
-We can model {\it Temp Table Querying} similarly. Total time to query a temp
-table is the time to query a single row of the temp table multiplied by the
-number of rows in the table.
-\begin{equation*}
-T_{query}\ \ =\ \ n_{tt} \ast (t_r\ +\ t_c \ast c_{tt}) 
-\label{eq:query_time}
-\end{equation*}
-A related quantity we model is $b_{query}$, the number of temp table query
-batches (Phase 2 batches) that are issued per temp table creation batch (Phase 1 batch).
-If $d_{tt}$ is the number of dimension attributes in a temp table and $n_{agg}$
-is the number of measure attributes, the given temp table contains results
-for ($d_{tt} \ast n_{agg}$) views, and therefore $d_{tt} \ast n_{agg}$ queries
-will be made against the table. Further, since each temp table contains $d_{tt}$
-dimension attributes, there will be $Min(\frac{d}{d_{tt}}, n_{conn})$ temp
-tables being queried in any batch, where $n_{conn}$ is the number of queries executing
-in parallel. Therefore, the total number of queries is $d_{tt} \ast n_{agg}$
-$\ast$ $Min(\frac{d}{d_{tt}}, n_{conn})$. Finally, since $n_{conn}$ of these queries
-can execute at the same time, $b_{query}$ can be modeled as follows:
-\begin{equation*}
-b_{query}\ \ =\ \ \frac{d_{tt} \ast nAgg \ast Min(\frac{d}{d_{tt}},
-n_{conn})}{n_{conn}}
-\end{equation*}
-
-Using the three definitions above, we can model the total time taken by \VizRecDB\
-as shown in Equation \ref{eq:total_time}. If there are $b_{create}$ Phase 1
-batches, then the total execution time is equal to the time taken to complete
-one batch multiplied by $b_{create}$. In turn, the time taken to complete a
-Phase 1 batch is the time taken to create temp tables and subsequently query
-them in Phase 2 batches.
-Since these two steps take place in parallel, we approximate the completion time
-for a Phase 1 batch as the difference between the temp table query time and temp
-table creation time.
-\begin{equation*}
-T_{total}\ \ =\ \|(T_{create} - T_{query} \ast b_{query})\| \ast b_{create}
-\label{eq:total_time}
-\end{equation*}
-
-We evaluate the accuracy of our model by comparing the model predictions to
-actual performance results. Figure \ref{fig:create_time_fitted} shows the
-accuracy of our model for predicting time to create temporary tables using
-Equation \ref{eq:create_time} (Medium dataset, 1M tuples, 5 connections).
-Similarly, Figure \ref{fig:query_time_fitted} shows the accuracy of our model
-for predicting time to query temporary tables using Equation
-\ref{eq:query_time}. Finally, Figure \ref{fig:total_time_fitted} shows the
-accuracy of our model for predicting total execution time as derived in Equation
-\ref{eq:total_time}.
-
-\begin{figure}[h]
-  \centering
-    \includegraphics[width=6cm]{Images/create_time_fitted.pdf}
-  \caption{Actual and Estimated Temp Table Query Time}
-  \label{fig:create_time_fitted}
-  
-\end{figure}
-\begin{figure}[h]
-  \centering
-    \includegraphics[width=6cm]{Images/query_time_fitted.pdf}
-  \caption{Actual and Estimated Temp Table Query Time} 
-  \label{fig:query_time_fitted}
+\centering
+\begin{subfigure}{0.49\linewidth}
+\centering
+{\includegraphics[width=4.2cm] {Images/bank_in_memory_utility_dist.pdf}}
+\caption{Utility Distance of heuristic for bank dataset}
+\label{fig:bank_utility_dist}
+\end{subfigure}
+\begin{subfigure}{0.49\linewidth}
+\centering
+{\includegraphics[width=4.2cm] {Images/dia_in_memory_utility_dist.pdf}}
+\caption{Utility Distance of heuristics for diabetes dataset}
+\label{fig:dia_utility_dist}
+\end{subfigure}
+\label{fig:accuracy}
+\caption{Utility Distance for Heuristics}
 \end{figure}
 
 \begin{figure}[h]
-  \centering
-    \includegraphics[width=6cm]{Images/total_time_fitted.pdf}
-  \caption{Actual and Estimated Total Execution Time} 
-    \label{fig:total_time_fitted}
+\centering
+{\includegraphics[trim = 0mm 50mm 0mm 50mm, clip, width=6cm]
+{Images/bank_utility_distribution.pdf}}
+\caption{Bank dataset: utility distribution}
+\label{fig:bank_utility_distribution}
 \end{figure}
+\begin{figure}[h]
+\centering
+{\includegraphics[trim = 0mm 50mm 0mm 50mm, clip, width=6cm]
+{Images/diabetes_utility_distribution.pdf}}
+\caption{Diabetes dataset: utility distribution}
+\label{fig:diabetes_utility_distribution}
+\end{figure}
+ 
+Next, let us examine the results for the diabetes dataset.
+The distribution of true utilities for all views in this dataset are shown in
+Figure \ref{fig:diabetes_utility_distribution}.
+Compared to the bank dataset, we see that the utilities for the diabetes are
+very closely clustered from the top 1\ldots10 views. 
+As a result, we expect more incorrectly chosen views in this range of $k$s.
+Compared to that, the utilities around $k$=15, 20 and 25 are relatively widlely
+spaced and we expect better accuracy for those $k$s.
 
-\subsection{Choosing \VizRecDB\ parameters based on the model}
+% 95\_CI does the best among all our heuristics for the whole range of $k$ values.
+% MAB and HOEFF produce similar accuracy values with MAB being slightly better
+% than HOEFF.
+% There are a few reasons why 95\_CI performs better: the MAB heuristic is tied to
+% either accepting or discarding a view at the end of each phase; therefore, even
+% if MAB is not very confidence in the action of accepting or discarding, it must
+% reduce one view in each phase. HOEFF on the other hand is less accurate because
+% XXX.
+% All our heuristics however seem to have low accuracy for $k<10$. 
 
-{\bf Choosing Number of Parallel Queries:} The speed up offered by running
-queries in parallel depends on the DBMS parameters such as maximum number of
-connections, shared buffer size, etc. In our implementation, each phase of
-processing can issue up to $n_{conn}$ queries in parallel, so in principle,
-there may be up to $2 \ast n_{conn}$ queries running in parallel. Since each
-DBMS has a maximum number of queries that can be executed in parallel,
-$n_{conn}$ must be set to be smaller than half the maximum number of
-connections. The exact number of connections will depend on the other workload
-in the system and the size of the dataset. In our setup, $n_{conns}$=40 gives
-the best results for a range of dataset sizes and system parameters.
+Now that we have characterized the accuracy of our techniques, we now turn to
+latency.
 
-{\bf Choosing $n_{agg}$:} Combining multiple aggregates offers a performance
-gain that is almost linear in the number of aggregates, without any significant
-penalty. As a result, we set $n_{agg}$ equal to the number of measure attributes
-in the table.
+\noindent {\it Latency}:
+Next, let us look at how long it takes for our pruning strategies to work.
+Figures \ref{fig:bank_latency} and \ref{fig:diabetes_latency} show the latency
+of our heuristics for the banking and diabetes dataset.
+The two charts look quite similar.
+First off, we observe that the use of any of our heuristics reduces the latency
+by at least 50\%.
+For NO\_PRU and 95\_CI, for small $k$'s, we obtain a 90\% reduction in
+latency. However, some of this reduction in latency is obtained at the cost
+lower accuracy.
+We observe that the latency of our HOEFF and 95\_CI increases almost linearly
+with $k$.
+Roughly speaking, this trend arises because we throw out fewer views as $k$
+increases, so we must perform more computation for each record.
+This trend is not seen in MAB because MAB's pruning of views is agnostic to
+the number of views that must be selected.
 
-{\bf Choosing dimension attributes to combined processing:}  As discussed in
-Section \ref{subsec:mult_gb_expt}, the optimal number of distinct groups
-consistently falls in the range 10,000 to 100,000. As a result, we set
-$n_{groups}$, the maximum number of groups that any query can generate, to
-100,000.
-This parameter is used to pick dimension attributes that will be combined into a
-single view query. For a set of attributes $a_1$\ldots$a_n$, the maximum number
-of distinct groups that can be generated is $\prod_i a_i$. This is the worst
-case bound since correlation between two attributes can only decrease the number
-of distinct groups. \VizRecDB\ models the problem of grouping attributes with a
-constraint on number of groups as a variant of bin-packing.
-Specifically, \VizRecDB\ adopts the following problem formulation.
-
-Let $n_{d_{i}}$ be the number of distinct values for dimension attribute $d_i$.
-The traditional definition for bin packing states that given bins of size $V$
-and $n$ items with size $a_1$\ldots$a_n$, find the minimum integer number of
-bins and a corresponding partition of the set of items such that $\sum_{j} a_j$
-$\leq$ $V$ for all $a_j$ belong to any given partition. In our setting, there is
-a limit on the {\it product} (as opposed to the sum) of the sizes of items. As a
-result, we formulate the problem as follows: Given bins (queries) of size $V$
-($V$=100,000) and $d$ attributes with sizes $log(n_{d_{i}})$, find
-the minimum number of bins and a corresponding partition of the $d$ attributes
-such that $\sum_{j} log(n_{d_{j}})$, i.e. $\prod_{j} n_{d_{i}}$, $\leq$ $V$.
-Bin-packing has been well studied and we use off-the-shelf software
-\cite{glpk} to perform bin-packing on the dimension attributes.
-
-\subsubsection{Experimental Evaluation with All Optimizations}
-
-We now show performance results for \VizRecDB\ using the optimal parameter settings
-described above. Specifically, we set $n_{conns}$=40, $n_{agg}$=$m$ (i.e.
-number of measure attributes) and $n_{groups}$=100,000 for bin-packing. Further,
-we apply the optimization of combinging target and comparison queries for each view. From
-Figure \ref{fig:total_speed_up}, we see that the combination of all
-optimizations gives us a speedup of about 100X for the Medium and Large
-datasets (note the log scale on Y axis). Although the impact of optimizations is
-relatively small for the Small dataset, we still observe that the total
-execution time is halved. We thus see that the all the optimizations
-taken together can enable \VizRecDB\ to run at near-interactive response times.
+In general, we see that it is possible to reduce latency by 50\% just by using
+any of our heuristics.
+If we want to achieve further performance gains, we must be willing to
+tradeoff some accuracy.
+The next set of experiments vary the parameters for each heuristic to study
+the accuracy vs. latency tradeoff.\\
 
 \begin{figure}[h]
-  \centering
-    \includegraphics[width=6cm]{Images/total_speedup.pdf}
-  \caption{Performance Speedup With Optimizations} 
-  \label{fig:total_speed_up}
+\centering
+\begin{subfigure}{0.49\linewidth}
+\centering
+{\includegraphics[width=4.2cm] {Images/bank_in_memory_latency.pdf}}
+\caption{Bank dataset: latency}
+\label{fig:bank_latency}
+\end{subfigure}
+\begin{subfigure}{0.49\linewidth}
+\centering
+{\includegraphics[width=4.2cm] {Images/diabetes_in_memory_latency.pdf.pdf}}
+\caption{Diabetes dataset: latency}
+\label{fig:diabetes_latency}
+\end{subfigure}
+\label{fig:accuracy}
+\caption{Latency for Heuristics}
 \end{figure}
 
-\subsection{Main Memory Execution Engine}
+\noindent {\it Accuracy vs. Latency}:
+Our MAB and 95\_CI heuristics both have ``knobs'' we can use to study the
+tradeoff between accuracy and latency.
+In MAB, for example, we can tune the number of phases involved in
+processing the entire file. 
+Since MAB reduces the number of views by 1 after each phase, the number of
+phases is directly proportional to the pruning power of our algorithm.
+ a larger
+number of phases means that MAB will throw away more views and sooner than expected.
+While this will lead to lower latency, it will also lead to lower accuracy.
+Figure \ref{} shows how latency and accuracy both reduce as we increase the
+number of phases in MAB.
+For 95\_CI, we can vary the $z$-score used as the
+multiplier for our confidence interval. That is, we can decide to take a 50\% confidence interval, 80\%, 90\%
+etc.
+If we take a smaller confidence interval, we will have higher pruning and
+therefore lower latency.
+However, it will also lead to lower accuracy since we prune views with
+lower confidence.
+Figure \ref{} shows that as the $z$-score of the confidence interval increases,
+the accuracy of our heuristics increases, but so does its latency.
 
-We next describe performance characteristics of our main memory implementation
-and the effect of our heuristics on performance and result accuracy.
 
-\subsubsection{Effect of Confidence Interval based Pruning}
 
-\subsubsection{Effect of MAB Pruning}
 
-\subsection{DBMS vs. Main Memory Execution Engine}
-
-\subsection{End-to-End Testing with Real Datasets}
