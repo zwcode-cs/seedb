@@ -7,24 +7,25 @@
 While our first design of the execution engine allows \VizRecDB\ to be
 used with a variety of existing databases, optimization opportunities are
 limited by virtue of being outside the database.
-Even after applying all the optimizations discussed in the previous section, the
-\VizRecDB\ engine takes on the order of 10s of seconds to process a
-moderately sized dataset \agp{on?} (Section \ref{sec:experiments}).
-This response time is rather high for an interactive application, so we
-now focus our attention on building a 
-custom execution engine for \VizRecDB.
+Specifically, we have little to no ability to prune away views
+after partially evaluating them.
+Thus, in this section, we focus our attention on building
+a custom execution engine for \VizRecDB to study the impact of 
+these optimizations.
 
-From the design of the DBMS-backed execution engine, we learned that \VizRecDB\
-wouldn't be able to execute efficiently unless (a) we minimize the number of scans of the
-data, and (b) we significantly reduced resources wasted on low-utility views.
+From the DBMS-backed execution engine, 
+we learned that there are two aspects where
+the DBMS-backed execution engine suffers:
+(a) the number of scans of the data is far too high
+(b) far too many resources are wasted on low-utility views.
 As a result, our goals with the custom execution engine are as follows:
-(1) complete sharing of table scans between views so that a single table scan
+(a) complete sharing of table scans between views so that a single table scan
 suffices to compute all views; 
-(2) sharing of intermediate results between views so that low utility views can
+(b) sharing of intermediate results between views so that low utility views can
 be pruned on the fly; 
-(3) early stopping once the top views have been identified. 
+(c) early stopping once the top views have been identified. 
 We now describe the
-basic execution framework adopted by our engine followed by specific heuristics
+basic execution framework adopted by our engine followed by specific strategies
 used to speed up the processing.
 
 \subsubsection{Basic Framework}
@@ -55,10 +56,12 @@ Once the engine has finished processing, $k$ views with the
 highest utility are returned to the frontend.
 
 Note that we have two alternatives for computing the visualizations for the top-$k$
-views, once processing has ceased: we can either compute the top-$k$ views to completion (i.e.,
+views, once $k$ views have been accepted: 
+we can either compute the top-$k$ views to completion (i.e.,
 on the remaining unprocessed records),
 or we can display approximate visualizations for each view, as soon as we ``accept'' them
-as being in the top-$k$. We use the former option as the default, 
+as being in the top-$k$. 
+We use the former option as the default, 
 and the latter as an additional optimization that may be employed.
 % If at the end of a given phase, \VizRecDB\ finds that the views in running satisfy
 % the given stopping criteria, e.g., that \VizRecDB\ has already identified the
@@ -101,7 +104,7 @@ and the latter as an additional optimization that may be employed.
 \State currPhase.update()
 \If {currPhase.End()}
 \State pruneViews(viewsInRunning)
-\State viewsInRunning.resetAllStatistics()
+%\State viewsInRunning.resetAllStatistics()
 \If {stoppingCondition.True()}
 \State break
 \EndIf
@@ -115,8 +118,8 @@ and the latter as an additional optimization that may be employed.
 Thus, the general idea is to keep running estimates of utility for each view, and
 perform pruning of low utility views based on these estimates.
 To implement a pruning strategy, we merely specify the two things: (1)
-statistics to track for each view, and (2) the rule used to prune views at the
-end of a phase.
+statistics to track for each view, and 
+(2) the rule used to prune views at the end of a phase.
 An important side effect of our implementation is that
 as we scan more data from the file, our estimates of utilities become more
 accurate.
@@ -124,30 +127,32 @@ accurate.
 
 In this paper, we evaluate three different strategies
 to perform the pruning of views at the end of each phase.
-\begin{itemize}
+\begin{denselist}
 \item The first two strategies are based on confidence interval-based top-$k$ algorithms.
 That is, at the end of each phase, confidence intervals are updated for all
 the views still in the running, and if the upper-bound for any of them
 is lower than the lower-bound for confidence intervals of $k$ or more other views,
 then those views are discarded.
-\begin{itemize}
-\item The first uses normal confidence intervals, assuming that 
+\begin{denselist}
+\item The first uses worst-case confidence intervals based on the
+Hoeff\-ding-Serfling inequality~\cite{serfling1974probability}, 
+which is a generalization of Hoeffding's inequality~\cite{hoeffding1963probability}
+when a number of samples are randomly chosen without replacement
+from the same set.
+These confidence intervals are necessarily more conservative.
+\item The second uses normal confidence intervals, assuming that 
 the underlying distribution is Gaussian~\cite{all-of-statistics}.
 These confidence intervals are more ``aggressive'', because they make the assumption
 that the underlying distribution is normal.
-(For experiments evaluating this assumption, see Section~\ref{sec:evaluating_normal}.)
-\item The second uses worst-case confidence intervals based on the
-Hoeffding-Serfling inequality~\cite{serfling1974probability}, 
-which is a generalization of Hoeffding's inequality~\cite{hoeffding1963probability}
-when the samples are randomly chosen without replacement.
-These confidence intervals are necessarily more conservative.
-\end{itemize}
+(For experiments evaluating this assumption, see Section~\ref{sec:evaluating_normal}.) 
+\agp{delete if no experiments are in paper}
+\end{denselist}
 \item The last is based on an adaptation of Multi-Armed Bandit (MAB) algorithms
 for top-$k$ arm identification from XXX~\cite{}. 
 Multi-Armed Bandit algorithms are well-studied in the field of stochastic control:
 in our scenario, the arms are the views, and pulling an arm corresponds
 to updating a view's utility.
-\end{itemize}
+\end{denselist}
 
 
 \subsubsection{Confidence Interval-Based Pruning}
@@ -182,98 +187,11 @@ This is essentially our pruning rule.
 \centerline{
 \hbox{\resizebox{9cm}{!}{\includegraphics[trim=10mm 100mm 55mm 35mm, 
 clip=true]{Images/confidence_pruning.pdf}}}}
+\vspace{-20pt}
 \caption{Confidence Interval based Pruning}
 \label{fig:conf_interval}
 \vspace{-12pt}
 \end{figure}
-
-\stitle{Normal Confidence Intervals.}
-As described above, we must specify
-a set of statistics to track for each view and a rule that is used to
-prune views based on the statistic.
-For confidence interval based pruning, the statistics we track are the mean, 
-variance, and confidence intervals of the view utility.
-As \VizRecDB\ reads each record, it updates the data
-distributions for all views and calculates the current utility of each view. 
-Using past measures of utility, \VizRecDB\ also tracks the mean,
-variance and confidence intervals for the utility of each view.
-% At the end of a phase, \VizRecDB\ uses the following rule for pruning low-utility
-% views (stated more formally below): {\it if the upperbound on the utility
-% of view $v_i$ is lesser than the least lowerbound on the utility of the
-% top-$k$ views, view $v_i$ is discarded.}
-
-% Let us dive deeper into this pruning rule.
-Note that as we sequentially read records from a file, we are
-approximating a sampling process (remember that the records are in random order).
-For instance, suppose that we have read 10K records from a 1M record file.
-In this case, the records 1 -- 10K constitute a 1\% sample of the entire file.
-When we read the next say 10 records, the records 1 -- 10,010 constitute an
-incrementally larger sample of the underlying file.
-Thus, as we read more data from the file, we obtaining a large
-number of samples from the underlying data (notice however, that these samples
-are not independent).
-
-Since we are generating a large number of samples from a population, we can
-invoke a well-studied concept in statistics called the ``sampling distribution.'' 
-A sampling distribution for a statistic $S$ is the distribution of
-$S$ generated by taking a large number of samples of a fixed size and computing
-the statistic $S$ on each sample.
-In our case, the population we draw from is the set of all records in the file
-and our samples are the increasingly larger sets of records that we are reading in.
-The statistic $S$ that we are computing is the view utility (we
-compute a utility value for each view).
-Now, the sampling distribution of the {\it mean} has been well studied and it
-has been proven that the mean of the sampling distribution is equal to the mean of the
-population and the standard error of the sampling distribution is equal to the
-standard error of the population divided by the square root of the sample size. 
-These two formulas are shown in Equations \ref{eq:mean} and \ref{eq:variance}.
-Similarly, if we know the mean and standard error of the sampling distribution,
-we can compute a confidence interval around the population mean. This is shown
-in Equation \ref{eq:confidence_interval} where $z$ is the factor that depends on the
-confidence threshold we are aiming for and $N$ is the number of items
-in each sample.
-
-\begin{eqnarray}
-\label{eqnarray:mean_and_variance}
-\mu_M = \mu \label{eq:mean}\\
-\sigma_{M} = \frac{\sigma}{\sqrt{N}} \label{eq:variance}\\
-CI = \mu_M \pm z \ast \frac{\sigma_M}{\sqrt{N}}\label{eq:confidence_interval}
-\end{eqnarray}
-
-If we were modeling the mean of our samples instead of the utility, we could use
-the above result directly.
-However, we find that with a few minor modifications, we can use the confidence
-interval bounds shown above.
-The first modification we make has to do with how we define utility.
-Remember from Section \ref{sec:problem_definition} that the utility of a view is
-defined as the distance between two distributions: the distribution of aggregate values for the
-target view and the distribution of aggregate values for the comparison view.
-These distributions are in turn tied to the number of distinct groups present in
-each dimension attribute.
-For our purposes, it means that if a dimension attribute has $n$ distinct
-groups, then a sample with $x$ rows gives us approximately $\frac{x}{n}$ values
-for each group (assuming uniform distribution).
-Said another way, a sample with $x$ rows for the purpose of computing utility is
-really only a sample of $\frac{x}{n}$ rows.
-So the first modification we make to Equation \ref{eq:confidence_interval} is to
-replace $N$ by $\frac{N}{G_{max}}$ where $G_{max}$ is the maximum number of
-distinct groups present in any dimension attribute.
-Second, we observe that the sampling distribution applies to the case where
-samples are of the same size and are independently generated.
-This is not true in our algorithm; therefore, to compensate, make two
-conservative modifications: we set $N$ to the number of rows that
-have been read in the previous phase (remember that pruning happens at the end
-of every phase) and we set the $z$ parameter to a value $\geq$ 1.96 (the normal
-95\% confidence interval value). These modifications ensure (as we will show
-empirically in Section \ref{sec:experiments}) that the confidence intervals
-always contain the mean and continually shrink as we read in more data.
-
-As shown in Line 12 of Algorithm \ref{algo:custom_exec_engine},
-when a phase ends, we clear all statistics collected in that phase; we do not
-want less accurate estimates from previous phases to contaminate the more
-accurate estimates from subsequent phases. \agp{deal with this.}
-
-
 
 \stitle{Worst-Case Confidence Intervals.} 
 Suppose we have $N$ values $y_1, \ldots, y_n$ in $[0, 1]$, and we are drawing
@@ -281,8 +199,9 @@ from them without replacement.
 Say we have drawn $m$ values so far, which are $Y_1, \ldots, Y_m$.
 Then, we use the Hoeffding-Serfling inequality~\cite{serfling1974probability} 
 to derive a running 
-confidence interval such that the actual mean of the $N$
-is always within the confidence interval with a probability of $\delta$:
+confidence interval around the current mean 
+of the $m$ values such that the actual mean of the $N$
+is always within this confidence interval with a probability of $1 - \delta$:
 \begin{theorem}
 \label{thm:hs}
 Let $\calY = y_1,$ $\ldots,$ $y_N$ be a set of $N$ 
@@ -301,10 +220,10 @@ $$
 \le \delta.
 $$
 \end{theorem}
-In our setting, the current mean, $\sum Y_i / m$ is the 
-the current estimate of the utility based on the samples seen thus far
-for each view. 
-Thus, to apply this pruning strategy, the only statistics
+In our setting, we treat the current mean, $\sum Y_i / m$ is the 
+the current estimate of the utility of a view 
+based on the entire set of records seen thus far that apply to that view. 
+Therefore, to apply this pruning strategy, the only statistics
 we need are the current estimate of the utilities.
 
 Note that in this setting, we are assuming that since the
@@ -312,9 +231,173 @@ utility estimate at any stage of processing is in $[0, 1]$,
 the $Y_i$ values, i.e., the incremental contributions to the utility
 that come from reading each record, are also between $[0, 1]$,
 and are independent of the current value of the utility. 
-This need not always hold. 
-\agp{give example.}
+This is is not true in our setting, 
+because the utility function could be arbitrary.
 Thus, the guarantees do not directly apply to our setting. 
+
+\stitle{Normal Confidence Intervals.} In this setting,
+we apply the standard normal confidence intervals to our setting. 
+We describe the equations first assuming that
+when every time a record is read, for every view,
+a utility value is ``sampled''
+from a normal distribution. (This assumption is not
+quite correct; we will discuss this  below.)
+
+Consider a specific view. 
+If the mean utility across the sampled records 
+(i.e., the records read thus far) is $\mu$,
+and the variance in the utility of the sampled records
+is $\sigma$, then, we have:
+\begin{align}
+CI & = \mu \pm z \times \frac{\sigma}{\sqrt{m}}
+\end{align}
+Thus, the CI (or confidence interval) is 
+a confidence interval centered around $\mu$, 
+and depends on $\sigma$. 
+It additionally depends on the number of records
+read thus far, $m$,
+and $z$, the factor that depends on the confidence interval
+threshold that we're aiming for.
+For instance, for a 95\% confidence interval, $z = 1.96$.
+
+Now, we discuss the assumption that we made early on.
+The equation described above apply only in the case
+where every time a record is read, an unbiased sample
+of the utility is drawn from a distribution which
+is assumed to be normal. 
+This is not quite the case, since each sample (i.e., each record)
+doesn't give us an unbiased sample of the utility;
+it instead gives us an unbiased sample for the aggregate
+of a single group within the view, thereby indirectly affecting
+the utility.
+For instance, if we read a record corresponding to 
+``Airline = UA'', this affects only the ``UA'' group
+for a view where we are estimating flight delay grouped by airline.
+We now propose two modifications to the equation above to address this issue.
+The first modification we make has to do with how we define utility.
+Recall from Section \ref{sec:problem_definition} 
+that the utility of a view is
+defined as the distance between two distributions: 
+the distribution of aggregate values for the
+target view and the distribution of aggregate values for the comparison view.
+These distributions are in turn tied to the 
+number of distinct groups present in
+each dimension attribute.
+For our purposes, it means that if a dimension attribute has $g$ distinct
+groups, then a sample with $x$ rows gives us approximately $\frac{x}{g}$ 
+values for each group (assuming uniform distribution).
+Said another way, a sample with $x$ rows for the purpose of computing 
+utility is essentially only giving us a sample of $\frac{x}{g}$ rows.
+So the first modification we 
+make to Equation \ref{eq:confidence_interval} is to
+replace $m$ by $\frac{m}{G_{max}}$ where $G_{max}$ is the maximum number of
+distinct groups present in any dimension attribute.
+Second, our mean and variance in the utility needs to be calculated 
+over a sample of utilities. 
+In our case, since we are not getting samples of utilities, 
+and instead getting samples from individual groups that contribute
+to utility, we do the following. 
+Within a phase, we take the estimate of the utility after every
+record is read, and then we compute the mean and variance on these estimates.
+Since utility estimates only improve as we get closer to reading 
+the entire dataset, we drop the estimates of mean and variance at the end
+of every phase; additionally, the number of rows read, $m$, is set to $0$
+at the end of each phase as well. This allows us to get estimates
+of means and variance, using which, we can apply the standard 
+confidence interval bounds.
+
+
+
+
+
+
+% \stitle{Normal Confidence Intervals.}
+% As described above, we must specify
+% a set of statistics to track for each view and a rule that is used to
+% prune views based on the statistic.
+% For confidence interval based pruning, the statistics we track are the mean, 
+% variance, and confidence intervals of the view utility.
+% As \VizRecDB\ reads each record, it updates the data
+% distributions for all views and calculates the current utility of each view. 
+% Using past measures of utility, \VizRecDB\ also tracks the mean,
+% variance and confidence intervals for the utility of each view.
+% % At the end of a phase, \VizRecDB\ uses the following rule for pruning low-utility
+% % views (stated more formally below): {\it if the upperbound on the utility
+% % of view $v_i$ is lesser than the least lowerbound on the utility of the
+% % top-$k$ views, view $v_i$ is discarded.}
+
+% % Let us dive deeper into this pruning rule.
+% Note that as we sequentially read records from a file, we are
+% approximating a sampling process (remember that the records are in random order).
+% For instance, suppose that we have read 10K records from a 1M record file.
+% In this case, the records 1 -- 10K constitute a 1\% sample of the entire file.
+% When we read the next say 10 records, the records 1 -- 10,010 constitute an
+% incrementally larger sample of the underlying file.
+% Thus, as we read more data from the file, we obtaining a large
+% number of samples from the underlying data (notice however, that these samples
+% are not independent).
+
+% Since we are generating a large number of samples from a population, we can
+% invoke a well-studied concept in statistics called the ``sampling distribution.'' 
+% A sampling distribution for a statistic $S$ is the distribution of
+% $S$ generated by taking a large number of samples of a fixed size and computing
+% the statistic $S$ on each sample.
+% In our case, the population we draw from is the set of all records in the file
+% and our samples are the increasingly larger sets of records that we are reading in.
+% The statistic $S$ that we are computing is the view utility (we
+% compute a utility value for each view).
+% Now, the sampling distribution of the {\it mean} has been well studied and it
+% has been proven that the mean of the sampling distribution is equal to the mean of the
+% population and the standard error of the sampling distribution is equal to the
+% standard error of the population divided by the square root of the sample size. 
+% These two formulas are shown in Equations \ref{eq:mean} and \ref{eq:variance}.
+% Similarly, if we know the mean and standard error of the sampling distribution,
+% we can compute a confidence interval around the population mean. This is shown
+% in Equation \ref{eq:confidence_interval} where $z$ is the factor that depends on the
+% confidence threshold we are aiming for and $N$ is the number of items
+% in each sample.
+
+% \begin{eqnarray}
+% \label{eqnarray:mean_and_variance}
+% \mu_M = \mu \label{eq:mean}\\
+% \sigma_{M} = \frac{\sigma}{\sqrt{N}} \label{eq:variance}\\
+% CI = \mu_M \pm z \ast \frac{\sigma_M}{\sqrt{N}}\label{eq:confidence_interval}
+% \end{eqnarray}
+
+% If we were modeling the mean of our samples instead of the utility, we could use
+% the above result directly.
+% However, we find that with a few minor modifications, we can use the confidence
+% interval bounds shown above.
+% The first modification we make has to do with how we define utility.
+% Remember from Section \ref{sec:problem_definition} that the utility of a view is
+% defined as the distance between two distributions: the distribution of aggregate values for the
+% target view and the distribution of aggregate values for the comparison view.
+% These distributions are in turn tied to the number of distinct groups present in
+% each dimension attribute.
+% For our purposes, it means that if a dimension attribute has $n$ distinct
+% groups, then a sample with $x$ rows gives us approximately $\frac{x}{n}$ values
+% for each group (assuming uniform distribution).
+% Said another way, a sample with $x$ rows for the purpose of computing utility is
+% really only a sample of $\frac{x}{n}$ rows.
+% So the first modification we make to Equation \ref{eq:confidence_interval} is to
+% replace $N$ by $\frac{N}{G_{max}}$ where $G_{max}$ is the maximum number of
+% distinct groups present in any dimension attribute.
+% Second, we observe that the sampling distribution applies to the case where
+% samples are of the same size and are independently generated.
+% This is not true in our algorithm; therefore, to compensate, make two
+% conservative modifications: we set $N$ to the number of rows that
+% have been read in the previous phase (remember that pruning happens at the end
+% of every phase) and we set the $z$ parameter to a value $\geq$ 1.96 (the normal
+% 95\% confidence interval value). These modifications ensure (as we will show
+% empirically in Section \ref{sec:experiments}) that the confidence intervals
+% always contain the mean and continually shrink as we read in more data.
+
+% As shown in Line 12 of Algorithm \ref{algo:custom_exec_engine},
+% when a phase ends, we clear all statistics collected in that phase; we do not
+% want less accurate estimates from previous phases to contaminate the more
+% accurate estimates from subsequent phases. \agp{deal with this.}
+
+
 
 
 
@@ -353,48 +436,54 @@ Thus, the guarantees do not directly apply to our setting.
 
 \subsubsection{Multi-Armed Bandit Pruning}
 \label{sec:multi_armed_bandit}
-The second class of pruning techniques we explore are based on a
-well-known learning problem called the ``Multi-Armed Bandit'' (MAB).
-The MAB setting is as follows: a gambler is faced with several slot
-machines (``one armed bandits'') that each have an underlying reward
+The second class of pruning techniques we explore
+are based on solutions for Multi-Armed Bandits (MAB), a problem 
+in stochastic control. 
+The setting is as follows: 
+a gambler is faced with several slot
+machines (``arns'') that each have an underlying reward
 distribution. 
-The gambler has some number of turns at the slot machines and at
-each turn, the gambler must decide which machine to play in order to maximize
-the total reward.
-Recently, variants of MAB have been proposed which instead of maximizing total
-reward, focus on finding the bandits with the highest
-mean reward (\cite{}).
+At each turn, the gambler must decide which machine
+to play at; when they play the machine, they get a reward.
+The gambler needs to decide on a {\em strategy}, i.e.,
+which machine to play during every turn, to maximize
+eventual, total, or time-decaying rewards~\cite{bandits}.
+Recently, variants of MAB have been proposed 
+which instead of maximizing total reward, 
+focus on finding the bandits with the highest mean reward~\cite{BubeckWV13}.
 This is very similar to our setting: each possible view can be thought of as
-one arm of a bandit and our goal is find the views with the highest reward (i.e.
+one arm and our goal is find the views with the highest reward (i.e.
 utility).
-As with the confidence interval based pruning, we consider the sequential
-reading of our file to be similar to random sampling with increasing sample
-size.
-In MAB, each pull of an arm (i.e. slot machine) corresponds to a drawing from
-the underlying probability distribution of that slot machine.
-In our case, each new value for a particular pair of attributes (1 dimension and
-1 measure) corresponds to a drawing from the underlying utility distribution
-of that view.
-There are two approximations we make here: (1) although the utility of a
+In MAB, each pull of an arm corresponds to a drawing from a sample
+the underlying probability distribution of that arm.
+In our case, each new record gives us values
+for a particular pair of attributes (1 dimension and
+1 measure) corresponds to a drawing 
+from the underlying utility distribution of that view.
+There are two approximations we make here to apply the MAB techniques
+to our setting, 
+similar to the approximations in the confidence interval setting
+(As we show in our experimental evaluation,
+the approximation works well
+for our purposes.): 
+(1) although the utility of a
 view is ultimately a single value, we can approximate it as probability
-distribution that is normally distributed around the true utility and has a
-small standard deviation, and (2) when we read the $i$-th record, instead of
-pulling from the probability distribution discussed above, we are pulling from a
-sampling distribution of the utility with sample size $i$.
+distribution that is normally distributed around the true utility, and 
+(2) we assume our running estimate of utility after reading $i$
+records is the estimate derived from sampling $i$ values from
+the underlying utility distribution.
 
-As a result, the MAB setting doesn't translate directly to our case. 
-However, as we show in our experimental evaluation, the approximation works well
-in real settings.
+\agp{can move algorithms to the appendix}
 Algorithm \ref{algo:mab_based_pruning} shows the pruning technique used in the
 MAB setting.
-This
-algorithm is an adaptation of Successive Accepts and Rejects
+This algorithm is an adaptation of Successive Accepts and Rejects
 algorithm from \cite{BubeckWV13} for finding the top-$k$ arms with the highest
 mean reward.
 As before, the processing of the whole file is divided into phases, with the
-number of phases set to $k$-1 for this heuristic.
-As opposed to the confidence interval heuristic, we only track a single
-statistic for MAB, namely the utility mean.
+number of phases set to $k$-1 for this technique.
+(From \cite{BubeckWV13}, this is a parameter that we can set.)
+% As opposed to the confidence interval technique, we only track a single
+% statistic for MAB, namely the utility mean.
 At the end of every phase, we adopt the following pruning technique: all views
 in running are ranked in order of their utility means. 
 We then compute two special differences between the utility means: $\Delta_1$
@@ -405,8 +494,8 @@ If $\Delta_1$ is greater than $\Delta_n$, the view with the highest mean is
 in pruning computations).
 On the other hand, if $\Delta_n$ is higher, the view with the lowest mean is discarded
 from the set of views in the running.
-Note again that if the number of views in the running is equal to $k$, it is
-possible to stop early and provide the user an approximate set of views.
+\techreport{Note again that if the number of views in the running is equal to $k$, it is
+possible to stop early and provide the user an approximate set of views.}
 
 \begin{algorithm}
 \caption{MAB Based Pruning}
@@ -424,16 +513,18 @@ possible to stop early and provide the user an approximate set of views.
 \end{algorithmic}
 \end{algorithm}
 
-\cite{BubeckWV13} provides bounds on the optimality of this heuristic for the
+\techreport{\cite{BubeckWV13} provides bounds on the optimality of this heuristic for the
 MAB setting.
 Since our problem setup isn't exactly the same, the optimality bounds don't
 transfer directly.
 However, as we show in the experimental section, the MAB heuristic performs well
-on real datasets.
+on real datasets.}
 
 \subsubsection{Incorportating Custom Engine into a DBMS}
 \label{sec:incorporating}
 \mpv{Do we want this section?}
+
+\agp{delete if no space. rather, put it into a techreport flag to be cleaned up later.}
 In an ideal solution, we would incorporate the algorithms used in our custom
 engine into a DBMS. 
 The advantages of integrating into a DBMS are clear: we could take advantage of
