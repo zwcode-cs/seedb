@@ -1,9 +1,8 @@
 \section{Experimental Evaluation}
 \label{sec:experiments}
 
-This this section we present a detailed experimental evaluation of \VizRecDB.
-With the use of real and synthetic datasets, we performed an extensive
-investigation of both execution engines of \VizRecDB. 
+In this section we present an experimental evaluation of \VizRecDB, using
+ both real and synthetic dataset to investigate performance of both \VizRecDB execution engines.
 Our goals were to study the performance characteristics of \VizRecDB along with
 the correctness and accuracy of our heuristics.
 All experiments were run on a
@@ -12,24 +11,27 @@ single machine with 8 GB RAM and a 16 core Intel Xeon E5530 processor .
 We begin with an evaluation of the DBMS-backed execution engine followed by an
 evaluation of our custom solution.
 
+\srm{highlight key takeaways}
+
 \subsection{DBMS-backed Execution Engine}
 \label{sec:expts_dbms_execution_engine}
 
-As mentioned in Section \ref{sec:dbms_execution_engine}, our DBMS-based
-execution engine leverages the DBMS API to execute view queries directly on the
-database.
-While this approach has the advantages of reusing existing query procesing
-systems and being agnostic to the specific underlying DBMS, its limitations
-include the lack of fine grained control over sharing of table scans and lack of
-ability to prune low-utility views. 
-In this set of experiments, we investigate how well existing DBMSs can support a
-\VizRecDB\ style workload in the presence of the right optimizations.
+% As mentioned in Section \ref{sec:dbms_execution_engine}, our DBMS-based
+% execution engine leverages the DBMS API to execute view queries directly on the
+% database.
+% While this approach has the advantages of reusing existing query procesing
+% systems and being agnostic to the specific underlying DBMS, its limitations
+% include the lack of fine grained control over sharing of table scans and lack of
+% ability to prune low-utility views. 
+In our first set of experiments, investiage how well our DBMS-backed engine
+can support a \VizRecDB-style workload, and how the optimizations
+presented in Section~\ref{XXX} perform.
 The metric we are concerned is latency -- what was the total time taken by
 \VizRecDB\ to compute the top views for any given query.
-All latency measurements were repeated three times and the results were
+All experiments were repeated three times and the results were
 averaged.
 Since this version of the execution engine exhaustively explores all views and
-then orders them by utility, we are guaranteed to get the top-$k$ views with
+ orders them by utility, we are guaranteed to get the top-$k$ views with
 perfect accuracy.
 
 We ran all our experiments in this section on two database systems: a
@@ -39,30 +41,32 @@ The reason for evaluating both systems was that we expect (and
 demonstrate below) that certain optimizations to work better for row-stores vs.
 column stores.
 We start with an evaluation of the basic framework and then study the effect of
-adding each individual optimization.\\
+adding each individual optimization.
+
+\srm{what dataset are we using for this evaluation?  how many columns?  what
+data distribution?}
 
 \noindent {\it Basic Framework}: The basic DBMS-backed execution engine
-sequentially executes individual view queries for each possible view.
-Figure \ref{fig:baseline_size} and Figure \ref{fig:baseline_views} show the
-\VizRecDB\ latency when using the basic framework.
-Figure \ref{fig:baseline_size} shows the change in latency with changes in table
-size while Figure \ref{fig:baseline_views} shows the impact of view number on
-the latency.
+serially executes individual view queries, one for each possible view.
+Figure \ref{fig:baseline_size} and Figure \ref{fig:baseline_views} show the query
+ latency when using the basic framework.
+Figure \ref{fig:baseline_size} shows how latency varies as table size changes;
+ Figure \ref{fig:baseline_views} shows the impact of the total number of computed
+views on latency.
 In Figure \ref{fig:baseline_size}, we fixed the number of views at 250 and
-varied the number of rows from 100K to 1M, whereas in Figure
+varied the number of rows from 100K--1M, whereas in Figure
 \ref{fig:baseline_views}, we fixed the number of rows at 1M and varied the
-number of views from 50 - 250.
+number of views from 50--250.
 As expected, we see that the latency of the basic framework is directly
 proportional to the number of rows as well as the number of views in the table.
-We see that the column store runs wildly faster than the row store in each run.
+We see that the column store runs much faster than the row store in each run.
 This is expected because individual view queries only select one dimension
-attribute and one measure attribute at a time, making each query in the column
-store significantly faster than the same query in the row store which must load
-all columns.
+attribute and one measure attribute at a time.  The column store can just read these two
+columns, whereas the row-store must read all data from each table.
 
-Finally, we note that the row and column store respectively take between 10-100s
-and between 50-500s to evaluate all views.
-These time scales are simply unacceptable for interactive applications, and
+Finally, we note that the column-store and row-store take between 10-100s
+and between 50-500s, respectively, to evaluate all views.
+These time scales are not practical for interactive applications, and
 therefore, we must aggressively optimize our queries. \\
 
 % \begin{figure}[h] 
@@ -91,7 +95,7 @@ therefore, we must aggressively optimize our queries. \\
 		\caption{Effect of parallelism}
 		\label{fig:parallelism}
 	\end{subfigure}
-	\caption{Baseline performance and Effect of Parallel Query Execution}
+	\caption{Baseline performance and Effect of Parallel Query Execution \srm{I am not a fan of the gray backgrounds here; use white.  Also us more contrasty colors and ensure it prints OK in black and white.  Finally, lines in line plots should be thicker.  Also, why are we using bars for size/views and lines for number of queries.  Be consistent (just use bars -- easier to read.)}
 	\label{fig:bank_perf}
 \end{figure*}
 
@@ -137,18 +141,20 @@ therefore, we must aggressively optimize our queries. \\
 % \end{figure}
 
 \noindent {\it Combining Multiple Aggregates}: Next, we study the impact of
-combining multiple aggregates within the same query.
+computing computing multiple aggregate functions within the same query.
 The goal of this optimization is to evaluate multiple views at once by keeping
-track of multiple aggregates for the same dimension attribute.
+track of multiple aggregates for the same dimension (GROUP BY) attribute, as described in Section~\ref{XXX}.
 For a synthetic dataset of 1M rows and 1000 views (50 dimension and 20 measure
 attributes), we varied the number of aggregations performed per query
 ($n_{agg}$) between 1 and 20 and measured the impact on latency.
-As shown in Figure \ref{fig:multi_agg}, latency reduces as we increase the
+As shown in Figure \ref{fig:multi_agg}, latency drops as we increase the
 number of aggregations performed per query.
 This optimization shows promise both in the row store as well as the column
 store, athough we note that the optimization has diminishing returns because it
 requires more state to be stored and, in the case of the column stores, more
-columns to be read. \\
+columns to be read.  \srm{It's hard to read the column store plot.  Consider log Y scale.  Also report the maximum 
+speedup for both columns and rows.}  \srm{Do we think these results will generalize to other data sets?  Are they sensitive to
+the data distribution?}  \\
 
 % \begin{figure}[h]
 % \centering
@@ -161,20 +167,22 @@ columns to be read. \\
 study the effect of combining multiple group by attributes into one query.
 Section \ref{} briefly discussed how the impact of this optimization was not
 clear since it increases the total number of groups significantly and therefore
-leads to higher cost of processing intermediate results.
+leads to higher costs of processing intermediate results.
 To evaluate this optimization, we generated a synthetic dataset with 1M rows, 1
 measure attribute and 20 dimension attributes such that each dimension attribute
-was independently generated and had exactly 10 distinct values.
+was independently generated and had exactly 10 distinct values. \srm{Is this different than what was done above?  If we use the
+same distribution / generation function for all of these queries we should just say that above.  If we use different data sets for
+every experiment we should explain why we think that's an OK thing to do.}  
 Since each dimension attribute is independent of the others and has 10 distinct
 values, the total number of distinct groups produced by a query
-with $p$ group-by attributes is $10^p$.
+with $p$ group-by attributes is $10^p$.  \srm{It can't really be $10^P$ if we scale $P$ up to 20!  Maybe its max($10^P$,num rows)?}
 
 We ran \VizRecDB\ on this dataset and varied the number of group-by
 attributes in view queries ($n_{gb}$) between 1 and 20.
 Figure \ref{fig:multi_gb_same} shows the results for this experiment.
 We see that for the row-store, the best latency is obtained for number of
 groups=$10^4$.
-Beyond $10^5$, the performance degrades drastically. 
+Beyond $10^5$, the performance degrades drastically.   \srm{same comment as above -- we can't really have $10^{20}$ groups!}
 For the column-store, we see a relatively small improvement in latency
 for $10^2$ groups, however, once again, after $10^5$ groups, the performance
 becomes much worse.
@@ -182,9 +190,8 @@ The reason for this is as follows: as we combine group by attributes, the number
 of distinct groups increases exponentially ($10^{n_{gb}}$). 
 As a result, the memory required for the grouping (hash-based or sort based)
 also increases significantly.
-Once this memory requirement hits the pre-configured upper limit (e.g. say the
-memorycap in the column store or working memory in the row store), the
-performance degrades significantly.
+Once this memory requirement exceeds the buffer space the system allocates for intermediate results, the
+performance degrades significantly as the DBMS switches to an external sort or hash algorithm.
 
 % \begin{figure}[h]
 % \centering
@@ -282,8 +289,8 @@ heuristics to evaluate the performance and accuracy implications of pruning.
 \label{sec:custom_execution_engine}
 
 As discussed in Section \ref{}, we built a custom execution engine for
-\VizRecDB\ to take advantage of sharing table scans and using intermediate
-results to prune low-utility views.
+\VizRecDB\ that can share table scans and use intermediate
+results to prune low-utility views.  
 
 In this section, we evaluate the various pruning heuristics developed for our
 custom execution engine.
@@ -302,28 +309,34 @@ Since the accuracy and utility distance of our techniques are influenced by the
 order in which data is read in, we repeated each experiment 20
 times and randomize the data between runs. We report average
 metrics over 20 runs.
-Note that we cannot directly compare the latency
-of our custom execution engine to the latency of the DBMS-backed execution
-engine. This is mainly because our custom implementation is simple and with
-limited in optimizations compared to a commercial row or column DBMS.
-Our goal is only to highlight the relative performance benefits that can
-be obtained by performing pruning.
 
-Since it is hard to replicate complex data distributions in synthetic data, we
+We explictly choose not to directly compare the latency
+of our custom execution engine to the latency of the DBMS-backed execution
+engine. We believe that comparing such systems offers little value:
+on one hand, our custom implemenation lacks features such as logging or concurrency control
+that can slow down more complete systems; on the other hand, it also and lacks optimizations
+for exploiting multiple cores, compression, vectorization, and other optimizations
+that scan-optimized column-stores employ.  Rather, our goal
+is to highlight the relative performance benefits that can
+be obtained by performing pruning and shared scans.
+
+Since it is hard to capture the complexities of real data distributions in synthetic data, we
 evaluate all our pruning strategies on real-world data. 
-In the following
-experiments, we show the results of \VizRecDB\ on two representative datasets.
-We chose these datasets since they contained a mix of numerical and categorical
-attributes and were comparable to other analytical datasets in size:
-(1) Diabetes data\cite{}: This dataset contains records of hospital
+Specifically, we make use of two datasets.
+\begin{compactitem}
+\item {\it Diabetes data}\cite{}: This dataset contains records of hospital
 visits by patients with diabetes. Records include patient demographics,
 diagnoses, number of days at the hospital, procedures performed etc. 
 This dataset contains 100K records and ~80 views.
-(2) Bank dataset\cite{}: This dataset contains records of customers who
+\item {\it Bank dataset}\cite{}: This dataset contains records of customers who
 applied for a loan. It includes demographic information about the
 customers, information about the bank's previous contact with the customer, and
 the ultimate decision on the loan.
 This dataset contains 40K records and ~70 views.
+\end{compactitem}
+We chose these datasets since they contained a mix of numerical and categorical
+attributes and were comparable to other analytical datasets in size:
+
 
 For each dataset, we evaluate 4 pruning strategies:
 (a) No Pruning (NO\_PRU): we make a single pass of the data and keep running
