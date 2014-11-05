@@ -95,7 +95,7 @@ therefore, we must aggressively optimize our queries. \\
 		\caption{Effect of parallelism}
 		\label{fig:parallelism}
 	\end{subfigure}
-	\caption{Baseline performance and Effect of Parallel Query Execution \srm{I am not a fan of the gray backgrounds here; use white.  Also us more contrasty colors and ensure it prints OK in black and white.  Finally, lines in line plots should be thicker.  Also, why are we using bars for size/views and lines for number of queries.  Be consistent (just use bars -- easier to read.)}
+	\caption{Baseline performance and Effect of Parallel Query Execution \srm{I am not a fan of the gray backgrounds here; use white.  Also us more contrasty colors and ensure it prints OK in black and white.  Finally, lines in line plots should be thicker.  Also, why are we using bars for size/views and lines for number of queries.  Be consistent (just use bars -- easier to read.)}}
 	\label{fig:bank_perf}
 \end{figure*}
 
@@ -118,7 +118,7 @@ therefore, we must aggressively optimize our queries. \\
 		\caption{Latency vs. Num Dimensions}
 		\label{fig:multi_gb_bp}
 	\end{subfigure}
-	\caption{Effect of Combining Multiple Queries}
+	\caption{Effect of Combining Multiple Queries \srm{Need to add a legend or mark on the figure indicating that the dotted lines are the bin packing heuristic.}}
 	\label{fig:bank_perf}
 \end{figure*}
 
@@ -215,14 +215,15 @@ We can guard against the above performance degradation by ensuring that the
 number of distinct groups never goes beyond a pre-configured upper limit.
 From Figure \ref{fig:multi_gb_same}, we see that this limit is approximately
 $10^5$ for both the row and column store.
-With knowledge of this upperlimit on the number of distinct groups, we can
+With knowledge of this upper limit on the number of distinct groups, we can
 now apply the bin packing technique discussed in Section \ref{} to optimally
 group the attributes. 
 Bin-packing ensures that the number of distinct groups produced by any
 query is less than $10^5$. 
-Figure \ref{fig:multi_gb_bp} shows the results of combining group-by attributes
+Figure \ref{fig:multi_gb_bp} shows the results of combining GROUP BY attributes
 for a synthetic dataset with  1M rows, 50 dimension, 5 measures and with varying
-number of distinct values in each dimension attribute. 
+number of distinct values in each dimension attribute.   \srm{How is 2b different from 2c?  Why not just show dotted line on 2c?}
+
 % There are two opposing forces at work here: increasing the number of dimensions
 % in a query increases the execution time for that query, however, it reduces the
 % number of queries that must be executed and hence reduces execution time.
@@ -231,10 +232,11 @@ We see trends similar to those in Figure \ref{fig:multi_gb_same} (notice that
 The horizontal lines denote the performance of the bin-packing heuristic that
 optimally groups dimension attributes keep the number of groups below the
 upper limit.
+\srm{Need to fix graphs as we discussed.}
 We see that for the row-store, bin-packing halves even the best latency for
 other group-by combinations. 
 The column store on the other hand doesn't appear to benefit from this
-optimization. 
+optimization.  \srm{need to explain why}
 Bin-packing gives approximately the same (in fact slightly worse) performance as
 not combining group-bys attributes. \\
 
@@ -247,14 +249,17 @@ Figure \ref{fig:parallelism} illustrates this issue: we varied the number of
 queries running in parallel on the DBMS and measured the latency of
 \VizRecDB.
 As expected, low levels of parallelism produce sizable performance gains but
-high parallelism leads to degraded performance.
+high levels of parallelism lead to degraded performance.
 For our system, the optimal number of queries to run in parallel is
-approximately $16$ (equal to the number of cores).
-For other systems, we recommend users that they set the number of parallel
-queries to the maximum number of parallel queries that can be run in
-their DBMS without performance degradation.
-If this number is not easily available, a simple experiment as shown in Figure
-\ref{fig:parallelism} can help approximate the right amount of parallelism. \\
+approximately $16$ (equal to the number of cores). 
+In general, choosing a degree of parallelism equal to the number of cores
+for these kinds of simple aggregation queries when data largely fits in memory
+is a reasonable rule of thumb.  
+%For other systems, we recommend users that they set the number of parallel
+%queries to the maximum number of parallel queries that can be run in
+%their DBMS without performance degradation.
+%If this number is not easily available, a simple experiment as shown in Figure
+%\ref{fig:parallelism} can help approximate the right amount of parallelism. \\
 
 \noindent {\it Combining Target and Comparison Views}:
 The last optimization we evaluate is that of combining the target and comparison
