@@ -184,16 +184,17 @@ Suppose at the end of phase $p$, confidence intervals for the views in
 running have values shown in Figure \ref{fig:conf_interval} and we want to
 identify the two views with the highest utility.
 Views $V_1$ and $V_2$ have the highest utilities so far.
-Consider view $V_3$, we see that its confidence interval overlaps with the
+Consider view $V_3$; we see that its confidence interval overlaps with the
 confidence intervals of the current top views $V_1$ and $V_2$, making it possible
 that $V_3$ will be in the final top views. On the other hand, the confidence
-interval for $V_4$ lies entirely below the lowest bound of the top two
-intervals.
+interval for $V_4$ lies entirely below the lowerbounds of $V_1$ and $V_2$.
 Since we can claim with high probability (depending on the confidence threshold)
 that the utility of $V_4$ lies within its confidence interval, it follows that
-with high probability, $V_4$ will not appear in the top-$2$ views.
+with high probability, $V_4$'s utility will be lower than that of both $V_1$ and
+$V_2$, and it will not appear in the top-$2$ views.
 This is essentially our pruning rule. 
 
+Next, we discuss the two techniques we support to compute confidence intervals.
 
 
 \stitle{Worst-Case Confidence Intervals.} 
@@ -238,15 +239,16 @@ This is is not true in our setting,
 because the utility function could be arbitrary.
 Thus, the guarantees do not directly apply to our setting. 
 
-\stitle{Normal Confidence Intervals.} In this setting,
-we apply the standard normal confidence intervals to our setting. 
-We describe the equations first assuming that
-when every time a record is read, for every view,
-a utility value is ``sampled''
-from a normal distribution. (This assumption is not
-quite correct; we will discuss this  below.)
+\stitle{Normal Confidence Intervals.} In this scheme,
+we apply the standard normal confidence intervals to our utility measurements
+assuming that the underlying distribution is Gaussian.
+% We describe the equations first assuming that
+% when every time a record is read, for every view,
+% a utility value is ``sampled''
+% from a normal distribution. (This assumption is not
+% quite correct; we will discuss this  below.)
 
-Consider a specific view. 
+Consider a specific view $V_i$. 
 If the mean utility across the sampled records 
 (i.e., the records read thus far) is $\mu$,
 and the variance in the utility of the sampled records
@@ -259,55 +261,16 @@ a confidence interval centered around $\mu$,
 and depends on $\sigma$. 
 It additionally depends on the number of records
 read thus far, $m$,
-and $z$, the factor that depends on the confidence interval
-threshold that we're aiming for.
+and $z$, the factor that depends on our confidence interval threshold.
 For instance, for a 95\% confidence interval, $z = 1.96$.
 
-Now, we discuss the assumption that we made early on.
-The equation described above apply only in the case
-where every time a record is read, an unbiased sample
-of the utility is drawn from a distribution which
-is assumed to be normal. 
-This is not quite the case, since each sample (i.e., each record)
-doesn't give us an unbiased sample of the utility;
-it instead gives us an unbiased sample for the aggregate
-of a single group within the view, thereby indirectly affecting
-the utility.
-For instance, if we read a record corresponding to 
-``Airline = UA'', this affects only the ``UA'' group
-for a view where we are estimating flight delay grouped by airline.
-We now propose two modifications to the equation above to address this issue.
-The first modification we make has to do with how we define utility.
-Recall from Section \ref{sec:problem_definition} 
-that the utility of a view is
-defined as the distance between two distributions: 
-the distribution of aggregate values for the
-target view and the distribution of aggregate values for the comparison view.
-These distributions are in turn tied to the 
-number of distinct groups present in
-each dimension attribute.
-For our purposes, it means that if a dimension attribute has $g$ distinct
-groups, then a sample with $x$ rows gives us approximately $\frac{x}{g}$ 
-values for each group (assuming uniform distribution).
-Said another way, a sample with $x$ rows for the purpose of computing 
-utility is essentially only giving us a sample of $\frac{x}{g}$ rows.
-So the first modification we 
-make to Equation \ref{eq:confidence_interval} is to
-replace $m$ by $\frac{m}{G_{max}}$ where $G_{max}$ is the maximum number of
-distinct groups present in any dimension attribute.
-Second, our mean and variance in the utility needs to be calculated 
-over a sample of utilities. 
-In our case, since we are not getting samples of utilities, 
-and instead getting samples from individual groups that contribute
-to utility, we do the following. 
-Within a phase, we take the estimate of the utility after every
-record is read, and then we compute the mean and variance on these estimates.
-Since utility estimates only improve as we get closer to reading 
-the entire dataset, we drop the estimates of mean and variance at the end
-of every phase; additionally, the number of rows read, $m$, is set to $0$
-at the end of each phase as well. This allows us to get estimates
-of means and variance, using which, we can apply the standard 
-confidence interval bounds.
+We note that the assumption that we are drawing from a normal distribution is
+not quite accurate since our samples vary in size and are not independent.
+As a result, we make two simple adjustments to the confidence interval
+calculations that are described in Appendix \ref{}.
+In Section \ref{}, we show experimentally on multiple datasets that our
+confidence interval calculations accurately capture utility and can be used to
+perform pruning with high confidence.
 
 
 
@@ -444,7 +407,7 @@ are based on solutions for Multi-Armed Bandits (MAB), a problem
 in stochastic control. 
 The setting is as follows: 
 a gambler is faced with several slot
-machines (``arns'') that each have an underlying reward
+machines (``arms'') that each have an underlying reward
 distribution. 
 At each turn, the gambler must decide which machine
 to play at; when they play the machine, they get a reward.
@@ -459,32 +422,26 @@ one arm and our goal is find the views with the highest reward (i.e.
 utility).
 In MAB, each pull of an arm corresponds to a drawing from a sample
 the underlying probability distribution of that arm.
-In our case, each new record gives us values
-for a particular pair of attributes (1 dimension and
-1 measure) corresponds to a drawing 
-from the underlying utility distribution of that view.
+In our case, each new record updates the utilities for every possible view and
+the every updated utility can be thought of as a sample from the underlying
+utility distribution of that view.
 There are two approximations we make here to apply the MAB techniques
-to our setting, 
-similar to the approximations in the confidence interval setting
-(As we show in our experimental evaluation,
+to our setting
+(as we show in our experimental evaluation,
 the approximation works well
 for our purposes.): 
 (1) although the utility of a
-view is ultimately a single value, we can approximate it as probability
+view is ultimately a single value, we can approximate it as a probability
 distribution that is normally distributed around the true utility, and 
-(2) we assume our running estimate of utility after reading $i$
-records is the estimate derived from sampling $i$ values from
-the underlying utility distribution.
+(2) our running estimate of utility after reading $i$
+records is an estimate derived from the above utility distribution.
 
-\agp{can move algorithms to the appendix}
 Algorithm \ref{algo:mab_based_pruning} shows the pruning technique used in the
 MAB setting.
 This algorithm is an adaptation of Successive Accepts and Rejects
 algorithm from \cite{BubeckWV13} for finding the top-$k$ arms with the highest
 mean reward.
-As before, the processing of the whole file is divided into phases, with the
-number of phases set to $k$-1 for this technique.
-(From \cite{BubeckWV13}, this is a parameter that we can set.)
+As before, the processing of the whole file is divided into phases.
 % As opposed to the confidence interval technique, we only track a single
 % statistic for MAB, namely the utility mean.
 At the end of every phase, we adopt the following pruning technique: all views
@@ -497,8 +454,7 @@ If $\Delta_1$ is greater than $\Delta_n$, the view with the highest mean is
 in pruning computations).
 On the other hand, if $\Delta_n$ is higher, the view with the lowest mean is discarded
 from the set of views in the running.
-\techreport{Note again that if the number of views in the running is equal to $k$, it is
-possible to stop early and provide the user an approximate set of views.}
+
 
 \begin{algorithm}
 \caption{MAB Based Pruning}
@@ -516,9 +472,9 @@ possible to stop early and provide the user an approximate set of views.}
 \end{algorithmic}
 \end{algorithm}
 
-\techreport{\cite{BubeckWV13} provides bounds on the optimality of this heuristic for the
-MAB setting.
-Since our problem setup isn't exactly the same, the optimality bounds don't
-transfer directly.
-However, as we show in the experimental section, the MAB heuristic performs well
-on real datasets.}
+% \techreport{\cite{BubeckWV13} provides bounds on the optimality of this heuristic for the
+% MAB setting.
+% Since our problem setup isn't exactly the same, the optimality bounds don't
+% transfer directly.
+% However, as we show in the experimental section, the MAB heuristic performs well
+% on real datasets.}
