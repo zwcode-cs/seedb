@@ -13,7 +13,7 @@ gg_color_hue <- function(n) {
 
 multi_gb <- function(filename) {
     dirname="";
-    outdir = "../full-paper/Images";
+    outdir = "../full-paper/Images/";
         tmp = read.table(paste(dirname, filename, ".txt", sep=""), sep="\t");
         colnames(tmp) = c("dataset", "size", "views", "x", "n_gb", "latency", "dbms")
         tmp$views = tmp$views * tmp$x;
@@ -21,7 +21,7 @@ multi_gb <- function(filename) {
         tmp$dbms = factor(tmp$dbms);
 	cols = gg_color_hue(2)
         #ggplot(tmp, aes(n_gb, latency/1000, color=dbms)) + geom_line() + geom_point() + theme(text = element_text(size=24)) + ylab("latency(s)") + geom_hline(aes(yintercept=195), color=cols[2], linetype="dashed") + geom_hline(aes(yintercept=123), color=cols[1], linetype="dashed");
-        ggplot(tmp, aes(groups, latency/1000, color=dbms))  + theme_bw() + geom_line() + geom_point() + theme(text = element_text(size=24)) + ylab("latency(s)") + scale_x_log10(name="Number of groups") + scale_fill_brewer();
+        ggplot(tmp, aes(groups, latency/1000, color=dbms))  + theme_bw() + geom_line(size=1.5) + geom_point(size=2) + theme(text = element_text(size=24)) + ylab("latency(s)") + scale_x_log10(name="Number of groups") + scale_fill_brewer();
 	ggsave(file=paste(outdir, filename, ".pdf", sep=""));
 }
 
