@@ -23,7 +23,7 @@ multi_agg <- function(filename) {
 		geom_bar(aes(fill=dbms), position="dodge", stat="identity") + 
 		ylab("latency (s)")+  theme_bw() + xlab("Num Aggregate Attributes") + scale_y_log10() + 
 		theme(text = element_text(size=24)) + scale_fill_brewer(palette="Paired") ;
-		ggsave(file=paste(outdirname, filename, ".pdf", sep=""));
+		ggsave(file=paste(outdirname, filename, ".pdf", sep=""),width=7,height=5);
 
 	#ggplot(tmp, aes(n_agg, latency/1000, color=dbms)) + 
 	#	geom_line() + 

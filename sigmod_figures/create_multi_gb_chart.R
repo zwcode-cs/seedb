@@ -24,10 +24,10 @@ multi_gb <- function(filename,showlines) {
     if (showlines) {
         ggplot(tmp, aes(groups, latency/1000, color=dbms))  + theme_bw() + geom_line(size=1.5) + geom_point(size=2) + theme(text = element_text(size=24)) + ylab("latency(s)") + scale_x_log10(name="Number of groups") + scale_fill_brewer(palette="Paired") + geom_hline(aes(yintercept=195), color=cols[2], linetype="dashed") + geom_hline(aes(yintercept=123), color=cols[1], linetype="dashed") +
             geom_text(data=NULL, aes(10^22,140,label="Col. bin packing"), color=cols[1]) + geom_text(data=NULL, aes(10^22,210,label="Row. bin packing"),color=cols[2]);
-	ggsave(file=paste(outdir, filename, ".pdf", sep=""));
+	ggsave(file=paste(outdir, filename, ".pdf", sep=""),width=7,height=5);
     } else {
         ggplot(tmp, aes(n_gb, latency/1000, color=dbms))  + theme_bw() + geom_line(size=1.5) + geom_point(size=2) + theme(text = element_text(size=24)) + ylab("latency(s)") + xlab("Number of group by attrs") + scale_fill_brewer(palette="Paired");
-	ggsave(file=paste(outdir, filename, ".pdf", sep=""));
+	ggsave(file=paste(outdir, filename, ".pdf", sep=""),width=7,height=5);
 
     }
 }

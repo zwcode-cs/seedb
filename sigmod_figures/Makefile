@@ -7,4 +7,5 @@ plots:
 	R -f create_in_memory_chart.R
 	R -f create_utility_distribution_chart.R
 	R -f create_param_plot.R
+	R -f create_intro_plot.R
 
