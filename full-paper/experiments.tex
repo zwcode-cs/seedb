@@ -1,8 +1,26 @@
+%!TEX root=document.tex
+
 \section{Experimental Evaluation}
 \label{sec:experiments}
  
-In this section we present an experimental evaluation of \VizRecDB, using
- both real and synthetic datasets to investigate performance of \VizRecDB.
+In this section, we present our experimental evaluation of
+\VizRecDB.
+%
+% \stitle{Metrics.} The primary metrics we focus on in this evaluation 
+% are {\em latency}, 
+% i.e., how long does \VizRecDB take to return the top $k$
+% views, and {\em accuracy}, i.e., whether \VizRecDB
+% actually returns the top-$k$ views or not.
+%
+% \stitle{Goals.} 
+% For the DBMS-backed execution engine, we study the impact of the following
+% aspects on the metrics described above:
+% (a) a row-store DBMS vs.~a column-store DBMS
+% (b) the individual optimizations detailed in Section~\ref{sec:optimizations},
+% such as sharing of computation and parallel execution
+% (c) 
+%
+%
 Our goals were the following: (a) to study the performance characteristics of
 the DBMS-backed execution engine and the custom execution engine, (b) to study the
 accuracy of the heuristics developed in Section \ref{}, and (c) to test how well
