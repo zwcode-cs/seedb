@@ -66,10 +66,10 @@ We now present a high-level summary of our experimental results.
 \item Our optimizations to \VizRecDB's DBMS-based execution engine can reduce
 latency on large datasets from 500 seconds (on row stores) and 100 seconds (on column stores)
 to about 10 seconds for column stores, and about 20 seconds for row stores,
-allowing near-interactive response times. This is {\em especially impressive given that, implicitly,
+allowing near-interactive response times. This is {\em particularly noteworthy given that, implicitly,
 \VizRecDB is running 100s of queries on the DBMS for returning responses to a single \VizRecDB query}.
 
-\item Overall, column stores are vastly superior to row stores 
+\item Overall, column stores are superior to row stores 
 as a backend execution engine, while row stores benefit more from the optimizations 
 that we propose. For instance, row stores benefit significantly (with reductions
 of up to XXX\% on latency) from applying
@@ -821,36 +821,6 @@ Every point corresponds to a different size of the confidence intervals.
 \caption{Latency vs. Accuracy for different heuristics \srm{These plots are very hard to read -- numbers overlap symbols, and symbols are too small.}}
 \end{figure}
 
-\subsection{Comparison of Execution Engines}
-
-Now that we have examined the performance of both execution engines in detail,
-we can make some comparisons across the two execution engines.
-As mentioned before, we do not compare the latencies of both engines directly
-since the implementations are not directly comparable.
-However, we can summarize our findings as follows:
-\squishlist
-\item In general, column-stores provide better performance on the \VizRecDB\
-workload although the workload involves reading every column in a table. This is
-likely a consequence of the fact that our individual queries only read a few
-columns at a time.
-\item For row-stores, the combination of optimizations including combining
-multiple aggregates, performing multiple group-bys and running queries in
-parallel reduces latency by XXX\%, making \VizRecDB\ interaction possible in
-near-interactive times.
-\item For column-stores, we saw that the combination of multiple group-bys hurts
-performance; however, combining aggregates and running queries in parallel
-improves the already good performance of column stores getting response time
-down to interactive times.
-\item Our heuristics demonstrate that if we are willing to give up a small
-amount of accuracy, we can reduce the \VizRecDB\ latency by a factor of 2. We
-can also overcome the lower accuracy for small $k$'s by always querying for a
-minumum number of views and only returning the top-$k$ views.
-\item Finally, we see that if we are able to incorporate our heuristics into an
-existing database system as discussed in Section \ref{}, we can expect to
-obtain a similar 2X speedup. Along with the optimizations already developed for
-the DBMS engine, these heuristics can enable \VizRecDB\ to respond within a
-second.
-\squishend
 
 
 
