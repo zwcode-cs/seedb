@@ -27,8 +27,8 @@ that is representative of multiple views (the frontend does list redundant
 views that have been omitted).
 
 The view generator largely works offline. At run time, it merely accesses
-previously computed view stub, removes any views that contain the same
-attributes as the selection predicte of the incoming query and sends the view
+previously computed view stubs, removes any views that contain
+attributes from the selection predicte of the incoming query and sends the view
 stubs to the execution engine.
 The offline pruning works as follows: the view generator uses metadata on each
 attribute to first determine the entire space of views. 
@@ -40,7 +40,7 @@ Next it computes the correlation between distributions corresponding to each
 pair of views (note that the dimensions must have same cardinality for this
 comparison to be valid).
 Correlation scores are thresholded and used to cluster views into groups.
-Finally, we pick a single view from every cluster.
+Finally, we pick a single view from every view cluster.
 
 Details of our pruning algorithm are presented in Appendix \ref{}. 
 View pruning allows us to significantly reduce the number of views in real
