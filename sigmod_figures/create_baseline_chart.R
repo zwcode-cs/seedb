@@ -8,11 +8,11 @@ tmp1 = tmp[tmp$views==250,];
 ggplot(tmp1, aes(size, latency/1000)) + theme_bw() + 
 geom_bar(aes(fill=dbms, ordered=TRUE), position="dodge", stat="identity") + 
 ylab("latency (s)")  + 
-theme(text = element_text(size=24)) + scale_fill_brewer();
+theme(text = element_text(size=24)) + scale_fill_brewer(palette="Paired");
 ggsave(file="../full-paper/Images/baselines_by_size.pdf");
 tmp2 = tmp[tmp$size=='1M',];
 ggplot(tmp2, aes(views, latency/1000)) + 
 geom_bar(aes(fill=dbms, ordered=TRUE), position="dodge", stat="identity") + 
 ylab("latency (s)") +  theme_bw() +
-theme(text = element_text(size=24))  + scale_fill_brewer();
+theme(text = element_text(size=24))  + scale_fill_brewer(palette="Paired");
 ggsave(file="../full-paper/Images/baselines_by_views.pdf");

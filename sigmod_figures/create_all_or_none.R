@@ -13,13 +13,13 @@ all_or_none <- function(filename) {
 	ggplot(tmp1, aes(views, latency/1000)) +  theme_bw() + 
 		geom_bar(aes(fill=opt, ordered=TRUE), position="dodge", stat="identity") + 
 		ylab("latency (s)") + 
-		theme(text = element_text(size=24)) +  scale_fill_brewer();;
+		theme(text = element_text(size=24)) +  scale_fill_brewer(palette="Paired");;
 	ggsave(file=paste(outdirname, filename, "_by_views.pdf", sep=""));
 	tmp1 = tmp[tmp$sel=='size',];
 	ggplot(tmp1, aes(size, latency/1000)) + theme_bw() +
 		geom_bar(aes(fill=opt, ordered=TRUE), position="dodge", stat="identity") + 
 		ylab("latency (s)") + 
-		theme(text = element_text(size=24)) +   scale_fill_brewer();;
+		theme(text = element_text(size=24)) +   scale_fill_brewer(palette="Paired");;
 	ggsave(file=paste(outdirname, filename, "_by_size.pdf", sep=""));
 }
 

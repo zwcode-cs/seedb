@@ -14,7 +14,7 @@ plotUtilityDistribution  <- function(filename, i) {
 	colnames(tmp) = c("view", "utility");
 	p = ggplot(tmp, aes(x=utility, y=1)) + theme_bw() + geom_point(aes(size=20)) + 
 		scale_y_discrete(breaks=NULL) + ylab("") + theme(text = element_text(size=24)) + 
-		guides(size=FALSE) +  scale_fill_brewer();
+		guides(size=FALSE) +  scale_fill_brewer(palette="Paired")
 	for (n in 1:13) {
 		p = p + geom_vline(xintercept=intercepts[n,i], color=cols[intercepts[n,1]]);
 	}

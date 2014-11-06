@@ -5,7 +5,7 @@ old <- function() {
 	tmp$dbms = factor(tmp$dbms)
 	tmp$views = factor(tmp$views)
 	tmp$n_agg = factor(tmp$n_agg)
-	ggplot(tmp, aes(n_agg, latency/1000)) + geom_bar(aes(fill=dbms, ordered=TRUE), position="dodge", stat="identity") + ylab("latency (s)")+geom_hline(yintercept=3600) +  theme_bw() + scale_fill_brewer();
+	ggplot(tmp, aes(n_agg, latency/1000)) + geom_bar(aes(fill=dbms, ordered=TRUE), position="dodge", stat="identity") + ylab("latency (s)")+geom_hline(yintercept=3600) +  theme_bw() + scale_fill_brewer() + scale_fill_brewer() + scale_fill_hue(l=40);
 	ggsave(file="multi_agg.pdf")
 }
 
@@ -16,11 +16,13 @@ multi_agg <- function(filename) {
     colnames(tmp) = c("dataset", "size", "views", "x", "n_agg", "latency", "dbms")
 	tmp$views = tmp$views * tmp$x;
 	tmp$dbms = factor(tmp$dbms);
+        tmp$n_agg <- as.character(tmp$n_agg)
+        tmp$n_agg <- factor(tmp$n_agg, levels=unique(tmp$n_agg))
 
 	ggplot(tmp, aes(n_agg, latency/1000)) + 
-		geom_bar(aes(fill=dbms, ordered=TRUE), position="dodge", stat="identity") + 
+		geom_bar(aes(fill=dbms), position="dodge", stat="identity") + 
 		ylab("latency (s)")+  theme_bw() + xlab("Num Aggregate Attributes") + scale_y_log10() + 
-		theme(text = element_text(size=24))  + scale_fill_brewer();;
+		theme(text = element_text(size=24)) + scale_fill_brewer(palette="Paired") ;
 		ggsave(file=paste(outdirname, filename, ".pdf", sep=""));
 
 	#ggplot(tmp, aes(n_agg, latency/1000, color=dbms)) + 

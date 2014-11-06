@@ -9,7 +9,7 @@ in_memory <- function(filename) {
 	tmp$algo = factor(tmp$algo);
 
 	ggplot(tmp[tmp$algo!='RANDOM',], aes(k, latency/1000, color=algo)) +  theme_bw() + geom_line(size=1.5) + geom_point() + 
-		ylab("latency(s)") + theme(text = element_text(size=24))  + scale_fill_brewer();
+		ylab("latency(s)") + theme(text = element_text(size=24))  + scale_fill_brewer(palette="Paired");
 	ggsave(file=paste(outdirname, filename, "_latency.pdf", sep=""));
 
 	#ggplot(tmp, aes(k, utility_dist, color=algo)) + geom_line() + geom_point() + 
@@ -20,7 +20,7 @@ in_memory <- function(filename) {
 		utility_dist_se, ymin= utility_dist - utility_dist_se))+
 		geom_line(size=1.5) + geom_point() +  theme_bw() + 
 		ylab("utility distance") + theme(text = element_text(size=24)) +
-		scale_fill_brewer();
+		scale_fill_brewer(palette="Paired");
 	ggsave(file=paste(outdirname, filename, "_utility_dist.pdf", sep=""));
 
 	#ggplot(tmp, aes(k, accuracy, color=algo, max=accuracy + accuracy_se, ymin=accuracy - accuracy_se)) + ylim(0, 1) + geom_line() + geom_point() + 
@@ -30,7 +30,7 @@ in_memory <- function(filename) {
 	ggplot(tmp[tmp$algo!='RANDOM',], aes(k, accuracy, color=algo, ymax=accuracy + accuracy_se, ymin=accuracy - accuracy_se)) + 
 		ylim(0, 1.2) + geom_line(size=1.5) +  theme_bw() + geom_point() + 
  		ylab("accuracy") + theme(text = element_text(size=24)) +
- 		scale_fill_brewer();
+ 		scale_fill_brewer(palette="Paired");
 	ggsave(file=paste(outdirname, filename, "_accuracy.pdf", sep=""));
 }
 
