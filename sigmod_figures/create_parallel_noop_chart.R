@@ -1,6 +1,6 @@
 parallel <- function(filename) {
-        dirname="/Users/manasi/Documents/workspace/seedb/sigmod_figures/";
-        outdirname="/Users/manasi/Documents/workspace/seedb/full-paper/Images/"
+        dirname="";
+        outdirname="../full-paper/Images/"
         tmp = read.table(paste(dirname, filename, ".txt", sep=""), sep="\t");
         colnames(tmp) = c("dataset", "size", "n_conn", "latency", "dbms");
         tmp$dbms = factor(tmp$dbms);
@@ -10,8 +10,8 @@ parallel <- function(filename) {
 
         ggplot(tmp, aes(n_conn, latency/1000)) + 
 		geom_bar(aes(fill=dbms, ordered=TRUE), position="dodge", stat="identity") + 
-		ylab("latency (s)") + xlab("Num Parallel Queries") +
-		theme(text = element_text(size=24));
+		ylab("latency (s)") +  theme_bw() + xlab("Num Parallel Queries") +
+		theme(text = element_text(size=24))  + scale_fill_brewer();
 		ggsave(file=paste(outdirname, filename, ".pdf", sep=""));
 }
 

@@ -98,11 +98,11 @@ varying number of rows and views (by varying number of dimension attributes).
 In
 Figure \ref{fig:baseline_size} we show the latency of \VizRecDB\ as a function
 of the number of rows (100K rows -- 1M rows) in the dataset and in 
- \ref{fig:baseline_views} 
+Figure \ref{fig:baseline_views} 
 we show the latency as a function of the number of possible views
 (50 to 250).
 We can make a few observations from these charts. First, the basic framework has
-very poor performance: the row store takes between 50-500s to run the \VizRecDB\ queries
+ poor performance: the row store takes between 50-500s to run the \VizRecDB\ queries
 while the column store takes 10-100s. These time scales are not practical for
 any interactive applications. Second, column stores run about 5X faster than row
 stores for this workload. 
@@ -138,10 +138,10 @@ applications, it is clear that we must aggressively optimize our queries. \\
 	\end{subfigure}
 	\begin{subfigure}{0.33\linewidth}
 		{\includegraphics[width=6cm] {Images/multi_agg.pdf}}
-		\caption{Latency vs. number of aggregates}
+		\caption{Latency vs. number of aggregates \srm{Delete the n =2 bar to make it look more normal.}}
 		\label{fig:multi_agg}
 	\end{subfigure}
-	\caption{Baseline performance and Effect of Parallel Query Execution \srm{I am not a fan of the gray backgrounds here; use white.  Also us more contrasty colors and ensure it prints OK in black and white.  Finally, lines in line plots should be thicker.  Also, why are we using bars for size/views and lines for number of queries.  Be consistent (just use bars -- easier to read.)}}
+	\caption{Baseline performance and Effect of Parallel Query Execution \srm{I am not a fan of the gray backgrounds here; use white.  Also us more contrasty colors and ensure it prints OK in black and white.  Finally, lines in line plots should be thicker.  }}
 	\label{fig:bank_perf}
 \end{figure*}
 
@@ -195,7 +195,7 @@ applications, it is clear that we must aggressively optimize our queries. \\
 		\caption{Column Store Latencies by Views}
 		\label{fig:col_all_none_views}
 	\end{subfigure}
-	\caption{Effect of Combining Multiple Queries}
+	\caption{Effect of Combining Multiple Queries \srm{Here it would be helpful to indicate the total runtime in seconds above each bar.}}
 	\label{fig:all_opt}
 \end{figure*}
 
@@ -368,9 +368,9 @@ see that for the row store, our optimizations lead to a speedup of up to 20X
 across a range of sizes and views.
 Similarly, in Figures \ref{fig:col_all_none_size}
 and \ref{fig:col_all_none_views}, we see that our optimizations lead to a 8x
-speedup.
+speedup in columnstores. 
 We also notice that our optimizations are most effective for datasets with large
-sizes and many views.
+sizes and many views, with proportionally larger speedups as these numbers grow.
 This experiment shows that the application of well designed optimizations
 can reduce \VizRecDB\ latency by 8-20X depending on the DBMS and enable a
 \VizRecDB-style workload to run in interactive time scales.
@@ -403,14 +403,15 @@ order in which data is read in, we repeat each experiment 20
 times and randomize the data between runs. We report average
 metrics over 20 runs.
 
-Notice that our goal is not to directly compare the latency of our custom
-execution engine to the latency of the heavily optimized DBMS-backed execution
-engine.
-Naturally, the DBMS-backed engine benefits from the significant optimizations
-present in modern day DBMSs such as vecorization, compression, ability to
-exploit multiple cores etc. that make it highly performant. 
+We note that our goal is not to directly compare the latency of our custom
+execution engine to the latency of the DBMS-backed execution
+engine, since comparisons of completely different code bases with different
+optimizations and features are nearly meaningless.  For example,
+ the DBMS-backed engines (especially the column store) benefits a number of optimizations
+for scan-intensive workloads, including vectorization, compression, the ability to
+exploit multiple cores etc.  
 Insetad, our goal is to evaluate the performance improvements that can be
-obtained by pruning and sharing table scans.
+obtained by pruning and sharing table scans in their own right.
 
 % that have gone into We believe that comparing such
 % systems offers little value:
@@ -440,18 +441,20 @@ We chose these datasets since they contained a mix of numerical and categorical
 attributes and were comparable to other analytical datasets in size.
 
 For each of the above datasets, we evaluate 4 pruning strategies:
-(a) No Pruning (NO\_PRU): we make a single pass of the data and keep running
+\begin{compactenum}[(a)]
+\item No Pruning (NO\_PRU): we make a single pass of the data and keep running
 estimates for the utility of every possible view. Once we have seen all the
-data, we return the top-$k$ views with highest utility; (b) Hoeffding Intervals
+data, we return the top-$k$ views with highest utility; \item Hoeffding Intervals
 (HOEFF):
-we use pruning based on Hoeffding intervals (Section \ref{}); (c) 95\%
+we use pruning based on Hoeffding intervals (Section \ref{}); \item 95\%
 Confidence Intervals (95\_CI): we use pruning based on 95\% confidence intervals
-(Section \ref{}); and (d) Multi-armed Bandit (MAB): we perform pruning based on
+(Section \ref{}); and \item Multi-armed Bandit (MAB): we perform pruning based on
 the multi-armed bandit formulation (Section \ref{}).
 For each of our datasets, we varied $k$, the number of views to select, between
 1 and 25 (a realistic upper limit on the number of views displayed to the user)
 and measured the latency, accuracy and utility distance for each of our
 heuristics.
+\end{compactenum}
 
 We begin with an evaluation of our techniques with respect to their accuracy
 and utility distance.\\
@@ -474,12 +477,12 @@ and utility distance.\\
 		\label{fig:diabetes_utility_distribution}
 	\end{subfigure}
 \label{fig:utility_distribution}
-\caption{Distribution of Utilities}
+\caption{Distribution of Utilities \srm{Need to show the absolute utility values and sequence number of the bars/dots in this figure}}
 \end{figure}
 
 
 \noindent {\it Accuracy and Utility Distance}:
-Let us examine the banking dataset first.
+We start with the banking dataset.
 The distribution of utilities for all views of the banking dataset is
 shown in Figure \ref{fig:bank_utility_distribution}. 
 In this chart, vertical lines denote the cutoffs for utilities for top-$k$ views
@@ -755,7 +758,7 @@ Every point corresponds to a different size of the confidence intervals.
 \label{fig:latency_vs_accuracy_mab}
 \end{subfigure}
 \label{fig:accuracy}
-\caption{Latency vs. Accuracy for different heuristics}
+\caption{Latency vs. Accuracy for different heuristics \srm{These plots are very hard to read -- numbers overlap symbols, and symbols are too small.}}
 \end{figure}
 
 \subsection{Comparison of Execution Engines}
