@@ -1,3 +1,21 @@
 %!TEX root=document.tex
 
-\section{Conclusions}\label{sec:conc}
+\section{Conclusions}
+\label{sec:conc}
+
+In this paper, we present \SeeDB, a system to automatically generate interesting
+query visualizations based on metrics of deviation.
+We present two implementations of \SeeDB, one as a wrapper on top of existing
+DBMSs and another, a custom execution engine that supports shared table scans
+and aggressive pruning.
+We develop and evaluate a suite of optimizations for both implementations that
+provides upwards of a 10X speedup.
+Our experimental evaluation on a range of real and synthetic datasets shows that
+our optimizations reduce latency from 500s to 20s for row stores and 100s to
+10s.
+Similarly, our experiments on the custom execution engine show that our pruning
+heuristics can reduce latency 10-fold by aggresively pruning low-utility views.
+This provides us a means to instantly surface the top few views and then
+gradually return additional views.
+Finally, we demonstrate that our pruning
+strategies do not adversely affect accuracy of views returned.
