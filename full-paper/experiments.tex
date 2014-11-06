@@ -44,7 +44,7 @@ i.e., how long does \VizRecDB take to return the top-$k$ results.
 For the DBMS-backed execution engine, we study the impact of the following
 aspects on the metrics described above:
 (a) the DBMS architecture, specifically, a row-store DBMS vs.~a column-store DBMS,
-(b) the individual optimizations detailed in Section~\ref{sec:optimizations},
+(b) the individual optimizations detailed in Section~\ref{sec:dbms_optimizations},
 such as sharing of computation and parallel execution, as well as 
 the bin-packing-based algorithm for aggregate grouping, and
 (c) the various parameters of the dataset, such as size and number of views.
@@ -132,32 +132,36 @@ in turn.
 {\em \underline{Summary:} Applying no optimizations 
 leads to 100 seconds or more of latency on both row and column stores;
 latency increases linearly as the size of the dataset, and the number
-of views is increased. Column stores are vastly superior to row stores,
-often with 1/5th the latency.}
+of views is increased. Column stores are superior to row stores,
+with 1/5th the latency.}
 Without any optimizations, the basic DBMS-backed execution engine
 serially executes individual view queries, two for each possible view.
 Figures \ref{fig:baseline_size} and \ref{fig:baseline_views} show
 \VizRecDB\ latency when using the basic framework.
-For these experiments, we used the SYN1 dataset and created subsets of SYN  with
-varying number of rows and views (by varying number of dimension attributes). 
+For these experiments, we used the SYN1 dataset and we created subsets of the dataset with
+varying numbers of rows and views, by varying the number of dimension attributes. 
 In Figure \ref{fig:baseline_size} we show the latency of \VizRecDB\ as a function
 of the number of rows (100K rows --- 1M rows) in the dataset and in 
 Figure \ref{fig:baseline_views} we show the latency as a function 
 of the number of possible views (50 --- 250).
-First, notice that the 
- poor performance: the row store takes between 50-500s to run the \VizRecDB\ queries
-while the column store takes 10-100s. These time scales are not practical for
-any interactive applications. Second, column stores run about 5X faster than row
-stores for this workload. 
+First, notice that the basic no optimization framework has very 
+poor performance: the row store takes between 50-500s, 
+while the column store takes 10-100s. 
+This is because both row and column stores are implicitly
+running between 50 to 250 view queries for a single \VizRecDB query.
+These time scales are not practical for
+any interactive applications. 
+Second, column stores run about 5X faster than row stores. 
 This is expected because individual view queries only select one dimension
-attribute and one measure attribute at a time.  The column store can just read these two
+attribute and one measure attribute at a time.  
+The column store can just read these two
 columns, whereas the row-store must read all data from each table.
 Third, as expected, the latency of the
 basic framework is directly proportional to the number of rows as well as the 
 number of views in the table.
 
 Since the latencies for the basic framework are very high for interactive
-applications, it is clear that we must aggressively optimize our queries. \\
+applications, it is clear that aggressive optimization needs to be employed. 
 
 % \begin{figure}[h] 
 % \centerline{
@@ -181,7 +185,7 @@ applications, it is clear that we must aggressively optimize our queries. \\
 	\end{subfigure}
 	\begin{subfigure}{0.33\linewidth}
 		{\includegraphics[width=6cm] {Images/multi_agg.pdf}}
-		\caption{Latency vs. number of aggregates \srm{Delete the n =2 bar to make it look more normal.}}
+		\caption{Latency vs. number of aggregates}
 		\label{fig:multi_agg}
 	\end{subfigure}
 	\caption{Baseline performance and Effect of Parallel Query Execution }
@@ -261,24 +265,30 @@ applications, it is clear that we must aggressively optimize our queries. \\
 % \caption{Latency of Basic Framework}
 % \end{figure}
 
-\noindent {\it Combining Multiple Aggregates}: Next, we study the impact of
-computing multiple aggregate functions within the same query.
-The goal of this optimization is to evaluate multiple views at once by keeping
-track of multiple aggregates for the same dimension (GROUP BY) attribute, as
-described in Section~\ref{XXX}.
-We ran these experiments on the SYN2 dataset since it has a large number (20) of
-measure attributes.
-In these experiments, we varied the number of aggregate attributes ($n_{agg}$)
-in a query between 1 and 20 and measured \VizRecDB\ latency for each value of
-$n_{agg}$.
-Results of this experiment are shown in Figure \ref{fig:multi_agg}.
-As we can see from this chart, latency drops consistently as we increase the
+\stitle{Optimization 1: Combining Multiple Aggregates:} 
+
+{\em \underline{Summary:} Combining view queries with the same group-by attribute
+but different aggregates into one query gives us a significant 
+3-4X speedup for both row and column stores.}
+Next, we study the impact of computing multiple aggregates within the same query,
+i.e., we combine multiple view queries that have the same group-by (dimension) 
+attribute, but different aggregation (measure) attributes into one query.
+We ran these experiments on the SYN2 dataset 
+since it has a large number (20) of measure attributes.
+We varied the number of aggregate attributes ($n_{agg}$)
+in a query between 1 and 20 (i.e., we grouped $n_{agg}$ view
+queries that share the same group-by attribute into one query
+that is issued to the DBMS).
+We measured latency for each value of $n_{agg}$,
+and depict the results in Figure \ref{fig:multi_agg} (log scale on the y-axis).
+As we can be seen, latency drops consistently as we increase the
 number of aggregations performed per query.
-The latency reduction is however not quite linear in $n_{agg}$ because larger
-$n_{agg}$ requires more state to the stored and, in the case of column stores, more
-columns to be read.
-This optimization shows significant speedups both in row and column stores: we
-get a 4X speedup for row stores and a 3X speed up for column stores.\\
+Notice that the latency reduction is however not quite linear in $n_{agg}$;
+this may be because larger
+$n_{agg}$ values require more state to the stored and, 
+for column stores, more columns to be read.
+Overall, this optimization shows significant speedups both in row and column stores: we
+get a 4X speedup for row stores and a 3X speed up for column stores.
 
 % \begin{figure}[h]
 % \centering
@@ -287,8 +297,15 @@ get a 4X speedup for row stores and a 3X speed up for column stores.\\
 % \label{fig:multi_agg}
 % \end{figure} 
 
-\noindent {\it Combining Multiple Group Bys}: In this set of experiments, we
-study the effect of combining multiple group by attributes into one query.
+\stitle{Optimization 2: Combining Multiple Group-bys:} 
+
+{\em \underline{Summary:} Combining view queries with the same group-by attribute
+but different aggregates into one query gives us a significant 
+3-4X speedup for both row and column stores.}
+We now study the effect of combining multiple group by attributes (with the
+same dimension attribute) into one query.
+In Section~\ref{sec:dbms_optimizations}, we described
+how 
 Section \ref{XXX} briefly discussed how the impact of this optimization was not
 clear since it increases the total number of groups significantly and therefore
 leads to higher costs of processing intermediate results.
