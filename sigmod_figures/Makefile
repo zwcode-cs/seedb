@@ -6,4 +6,5 @@ plots:
 	R -f create_parallel_noop_chart.R
 	R -f create_in_memory_chart.R
 	R -f create_utility_distribution_chart.R
+	R -f create_param_plot.R
 
