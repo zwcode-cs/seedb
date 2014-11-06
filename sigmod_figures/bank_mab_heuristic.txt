@@ -1,0 +1,5 @@
+BANK	10	10 phases	4194	1
+BANK	10	50 phases	2705	1
+BANK	10	100 phases	2068	1
+BANK	10	500 phases	1227	0.7
+BANK	10	1000 phases 	1132	0.5
