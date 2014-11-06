@@ -4,9 +4,8 @@
 \subsection{Custom Execution Engine}
 \label{sec:in_memory_execution_engine}
 
-From our implementation of DBMS-backed execution engine, 
-we learned that there are two aspects where
-this implementation suffers:
+From our implementation of the DBMS-backed execution engine, 
+we learned that its design suffers from two drawbacks:
 (a) the number of scans performed of the data is far too high, and
 (b) far too many resources are wasted on low-utility views.
 As a result, our goals with the custom execution engine are as follows:
@@ -16,8 +15,8 @@ suffices to compute all views;
 be pruned on the fly; and 
 (c) early stopping once the top views have been identified. 
 We now describe the
-basic execution framework adopted by our engine followed by specific strategies
-used to speed up the processing.
+basic execution framework adopted by our engine followed by specific
+pruning strategies.
 
 \subsubsection{Basic Framework}
 \label{subsec:basic_framework}
@@ -35,8 +34,8 @@ each view.
 To avoid doing expensive pruning computations after reading each record,
 \VizRecDB processes the file in phases where each phase consists of processing a
 fixed number of records.
-At the end of each phase, \VizRecDB\ checks to see if any views can be pruned,
-i.e., discarded or ``accepted'' as being in the top-$k$.
+At the end of a phase, \VizRecDB\ checks to see if any views can be pruned,
+i.e., discarded, or ``accepted'' as being in the top-$k$.
 % At one extreme, each phase consists of just one record, in which case views
 % are pruned after ever record is read and the views are updated;
 % at the other extreme, we use only one phase, in which case views are only pruned
@@ -44,10 +43,10 @@ i.e., discarded or ``accepted'' as being in the top-$k$.
 The list of views still in the running is updated and processing continues.
 Once we meet a pre-defined stopping criteria, $k$ views with the
 highest utility are returned to the frontend.
-We implement two stopping criteria: we either stop when the entire table has
-been processed and all views returned to the user are exact, or we stop after we
-have accepted $k$ views as being in the top-$k$ and we return the approximate
-top-$k$ views to the user at that point.
+We implement two stopping criteria: we either stop once the entire table has
+been processed (and return exact views to the user), or we stop after
+we have ``accepted'' $k$ views as being in the top-$k$ (and return
+approximations of the top-$k$ views to the user).
 We use the former as the default stopping condition.
 
 % Note that we have two alternatives for computing the visualizations for the top-$k$
@@ -110,16 +109,16 @@ We use the former as the default stopping condition.
 \end{algorithmic}
 \end{algorithm}
 
-Thus, the general idea is to keep running estimates of utility for each view, and
+The general idea is to keep running estimates of utility for each view, and
 perform pruning of low utility views based on these estimates.
-To implement a pruning strategy, we merely specify the two things: (1)
+To implement a pruning strategy, we merely specify two things: (1)
 statistics to track for each view, and 
 (2) the rule used to prune views at the end of a phase.
 % An important side effect of our implementation is that
 % as we scan more data from the file, our estimates of utilities become more
 % accurate.
-In this paper, we evaluate three different strategies
-to perform the pruning of views at the end of each phase. The first two
+In this paper, we propose and evaluate three different strategies
+to perform the pruning of views. The first two
 strategies are based on top-$k$ algorithms that use confidence intervals, and
 the third is based on an adaptation of the Multi-Armed Bandit problem to our
 setting.
@@ -161,13 +160,12 @@ based on worst-case, and normal confidence intervals respectively.
 Confidence Interval-based pruning works as follows: at every step of our
 algorithm, we keep an estimate of the mean utility for every view and a
 confidence interval around that mean.
-Therefore, for every view $V_i$ we track its mean utility $u_i$, and a
-confidence interval around the mean utility $u_i \pm c_i$.
+That is, for every view $V_i$ we track its mean utility $u_i$, and a
+confidence interval around the mean, $u_i \pm c_i$.
 At the end of a phase, we use the following rule to prune low-utility
 views:
-{\em If the upper bound of the utility of the view $V_i$ is lesser
+{\em If the upper bound of the utility of view $V_i$ is lesser
 than the lower bound of the utility of $k$ or more views, then $V_i$ is discarded.}
-We illustrate this with an example. 
 
 \begin{figure}[h]
 \vspace{-10pt}
@@ -180,19 +178,20 @@ clip=true]{Images/confidence_pruning.pdf}}}}
 \vspace{-12pt}
 \end{figure}
 
-Suppose at the end of phase $p$, confidence intervals for the views in
-running have values shown in Figure \ref{fig:conf_interval} and we want to
-identify the two views with the highest utility.
-Views $V_1$ and $V_2$ have the highest utilities so far.
+We illustrate this with an example. Suppose a dataset has 4 views $V_1$
+to $V_4$ and we want to find the top-$2$ views.
+Further suppose that at the end of phase $p$,
+$V_1$-$V_4$ have confidence intervals as shown in Figure \ref{fig:conf_interval}.
+Views $V_1$ and $V_2$ have the highest estimates for utility so far.
 Consider view $V_3$; we see that its confidence interval overlaps with the
-confidence intervals of the current top views $V_1$ and $V_2$, making it possible
+confidence intervals of the current top views, making it possible
 that $V_3$ will be in the final top views. On the other hand, the confidence
 interval for $V_4$ lies entirely below the lowerbounds of $V_1$ and $V_2$.
 Since we can claim with high probability (depending on the confidence threshold)
 that the utility of $V_4$ lies within its confidence interval, it follows that
 with high probability, $V_4$'s utility will be lower than that of both $V_1$ and
 $V_2$, and it will not appear in the top-$2$ views.
-This is essentially our pruning rule. 
+This is our pruning rule. 
 
 Next, we discuss the two techniques we support to compute confidence intervals.
 
@@ -224,11 +223,11 @@ $$
 \le \delta.
 $$
 \end{theorem}
-In our setting, we treat the current mean, $\sum Y_i / m$ is the 
+In our setting, the current mean, $\sum Y_i / m$, is the 
 the current estimate of the utility of a view 
-based on the entire set of records seen thus far that apply to that view. 
+based on the entire set of records seen thus far. 
 Therefore, to apply this pruning strategy, the only statistics
-we need are the current estimate of the utilities.
+we track are the current estimates of view utilities.
 
 Note that in this setting, we are assuming that since the
 utility estimate at any stage of processing is in $[0, 1]$, 
@@ -237,11 +236,11 @@ that come from reading each record, are also between $[0, 1]$,
 and are independent of the current value of the utility. 
 This is is not true in our setting, 
 because the utility function could be arbitrary.
-Thus, the guarantees do not directly apply to our setting. 
+Thus, the theoretical guarantees do not directly apply to our setting. 
 
-\stitle{Normal Confidence Intervals.} In this scheme,
-we apply the standard normal confidence intervals to our utility measurements
-assuming that the underlying distribution is Gaussian.
+\stitle{Normal Confidence Intervals.} In this scheme, we assume that the utility
+distributions for each view are Gaussian and apply the standard confidence
+intervals to our utility measurements.
 % We describe the equations first assuming that
 % when every time a record is read, for every view,
 % a utility value is ``sampled''
@@ -268,8 +267,8 @@ We note that the assumption that we are drawing from a normal distribution is
 not quite accurate since our samples vary in size and are not independent.
 As a result, we make two simple adjustments to the confidence interval
 calculations that are described in Appendix \ref{}.
-In Section \ref{}, we show experimentally on multiple datasets that our
-confidence interval calculations accurately capture utility and can be used to
+In Section \ref{sec:experiments}, we show experimentally on multiple datasets
+that our confidence interval calculations accurately capture utility and can be used to
 perform pruning with high confidence.
 
 
@@ -403,7 +402,7 @@ perform pruning with high confidence.
 \subsubsection{Multi-Armed Bandit Pruning}
 \label{sec:multi_armed_bandit}
 The second class of pruning techniques we explore
-are based on solutions for Multi-Armed Bandits (MAB), a problem 
+are based on solutions for Multi-Armed Bandit (MAB), a problem 
 in stochastic control. 
 The setting is as follows: 
 a gambler is faced with several slot
@@ -416,29 +415,28 @@ which machine to play during every turn, to maximize
 eventual, total, or time-decaying rewards~\cite{bandits}.
 Recently, variants of MAB have been proposed 
 which instead of maximizing total reward, 
-focus on finding the bandits with the highest mean reward~\cite{BubeckWV13}.
+focus on finding the arms with the highest mean reward~\cite{BubeckWV13}.
 This is very similar to our setting: each possible view can be thought of as
 one arm and our goal is find the views with the highest reward (i.e.
 utility).
 In MAB, each pull of an arm corresponds to a drawing from a sample
 the underlying probability distribution of that arm.
-In our case, each new record updates the utilities for every possible view and
-the every updated utility can be thought of as a sample from the underlying
+In our case, each new record updates the utilities for all views and
+each resulting updated utility can be thought of as a sample from the
 utility distribution of that view.
-There are two approximations we make here to apply the MAB techniques
-to our setting
-(as we show in our experimental evaluation,
-the approximation works well
-for our purposes.): 
+There are two approximations we make here to apply MAB techniques
+to our setting: 
 (1) although the utility of a
 view is ultimately a single value, we can approximate it as a probability
 distribution that is normally distributed around the true utility, and 
 (2) our running estimate of utility after reading $i$
-records is an estimate derived from the above utility distribution.
+records is a sample derived from the above utility distribution.
+As we show in our experimental evaluation, the approximation works well
+for our purposes.
 
 Algorithm \ref{algo:mab_based_pruning} shows the pruning technique used in the
 MAB setting.
-This algorithm is an adaptation of Successive Accepts and Rejects
+This algorithm is an adaptation of the Successive Accepts and Rejects
 algorithm from \cite{BubeckWV13} for finding the top-$k$ arms with the highest
 mean reward.
 As before, the processing of the whole file is divided into phases.
@@ -450,7 +448,7 @@ We then compute two special differences between the utility means: $\Delta_1$
 is the difference between the highest mean and the $k+1$st highest mean, and
 $\Delta_n$ is the difference between the lowest mean and the $k$th highest mean.
 If $\Delta_1$ is greater than $\Delta_n$, the view with the highest mean is
-{\it accepted} as being part of the the top-$k$ (and it no longer participates
+``accepted'' as being part of the the top-$k$ (and it no longer participates
 in pruning computations).
 On the other hand, if $\Delta_n$ is higher, the view with the lowest mean is discarded
 from the set of views in the running.

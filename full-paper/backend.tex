@@ -6,48 +6,53 @@
 The previous sections described the \VizRecDB\ execution engine, the core part
 of our system.
 In this section, we briefly discuss an important component of \VizRecDB\ that is invoked
-even before the Execution Engine runs, namely the view generator.
+even before the execution engine runs, namely the view generator.
 Given a user query $Q$, the purpose of the view generator module is to take the
 input query, obtain metadata about the underlying tables and use correlations
-between different columns in the table to prune views whose evaluation is
+between columns to prune views whose evaluation is
 unnecessary. 
+This step is important because fewer views means that we can
+obtain even better performance from our execution engine.
 We distinguish between the pruning done in the execution engine and the pruning
 done in the view generator: the execution engine prunes away low-utility views
-while the view generator prunes away {\it redundant} views.
-Redundant views are views that have similar
-distributions and are therefore expected to have similar utility.
-An extreme example is that of sales of a product as measured in US
-Dollars and measured in Euros. Views with these measure attributes will be
-identical and have the same utility.
-Similarly, two dimension attributes, one corresponding to the airport name
-and another corresponding to the airport code are guaranteed to produce identical
-views irrespective of the measure attribute.
+while the view generator prunes away {\it redundant} views. 
+A set of views $\{V\}$ is said to be redundant if all views in $\{V\}$ have
+similar distributions and are therefore expected to have similar utility.
+An extreme example of redundant views is the following: a table stores the sales
+of a product as measured in US Dollars and measured in Euros. 
+Views with either of these column as the measure attribute will be identical and
+have the same utility.
+Similarly, if a table has two dimension attributes, one corresponding to the
+airport name and another corresponding to the airport code, views with either
+of these attributes as dimensions are guaranteed to produce identical views.
 In both of the above cases, it suffices to compute and show only a single view
-that is representative of multiple views (the frontend does list redundant
+that is representative of multiple views (and list redundant
 views that have been omitted).
 
 The view generator largely works offline. At run time, it merely accesses
 previously computed view stubs, removes any views that contain
-attributes from the selection predicte of the incoming query and sends the view
-stubs to the execution engine.
+attributes from the selection predicte of the incoming query and sends remaining
+view stubs to the execution engine.
 The offline pruning works as follows: the view generator uses metadata on each
 attribute to first determine the entire space of views. 
 It removes all views containing attributes with 0 or low variance.
 Then it computes full-table aggregates corresponding to all views, i.e., for
 each dimension $a$ and measure $m$, it computes the corresponding aggregate over
-group by query and computes the normalized distribution.
+group-by query and computes the normalized distribution.
 Next it computes the correlation between distributions corresponding to each
 pair of views (note that the dimensions must have same cardinality for this
 comparison to be valid).
 Correlation scores are thresholded and used to cluster views into groups.
 Finally, we pick a single view from every view cluster.
 
-Details of our pruning algorithm are presented in Appendix \ref{}. 
+Details of our pruning algorithm are presented in Appendix
+\ref{sec:view_pruning} along with examples of view clusters.
 View pruning allows us to significantly reduce the number of views in real
 datasets. 
 For instance, for the BANK dataset described in Section \ref{sec:experiments},
 we reduce the number of possible views from AAA to BBB and in the DIAB dataset
-from CCC to DDD.
+from CCC to DDD. 
+
 
 
 % In this section, we discuss an important component of \VizRecDB\ that is invoked
