@@ -14,7 +14,7 @@ parallel <- function(filename) {
 		geom_bar(aes(fill=dbms), position="dodge", stat="identity") + 
 		ylab("latency (s)") +  theme_bw() + xlab("Num Parallel Queries") +
 		theme(text = element_text(size=24))  + scale_fill_brewer(palette="Paired");
-		ggsave(file=paste(outdirname, filename, ".pdf", sep=""));
+		ggsave(file=paste(outdirname, filename, ".pdf", sep=""),width=7,height=5);
 }
 
 parallel("parallel_noop");
