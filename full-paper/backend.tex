@@ -3,10 +3,10 @@
 \section{View Pruning}
 \label{sec:pruning}
 
-The previous sections described the \VizRecDB\ Execution Engine, the core part
+The previous sections described the \VizRecDB\ execution engine, the core part
 of our system.
-In this section, we discuss an important component of \VizRecDB\ that is invoked
-even before the Execution Engine runs, namely the View Generator.
+In this section, we briefly discuss an important component of \VizRecDB\ that is invoked
+even before the Execution Engine runs, namely the view generator.
 Given a user query $Q$, the purpose of the view generator module is to take the
 input query, obtain metadata about the underlying tables and use correlations
 between different columns in the table to prune views whose evaluation is
@@ -14,7 +14,7 @@ unnecessary.
 We distinguish between the pruning done in the execution engine and the pruning
 done in the view generator: the execution engine prunes away low-utility views
 while the view generator prunes away {\it redundant} views.
-So what are redundant views? Redundant views are views that have similar
+Redundant views are views that have similar
 distributions and are therefore expected to have similar utility.
 An extreme example is that of sales of a product as measured in US
 Dollars and measured in Euros. Views with these measure attributes will be
@@ -26,61 +26,69 @@ In both of the above cases, it suffices to compute and show only a single view
 that is representative of multiple views (the frontend does list redundant
 views that have been omitted).
 
-The View Generator works in two stages: it performs view pruning offline and
-identifies the set of viable views; then, when a new user query comes in, it
-reads the set of viable views, performs pruning based on the input query and
-passes view stubs on to the Execution Engine. 
-The offline pruning does not depend on the input query and can therefore be
-perfomed only once.
-The offline stage works as follows. 
-First, for each table, the View Generator obtains various types of
-metadata including the data types of attributes, their classification into
-measure and dimension attributes, number of distinct values for dimension
-attributes, and the distributions for each measure attribute (mean, std
-deviation).
-The first piece of metadata is essential to determine the full space of
-views. 
-The number of distinct values for dimension attributes and the variance for
-measure attributes is used to perform basic pruning of views (e.g. views
-containing zero variance attributes will have low utility).
-Next, the View Generator computes pairwise correlations between subsets of the
-entire set of possible views.
-To do so, the View Generator computes the aggregate distributions for all views
-over the entire data (i.e. the comparison view). 
-Once the distributions for all views have been computed, it calculates the
-correlation between distributions of views that contain dimension attributes
-with the same size (i.e. number of distinct values).
-Specifically, since the distributions are numeric, it computes the pairwise
-Pearson correlation between the distributions.
-Next, it (conceptually) builds a graph of all views. 
-The nodes of this graph correspond to views and an edge exists between two nodes
-if the correlation between the two views is greater than a threshold (set to 0.95 in
-our experiments). 
-In this graph, the View Generator then identifies cliques (and almost cliques).
-Observe that a clique in this graph is a set of highly correlated views,
-and therefore, these views are likely to have similar utility. 
-As a result, we select a
-single node from each clique as a representative view for that clique and
-prune the remaining views. 
-We can think of this procedure as clustering views based on similarity and
-choosing a representative view form each cluster.
-At the end of the offline step, the View Generator stores the list of
-viable views that must be evaluated at run time.
+The view generator largely works offline. At run time, it merely accesses
+previously computed view stub, removes any views that contain the same
+attributes as the selection predicte of the incoming query and sends the view
+stubs to the execution engine.
+The offline pruning works as follows: the view generator uses metadata on each
+attribute to first determine the entire space of views. 
+It removes all views containing attributes with 0 or low variance.
+Then it computes full-table aggregates corresponding to all views, i.e., for
+each dimension $a$ and measure $m$, it computes the corresponding aggregate over
+group by query and computes the normalized distribution.
+Next it computes the correlation between distributions corresponding to each
+pair of views (note that the dimensions must have same cardinality for this
+comparison to be valid).
+Correlation scores are thresholded and used to cluster views into groups.
+Finally, we pick a single view from every cluster.
 
-When the View Generator is invoked at runtime, it reads the list of viable
-views for the table, prunes them further based on the input query (e.g.
-attributes present in the where clause of the query should not be present in
-any view) and passes the remaining views to the Execution Engine for
-evaluation.
+Details of our pruning algorithm are presented in Appendix \ref{}. 
+View pruning allows us to significantly reduce the number of views in real
+datasets. 
+For instance, for the BANK dataset described in Section \ref{sec:experiments},
+we reduce the number of possible views from AAA to BBB and in the DIAB dataset
+from CCC to DDD.
 
-In real datasets, we find that the offline processing significantly
-reduces the number of views that must be evaluated. 
-For example, in the
-diabetes dataset discussed in Section \ref{sec:experiments}, offline pruning
-reduces the total number of views from XXX to XXX due to our pruning
-strategy. Similarly, for the banking dataset, the total views are
-reduced from XXX to XXX. In Figure \ref{}, we show graphs generated by the
-View Generator for both datasets.
+
+% In this section, we discuss an important component of \VizRecDB\ that is invoked
+% even before the Execution Engine runs, namely the View Generator.
+% Given a user query $Q$, the purpose of the view generator module is to take the
+% input query, obtain metadata about the underlying tables and use correlations
+% between different columns in the table to prune views whose evaluation is
+% unnecessary. 
+% We distinguish between the pruning done in the execution engine and the pruning
+% done in the view generator: the execution engine prunes away low-utility views
+% while the view generator prunes away {\it redundant} views.
+% So what are redundant views? Redundant views are views that have similar
+% distributions and are therefore expected to have similar utility.
+% An extreme example is that of sales of a product as measured in US
+% Dollars and measured in Euros. Views with these measure attributes will be
+% identical and have the same utility.
+% Similarly, two dimension attributes, one corresponding to the airport name
+% and another corresponding to the airport code are guaranteed to produce identical
+% views irrespective of the measure attribute.
+% In both of the above cases, it suffices to compute and show only a single view
+% that is representative of multiple views (the frontend does list redundant
+% views that have been omitted).
+
+% The View Generator works in two stages: it performs view pruning offline and
+% identifies the set of viable views; then, when a new user query comes in, it
+% reads the set of viable views, performs pruning based on the input query and
+% passes view stubs on to the Execution Engine. 
+% The offline pruning does not depend on the input query and can therefore be
+% perfomed only once.
+% The offline stage works as follows. 
+
+% First, for each table, the View Generator obtains various types of
+% metadata including the data types of attributes, their classification into
+% measure and dimension attributes, number of distinct values for dimension
+% attributes, and the distributions for each measure attribute (mean, std
+% deviation).
+% The first piece of metadata is essential to determine the full space of
+% views. 
+% The number of distinct values for dimension attributes and the variance for
+% measure attributes is used to perform basic pruning of views (e.g. views
+% containing zero variance attributes will have low utility).
 
 % \mpv{If two dimension attributes $a_i$ and $a_j$ have
 % a high degree of correlation (e.g. full name of airport and abbreviated name of

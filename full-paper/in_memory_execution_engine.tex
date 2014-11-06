@@ -4,25 +4,16 @@
 \subsection{Custom Execution Engine}
 \label{sec:in_memory_execution_engine}
 
-While our first design of the execution engine allows \VizRecDB\ to be
-used with a variety of existing databases, optimization opportunities are
-limited by virtue of being outside the database.
-Specifically, we have little to no ability to prune away views
-after partially evaluating them.
-Thus, in this section, we focus our attention on building
-a custom execution engine for \VizRecDB to study the impact of 
-these optimizations.
-
-From the DBMS-backed execution engine, 
+From our implementation of DBMS-backed execution engine, 
 we learned that there are two aspects where
-the DBMS-backed execution engine suffers:
-(a) the number of scans of the data is far too high
+this implementation suffers:
+(a) the number of scans performed of the data is far too high, and
 (b) far too many resources are wasted on low-utility views.
 As a result, our goals with the custom execution engine are as follows:
 (a) complete sharing of table scans between views so that a single table scan
 suffices to compute all views; 
 (b) sharing of intermediate results between views so that low utility views can
-be pruned on the fly; 
+be pruned on the fly; and 
 (c) early stopping once the top views have been identified. 
 We now describe the
 basic execution framework adopted by our engine followed by specific strategies
@@ -41,28 +32,32 @@ input query, and then updates the target and comparison views for all views
 currently in the running or have been ``accepted'' as being in the top-$k$.
 It also updates the utility values and other algorithm-specific statistics for
 each view.
-To identify and prune low utility views, \VizRecDB\ processes the file in
-phases where each phase consists of processing a fixed number of records.
+To avoid doing expensive pruning computations after reading each record,
+\VizRecDB processes the file in phases where each phase consists of processing a
+fixed number of records.
 At the end of each phase, \VizRecDB\ checks to see if any views can be pruned,
 i.e., discarded or ``accepted'' as being in the top-$k$.
-At one extreme, each phase consists of just one record, in which case views
-are pruned after ever record is read and the views are updated;
-at the other extreme, we use only one phase, in which case views are only pruned
-after all the records are read (i.e., effectively no pruning). 
+% At one extreme, each phase consists of just one record, in which case views
+% are pruned after ever record is read and the views are updated;
+% at the other extreme, we use only one phase, in which case views are only pruned
+% after all the records are read (i.e., effectively no pruning). 
 The list of views still in the running is updated and processing continues.
-Once all views are either accepted or discarded (i.e.,
-\VizRecDB has identified the top-$k$), \VizRecDB\ can stop processing early.
-Once the engine has finished processing, $k$ views with the
+Once we meet a pre-defined stopping criteria, $k$ views with the
 highest utility are returned to the frontend.
+We implement two stopping criteria: we either stop when the entire table has
+been processed and all views returned to the user are exact, or we stop after we
+have accepted $k$ views as being in the top-$k$ and we return the approximate
+top-$k$ views to the user at that point.
+We use the former as the default stopping condition.
 
-Note that we have two alternatives for computing the visualizations for the top-$k$
-views, once $k$ views have been accepted: 
-we can either compute the top-$k$ views to completion (i.e.,
-on the remaining unprocessed records),
-or we can display approximate visualizations for each view, as soon as we ``accept'' them
-as being in the top-$k$. 
-We use the former option as the default, 
-and the latter as an additional optimization that may be employed.
+% Note that we have two alternatives for computing the visualizations for the top-$k$
+% views, once $k$ views have been accepted: 
+% we can either compute the top-$k$ views to completion (i.e.,
+% on the remaining unprocessed records),
+% or we can display approximate visualizations for each view, as soon as we ``accept'' them
+% as being in the top-$k$. 
+% We use the former option as the default, 
+% and the latter as an additional optimization that may be employed.
 % If at the end of a given phase, \VizRecDB\ finds that the views in running satisfy
 % the given stopping criteria, e.g., that \VizRecDB\ has already identified the
 % top-$k$ views, the \VizRecDB\ engine can stop processing early.
@@ -120,39 +115,42 @@ perform pruning of low utility views based on these estimates.
 To implement a pruning strategy, we merely specify the two things: (1)
 statistics to track for each view, and 
 (2) the rule used to prune views at the end of a phase.
-An important side effect of our implementation is that
-as we scan more data from the file, our estimates of utilities become more
-accurate.
-
-
+% An important side effect of our implementation is that
+% as we scan more data from the file, our estimates of utilities become more
+% accurate.
 In this paper, we evaluate three different strategies
-to perform the pruning of views at the end of each phase.
-\begin{denselist}
-\item The first two strategies are based on confidence interval-based top-$k$ algorithms.
-That is, at the end of each phase, confidence intervals are updated for all
-the views still in the running, and if the upper-bound for any of them
-is lower than the lower-bound for confidence intervals of $k$ or more other views,
-then those views are discarded.
-\begin{denselist}
-\item The first uses worst-case confidence intervals based on the
-Hoeff\-ding-Serfling inequality~\cite{serfling1974probability}, 
-which is a generalization of Hoeffding's inequality~\cite{hoeffding1963probability}
-when a number of samples are randomly chosen without replacement
-from the same set.
-These confidence intervals are necessarily more conservative.
-\item The second uses normal confidence intervals, assuming that 
-the underlying distribution is Gaussian~\cite{all-of-statistics}.
-These confidence intervals are more ``aggressive'', because they make the assumption
-that the underlying distribution is normal.
-(For experiments evaluating this assumption, see Section~\ref{sec:evaluating_normal}.) 
-\agp{delete if no experiments are in paper}
-\end{denselist}
-\item The last is based on an adaptation of Multi-Armed Bandit (MAB) algorithms
-for top-$k$ arm identification from XXX~\cite{}. 
-Multi-Armed Bandit algorithms are well-studied in the field of stochastic control:
-in our scenario, the arms are the views, and pulling an arm corresponds
-to updating a view's utility.
-\end{denselist}
+to perform the pruning of views at the end of each phase. The first two
+strategies are based on top-$k$ algorithms that use confidence intervals, and
+the third is based on an adaptation of the Multi-Armed Bandit problem to our
+setting.
+% 
+% \begin{itemize}
+% \item The first two strategies are based on confidence interval-based top-$k$ algorithms.
+% That is, at the end of each phase, confidence intervals are updated for all
+% the views still in the running and we prune views based on overlap
+% with the top-$k$ confidence intervals.
+% % and if the upper-bound for any of them
+% % is lower than the lower-bound for confidence intervals of $k$ or more other views,
+% % then those views are discarded.
+% \begin{denselist}
+% \item The first uses worst-case confidence intervals based on the
+% Hoeff\-ding-Serfling inequality~\cite{serfling1974probability}, 
+% which is a generalization of Hoeffding's inequality~\cite{hoeffding1963probability}
+% when a number of samples are randomly chosen without replacement
+% from the same set.
+% These confidence intervals are necessarily more conservative.
+% \item The second assumes that the underlying probability distribution is
+% Gaussian and uses 95\% confidence intervals~\cite{all-of-statistics}.
+% These confidence intervals are more ``aggressive'' compared to those derived
+% from the Hoeffding inequality.
+% (For experiments evaluating this assumption, see Section~\ref{sec:evaluating_normal}.) 
+% \end{denselist}
+% \item The last strategy is based on an adaptation of Multi-Armed Bandit (MAB)
+% algorithms for top-$k$ arm identification~\cite{}. 
+% Multi-Armed Bandit algorithms are well-studied in the field of stochastic
+% control; in our scenario, the arms are the views, and pulling an arm corresponds
+% to updating a view's utility.
+% \end{itemize}
 
 
 \subsubsection{Confidence Interval-Based Pruning}
@@ -160,18 +158,32 @@ We first describe at a high-level our confidence interval-based pruning strategi
 and then describe the two specific instantiations of these strategies,
 based on worst-case, and normal confidence intervals respectively.
 
-\VizRecDB keeps a number of statistics (described below), to compute
-the mean utility of a view $V_i$, as well as a confidence interval around that utility.
-We let our current estimate of 
-the mean utility of a view is $u_i$, and the confidence interval around 
-that mean utility be $u_i \pm c_i$.
-\VizRecDB uses the following rule to prune low-utility views:
+Confidence Interval-based pruning works as follows: at every step of our
+algorithm, we keep an estimate of the mean utility for every view and a
+confidence interval around that mean.
+Therefore, for every view $V_i$ we track its mean utility $u_i$, and a
+confidence interval around the mean utility $u_i \pm c_i$.
+At the end of a phase, we use the following rule to prune low-utility
+views:
 {\em If the upper bound of the utility of the view $V_i$ is lesser
 than the lower bound of the utility of $k$ or more views, then $V_i$ is discarded.}
 We illustrate this with an example. 
-Suppose at the end of phase $p$ the confidence intervals for the views in
+
+\begin{figure}[h]
+\vspace{-10pt}
+\centerline{
+\hbox{\resizebox{9cm}{!}{\includegraphics[trim=10mm 100mm 55mm 35mm, 
+clip=true]{Images/confidence_pruning.pdf}}}}
+\vspace{-20pt}
+\caption{Confidence Interval based Pruning}
+\label{fig:conf_interval}
+\vspace{-12pt}
+\end{figure}
+
+Suppose at the end of phase $p$, confidence intervals for the views in
 running have values shown in Figure \ref{fig:conf_interval} and we want to
 identify the two views with the highest utility.
+Views $V_1$ and $V_2$ have the highest utilities so far.
 Consider view $V_3$, we see that its confidence interval overlaps with the
 confidence intervals of the current top views $V_1$ and $V_2$, making it possible
 that $V_3$ will be in the final top views. On the other hand, the confidence
@@ -182,16 +194,7 @@ that the utility of $V_4$ lies within its confidence interval, it follows that
 with high probability, $V_4$ will not appear in the top-$2$ views.
 This is essentially our pruning rule. 
 
-\begin{figure}[htb]
-\vspace{-10pt}
-\centerline{
-\hbox{\resizebox{9cm}{!}{\includegraphics[trim=10mm 100mm 55mm 35mm, 
-clip=true]{Images/confidence_pruning.pdf}}}}
-\vspace{-20pt}
-\caption{Confidence Interval based Pruning}
-\label{fig:conf_interval}
-\vspace{-12pt}
-\end{figure}
+
 
 \stitle{Worst-Case Confidence Intervals.} 
 Suppose we have $N$ values $y_1, \ldots, y_n$ in $[0, 1]$, and we are drawing
@@ -519,35 +522,3 @@ Since our problem setup isn't exactly the same, the optimality bounds don't
 transfer directly.
 However, as we show in the experimental section, the MAB heuristic performs well
 on real datasets.}
-
-\subsubsection{Incorportating Custom Engine into a DBMS}
-\label{sec:incorporating}
-\mpv{Do we want this section?}
-
-\agp{delete if no space. rather, put it into a techreport flag to be cleaned up later.}
-In an ideal solution, we would incorporate the algorithms used in our custom
-engine into a DBMS. 
-The advantages of integrating into a DBMS are clear: we could take advantage of
-the superior data storage and retrieval techniques in databases, and we would
-avoid building a one-off, super-specialized system.
-However, as the current database API stands, there is no way to share table
-scans between operations, keep track of custom statistics or intercept the scan
-mid-way to perform pruning.
-If we are two implement a \VizRecDB-style operator in a traditional database
-system, we would have to support the following operations:
-\squishlist
-\item Ability to store custom state during aggregation operations (e.g.
-distributions corresponding to each view)
-\item Ability to compute custom statistics during a table scan (in our case
-utilities, their cummulative means and variances)
-\item Ability to compute multiple aggregates and group-bys at the same time
-(similar to the GROUPING SETS functionality)
-\item Ability to intercept the scan periodically (think of a call back or a
-sleep functionality) in order to update the custom state
-\squishend
-
-These operators can be embedded in the query executor or as part of a UDF.
-We lay down these requirements because we expect that not just \VizRecDB\ but
-other kinds of similar workloads would also benefit from such an API.
-This implementation is out of scope for the current work, but we plan to explore
-it in future work.

@@ -102,56 +102,91 @@ the associated visualization.
 % \ref{fig:staplerX} respectively show an example of the results of this view and
 % the associated visualization.
 
-
-
-\begin{figure}
-\vspace{-10pt}
-\CenterFloatBoxes
-\begin{floatrow}
-\ttabbox{%
-  \small
-  \begin{tabular}{cc} \hline
-  Carrier & Load Times (ms) \\ \hline
-  AT\&T & 180.55 \\ \hline
-  Verizon &  145.50\\ \hline
-  T-Mobile & 122.00 \\ \hline
-  Metro & 90.13 \\ \hline
-  \end{tabular}
-}{%
-  \caption{Data: Average Load Times by Carrier for App-A}\label{tab:staplerX}%
-}
-\killfloatstyle
-\ffigbox{%
-  \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist1.pdf}}}
-  
-}{%
-  \caption{Visualization: Average \\ Load Times by Carrier
-  for App-A}\label{fig:staplerX}% 
-}
-\end{floatrow}
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.49\linewidth}
+	   \begin{tabular}{cc} \hline
+		  Carrier & Load Times (ms) \\ \hline
+		  AT\&T & 180.55 \\ \hline
+		  Verizon &  145.50\\ \hline
+		  T-Mobile & 122.00 \\ \hline
+		  Metro & 90.13 \\ \hline
+		  \end{tabular}
+		  \caption{tab:staplerX}
+		  \caption{Data: Average Load Times by Carrier for App-A}
+	\end{subfigure}
+	\begin{subfigure}{0.49\linewidth}
+		\centering
+		{\includegraphics[width=4cm] {Images/dist1.pdf}}
+		\caption{Visualization: Average \\ Load Times by Carrier
+		 for App-A}
+		\label{fig:staplerX}
+	\end{subfigure}
+	
+	\centering
+	\begin{subfigure}{0.49\linewidth}
+		{\includegraphics[width=4cm] {Images/dist2.pdf}}
+		\caption{Scenario A: Average Load Times by Carrier}
+		\label{fig:staplerX-a}
+	\end{subfigure}
+	\begin{subfigure}{0.49\linewidth}
+		\centering
+		{\includegraphics[width=4cm] {Images/dist3.pdf}}
+		\caption{Scenario B: Average Load Times by Carrier}
+		\label{fig:baseline_views}
+	\end{subfigure}
+	\caption{}
+	\label{fig:staplerX-b}
 \end{figure}
 
-\begin{figure}
-\CenterFloatBoxes
-\begin{floatrow}
-\centering
-\ffigbox{%
-  \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist2.pdf}}}
-  
-}{%
-  \caption{Scenario A: Average Load Times by Carrier}\label{fig:staplerX-a}%
-}
-\killfloatstyle
-\ffigbox{%
-  \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist3.pdf}}}
-  
-}{%
-  \caption{Scenario B: Average Load Times by Carrier \srm{These figures seem to be for stores
-and stapers}}\label{fig:staplerX-b}%
-}
-\end{floatrow}
-\vspace{-12pt}
-\end{figure}
+% \begin{figure}
+% \vspace{-10pt}
+% \CenterFloatBoxes
+% \begin{floatrow}
+% \ttabbox{%
+%   \small
+%   \begin{tabular}{cc} \hline
+%   Carrier & Load Times (ms) \\ \hline
+%   AT\&T & 180.55 \\ \hline
+%   Verizon &  145.50\\ \hline
+%   T-Mobile & 122.00 \\ \hline
+%   Metro & 90.13 \\ \hline
+%   \end{tabular}
+% }{%
+%   \caption{Data: Average Load Times by Carrier for App-A}\label{tab:staplerX}%
+% }
+% \killfloatstyle
+% \ffigbox{%
+%   \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist1.pdf}}}
+% 
+% }{%
+%   \caption{Visualization: Average \\ Load Times by Carrier
+%   for App-A}\label{fig:staplerX}%
+% }
+% \end{floatrow}
+% \end{figure}
+% 
+% \begin{figure}
+% \CenterFloatBoxes
+% \begin{floatrow}
+% \centering
+% \ffigbox{%
+%   \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist2.pdf}}}
+% 
+% }{%
+%   \caption{Scenario A: Average Load Times by Carrier}\label{fig:staplerX-a}%
+% }
+% \killfloatstyle
+% \ffigbox{%
+%   \hbox{\resizebox{2cm}{2cm}{\includegraphics{Images/dist3.pdf}}}
+% 
+% }{%
+%   \caption{Scenario B: Average Load Times by Carrier \srm{These figures seem to be for stores
+% and stapers}}\label{fig:staplerX-b}%
+% }
+% \end{floatrow}
+% \vspace{-12pt}
+% \end{figure}
 
 
 
@@ -315,17 +350,43 @@ all our techniques apply unchanged to Use Cases II and III.
 
 \subsection*{Challenges and Contributions}
 
-We previously described some of the vision for  \VizRecDB in our (4 page) vision 
-paper~\cite{DBLP:conf/vldb/Parameswaran2013}---that paper described the challenges 
-at a high level without any real implementation; 
-in this paper, we demonstrate that we can build real systems that efficiently search for the most 
-interesting views, formalize the notion of ``interestingness'', and thoroughly
-explore the space of possible optimizations.
+We previously described some of the vision for  \VizRecDB\ in our (4 page)
+vision paper~\cite{DBLP:conf/vldb/Parameswaran2013}---that paper described the
+challenges at a high level without any real implementation; in this paper, we
+demonstrate that we can build real systems that efficiently search for the most
+interesting views at interactive time scales.
+% Efficiently and accurately producing the set of most interesting
+% views (aggregate queries) for any dataset is challenging for several reasons:
+% (1) We must determine metrics that accurately measure the ``deviation'' of a
+% view with respect to the equivalent view on the entire database (e.g.,
+% Figure~\ref{fig:staplerX} vs.~\ref{fig:staplerX-a}); 
+% (2)  The space of candidate views grows as the square of the number of
+% attributes, so we must intelligently explore the space of candidate views
+% to support real time responses;
+% (3) While executing queries corresponding to different views, we must share
+% computation as much as possible. 
+% For example, 
+% we can compute multiple views and measure their deviation 
+% all together in one query. Independent execution,
+% on the other hand, will be expensive and wasteful;
+% Queries to compute views and their
+% deviation are highly similar and therefore
+% independent execution is expensive and wasteful; 
+% (4) We must prune low-utility views early on to avoid wasting resources and
+% computation on these views; 
+% (5) Since analysis must happen in interactive time scales, we must trade-off
+% accuracy of visualizations or estimation of ``interestingness'' for reduced latency.
+
+% in this paper, we demonstrate that we can build real systems that efficiently search for the most 
+% interesting views, formalize the notion of ``interestingness'', and thoroughly
+% explore the space of possible optimizations.
 %In this work, we explored two distinct implementations of \VizRecDB, both on top
 %of a database.
-Specifically, we describe two implementations.
-In the first, we implement \VizRecDB\ as a wrapper on top of a database system and study
-how far we could push existing systems to support a \VizRecDB-type workload.
+In this paper, we describe two implementations of \VizRecDB\ that address the
+challenges from \cite{DBLP:conf/vldb/Parameswaran2013}.
+In our first implementation, we implement \VizRecDB\ as a wrapper on top of a
+database system and study how far we can push existing systems to support a
+\VizRecDB-type workload.
 In the second, we overcome the constraints of the DBMS API by writing a custom system
 that  shares sequential scans and query results between views and employs statistical methods to 
 perform aggressive pruning
@@ -338,58 +399,25 @@ optimizations that leverage the underlying system architecture.
 %highlights to the analyst the most interesting views of the query results using
 %methods based on deviation}.
 
-To efficiently and accurately produce the set of most interesting
-views (aggregate queries), we must address the following challenges: 
-(1) We must determine metrics that accurately measure the ``deviation'' of a
-view with respect to the equivalent view on the entire database (e.g.,
-Figure~\ref{fig:staplerX} vs.~\ref{fig:staplerX-a}); 
-(2)  We must
-intelligently explore the space of candidate views. Since the number of
-candidate views increases as the square of the number of
-attributes in a table (we will demonstrate this in subsequent sections),
-generating and evaluating all views, even for a moderately sized dataset (e.g.
-1M rows, 100 attributes), can be prohibitively expensive;
-(3) While executing queries corresponding to different views, we must share
-computation as much as possible. For example, 
-we can compute multiple views and measure their deviation 
-all together in one query. Independent execution,
-on the other hand, will be expensive and wasteful;
-% Queries to compute views and their
-% deviation are highly similar and therefore
-% independent execution is expensive and wasteful; 
-(4) We must prune low-utility views early on to avoid wasting resources and
-computation on these views; 
-(5) Since analysis must happen in interactive time scales, we must trade-off
-accuracy of visualizations or estimation of ``interestingness'' for reduced latency.
-
-
 The contributions of this paper are:
 \squishlist
   \item We
   explore and evaluate two distinct implementations of the system, one as a
   wrapper around a database and another a custom solution.
-  \item We propose and implement a number of
-  implementation-specific optimizations to efficiently perform the
-  search for interesting views and share computation between multiple views
-  simultaneously. 
-  \item For the implementation of \VizRecDB\ on top of a DBMS, we model the
-  performance of \VizRecDB\ in terms of various parameters of \VizRecDB\ and the
-  underlying database, and use this model to identify optimal parameter settings
-  for \VizRecDB\ (Section~\ref{sec:model}).
+  \item For the DBMS-backed implementation of \VizRecDB, we
+  design a suite of optimizations to minimize the number of queries executed and to
+  maximize the sharing of scans between queries (Section~\ref{XXX}).
   \item For the custom implementation of \VizRecDB, we cast the problem of
   finding the best views as a variant of both top-k ranking and the
   multi-armed bandit problem. We adapt heuristics from both problem spaces to
-  perform aggressive pruning of views.
+  perform aggressive pruning of views (Section~\ref{XXX}).
   \item We explore view pruning techniques based on data distribution
-  to prune views even before they are evaluated by the \VizRecDB\ system.
+  to prune views even before they are evaluated by the \VizRecDB\ system 
+  (Section~\ref{XXX}).
   \item We evaluate the performance of our optimizations on a range of
-  real and synthetic datasets and demonstrate the resulting XXX speedup
+  real and synthetic datasets and demonstrate the resulting XXX speedup 
   (Section~\ref{sec:experiments}). We also demonstrate that our heuristics
   improve performance without affecting system accuracy.
-  \item We report the result of a user study conducted to evaluate the
-  \VizRecDB\ concept of finding interesting views, the relative quality of
-  different metrics, and the usefulness of a tool like \VizRecDB\ in finding
-  interesting visualizations of a dataset.
 \squishend
 
 Finally, we note that although we are primarily motivated by efficiently 
