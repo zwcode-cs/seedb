@@ -3,30 +3,12 @@
 \section{Experimental Evaluation}
 \label{sec:experiments}
  
-In this section, we present our experimental evaluation of
-\VizRecDB.
-%
-% \stitle{Metrics.} The primary metrics we focus on in this evaluation 
-% are {\em latency}, 
-% i.e., how long does \VizRecDB take to return the top $k$
-% views, and {\em accuracy}, i.e., whether \VizRecDB
-% actually returns the top-$k$ views or not.
-%
-% \stitle{Goals.} 
-% For the DBMS-backed execution engine, we study the impact of the following
-% aspects on the metrics described above:
-% (a) a row-store DBMS vs.~a column-store DBMS
-% (b) the individual optimizations detailed in Section~\ref{sec:optimizations},
-% such as sharing of computation and parallel execution
-% (c) 
-%
-%
-Our goals were the following: (a) to study the performance characteristics of
-the DBMS-backed execution engine and the custom execution engine, (b) to study the
-accuracy of the heuristics developed in Section \ref{}, and (c) to test how well
-\VizRecDB\ performs on real datasets. 
-We use the datasets listed in Table
-\ref{tab:datasets} to study various properties of out techniques.
+In this section, we present our evaluation of
+\VizRecDB using both DBMS and custom execution engines, 
+on a variety of datasets.
+The datasets that we evaluate \VizRecDB on are listed 
+in Table~\ref{tab:datasets}.
+
 
 \begin{table}[htb]
   \centering \scriptsize
@@ -50,23 +32,68 @@ We use the datasets listed in Table
   \end{tabular}
   \caption{Datasets used for testing}
   \label{tab:datasets} 
+  \vspace{-10pt}
 \end{table}
 
-In the sections that follow, we show experimental results demonstrating that:
-(a) Our optimizations to \VizRecDB's DBMS-backed engine can reduce latency by
-50XX from 500s to 10s for the row store and from XXX to YYY for the column
-store.
-(b) Column stores are much well suited to the \VizRecDB\ workload and perform XXX times
-faster on average than row stores. 
-(c) Our pruning heuristics produce results with XXX accuracy for multiple real
-world datasets.
-(d) Our pruning heuristics can reduce latency by upto 90\% without taking a
-significant hit in accuracy.
-We begin with an evaluation of the DBMS-backed execution engine followed by an
-evaluation of our custom solution.
 
- All experiments were run on a single machine with 8 GB RAM and a 16 core Intel
- Xeon E5530 processor. 
+
+\stitle{Evaluation Goals for the DBMS-backed Execution Engine:} 
+The primary metric that we focus on for the DBMS-backed execution engine
+evaluation is {\em latency},
+i.e., how long does \VizRecDB take to return the top-$k$ results.
+For the DBMS-backed execution engine, we study the impact of the following
+aspects on the metrics described above:
+(a) the DBMS architecture, specifically, a row-store DBMS vs.~a column-store DBMS,
+(b) the individual optimizations detailed in Section~\ref{sec:optimizations},
+such as sharing of computation and parallel execution, as well as 
+the bin-packing-based algorithm for aggregate grouping, and
+(c) the various parameters of the dataset, such as size and number of views.
+
+\stitle{Evaluation Goals for the Custom Execution Engine:} 
+The primary metrics that we focus on for the custom execution engine
+are {\em latency} and {\em accuracy}, i.e., whether \VizRecDB
+actually returns the top-$k$ views or not, because
+in this case, \VizRecDB may incorrectly prune a view in the top-$k$.
+For the custom execution engine, we study the impact of the following
+aspects on the metrics described above:
+(a) our three pruning strategies, 
+(b) the characteristics of real datasets. 
+
+
+\stitle{Highlights:}
+We now present a high-level summary of our experimental results. 
+\squishlist
+\item Our optimizations to \VizRecDB's DBMS-based execution engine can reduce
+latency on large datasets from 500 seconds (on row stores) and 100 seconds (on column stores)
+to about 10 seconds for column stores, and about 20 seconds for row stores,
+allowing near-interactive response times. This is {\em especially impressive given that, implicitly,
+\VizRecDB is running 100s of queries on the DBMS for returning responses to a single \VizRecDB query}.
+
+\item Overall, column stores are vastly superior to row stores 
+as a backend execution engine, while row stores benefit more from the optimizations 
+that we propose. For instance, row stores benefit significantly (with reductions
+of up to XXX\% on latency) from applying
+bin-packing-based algorithms for aggregation, 
+while column stores are not affected. 
+
+\item The latency of response scales linearly 
+with the size of the dataset and with the number of views with
+the DBMS-based execution engine.
+
+\item Our pruning strategies for the custom execution engine 
+enables us to reduce \VizRecDB's latency from 20 seconds to less than 2 seconds
+to return the first view, representing a {\em 10-fold reduction in latency}.
+Further, these latency improvements do not impact accuracy significantly;
+the utility of the views suggested to the user are very close to the utilities
+of the top-$k$ views on real datasets.
+
+\squishend
+We begin with an evaluation of the DBMS-backed execution engine followed by an
+evaluation of our custom engine. All experiments were run on a 
+single machine with 8 GB RAM and a 16 core Intel Xeon E5530 processor. 
+Unless described otherwise, all experiments were 
+repeated three times and the latency measures were
+averaged.
 
 \subsection{DBMS-backed Execution Engine}
 \label{sec:expts_dbms_execution_engine}
@@ -78,48 +105,46 @@ evaluation of our custom solution.
 % systems and being agnostic to the specific underlying DBMS, its limitations
 % include the lack of fine grained control over sharing of table scans and lack of
 % ability to prune low-utility views. 
-In our first set of experiments, we investiage how well our DBMS-backed engine
-can support a \VizRecDB-style workload, and how the optimizations
-presented in Section~\ref{XXX} perform.
-The key metric we are concerned is latency -- what was the total time taken by
-\VizRecDB\ to compute the top views for any given query.
-All experiments were repeated three times and the latency measures were
-averaged.
-Since this version of the execution engine exhaustively explores all views and
- orders them by utility, we are guaranteed to get the top-$k$ views with
-perfect accuracy.
-We ran all our experiments in this section on two database systems: a
-row-oriented database (denoted as ROW in the following figures) and a
-column-oriented database (COL).
-The reason for evaluating both systems was that we expect (and
-demonstrate below) that certain optimizations to work better for row-stores vs.
-column stores.
-Moreover, we show that column stores are better suited for a \VizRecDB\ style
-workload.
+In our first set of experiments, we investigate 
+how well our DBMS-backed engine
+can support a \VizRecDB-style workload.
+We run all our experiments in this section on two database systems: a
+row-oriented database (denoted ROW) and a
+column-oriented database (denoted COL);
+our goal is to identify which database is a better
+candidate for \VizRecDB, and also study which optimizations
+work better for row-stores vs.~column stores. 
 
 The following experiments use synthetic datasets SYN1, SYN2, SYN3-10 and
-SYN3-100. 
-We chose to test our optimizations on these datasets since we could
-control all aspects of the data including size, number of
-dimensions and measures, data distribution and number of distinct values.
-After studying the effect of our optimizations on synthetic data, we report the
-results of running our techniques on the real datasets BANK and DIAB.
-We start with an evaluation of the basic framework and
-then study the effect of adding each individual optimization. \\
+SYN3-100 (listed in Table~\ref{tab:datasets}).
+The performance on the real datasets is similar and is omitted.
+Using synthetic datasets allows us to control all aspects
+of the data, including size, number of dimensions and measures, 
+data distribution, and number of distinct values. 
+We start with an evaluation of the basic framework, i.e., 
+how long do row and column stores take if each view is evaluated 
+in sequence, without any optimization. 
+We then study the effect of adding each optimization from Section~\ref{sec:dbms_optimizations} 
+in turn.
 
-\noindent {\it Basic Framework}: The basic DBMS-backed execution engine
+\stitle{Basic No Optimization Framework:} 
+
+{\em \underline{Summary:} Applying no optimizations 
+leads to 100 seconds or more of latency on both row and column stores;
+latency increases linearly as the size of the dataset, and the number
+of views is increased. Column stores are vastly superior to row stores,
+often with 1/5th the latency.}
+Without any optimizations, the basic DBMS-backed execution engine
 serially executes individual view queries, two for each possible view.
 Figures \ref{fig:baseline_size} and \ref{fig:baseline_views} show
 \VizRecDB\ latency when using the basic framework.
-For these experiments, we used the SYN dataset and created subsets of SYN  with
+For these experiments, we used the SYN1 dataset and created subsets of SYN  with
 varying number of rows and views (by varying number of dimension attributes). 
-In
-Figure \ref{fig:baseline_size} we show the latency of \VizRecDB\ as a function
-of the number of rows (100K rows -- 1M rows) in the dataset and in 
-Figure \ref{fig:baseline_views} 
-we show the latency as a function of the number of possible views
-(50 to 250).
-We can make a few observations from these charts. First, the basic framework has
+In Figure \ref{fig:baseline_size} we show the latency of \VizRecDB\ as a function
+of the number of rows (100K rows --- 1M rows) in the dataset and in 
+Figure \ref{fig:baseline_views} we show the latency as a function 
+of the number of possible views (50 --- 250).
+First, notice that the 
  poor performance: the row store takes between 50-500s to run the \VizRecDB\ queries
 while the column store takes 10-100s. These time scales are not practical for
 any interactive applications. Second, column stores run about 5X faster than row
