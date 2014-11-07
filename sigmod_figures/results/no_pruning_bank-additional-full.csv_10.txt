@@ -1,0 +1,11 @@
+Time:1367
+dim_job__measure_previous,0.12245041562681777
+dim_education__measure_previous,0.10974741956296757
+dim_job__measure_pdays,0.0977562344159716
+dim_job__measure_cons.price.idx,0.09693084653726602
+dim_job__measure_nr.employed,0.09679026763394241
+dim_job__measure_campaign,0.09597317202954887
+dim_job__measure_duration,0.09432531002986753
+dim_job__measure_euribor3m,0.0916609886547255
+dim_month__measure_previous,0.08707702988846854
+dim_month__measure_duration,0.06255858566594588
