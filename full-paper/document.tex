@@ -24,7 +24,7 @@
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
 \usepackage{xspace}
-\usepackage[font={small,bf}]{caption, subcaption}
+\usepackage[font={small,it}]{caption, subcaption}
 \usepackage{paralist}
 
 
@@ -59,7 +59,9 @@
 %\DeclareMathOperator*{\argmax}{arg\!\max}
 
 
-
+\makeatletter
+\def\@copyrightspace{\relax}
+\makeatother
 
 %\newcommand{\histvis}{\mbox{\sc HistVis}}
 \newcommand{\squishlist}{
@@ -80,12 +82,13 @@
 \newcommand{\squishend}{\end{list}}
 
 \newenvironment{denselist}{
-    \begin{list}{\tiny{$\bullet$}}%
+    \begin{list}{\small{$\bullet$}}%
     {\setlength{\itemsep}{0ex} \setlength{\topsep}{0ex}
     \setlength{\parsep}{0pt} \setlength{\itemindent}{0pt}
-    \setlength{\leftmargin}{0.5em}
+    \setlength{\leftmargin}{1.5em}
     \setlength{\partopsep}{0pt}}}%
     {\end{list}}
+
 
 \newcommand{\eat}[1]{}
 \newcommand{\papertext}[1]{#1}

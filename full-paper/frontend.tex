@@ -1,12 +1,12 @@
 %!TEX root=document.tex
 
 
-\section{VizRecDB Frontend}
+\subsection{VizRecDB Frontend}
 \label{sec:VizRecDB_frontend}
 
 The \VizRecDB\ frontend, designed as a thin client, performs two main functions: it
-allows the analyst to issue a query to \VizRecDB, 
-and it visualizes the results (views) produced by the \VizRecDB\
+allows the analyst to issue a query, 
+and it displays visualizations of the results (or views) produced by the \VizRecDB\
 backend.
 To provide the analyst maximum flexibility in issuing queries, \VizRecDB\
 provides the analyst with three
@@ -39,17 +39,17 @@ Figure~\ref{fig:frontend1} shows a screenshot of the \VizRecDB\ frontend (showin
 the query builder and resulting visualizations) in action.
  
 \begin{figure}[htb]
-\vspace{-10pt}
+\vspace{-15pt}
 \centerline{
 \hbox{\resizebox{5cm}{!}{\includegraphics[trim=15mm 0mm 120mm 0mm,
 clip=true]{Images/sql_builder.pdf}}}
 \hbox{\resizebox{!}{6cm}{\includegraphics[trim=50mm 30mm 150mm 52mm,
 clip=true]{Images/viz_panel.pdf}}}}
 \vspace{-15pt}
-\caption{VizRecDB Frontend: Query Builder (left) and Example Visualizations
+\caption{Frontend: Query Builder (left) and Example Visualizations
 (right)}
 \label{fig:frontend1}
-\vspace{-15pt}
+\vspace{-10pt}
 \end{figure} 
 
 In this work, we focus on the \VizRecDB\ backend and develop techniques to

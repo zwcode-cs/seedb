@@ -83,7 +83,6 @@ target view  ($P[V_i (D_Q)]$) and comparison view ($P[V_i (D)]$), the
 {\em utility} of $V_i$ is defined as the distance between these two probability
 distributions. Formally, if $S$ is a distance function,
 $$ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$$
-
 The utility of a view is our measure for whether the target view is
 ``potentially interesting'' as compared to the comparison view:
 the higher the utility, the more the deviation
@@ -97,10 +96,11 @@ from the comparison view, and the more likely the view is to be interesting.
 Computing distance between probability distributions has
 been well studied, and \VizRecDB\ supports all such
 metrics that evaluate a distance between two distributions.
-The metric may be supplied by the user.
+The metric may be supplied by the user, with their
+application in mind.
 Our current prototypes have the following in-built metrics
 to compute utility:
-\squishlist
+\begin{denselist}
   \item {\bf Earth Movers Distance (EMD)}~\cite{wikipedia-prob-dist}: Commonly used to
   measure differences between color histograms from images, EMD is a popular metric for comparing
   discrete distributions. This is the default metric used in \VizRecDB.
@@ -112,12 +112,11 @@ to compute utility:
   the other one.
   \item {\bf Jenson-Shannon Distance}~\cite{wikipedia-JS,entropy-vis}: Based on
   the K-L divergence, this distance measures the similarity between two probability distributions.
-\squishend
-
+\end{denselist}
 Finally, we note that while other definitions of the comparison views and
 utility metrics are possible, for our initial exploration into 
 visualization recommendations, we chose to focus on the intuitive definitions above.
-
+\agp{forward pointer to appendix where we have results..}
 % While we set the default \VizRecDB\ distance metric as EMD (due to its simplicity),
 % users can choose to use any of the distance metrics defined above. We note that
 % the above definition of a view and its utility is merely one of many possible
@@ -137,7 +136,7 @@ Thus, \VizRecDB\ aims to find the $k$ views (obtained by adding a single aggrega
 While the problem definition above assumes that we have been provided with a
 query $Q$ and we compare views on $Q$ with corresponding views on the entire
 database $D$, the \VizRecDB\ framework is agnostic to where the comparison
-dataset is coming from and its contents. So the same forumation works for Use
+dataset is coming from and its contents. So the same formulation works for Use
 Cases II and III discussed in Section \ref{sec:introduction}. 
 
 

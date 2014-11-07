@@ -62,7 +62,7 @@ query:
 \end{align*}
 The result of the above query is a two-column table that can then be visualized
 as a bar-chart. Table \ref{tab:staplerX} and Figure
-\ref{fig:staplerX} respectively show an example of the results of this query and
+\ref{fig:staplerX} respectively show an example of the results of the query and
 the associated visualization.
 
 %Consider a dataset containing sales records for a nation-wide
@@ -103,6 +103,7 @@ the associated visualization.
 % the associated visualization.
 
 \begin{figure}[h]
+\vspace{-15pt}
 	\centering
 	\begin{subfigure}{0.49\linewidth}
 	   \begin{tabular}{cc} \hline
@@ -112,8 +113,7 @@ the associated visualization.
 		  T-Mobile & 122.00 \\ \hline
 		  Metro & 90.13 \\ \hline
 		  \end{tabular}
-		  \caption{tab:staplerX}
-		  \caption{Data: Average Load Times by Carrier for App-A}
+		  \caption{Data: Average Load Times by Carrier for App-A} \label{tab:staplerX}
 	\end{subfigure}
 	\begin{subfigure}{0.49\linewidth}
 		\centering
@@ -136,9 +136,9 @@ the associated visualization.
 		\label{fig:baseline_views}
 	\end{subfigure}
 	\vspace{-10pt}
-	\caption{}
+	\caption{Motivating Example}
 	\label{fig:staplerX-b}
-	\vspace{-20pt}
+	\vspace{-10pt}
 \end{figure}
 
 % \begin{figure}
@@ -213,7 +213,7 @@ Of course, the analyst must decide if this deviation
 is truly an insight for this application.
 (4) Once the analyst has identified interesting attributes and dimensions to query
 against, the analyst may
-then either share these result with others, further interact with
+then either share these results with others, further interact with
 the displayed results (e.g., by drilling down or rolling up), or
 start afresh with a new query.
 
@@ -239,16 +239,16 @@ By generating and
 scoring such views automatically, \VizRecDB\ effectively eliminates
 steps (2) and (3) that the analyst currently performs. 
 Instead, once \VizRecDB\
-recommends interesting views, the analyst can evaluate this small
+recommends a few interesting views, the analyst can evaluate this small
 subset of views using domain knowledge and limit further
 exploration to these views.  
 
-The above example illustrates one particular use case for \VizRecDB,
-particularly one where an analyst compares a subset of the data against all
+The example presented above illustrates one potential use case for \VizRecDB,
+in particular, one where an analyst compares a subset of the data against all
 the underlying data.
 There are three use cases of \VizRecDB\ that are generalizations of the above
 model and are supported by \VizRecDB:
-\squishlist
+\begin{denselist}
   \item {\it Use Case I: Comparison of a subset of data against the entire
   underlying data}.
   This is the smartphone app metrics use case discussed above.
@@ -256,17 +256,15 @@ model and are supported by \VizRecDB:
   remaining data}.
   Imagine that a medical researcher is studying a medical records dataset and
   wants to compare the set of patients with high medical expenses vs. 
-  other patients. The techniques from the first use case can be used
-  directly for this use case too.
+  other patients. \VizRecDB can be used for this scenario as well.
   \item {\it Use Case III: Comparison of two distinct datasets}. Finally,
   imagine that in the app metrics example, an analyst would like to compare
   the metrics for two apps, say one app in the social category and another in
   the music category. In this case, the analyst will select the datasets
   by executing two different queries and \VizRecDB\ can be used to find
   interesting differences between the two datasets.
-\squishend
-
-In the rest of the paper, we center our discussion around Use Case I, however,
+\end{denselist}
+In the rest of the paper, we center our discussion around Use Case I;
 all our techniques apply unchanged to Use Cases II and III.
 
 % \subsection*{Example 2: Medical Data}
@@ -402,26 +400,27 @@ optimizations that leverage the underlying system architecture.
 %methods based on deviation}.
 
 The contributions of this paper are:
-\squishlist
-  \item We
-  explore and evaluate two distinct implementations of the system, one as a
-  wrapper around a database and another a custom solution.
-  \item For the DBMS-backed implementation of \VizRecDB, we
+\begin{denselist}
+  \item We design \VizRecDB as a stand-alone visual data exploration system,
+  with an interactive front-end. We explore and evaluate two distinct implementations of the system, one as a
+  wrapper around a database and another a custom solution (Section~\ref{sec:system_architecture}).
+  \item For the DBMS-backed implementation of \VizRecDB (Section~\ref{sec:basic_framework}), we
   design a suite of optimizations to minimize the number of queries executed and to
-  maximize the sharing of scans between queries (Section~\ref{XXX}).
-  \item For the custom implementation of \VizRecDB, we cast the problem of
-  finding the best views as a variant of both top-k ranking and the
-  multi-armed bandit problem. We adapt heuristics from both problem spaces to
-  perform aggressive pruning of views (Section~\ref{XXX}).
+  maximize the sharing of scans between queries, 
+  including bin-packing~\cite{garey} algorithms and parallelization
+  (Section~\ref{sec:dbms_optimizations}).
+  \item For the custom implementation of \VizRecDB,  we adapt techniques 
+  from both traditional confidence-interval-based~\cite{hoeffding1963probability} top-$k$ ranking and the
+   multi-armed bandit problem~\cite{bandits} 
+   for the problem of finding the top-$k$ views (Section~\ref{sec:in_memory_execution_engine}).
   \item We explore view pruning techniques based on data distribution
   to prune views even before they are evaluated by the \VizRecDB\ system 
-  (Section~\ref{XXX}).
+  (Section~\ref{sec:pruning}).
   \item We evaluate the performance of our optimizations on a range of
-  real and synthetic datasets and demonstrate the resulting XXX speedup 
-  (Section~\ref{sec:experiments}). We also demonstrate that our heuristics
-  improve performance without affecting system accuracy.
-\squishend
-
+  real and synthetic datasets and demonstrate the resulting 8--20X speedup 
+  (Section~\ref{sec:experiments}). We also demonstrate that our algorithms
+  improve performance without affecting accuracy significantly.
+\end{denselist}
 Finally, we note that although we are primarily motivated by efficiently 
 identifying interesting views for the purposes of producing visualizations, 
 the problem of finding aggregates of a dataset that display more (or less) variation
