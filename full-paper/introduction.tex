@@ -387,7 +387,7 @@ challenges from \cite{DBLP:conf/vldb/Parameswaran2013}.
 In our first implementation, we implement \VizRecDB\ as a wrapper on top of a
 database system and study how far we can push existing systems to support a
 \VizRecDB-type workload.
-In the second, we overcome the constraints of the DBMS API by writing a custom system
+In the second, we overcome the constraints of the DBMS SQL-based API by writing a custom system
 that  shares sequential scans and query results between views and employs statistical methods to 
 perform aggressive pruning
 based on intermediate results.
@@ -419,7 +419,7 @@ The contributions of this paper are:
   \item We evaluate the performance of our optimizations on a range of
   real and synthetic datasets and demonstrate the resulting 8--20X speedup 
   (Section~\ref{sec:experiments}). We also demonstrate that our algorithms
-  improve performance without affecting accuracy significantly.
+  improve performance without affecting utility of visualizations significantly.
 \end{denselist}
 Finally, we note that although we are primarily motivated by efficiently 
 identifying interesting views for the purposes of producing visualizations, 
