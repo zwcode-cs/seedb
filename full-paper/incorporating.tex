@@ -1,0 +1,29 @@
+\section{Incorportating Custom Engine into a DBMS}
+\label{sec:incorporating}
+
+In an ideal solution, we would incorporate the algorithms used in our custom
+engine into a DBMS. 
+The advantages of integrating into a DBMS are clear: we could take advantage of
+the superior data storage and retrieval techniques in databases, and we would
+avoid building a one-off, super-specialized system.
+However, as the current database API stands, there is no way to share table
+scans between operations, keep track of custom statistics or intercept the scan
+mid-way to perform pruning.
+If we are two implement a \VizRecDB-style operator in a traditional database
+system, we would have to support the following operations:
+\squishlist
+\item Ability to store custom state during aggregation operations (e.g.
+distributions corresponding to each view)
+\item Ability to compute custom statistics during a table scan (in our case
+utilities, their cummulative means and variances)
+\item Ability to compute multiple aggregates and group-bys at the same time
+(similar to the GROUPING SETS functionality)
+\item Ability to intercept the scan periodically (think of a call back or a
+sleep functionality) in order to update the custom state
+\squishend
+
+These operators can be embedded in the query executor or as part of a UDF.
+We lay down these requirements because we expect that not just \VizRecDB\ but
+other kinds of similar workloads would also benefit from such an API.
+This implementation is out of scope for the current work, but we plan to explore
+it in future work.
