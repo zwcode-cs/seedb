@@ -59,7 +59,7 @@ query:
 & \tt Q' = SELECT \ \ carrier,\ AVG(load\_time) \ \ FROM \ \  AppMetrics \\
 & \tt \hspace{20pt} WHERE\ Name=``App\text{-}A" \ \ GROUP  \ \ BY \ \ carrier
 \end{align*}
-The result of the above query is a two-column table that can then be visualized
+The result of the above query is a two-column table that can  be viewed
 as a bar-chart. Table \ref{tab:staplerX} and Figure
 \ref{fig:staplerX} respectively show an example of the results of the query and
 the associated visualization.
@@ -102,7 +102,7 @@ the associated visualization.
 % the associated visualization.
 
 \begin{figure}[h]
-\vspace{-15pt}
+\vspace{-10pt}
 	\centering
 	\begin{subfigure}{0.49\linewidth}
 	   \begin{tabular}{cc} \hline
@@ -237,8 +237,8 @@ By generating and
 scoring such views automatically, \VizRecDB\ effectively eliminates
 steps (2) and (3) that the analyst currently performs. 
 Instead, once \VizRecDB\
-recommends a few interesting views, the analyst can evaluate this small
-subset of views using domain knowledge and limit further
+recommends a few interesting views, the analyst can evaluate these
+view using domain knowledge and limit further
 exploration to these views.  
 
 The example presented above illustrates one potential use case for \VizRecDB,
@@ -347,7 +347,6 @@ all our techniques apply unchanged to Use Cases II and III.
 
 
 \subsection*{Challenges and Contributions}
-
 We previously described some of the vision for  \VizRecDB\ in our (4 page)
 vision paper~\cite{DBLP:conf/vldb/Parameswaran2013}---that paper described the
 challenges at a high level without any real implementation; in this paper, we
