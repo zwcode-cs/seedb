@@ -1,3 +1,64 @@
+\section{Pruning Algorithms}
+
+\begin{algorithm}
+\caption{Custom Execution Engine Algorithm}
+\label{algo:custom_exec_engine}
+\begin{algorithmic}[1]
+\State viewsInRunning $\gets$ \{all views\}
+\State currPhase $\gets$ 0
+\While {file.hasNext()}
+\State line $\gets$ file.Next()
+\State attributes $\gets$ line.parseAttributes()
+\For {view in viewsInRunning}
+\State view.updateView(attributes)
+\State view.updateStatistics()
+\EndFor
+\State currPhase.update()
+\If {currPhase.End()}
+\State pruneViews(viewsInRunning)
+%\State viewsInRunning.resetAllStatistics()
+\If {stoppingCondition.True()}
+\State break
+\EndIf
+\State currPhase.Next()
+\EndIf
+\EndWhile
+\State return viewsInRunning.sort().getTopK()
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Confidence Interval Based Pruning}
+\label{algo:ci_based_pruning}
+\begin{algorithmic}[1]
+\State viewsInRunning.sortByUpperbound()
+\State topViews $\gets$ viewsInRunning.getTopK()
+\State lowestLowerbound $\gets$ min(lowerbound(topViews))
+\For {view $\not \in$ topViews}
+\If {view.upperbound < lowestLowerbound}
+\State viewsInRunning.remove(view)
+\EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+
+\begin{algorithm}
+\caption{MAB Based Pruning}
+\label{algo:mab_based_pruning}
+\begin{algorithmic}[1]
+\State viewsInRunning.sortByUtilityMean()
+\State \{$\bar{u}_{i}$\} $\gets$ sorted utility means
+\State $\Delta_1$ $\gets$ $\bar{u}_{1}$ - $\bar{u}_{k+1}$
+\State $\Delta_n$ $\gets$ $\bar{u}_{k}$ - $\bar{u}_{n}$
+\If {$\Delta_1$ < $\Delta_n$}
+\State viewsInRunning.acceptTop()
+\Else
+\State viewsInRunning.discardBottom()
+\EndIf
+\end{algorithmic}
+\end{algorithm}
+
 \section{Incorportating Custom Engine into a DBMS}
 \label{sec:incorporating}
 
