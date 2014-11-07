@@ -247,8 +247,7 @@ GROUP \ \ BY} \ a \\
 Q2 = &{\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt GROUP \ \ BY} \ a \\
 Q3 = &{\tt SELECT \ } a, f(m), {\tt CASE\ IF\ x\ <\ 10\ THEN\ 1\ ELSE\ 0\
 END}\\ 
-&as\ group1,\ 1\ as\ group2\\ 
-&{\tt FROM} \ D\ {\tt GROUP \ \ BY} \ a,\ group1,\ group2
+&as\ g1,\ 1\ as\ g2 \ \ {\tt FROM} \ D\ {\tt GROUP \ \ BY} \ a,\ g1,\ g2
 \end{align*}
 % This rewriting allows us to obtain results for both queries in a single table
 % scan. The impact of this optimization depends on the selectivity of the
