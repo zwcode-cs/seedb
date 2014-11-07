@@ -22,9 +22,13 @@ multi_gb <- function(filename) {
         tmp$n_dist = factor(tmp$n_dist);
         tmp$groups = factor(paste(tmp$dbms, tmp$n_dist, sep=","));
 	    cols = gg_color_hue(2)
-        ggplot(tmp, aes(n_gb, latency/1000, color=dbms, group=groups))  + theme_bw() + 
+        ggplot(tmp[tmp$n_gb<=10,], aes(n_gb, latency/1000, color=dbms, group=groups))  + theme_bw() + 
         geom_line(aes(linetype=n_dist), size=1.5) + geom_point(size=2) + theme(text = element_text(size=24)) + 
-        ylab("latency(s)") + xlab("Number of group by attrs") + scale_fill_brewer(palette="Paired");
+        geom_text(data=NULL, aes(2,1.5,label="100"),color=cols[1]) +
+        geom_text(data=NULL, aes(1,7,label="100"),color=cols[1]) +
+        geom_text(data=NULL, aes(4,13,label="10000"),color=cols[2]) +
+        geom_text(data=NULL, aes(1.2,27,label="10000"),color=cols[2]) +
+        ylab("latency (s)") + xlab("Number of group by attrs") + scale_fill_brewer(palette="Paired");
 	   ggsave(file=paste(outdir, filename, ".pdf", sep=""),width=7,height=5);
 }
 
