@@ -22,11 +22,11 @@ process and challenges in choosing good visualizations using a few examples.
 Consider the (fictional) smartphone app analytics team at a company like Apple or Google,
 or one of several startups that provides performance analytics for app authors.
 This team is tasked with studying the behavior of various apps on the
-app store to discover behavior trends for specific classes of apps, e.g.
+app store to discover trends for specific classes of apps, e.g.
 extremely popular apps, apps that behave badly etc.
 Suppose that App-A is a particular app that has been behaving badly and has
 received a lot of consumer complaints. 
-The app analytics team would like to discover the reason why App-A is
+The analytics team would like to discover the reason why App-A is
 behaving badly in order to provide feedback to the makers of App-A or to pull
 the app from the app store.
 The typical workflow to analyze App-A would proceed as follows:
@@ -49,7 +49,7 @@ times by carrier.
 To construct these queries, the analyst uses operations such as binning,
 grouping, and aggregation.  Frequently, he will generate visualizations to view
 the results of the data.
-For example, to generate extract the for average load times by carrier, the
+For example, to extract the average load times by carrier, the
 analyst would group metrics based on the carrier and then average the app load
 times per carrier.
 This operation can easily be expressed as the familiar aggregation over group-by
@@ -132,11 +132,11 @@ the associated visualization.
 		\centering
 		{\includegraphics[width=4cm] {Images/dist3.pdf}}
 		\caption{Scenario B: Average Load Times by Carrier}
-		\label{fig:baseline_views}
+		\label{fig:staplerX-b}
 	\end{subfigure}
 	\vspace{-10pt}
 	\caption{Motivating Example}
-	\label{fig:staplerX-b}
+	\label{fig:intro}
 	\vspace{-10pt}
 \end{figure}
 
@@ -221,13 +221,13 @@ Of the four steps in the workflow above, the
 ones that are especially repetitive and tedious are steps (2) and (3)
 where the analyst generates a large number of candidate aggregate queries, 
 and examines each
-of them in turn through visualization.
-The goal of our system, \VizRecDB, is to automate these
+of them in turn through visualizations.
+The goal of our system, \VizRecDB, is to automate these 
 labor-intensive steps of the workflow. 
 Given a query $Q$ indicating the subset
 of data that the analyst is interested in, \VizRecDB\ automatically {\em
-identifies and highlights to the analyst the most interesting queries to ask using methods based on
-deviation} (we formalize our notion of ``interestingness'' in Section~\ref{sec:problem_statement}).
+identifies and highlights to the analyst the most interesting aggregate queries
+using methods based on deviation} (we formalize our notion of ``interestingness'' in Section~\ref{sec:problem_statement}).
 Specifically, \VizRecDB\ explores the space of all possible {\it views} and
 measures how much each view deviates from the corresponding view on the
 entire underlying dataset (e.g. Figure~\ref{fig:staplerX} vs.~Figures~\ref{fig:staplerX-a} or \ref{fig:staplerX-b}.) 
