@@ -335,11 +335,14 @@ predicted performance.
 We ran \VizRecDB\ on SYN3-10 and SYN3-100, and varied the number of
 group-by attributes in view queries ($n_{gb}$) between 1 and 20.
 Figure \ref{fig:multi_gb_same} shows the results for this experiment.
-We see that for the row-store, the best latency is obtained for number of
-groups=$10^4$.
-Beyond $10^5$, the performance degrades drastically.   \srm{same comment as
-above -- we can't really have $10^{20}$ groups!} For the column-store, we see a
-relatively small improvement in latency for $10^2$ groups, however, once again,
+We see that for the row-store, latency does improve (and then get worse) as the
+number of group by attributes increases.  The best latency is obtained for 2
+group by attributs in SYN3-100 and 4 attributes in SYN3-10.  This suggests
+that it is the number of distinct groups that matters most.
+Beyond 4 attributes, the performance degrades drastically.  
+ For the column-store, we see a
+relatively small improvement in latency for 2 groups on SYN3-10, with 1 group being best for
+SYN3-100.
 after $10^5$ groups, the performance becomes much worse.
 The reason for this is as follows: as we combine group by attributes, the number
 of distinct groups increases exponentially ($10^{n_{gb}}$).
@@ -546,7 +549,7 @@ and utility distance.
 
 \vspace{-5pt}
 \label{fig:utility_distribution}
-\caption{Distribution of Utilities \srm{Need to show the absolute utility values and sequence number of the bars/dots in this figure}}
+\caption{Distribution of Utilities}
 \vspace{-10pt}
 \end{figure}
 
