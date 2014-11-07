@@ -163,7 +163,6 @@ columns, whereas the row-store must read all data from each table.
 Third, as expected, the latency of the
 basic framework is directly proportional to the number of rows as well as the 
 number of views in the table.
-
 Since the latencies for the basic framework are very high for interactive
 applications, it is clear that aggressive optimization needs to be employed. 
 
@@ -336,7 +335,7 @@ predicted performance.
 
 We ran \VizRecDB\ on SYN3-10 and SYN3-100, and varied the number of
 group-by attributes in view queries ($n_{gb}$) between 1 and 10.
-Figure \ref{fig:multi_gb_same} shows the results for this experiment.
+Figure \ref{fig:multi_gb_same} shows the results.
 We see that for the row-store, latency does improve (and then gets worse) as the
 number of group by attributes increases.  The best latency is obtained for 2
 group by attributs in SYN3-100 and 4 attributes in SYN3-10.  This suggests
@@ -443,10 +442,9 @@ but did not apply the group-by optimization.
 Figures~\ref{fig:all_opt}a-d show the latency of \VizRecDB\ on SYN1 when all
 optimizations have been applied.
 From Figures~\ref{fig:row_all_none_size} and \ref{fig:row_all_none_views}, we
-see that for the row store, our optimizations lead to a speedup of up to 20X
-across a range of sizes and views.
+see that for the row store, our optimizations lead to a speedup of up to 20X.
 Similarly, in Figures~\ref{fig:col_all_none_size}
-and \ref{fig:col_all_none_views}, we see that our optimizations lead to a 8x
+and \ref{fig:col_all_none_views}, we see that our optimizations lead to a 8X
 speedup in column stores. 
 Further, our optimizations are most effective for datasets with large
 sizes and many views, with proportionally larger speedups as these numbers grow.
@@ -455,8 +453,7 @@ can reduce \VizRecDB\ latency by 8-20X depending on the DBMS and enable a
 \VizRecDB-style workload to run in interactive time scales.
 
 In the next section, we evaluate our custom execution engine and
-its pruning strategies to evaluate the performance and accuracy implications of
-pruning.
+its pruning strategies in terms of latency and accuracy.
 
 \subsection{Custom Execution Engine}
 \label{sec:custom_execution_engine}
@@ -500,15 +497,15 @@ evaluate all our pruning strategies on real-world data.
 Specifically, we make use of the BANK and DIAB datasets listed in Table
 \ref{tab:datasets}. These datasets
 contain a mix of numerical and categorical attributes.
-\begin{compactitem}
-\item {\it Diabetes dataset}~\cite{XXX}: This dataset contains records of hospital
-visits by patients with diabetes. Records include patient demographics,
-diagnoses, number of days at the hospital, and procedures performed. 
-\item {\it Bank dataset}~\cite{XXX}: This dataset contains records of customers who
+\begin{denselist}
+\item {\it Diabetes dataset}~\cite{diab}: This dataset contains records of hospital
+visits by diabetes patients. Records include demographics,
+diagnoses, number of hospital days, and procedures performed. 
+\item {\it Bank dataset}~\cite{bank}: This dataset contains records of customers who
 applied for a loan, including demographic information about the
 customers, information about the bank's previous contact with the customer, and
 the ultimate loan decision.
-\end{compactitem}
+\end{denselist}
 \stitle{Strategies:} We evaluate our pruning strategies from Section~\ref{sec:in_memory_execution_engine}:
 \begin{compactenum}[(a)]
  \item Hoeffding Intervals (HOEFF): this pruning strategy uses Hoeffding-Serfling
@@ -529,6 +526,7 @@ strategies. We begin with an evaluation of our techniques with respect to their 
 and utility distance.
 
 \begin{figure}[h]
+\vspace{-10pt}
 	\centering
 	\begin{subfigure}{1\linewidth}
 		\centering
@@ -725,7 +723,7 @@ approximate but of high quality.
 % \label{fig:diabetes_utility_distribution}
 % \end{figure}
  
-Next, let us examine the results for the diabetes dataset.
+Next, consider the diabetes dataset.
 The distribution of true utilities for all views in this dataset are shown in
 Figure~\ref{fig:diabetes_utility_distribution}.
 Compared to the bank dataset, we see that utilities are very closely
@@ -781,11 +779,10 @@ and if utility is paramount, then MAB may be used.
 
 
 We observe that the latency of HOEFF and 95\_CI increases almost linearly
-with $k$.
-Roughly speaking, this trend arises because as $k$
-increases, we throw out fewer views and therfore perform more
+with $k$. This trend arises because as $k$
+increases, we throw out fewer views and therefore perform more
 computation per record.
-This exact trend is not seen in MAB because MAB's pruning of views is agnostic
+This exact trend is not seen in MAB because MAB's view pruning is agnostic
 to the number of views that must be selected.
 
 The next set of experiments vary the parameters for each strategy to study
@@ -845,13 +842,13 @@ Every point corresponds to a different size of the confidence intervals.
 \begin{subfigure}{0.49\linewidth}
 \centering
 {\includegraphics[width=4.2cm] {Images/latency_vs_accuracy_ci.pdf}}
-\caption{Latency vs.~Accuracy for 95\_CI: Values depict CI \%}
+\caption{95\_CI: Values depict CI \%}
 \label{fig:latency_vs_accuracy_ci}
 \end{subfigure}
 \begin{subfigure}{0.49\linewidth}
 \centering
 {\includegraphics[width=4.2cm] {Images/latency_vs_accuracy_mab.pdf}}
-\caption{Latency vs.~Accuracy for MAB: Values depict no. of phases}
+\caption{MAB: Values depict no. of phases}
 \label{fig:latency_vs_accuracy_mab}
 \end{subfigure}
 \label{fig:accuracy}
