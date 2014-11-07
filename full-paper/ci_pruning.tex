@@ -1,6 +1,23 @@
-\section{Confidence Interval Pruning}
-Now, we discuss the assumption that we made early on.
-The equation described above apply only in the case
+%!TEX root=document.tex
+
+\section{Confidence Interval Pruning Details}
+In this section, we describe the two modifications to 
+the confidence interval equations to make it more applicable to our setting.
+Recall that if the mean utility of a view $V_i$ across the sampled records 
+(i.e., the records read thus far) is $\mu$,
+and the variance in the utility of the sampled records
+is $\sigma$, then, we have:
+\begin{align}
+CI & = \mu \pm z \times \frac{\sigma}{\sqrt{m}}
+\end{align}
+Thus, the CI (or confidence interval) is 
+a confidence interval centered around $\mu$, 
+and depends on $\sigma$, the number of records
+read thus far, $m$,
+and $z$, the factor that depends on our confidence interval threshold.
+
+
+The equation listed above apply only in the case
 where every time a record is read, an unbiased sample
 of the utility is drawn from a distribution which
 is assumed to be normal. 
@@ -14,7 +31,7 @@ For instance, if we read a record corresponding to
 for a view where we are estimating flight delay grouped by airline.
 We now propose two modifications to the equation above to address this issue.
 The first modification we make has to do with how we define utility.
-Recall from Section \ref{sec:problem_definition} 
+Recall from Section~\ref{sec:problem_statement}
 that the utility of a view is
 defined as the distance between two distributions: 
 the distribution of aggregate values for the
@@ -28,7 +45,7 @@ values for each group (assuming uniform distribution).
 Said another way, a sample with $x$ rows for the purpose of computing 
 utility is essentially only giving us a sample of $\frac{x}{g}$ rows.
 So the first modification we 
-make to Equation \ref{eq:confidence_interval} is to
+make to the equation above is to
 replace $m$ by $\frac{m}{G_{max}}$ where $G_{max}$ is the maximum number of
 distinct groups present in any dimension attribute.
 Second, our mean and variance in the utility needs to be calculated 
