@@ -37,8 +37,7 @@ For instance, the analyst may issue the following query:
 \begin{align*}
 & \tt Q \ \ = \ \ SELECT \ * \ FROM \ \  AppMetrics \ \ WHERE  \ Name=``App\text{-}A"
 \end{align*}
-
-\noindent Notice that the results for this query may have millions of records
+Notice that the results for this query may have millions of records
 (e.g. a record for each app session) each with several dozen attributes (e.g.
 network usage, power consumption, load time etc).
 Thus, directly perusing the query result is simply infeasible.
@@ -231,8 +230,7 @@ identifies and highlights to the analyst the most interesting queries to ask usi
 deviation} (we formalize our notion of ``interestingness'' in Section~\ref{sec:problem_statement}).
 Specifically, \VizRecDB\ explores the space of all possible {\it views} and
 measures how much each view deviates from the corresponding view on the
-entire underlying dataset (e.g. Figure~\ref{fig:staplerX} vs.
-Figures~\ref{fig:staplerX-a} or \ref{fig:staplerX-b}.) 
+entire underlying dataset (e.g. Figure~\ref{fig:staplerX} vs.~Figures~\ref{fig:staplerX-a} or \ref{fig:staplerX-b}.) 
 By {\it view} we mean a (possibly multidimensional) GROUP BY/aggregate with one or more
 measure attributes.
 By generating and
