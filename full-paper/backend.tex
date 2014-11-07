@@ -25,7 +25,7 @@ have the same utility.
 Similarly, if a table has two dimension attributes, one corresponding to the
 airport name and another corresponding to the airport code, views with either
 of these attributes as dimensions are guaranteed to produce identical views.
-In both of the above cases, it suffices to compute and show only a single view
+In both of the above cases, it suffices to compute and show a single view
 that is representative of multiple views (and list redundant
 views that have been omitted).
 
@@ -45,8 +45,8 @@ comparison to be valid).
 Correlation scores are thresholded and used to cluster views into groups.
 Finally, we pick a single view from every view cluster.
 
-Details of our pruning algorithm are presented in Appendix
-\ref{sec:view_pruning} along with examples of view clusters.
+% Details of our pruning algorithm are presented in Appendix
+% \ref{sec:view_pruning} along with examples of view clusters.
 View pruning allows us to significantly reduce the number of views in real
 datasets. 
 For instance, for the BANK dataset described in Section \ref{sec:experiments},

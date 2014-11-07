@@ -35,12 +35,12 @@ To avoid doing expensive pruning computations after reading each record,
 \VizRecDB processes the file in phases where each phase consists of processing a
 fixed number of records.
 At the end of a phase, \VizRecDB\ checks to see if any views can be pruned,
-i.e., discarded, or ``accepted'' as being in the top-$k$.
+i.e., discarded, or accepted as being in the top-$k$.
 % At one extreme, each phase consists of just one record, in which case views
 % are pruned after ever record is read and the views are updated;
 % at the other extreme, we use only one phase, in which case views are only pruned
 % after all the records are read (i.e., effectively no pruning). 
-The list of views still in the running is updated and processing continues.
+The list of views in the running is updated and processing continues.
 Once we meet a pre-defined stopping criteria, $k$ views with the
 highest utility are returned to the frontend.
 We implement two stopping criteria: we either stop once the entire table has
@@ -151,7 +151,7 @@ clip=true]{Images/confidence_pruning.pdf}}}}
 \vspace{-20pt}
 \caption{Confidence Interval based Pruning}
 \label{fig:conf_interval}
-\vspace{-12pt}
+\vspace{-15pt}
 \end{figure}
 
 We illustrate this with an example. Suppose a dataset has 4 views $V_1$

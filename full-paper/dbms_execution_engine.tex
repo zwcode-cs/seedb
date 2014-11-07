@@ -88,7 +88,6 @@ column stores organize data, some of the optimizations described below
 will be more powerful in row stores and may actually hurt performance in column
 stores. In our experimental evaluation (Section \ref{sec:experiments}), we study
 the relative advantages of each of our optimizations for row and column stores.
-
 The optimizations supported by \VizRecDB\ are described below.
 
 \subsubsection {Combine Multiple Aggregates} 
@@ -155,10 +154,11 @@ distinct groups is $|a_i|\times |a_j| \times |a_k|$.
   
 Therefore, our problem can be stated as follows:
 \begin{problem}[Optimal Grouping Optimization]
-{\em Given a set of dimension attributes $A$ = \{$a_1$\ldots$a_n$\}, divide the
+Given a set of dimension attributes $A$ = \{$a_1$\ldots$a_n$\}, divide the
 dimension attributes in $A$ into groups $A_1, \ldots, A_l$ (where $A_i$ is some
 subset of $A$ and $\bigcap A_i$=$A$) such that the worst-case number of distinct values
-for each group is below $\tau$.}
+for each group is below $\tau$.
+\vspace{-5pt}
 \end{problem}
 Notice that the problem as stated above is isomorphic to the NP-Complete
 {\em bin-packing} problem~\cite{garey}: to see this, we let each dimension attribute
