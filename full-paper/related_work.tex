@@ -4,10 +4,10 @@
 \section{Related Work}
 \label{sec:related_work}
 \VizRecDB\ is related to work from multiple areas;
-we review the major papers in each of the areas, and how they relate to
-\VizRecDB below. \\
+we review papers in each of the areas, and how they relate to
+\VizRecDB. 
 
-\noindent{\it Interactive Data Visualization Tools}:
+\stitle{Interactive Data Visualization Tools}:
 Over the past few years, the research community has introduced a number of
 interactive data analytics tools such as ShowMe, Polaris, and 
 Tableau~\cite{DBLP:journals/cacm/StolteTH08, DBLP:journals/tvcg/MackinlayHS07}.
@@ -43,6 +43,10 @@ Given that VizDeck generates all visualizations, it is only meant for
 small datasets; additionally, the VizDeck does not discuss techniques
 to speed-up the generation of these visualizations. 
 
+Statistical analysis and graphing packages such as R, SAS and Matlab could also
+be used generate visualizations, but they lack the ability to filter and
+recommend ``interesting'' visualizations. 
+
 There has been some recent work on
 scalable visualizations in the information visualization community. Immens~\cite{2013-immens} and Profiler (mentioned above) maintain a data cube in memory and use it to support rapid user interactions. While this approach is possible when the dimensionality
 and cardinality is small (e.g., for simple map visualizations of a single
@@ -53,9 +57,9 @@ precomputed image tiles for geographic visualization,
 \cite{doshi2003prefetching} uses extensive pre-fetching and caching. 
 A recent paper \cite{2014-viz-latency} discusses how high
 latency in visualization systems reduces the rate at which users observe,
-analyze and draw onclusions from data, thus making a strong case for
+analyze and draw conclusions from data, thus making a strong case for
 interactive response times.
-\\  
+
 
 % \agpneutral{Other recent work has addressed other aspects of visualization
 % scalability, including prefetching and caching~\cite{doshi2003prefetching}, data
@@ -66,7 +70,7 @@ interactive response times.
 % our work, which focuses on speeding up the computation of a single visualization
 % online.}\\
 
-\noindent {\it Data Cubes}:
+\stitle{Data Cubes:}
 The work done in \VizRecDB\ is similar to previous literature in
 browsing OLAP data cubes. 
 Instead of building complete data cubes,
@@ -81,23 +85,21 @@ cubes to visit, identify generalizations or patterns starting from a single
 cube. 
 This literature is not directly applicable to our problem since the cubes we
 are considering have 10s to 100s of dimensions, making traditional cube
-algorithms infeasible. \\
+algorithms infeasible. 
 
-\noindent {\it General Purpose Data Analysis Tools}:
-Our work is also related to data mining and the work on building general purpose
-data analysis tools on top of databases. 
-For example, MADLib \cite{DBLP:conf/VLDB/HellersteinRSWF12}
-implements various analytic functions inside the database. 
-MLBase similarly
-\cite{DBLP:conf/CIDR/KraskaTDGFJ2013} provides a platform that allows users to
-run various machine learning algorithms on top of the Spark system
-\cite{DBLP:conf/SCC/ZahariaCFSS10}.
-Statistical analysis and graphing packages such as R, SAS and Matlab could also
-be used generate visualizations, but they lack the ability to filter and
-recommend ``interesting'' visualizations. \\
+% \stitle{General Purpose Data Analysis Tools:}
+% Our work is also related to data mining and the work on building general purpose
+% data analysis tools on top of databases. 
+% For example, MADLib \cite{DBLP:conf/VLDB/HellersteinRSWF12}
+% implements various analytic functions inside the database. 
+% MLBase similarly
+% \cite{DBLP:conf/CIDR/KraskaTDGFJ2013} provides a platform that allows users to
+% run various machine learning algorithms on top of the Spark system
+% \cite{DBLP:conf/SCC/ZahariaCFSS10}.
 
 
-\noindent {\it Other}:
+
+\stitle{Other:}
 The techniques we use in our custom implementation of \VizRecDB\ draw upon work
 from top-k ranking, statistical sampling and the multi-armed bandit strategies. 
 In particular, the confidence interval technique discussed in Section
@@ -109,7 +111,6 @@ a rich area of research having applications from ad auctions to reinforcement le
 Our technique is related to the original UCB algorithm \cite{AuerCF02, LaiR85}
 as well as recent work related to the top-$k$ MAB variant \cite{BubeckWV13,
 audibert2010best}.
-
 Finally, finding interesting visualizations in data also involves understanding
 user preferences. 
 In future work, we plan to learn user preference models towards visualizations
