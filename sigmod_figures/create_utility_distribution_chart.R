@@ -19,11 +19,11 @@ plotUtilityDistribution  <- function(filename, i) {
 	for (n in 1:13) {
 		p = p + geom_vline(xintercept= intercepts[n,i], color=cols[intercepts[n,1]])
             }
-        p = p + geom_text(data=NULL,aes(intercepts[1,i],angle=90,vjust=1.5, hjust=.5, 1,label="highest utility view"),color=cols[intercepts[1,1]])
-        p = p + geom_text(data=NULL,aes(intercepts[10,i],angle=90,vjust=-.5, hjust=.5, 1,label="10th highest utility view"),color=cols[intercepts[10,1]])
-        p = p + geom_text(data=NULL,aes(intercepts[11,i],angle=90,vjust=-.5, hjust=.5, 1,label="15th highest utility view"),color=cols[intercepts[11,1]])
-        p = p + geom_text(data=NULL,aes(intercepts[12,i],angle=90,vjust=-.5, hjust=.5, 1,label="20th highest utility view"),color=cols[intercepts[12,1]])
-        p = p + geom_text(data=NULL,aes(intercepts[13,i],angle=90,vjust=-.5, hjust=.5, 1,label="25th highest utility view"),color=cols[intercepts[13,1]])
+        p = p + geom_text(data=NULL,aes(intercepts[1,i],angle=90,vjust=1.5, hjust=.5, 1,label="top-1"),color=cols[intercepts[1,1]], size=12)
+        p = p + geom_text(data=NULL,aes(intercepts[10,i],angle=90,vjust=-.5, hjust=.5, 1,label="top-10"),color=cols[intercepts[10,1]], size=12)
+        p = p + geom_text(data=NULL,aes(intercepts[11,i],angle=90,vjust=-.5, hjust=.5, 1,label="top-15"),color=cols[intercepts[11,1]], size=12)
+        p = p + geom_text(data=NULL,aes(intercepts[12,i],angle=90,vjust=-.5, hjust=.5, 1,label="top-20"),color=cols[intercepts[12,1]], size=12)
+        p = p + geom_text(data=NULL,aes(intercepts[13,i],angle=90,vjust=-.5, hjust=.5, 1,label="top-25"),color=cols[intercepts[13,1]], size=12)
 
 	p
     }
