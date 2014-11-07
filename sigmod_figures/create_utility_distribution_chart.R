@@ -12,12 +12,24 @@ plotUtilityDistribution  <- function(filename, i) {
 	cols = gg_color_hue(25);
 	tmp = read.csv(filename, header=F);
 	colnames(tmp) = c("view", "utility");
-	p = ggplot(tmp, aes(x=utility, y=1)) + theme_bw() + geom_point(aes(size=20)) + 
+        .e <- environment();
+	p = ggplot(tmp,environment=.e,  aes(x=utility, y=1)) + theme_bw() + geom_point(aes(size=20)) + 
 		scale_y_discrete(breaks=NULL) + ylab("") + theme(text = element_text(size=24)) + 
 		guides(size=FALSE) +  scale_fill_brewer(palette="Paired")
 	for (n in 1:13) {
-		p = p + geom_vline(xintercept=intercepts[n,i], color=cols[intercepts[n,1]]);
-	}
+		p = p + geom_vline(xintercept= intercepts[n,i], color=cols[intercepts[n,1]])
+            }
+        p = p + geom_text(data=NULL,aes(intercepts[1,i],angle=90,vjust=1.5, hjust=.5, 1,label="highest utility view"),color=cols[intercepts[1,1]])
+        p = p + geom_text(data=NULL,aes(intercepts[10,i],angle=90,vjust=-.5, hjust=.5, 1,label="10th highest utility view"),color=cols[intercepts[10,1]])
+        p = p + geom_text(data=NULL,aes(intercepts[11,i],angle=90,vjust=-.5, hjust=.5, 1,label="15th highest utility view"),color=cols[intercepts[11,1]])
+        p = p + geom_text(data=NULL,aes(intercepts[12,i],angle=90,vjust=-.5, hjust=.5, 1,label="20th highest utility view"),color=cols[intercepts[12,1]])
+        p = p + geom_text(data=NULL,aes(intercepts[13,i],angle=90,vjust=-.5, hjust=.5, 1,label="25th highest utility view"),color=cols[intercepts[13,1]])
+
 	p
-}
+    }
+
+plotUtilityDistribution("bank_all_views.txt",2)
+ggsave(file="../full-paper/Images/bank_utility_distribution.pdf",width=12,height=5)
+plotUtilityDistribution("diabetic_data_all_views.txt",3)
+ggsave(file="../full-paper/Images/diabetes_utility_distribution.pdf",width=12,height=5)
 
