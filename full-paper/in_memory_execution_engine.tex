@@ -244,7 +244,7 @@ For instance, for a 95\% confidence interval, $z = 1.96$.
 We note that the assumption that we are drawing from a normal distribution is
 not quite accurate since our samples vary in size and are not independent.
 As a result, we make two simple adjustments to the confidence interval
-calculations that are described in Appendix \ref{}.
+calculations that are described in Appendix~\ref{sec:ci_pruning}.
 In Section \ref{sec:experiments}, we show experimentally on multiple datasets
 that our confidence interval calculations accurately capture utility and can be used to
 perform pruning with high confidence.
@@ -395,7 +395,7 @@ view is ultimately a single value, we can approximate it as a probability
 distribution that is normally distributed around the true utility, and 
 (2) our running estimate of utility after reading $i$
 records is a sample derived from the above utility distribution.
-As we show in our experimental evaluation, the approximation works well
+As we show in our evaluation, the approximation works well
 for our purposes.
 
 Algorithm~\ref{algo:mab_based_pruning} (in the appendix) shows the pruning technique used in the
