@@ -3,11 +3,11 @@
 \section{Qualitative Study}\label{sec:example-viz}
 
 In this section, we study some examples of visualizations recommended and
-not recommended by \VizRecDB for a real-world dataset.
-We turn to the DIAB dataset described in 
+not recommended by \VizRecDB for real-world datasets.
+We turn to the BANK and DIAB dataset described in 
 Section~\ref{sec:experiments}.
  
-The query selects a group of diabetes patients in the age range 30--40;
+We begin with the DIAB dataset. The query selects a group of diabetes patients in the age range 30--40;
 these patients are compared against all patients.
 In Figure~\ref{fig:qual-study}, we list one example of a visualization
 that is recommended by \VizRecDB, and one that is not recommended by \VizRecDB.
@@ -37,6 +37,26 @@ both the selected patients as well as all patients
 have had lab procedures.
 This is therefore not as interesting a visualization.
 
+Next, we consider the BANK dataset. 
+Here the query selects all divorced individuals, 
+and these are compared against all individuals. 
+In Figure~\ref{fig:qual-study2}, we depict
+a visualization recommended and one that is not recommended by \VizRecDB.
+The one recommended (Figure~\ref{fig:job}) depicts the fraction of calls made in the previous campaign (hence the y-axis is denoted previous) to those
+who are divorced and had different job categories.
+For instance, the number of retired divorced individuals who were called
+is much higher than those that were blue caller divorced individuals,
+while the opposite is true in general.
+Perhaps this is an indication that the bank should target more blue caller divorced
+individuals in the next campaign.
+Thus, this is an interesting visualization.
+
+On the other hand, the one not recommended (Figure~\ref{fig:loan})
+depicts the fraction of calls made in the current campaign to those
+whose loan status is either yes, no or unknown. 
+Here the distribution is similar for divorced individuals and the rest.
+Thus, this is not as interesting a visualization.
+
 As can be seen, 
 the visualizations produced by \VizRecDB based on the Earth Mover's Distance
 metric ends up giving useful, interesting visualizations on two of
@@ -59,8 +79,27 @@ the real world datasets we have experimented with.
 \label{fig:lab-procedures}
 \end{subfigure}
 \vspace{-10pt}
-\caption{\VizRecDB Generated Visualizations}\label{fig:qual-study}
-
+\caption{\VizRecDB Generated Visualizations for DIAB}\label{fig:qual-study}
 \vspace{-10pt}
 \end{figure}
 
+
+\begin{figure}[h] 
+\centering
+\begin{subfigure}{0.8\linewidth}
+\centering
+{\includegraphics[width=7cm] {Images/seedb_dim_job_measure_previous.pdf}}
+\caption{Fraction of calls made to different job holders: Recommended by \VizRecDB}
+\label{fig:job}
+\end{subfigure}
+\begin{subfigure}{0.8\linewidth}
+\centering
+{\includegraphics[width=7cm] {Images/seedb_dim_loan_measure_campaign.pdf}}
+\caption{Fraction of calls made to those with different loan approval status: Not Recommended by \VizRecDB}
+\label{fig:loan}
+\end{subfigure}
+\vspace{-10pt}
+\caption{\VizRecDB Generated Visualizations for BANK}\label{fig:qual-study2}
+
+\vspace{-10pt}
+\end{figure}
