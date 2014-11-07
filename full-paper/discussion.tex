@@ -1,69 +1,98 @@
 %!TEX root=document.tex
 
 
-\section{Discussion}
+\section{Discussion and Future Work}
 \label{sec:discussion}
 The previous sections discussed how our current implementation of \VizRecDB can
 efficiently find top views by pruning and aggressive query optimization.
 In this section, we discuss some ongoing work and possible extensions of
 \VizRecDB.
 
-\stitle{User Study}
-In this paper, we focus mainly on the implementation details of \VizRecDB and
-ways to enable real-time interaction.
-In parallel, we are also in the process of running a user study that evaluates
-the \SeeDB\ frontend and end-to-end functionality. 
-Our user study has two components: an MTurk\cite{} based component that
-evaluates the quality of our deviation metrics and an in-person component that
-involves data analytics experts and evaluates user interaction on the
-frontend.
-As in Section \ref{sec:experiments}, we use the BANK and DIAB dataset for our
-evaluation.
-\stitle{Improving Interactivity}
-Our current work focuses on finding the most interesting views of a dataset and
-presenting them to the user.
-While our frontend currently allows basic interaction with the views presented
-to the user, it is also essential to allow the user to interrogate our views
-directly and further manipulate the data iteratively in the style of
-\cite{2013-immens}.
+\stitle{Extending the Types of Visualizations:} In our current implementation
+of \VizRecDB, our focus has been on simple visualizations, namely, bar charts, trend-lines,
+and histograms, using which any 2 or 3 dimensional views can be readily visualized.
+We are currently exploring the possibility of adding richer visualization types,
+such as scatter-plots, and chloropleth maps, which may be more appropriate
+in some situations. 
 
-\stitle{Incorporating User Preferences}
-Although data ditributions and deviations in distributions can be used to
-measure the interesting-ness of a view, it is currently difficult to take
-context into account while recommending views.
-For instance, in a sales dataset, an analyst may only be interested in grouping
-data by store as compared to manufacturer, and our system should be learn these
-preferences and take them into account.
-One way to do so is to use traces of visualizations that analysts have generated
-in the past or interacted with in \SeeDB and weight views based on prior
-interest.
- In the future, we could also attempt to learn a distance metric based on user's
- feedback. 
+\stitle{Incorporating User Preferences:} Although measuring the 
+deviations in distributions can be an easy way to estimate the interestingness of a 
+view, it does not take into account rich domain knowledge or context.
+For instance, in a sales dataset, an analyst may be only interested in grouping
+data by store as compared to manufacturer. 
+Having a lot of usage data (say, in the form of user interaction traces)
+can allow \VizRecDB to infer or predict the ``goodness''
+of various visualizations, and we can take both deviation, as well as 
+goodness into account to recommend visualizations. 
+Taking goodness into account could further help us reduce the amount of time
+to return interesting views.
+Yet another direction is to ask the user to rate a set of visualizations
+the first time the load a dataset, and use these ratings to 
+learn a finely calibrated goodness measure up-front,
+so that this goodness measure can be used on all future interactions.
+
+%\stitle{Incorporating }
  
- \stitle{Extending the Definition of Interesting}
- In this paper, we find views that are ``interesting'' using our definition of
- interesting measured as deviation from the expected distribution.
- Clearly, there are other definitions of interesting that are also valid and can
- be incorporated into \SeeDB.
- For instance, we can give the user the ability to specify a trend that they
- want to explore and ask \SeeDB to find views that either closely match the
- trend or show a large deviation from it.
- Similarly, we can chose the opposite definition of interesting and find the
- user views that are extremely similar to each other.
- We note that our techniques can be used essentially unchanged to solve this
- problem: the only thing that changes is our distance metric.
+
+% \stitle{User Study}
+% In this paper, we focus mainly on the implementation details of \VizRecDB and
+% ways to enable real-time interaction.
+% In parallel, we are also in the process of running a user study that evaluates
+% the \SeeDB\ frontend and end-to-end functionality. 
+% Our user study has two components: an MTurk\cite{} based component that
+% evaluates the quality of our deviation metrics and an in-person component that
+% involves data analytics experts and evaluates user interaction on the
+% frontend.
+% As in Section \ref{sec:experiments}, we use the BANK and DIAB dataset for our
+% evaluation.
+% \stitle{Improving Interactivity}
+% Our current work focuses on finding the most interesting views of a dataset and
+% presenting them to the user.
+% While our frontend currently allows basic interaction with the views presented
+% to the user, it is also essential to allow the user to interrogate our views
+% directly and further manipulate the data iteratively in the style of
+% \cite{2013-immens}.
+
  
- \stitle{Binning and Joins}
- We currently assume that dimension attributes are either categorical or are
- numeric with a small cardinality.
- However, we can turn continous attributes into dimension attributes by
- performing binning (e.g. diving an age range into age groups).
- Binning and different granularities of binning can add an interesting dimension
- to our problem.
+ 
+ % \stitle{Extending the Definition of Interesting}
+ % In this paper, we find views that are ``interesting'' using our definition of
+ % interesting measured as deviation from the expected distribution.
+ % Clearly, there are other definitions of interesting that are also valid and can
+ % be incorporated into \SeeDB.
+ % For instance, we can give the user the ability to specify a trend that they
+ % want to explore and ask \SeeDB to find views that either closely match the
+ % trend or show a large deviation from it.
+ % Similarly, we can chose the opposite definition of interesting and find the
+ % user views that are extremely similar to each other.
+ % We note that our techniques can be used essentially unchanged to solve this
+ % problem: the only thing that changes is our distance metric.
+ 
+ \stitle{Binning and Joins:}
+If the dimension attribute is hierarchical, e.g., days, months, years ---
+ the same dimension can be ``binned'' in various ways, namely, 
+ as days, months, or years. 
+ Each such binning leads to a new visualization.
+Thus, the number of potential views to consider increases 
+by a factor equal to the number of ways we can bin the dimension attributes.
+
+ Further, we currently assume that dimension attributes are either categorical or are
+ numerical/ordinal with a small cardinality.
+ When the number of possible numerical values the dimension attributes
+ can take is large, then we need to consider binning for them as well.
+ There are two approaches here. 
+  A simple approach is to decide on a fixed binning for these attributes the
+ first time the data is loaded into \VizRecDB --- in this case, 
+ we do not suffer from an additional multiplicative factor to the number of
+ visualizations.
+ A more complex but more comprehensive approach is to consider all possible binnings;
+ depending on the query some binnings may be more insightful or interesting than others. However, considering all binnings is simply infeasible, and hence
+ approximate approaches are needed.
+
  
  Furthermore, our work currently assumes that we are querying a denormalized
  table.
- However, this is not a strict requriement. 
+ However, this is not a strict requirement. 
  Suppose that we are querying multiple tables in a star schema and want to find
  interesting views of these tables.
  One feasible and efficient technique is to first query the fact table in the

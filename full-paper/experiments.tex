@@ -33,7 +33,7 @@ in Table~\ref{tab:datasets}.
   \vspace{-10pt}
   \caption{Datasets used for testing}
   \label{tab:datasets} 
-  \vspace{-20pt}
+  \vspace{-10pt}
 \end{table}
 
 
@@ -216,7 +216,7 @@ applications, it is clear that aggressive optimization needs to be employed.
 		\label{fig:parallelism}
 	\end{subfigure}
 	\vspace{-10pt}
-	\caption{Effect of Combining Multiple Queries \srm{Also number of groups shouldn't be out of 1e20...}}
+	\caption{Effect of Combining Multiple Queries}
 	\label{fig:bank_perf}
 	\vspace{-10pt}
 \end{figure*}
@@ -226,7 +226,7 @@ applications, it is clear that aggressive optimization needs to be employed.
 	\begin{subfigure}{0.24\linewidth}
 		\centering
 		{\includegraphics[width=4.6cm] {Images/row_all_none_by_size.pdf}}
-		\caption{Row store latencies by vize}
+		\caption{Row store latencies by size}
 		\label{fig:row_all_none_size}
 	\end{subfigure}
 	\begin{subfigure}{0.24\linewidth}
@@ -248,7 +248,7 @@ applications, it is clear that aggressive optimization needs to be employed.
 		\label{fig:col_all_none_views}
 	\end{subfigure}
 	\vspace{-10pt}
-	\caption{Effect of Combining Multiple Queries \srm{Here it would be helpful to indicate the total runtime in seconds above each bar.}}
+	\caption{Effect of Combining Multiple Queries}
 	\label{fig:all_opt}
 	\vspace{-10pt}
 \end{figure*}
@@ -312,8 +312,7 @@ but different aggregates into one query gives us a significant
 We now study the effect of combining multiple group by attributes (with the
 same dimension attribute) into one query.
 In Section~\ref{sec:dbms_optimizations}, we described
-how 
-Section \ref{XXX} briefly discussed how the impact of this optimization was not
+ how the impact of this optimization was not
 clear since it increases the total number of groups significantly and therefore
 leads to higher costs of processing intermediate results.
 To evaluate this optimization, we use the SYN3-10 and SYN3-100 datasets.
@@ -333,21 +332,26 @@ group-by attributes or the number of distinct groups produced by a query that
 predicted performance.
 
 We ran \VizRecDB\ on SYN3-10 and SYN3-100, and varied the number of
-group-by attributes in view queries ($n_{gb}$) between 1 and 20.
+group-by attributes in view queries ($n_{gb}$) between 1 and 10.
 Figure \ref{fig:multi_gb_same} shows the results for this experiment.
-We see that for the row-store, the best latency is obtained for number of
-groups=$10^4$.
-Beyond $10^5$, the performance degrades drastically.   \srm{same comment as
-above -- we can't really have $10^{20}$ groups!} For the column-store, we see a
-relatively small improvement in latency for $10^2$ groups, however, once again,
-after $10^5$ groups, the performance becomes much worse.
-The reason for this is as follows: as we combine group by attributes, the number
-of distinct groups increases exponentially ($10^{n_{gb}}$).
-As a result, the memory required for the grouping (hash-based or sort based)
-also increases significantly.
-Once this memory requirement exceeds the buffer space the system allocates for
-intermediate results, the performance degrades significantly as the DBMS
-switches to an external sort or hash algorithm.
+We see that for the row-store, latency does improve (and then gets worse) as the
+number of group by attributes increases.  The best latency is obtained for 2
+group by attributs in SYN3-100 and 4 attributes in SYN3-10.  This suggests
+that it is the number of distinct groups that matters most, since these minima occur at 
+10,000 distinct groups in both cases (shown on \ref{fig:multi_gb_same} as the two ``10000'' labels on the ROW lines).
+Beyond 5 attributes, the performance degrades drastically.  
+ For the column-store, we see a
+relatively small improvement in latency for 2 groups on SYN3-10, with 1 group being best for
+SYN3-100.  Here again it appears that the total number of groups (100 in the case of the column store) determines
+the overall optimal performance.
+After $10^5$ groups, the performance also becomes much worse for COL.
+
+These results show that 1) combining group by attributes can improve performance, up to a point, and 2) the optimal
+number of attributes is determined by the total number of distinct groups that will result.  Different systems have a different
+number of optimal groups, and this number is somewhat implementation dependent.  The performance degradation with
+large numbers groups likely result from cache misses or other (non)-locality effects
+as the memory required for the grouping grows, or as the system switches to external algorithms for these
+operations.
 
 % \begin{figure}[h]
 % \centering
@@ -370,27 +374,24 @@ switches to an external sort or hash algorithm.
 We can guard against the above performance degradation by ensuring that the
 number of distinct groups never goes beyond a pre-configured upper limit.
 From Figure \ref{fig:multi_gb_same}, we see that this limit is approximately
-$10^5$ for both the row and column store.
+$10^4$ for the row-store and $10^2$ for the column store.
 With knowledge of this upper limit on the number of distinct groups, we can now
-apply our grouping technique based on bin packing (Section \ref{}) to optimally
+apply our grouping technique based on bin packing (Section \ref{subsec:mult_gb}) to optimally
 group the dimension attributes.
 Bin-packing ensures that the number of distinct groups produced by any query is
-less than $10^5$.
-Figure \ref{fig:multi_gb_bp} shows the results of two grouping strategies: (a)
-the bin packing-based strategy, and (b) grouping based on number of attributes.
-In the latter strategy, we randomly group attributes into groups of size
+less than $10^4$ (for rows) or $10^2$ (for columns).
+Figure \ref{fig:multi_gb_bp} shows the results of
+running on SYN1 where $n_{gb}$ was varied
+between 1 and 20 (solid lines), along with the performance
+of bin packing when the number of groups is set to $10^2$ (columns) or $10^4$ (rows) (dotted lines).
+In the former strategy, we randomly group attributes into groups of size
 $n_{gb}$. 
 Since the latency for this strategy will depend on the particular grouping of
 attributes, we repeated this experiment 20 times and report the average latency.
-Figure \ref{fig:multi_gb_bp} shows the result for SYN1 where $n_{gb}$ was varied
-between 1 and 20.
-The dotted lines indicate the latency of the bin packing-based grouping strategy
-whereas the solid lines indicate the latency of grouping based on attribute
-number.
 As we can see from the chart, bin-packing is always superior to grouping
-based on attribute number.
-We see that for the row-store, bin-packing reduces latency by a factor of 2X. 
-What about column store???\\
+based on attribute number, given the optimal bin-size for a particular system.
+We see that for the row-store, bin-packing reduces latency by a factor of 2.5X. 
+Although benefit is less pronounced, it is still noticeable for column-stores.
 
 
 \stitle{Optimization 3: Parallel Query Execution:} 
@@ -546,7 +547,7 @@ and utility distance.
 
 \vspace{-5pt}
 \label{fig:utility_distribution}
-\caption{Distribution of Utilities \srm{Need to show the absolute utility values and sequence number of the bars/dots in this figure}}
+\caption{Distribution of Utilities}
 \vspace{-10pt}
 \end{figure}
 
