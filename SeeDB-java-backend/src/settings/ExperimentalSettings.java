@@ -6,7 +6,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 /**
- * This class contains the settings for each run of SeeDB. It is mainly used for
+ * This class contains the settings for each run of VizRecDB. It is mainly used for
  * experimentation, in other cases, supplied default instance is used
  * @author manasi
  *
@@ -14,9 +14,20 @@ import com.google.common.collect.Lists;
 public class ExperimentalSettings {
 	public enum ComparisonType {TWO_DATASETS, ONE_DATASET_FULL, 
 		ONE_DATASET_DIFF, MANUAL_VIEW}; 
-	public ComparisonType comparisonType = ComparisonType.ONE_DATASET_FULL; // Default SeeDB q vs. entire data
+	public ComparisonType comparisonType = ComparisonType.ONE_DATASET_FULL; // Default VizRecDB q vs. entire data
 	public enum Backend {POSTGRES, VERTICA, MAIN_MEMORY};
-	public enum MainMemoryPruningAlgorithm {NONE, TOP_K, RANDOM, MAB1, MAB2};
+	public enum MainMemoryPruningAlgorithm {
+		NONE, // no pruning 
+		TOP_K1, // top-k using CIS
+		TOP_K2, // works in phases
+		TOP_K3, // varys CI, works in phases
+		RANDOM, // randomly pick views to update
+		MAB1, // hoeffding bounds
+		MAB2, // ucb1(rho) bound
+		MAB3, // ucb-h algorithm
+		MAB4, // sar algorithm
+		MAB5  // sar with clearing between phases	
+		};
 	
 	public enum DifferenceOperators {AGGREGATE, CARDINALITY, DATA_SAMPLE}; //ALL, A_B_TESTING, CLASSIFICATION, 
 	public List<DifferenceOperators> differenceOperators; 	// ignore for basic tests	
@@ -57,26 +68,28 @@ public class ExperimentalSettings {
 		= DistanceMetric.EARTH_MOVER_DISTANCE;
 	public boolean makeGraphs;								// whether to make graphs
 	public Backend backend;									// what backend to use
-	public boolean normalizeDistributions = true;			// whether to normalize distributions
-	
-	
-	
-	
+	public boolean normalizeDistributions = true;			// whether to normalize distribution
 	
 	// used for in memory implementation
 	public int num_rows = -1;								// number of rows to process. default all
 	public boolean mainMemoryRandomSample = false;
-	public double mainMemorySampleFraction = 1;
 	public boolean mainMemoryReadFromFile = true;			// whether to read in from file or from memory
 	public MainMemoryPruningAlgorithm mainMemoryPruning = MainMemoryPruningAlgorithm.NONE;
 	public double mainMemoryRandomSamplingRate = 0.1;		// what percent of rows to sample
-	public int mainMemoryNumViewsToSelect = 10;			// how many top views to select
+	public int mainMemoryNumViewsToSelect = 10;				// how many top views to select
+	public double mainMemoryUCB1Rho = 0.2;					// exploration parameter in UCB1
+	public long mainMemoryNumRows = 50000;					// number of rows in the table
+	public int mainMemoryNumPhases = 10;					// number of phases in which to run algorithm
+	public boolean mainMemoryPhased = false;				// whether to execute algorithm in phases
+	public int mainMemoryMinRows = 1000;				    // minimum # of rows to process before pruning
+	public double mainMemoryCIMultiplier = 2;				// threshold for CI 
+	public int mainMemoryMaxGroups = 30;					// maximum number of distinct values in any column
 	
 	//public String shared_buff="32MB";						
 
 	
 	/**
-	 * Get default settings for SeeDB
+	 * Get default settings for VizRecDB
 	 * @return settings object
 	 */
 	public static ExperimentalSettings getDefault() {
@@ -85,7 +98,7 @@ public class ExperimentalSettings {
 		return settings;
 	}
 	
-	// returns a description of the settings used to run the SeeDB test
+	// returns a description of the settings used to run the VizRecDB test
 	public String getDescriptor() {
 		List<String> l = Lists.newArrayList();
 		l.add(backend == Backend.POSTGRES ? "row" : "column");

@@ -13,13 +13,13 @@ The backend, in contrast, performs all the computation required to generate and 
 to be recommended. 
 Figure \ref{fig:sys-arch} depicts the architecture of our system.
 Once the analyst issues a query via the frontend, the backend takes over.
-First, the View Generator queries the system metadata for information such as
+First, the view generator queries the system metadata for information such as
 table sizes, column types, correlations between column values etc. 
 It then uses this metadata and the incoming query to prune the space
 of possible views and generate stubs for the remaining views. 
 View stubs are essentially more elaborate triples of the form $(a, m, f)$ as
 discussed in Section \ref{sec:problem_statement}. 
-The generated view stubs are then sent to the Execution Engine that is
+The generated view stubs are then sent to the execution engine that is
 responsible for querying the underlying data, evaluating the utility of each
 candidate view, and identifying the top views of interest. 
 Once the \VizRecDB\ backend has identified the best views, the \VizRecDB\

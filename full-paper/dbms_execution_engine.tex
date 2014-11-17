@@ -45,7 +45,7 @@ see Section \ref{sec:problem_statement},
 (2) we execute each view query independently on the DBMS, 
 (3) the results of each query (i.e. the aggregated values) are processed and
 normalized to compute the target and comparison distributions, 
-(4) we compute utility for each target view 
+(4) we compute utility for each view 
 and select the top-$k$ views with the largest utility,
 which are then sent to the frontend.
 If the underlying table has $a$ dimension attributes, $m$ measure attributes,
@@ -71,7 +71,7 @@ multiple sets of attributes.} functionality that could be used to support this
 operation. However, there are a few issues with this: the grouping sets
 operator will not scale to tables with a large number of attributes because the 
 size of the eventual result maintained in memory will be $2 \times a \times f
-\times m$ attributes, multiplied by size of an aggregate distribution.
+\times m$ attributes, multiplied by the size of an aggregate distribution.
 Furthermore, as we show in Section \ref{sec:in_memory_execution_engine},
 evaluating all views for the entire dataset is unnecessary and inefficient. 
 We can achieve much better performance by aggressively pruning low-utility
@@ -104,8 +104,8 @@ offers a speed-up roughly proportional to the number of measure attributes.
 \subsubsection {Combine Multiple Group-bys}
 \label{subsec:mult_gb}
   Similar to the multiple aggregates optimization, another optimization
-  supported by \VizRecDB\ is to combine queries with different group-by attributes
-  into a single query with multiple group-by attributes.
+  supported by \VizRecDB\ is to combine multiple queries with different group-by
+  attributes into a single query with multiple group-by attributes.
   For instance, instead of executing queries for views $(a_1$, $m_1$, $f_1)$,
   $(a_2$, $m_1$, $f_1)$ \ldots $(a_n$, $m_1$, $f_1)$ independently, we can
   combine the $n$ views into a single view represented by $(\{a_1, a_2\ldots
@@ -116,8 +116,8 @@ number of view queries combined, in this case, the situation is not as straightf
 The reason for this is the following:
 since we now store the aggregate for every combination
 of $a_1, a_2, \ldots, a_n$, 
-the number of aggregates that need to be recorded for 
-$n$ views is the number of distinct combinations
+the number of aggregates that need to be recorded 
+is the number of distinct combinations
 of $(a_1, \ldots, a_n)$, which, in the worst case, 
 is proportional to $\prod_i |a_i|$.
 Thus, the number of aggregates that need to be recorded 
@@ -125,12 +125,13 @@ grows exponentially (in the worst case) in the
 number of group-by attributes. 
 We will show (Section \ref{sec:experiments}) that 
 the time to execute a query with multiple group-by attributes does indeed
-depend on the number of distinct values present in the resulting 
+depend on the number of distinct values present in the 
 combination of dimension attributes. 
 From a DBMS perspective, this is expected because keeping track of a large
 number of aggregates impacts computational time (e.g. for sorting in sort-based aggregate)
 as well as temporary storage requirements (e.g. for hashing in hash-based
-aggregate) making this technique ineffective for large number of values.
+aggregate) making this technique ineffective for large numbers of
+distinct values.
 
 Consequently, when we combine group-by attributes, we must ensure that the
 number of distinct values remains {\it small enough}, below a specific 
@@ -160,7 +161,7 @@ subset of $A$ and $\bigcap A_i$=$A$) such that the worst-case number of distinct
 for each group is below $\tau$.
 \vspace{-5pt}
 \end{problem}
-Notice that the problem as stated above is isomorphic to the NP-Complete
+Notice that the problem as stated above is isomorphic to the NP-Hard
 {\em bin-packing} problem~\cite{garey}: to see this, we let each dimension attribute
 $a_i$ correspond to an item in the bin-packing problem with weight $\log (|a_i|)$,
 and we set the threshold on the bin size to be $\log \tau$,

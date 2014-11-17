@@ -55,17 +55,17 @@ $${\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D_Q\  {\tt GROUP \ \ BY} \ a$$
 Note that all such $V_i$ give rise to two-column results that can 
 be readily visualized (e.g.
 Table~\ref{tab:staplerX}). 
-However, \VizRecDB\ techniques can directly be used to recommend views that are
-generated via multi-attribute grouping and aggregation; 
-for simplicity, we focus on two-column $V_i$. 
+\VizRecDB\ techniques can directly be used to recommend views that are
+generated via multi-attribute grouping and aggregation; however,
+for simplicity, we focus on two-column views. 
 
 
-As discussed previously, \VizRecDB\ evaluates
+As discussed previously, \VizRecDB\ determines
 whether a view $V_i$ is interesting
 by computing the deviation between the view applied to the selected data (i.e., $D_Q$) 
 and the view applied to the entire database.
 The equivalent view on the entire database $V_i (D)$ can be expressed as shown
-below that we call the {\em comparison view}. 
+below. We call it the {\em comparison view}. 
 $${\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt GROUP \ \ BY} \ a$$
 The results of both the above views are tables with two columns, namely $a$ and
 $f(m)$. We normalize each result table into a probability distribution, such
@@ -116,8 +116,9 @@ to compute utility:
 Finally, we note that while other definitions of the comparison views and
 utility metrics are possible, for our initial exploration into 
 visualization recommendations, we chose to focus on the intuitive definitions above.
-In Section~\ref{sec:example-viz}, we perform a qualitative study of the EMD metric,
-where we show that it returns interesting results on real-world datasets.
+In Appendix~\ref{sec:example-viz}, we perform a qualitative study of the EMD
+metric showing that it returns interesting results on real-world datasets.
+We can formally state the \VizRecDB problem as follows:
 % While we set the default \VizRecDB\ distance metric as EMD (due to its simplicity),
 % users can choose to use any of the distance metrics defined above. We note that
 % the above definition of a view and its utility is merely one of many possible

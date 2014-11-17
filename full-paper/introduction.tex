@@ -108,9 +108,9 @@ the associated visualization.
 	   \begin{tabular}{cc} \hline
 		  Carrier & Load Times (ms) \\ \hline
 		  AT\&T & 180.55 \\ \hline
-		  Verizon &  145.50\\ \hline
+		  Sprint & 90.13 \\ \hline
 		  T-Mobile & 122.00 \\ \hline
-		  Metro & 90.13 \\ \hline
+		  Verizon &  145.50\\ \hline
 		  \end{tabular}
 		  \caption{Data: Average Load Times by Carrier for App-A} \label{tab:staplerX}
 	\end{subfigure}
@@ -210,8 +210,8 @@ that deviates from the equivalent trend in the overall dataset (i.e., metrics
 about all apps)}.
 Of course, the analyst must decide if this deviation 
 is truly an insight for this application.
-(4) Once the analyst has identified interesting attributes and dimensions to query
-against, the analyst may
+(4) Once the analyst has identified interesting results or
+visualizations, the analyst may
 then either share these results with others, further interact with
 the displayed results (e.g., by drilling down or rolling up), or
 start afresh with a new query.
@@ -229,8 +229,7 @@ of data that the analyst is interested in, \VizRecDB\ automatically {\em
 identifies and highlights to the analyst the most interesting aggregate queries
 using methods based on deviation} (we formalize our notion of ``interestingness'' in Section~\ref{sec:problem_statement}).
 Specifically, \VizRecDB\ explores the space of all possible {\it views} and
-measures how much each view deviates from the corresponding view on the
-entire underlying dataset (e.g. Figure~\ref{fig:staplerX} vs.~Figures~\ref{fig:staplerX-a} or \ref{fig:staplerX-b}.) 
+measures how much each view deviates from the corresponding view on the entire underlying dataset (e.g. Figure~\ref{fig:staplerX} vs.~Figures~\ref{fig:staplerX-a} or \ref{fig:staplerX-b}.) 
 By {\it view} we mean a (possibly multidimensional) GROUP BY/aggregate with one or more
 measure attributes.
 By generating and
@@ -253,8 +252,8 @@ model and are supported by \VizRecDB:
   \item {\it Use Case II: Comparison of a subset of data against all the
   remaining data}.
   Imagine that a medical researcher is studying a medical records dataset and
-  wants to compare the set of patients with high medical expenses vs. 
-  other patients. \VizRecDB can be used for this scenario as well.
+  wants to compare the set of patients with high medical expenses to all
+  remaining patients. 
   \item {\it Use Case III: Comparison of two distinct datasets}. Finally,
   imagine that in the app metrics example, an analyst would like to compare
   the metrics for two apps, say one app in the social category and another in
@@ -262,8 +261,8 @@ model and are supported by \VizRecDB:
   by executing two different queries and \VizRecDB\ can be used to find
   interesting differences between the two datasets.
 \end{denselist}
-In the rest of the paper, we center our discussion around Use Case I;
-all our techniques apply unchanged to Use Cases II and III.
+In the rest of the paper, we center our discussion around Use Case I; however,
+our techniques apply unchanged to Use Cases II and III.
 
 % \subsection*{Example 2: Medical Data}
 % Next, let us examine a use case in a completely different problem domain that
@@ -385,8 +384,8 @@ In our first implementation, we implement \VizRecDB\ as a wrapper on top of a
 database system and study how far we can push existing systems to support a
 \VizRecDB-type workload.
 In the second, we overcome the constraints of the DBMS SQL-based API by writing a custom system
-that  shares sequential scans and query results between views and employs statistical methods to 
-perform aggressive pruning
+that  shares sequential scans and query results between views, and employs
+statistical methods to perform aggressive pruning
 based on intermediate results.
 For each implementation of \VizRecDB, we also develop implementation-specific
 optimizations that leverage the underlying system architecture.
