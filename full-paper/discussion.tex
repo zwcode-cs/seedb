@@ -3,13 +3,13 @@
 
 \section{Discussion and Future Work}
 \label{sec:discussion}
-The previous sections discussed how our current implementation of \VizRecDB can
+The previous sections discussed how our current implementation of \SeeDB can
 efficiently find top views by pruning and aggressive query optimization.
 In this section, we discuss some ongoing work and possible extensions of
-\VizRecDB.
+\SeeDB.
 
 \stitle{Extending the Types of Visualizations:} In our current implementation
-of \VizRecDB, our focus has been on simple visualizations, namely, bar charts, trend-lines,
+of \SeeDB, our focus has been on simple visualizations, namely, bar charts, trend-lines,
 and histograms, using which any 2 or 3 dimensional views can be readily visualized.
 We are currently exploring the possibility of adding richer visualization types,
 such as scatter-plots, and chloropleth maps, which may be more appropriate
@@ -21,7 +21,7 @@ view, it does not take into account rich domain knowledge or context.
 For instance, in a sales dataset, an analyst may be only interested in grouping
 data by store as compared to manufacturer. 
 Having a lot of usage data (say, in the form of user interaction traces)
-can allow \VizRecDB to infer or predict the ``goodness''
+can allow \SeeDB to infer or predict the ``goodness''
 of various visualizations, and we can take both deviation, as well as 
 goodness into account to recommend visualizations. 
 Taking goodness into account could further help us reduce the amount of time
@@ -35,7 +35,7 @@ so that this goodness measure can be used on all future interactions.
  
 
 % \stitle{User Study}
-% In this paper, we focus mainly on the implementation details of \VizRecDB and
+% In this paper, we focus mainly on the implementation details of \SeeDB and
 % ways to enable real-time interaction.
 % In parallel, we are also in the process of running a user study that evaluates
 % the \SeeDB\ frontend and end-to-end functionality. 
@@ -82,7 +82,7 @@ by a factor equal to the number of ways we can bin the dimension attributes.
  can take is large, then we need to consider binning for them as well.
  There are two approaches here. 
   A simple approach is to decide on a fixed binning for these attributes the
- first time the data is loaded into \VizRecDB --- in this case, 
+ first time the data is loaded into \SeeDB --- in this case, 
  we do not suffer from an additional multiplicative factor to the number of
  visualizations.
  A more complex but more comprehensive approach is to consider all possible binnings;

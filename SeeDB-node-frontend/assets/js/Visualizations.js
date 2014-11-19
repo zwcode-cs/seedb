@@ -89,41 +89,87 @@
         },
         link: function (scope, element) {
           // we need one graph per aggregate
-          var sortedByIndex = _.sortBy(
-            _.pairs(scope.view.aggregateAttributeIndex), function (pair) {
-              return pair[1];
+          function generateCharts() {
+            var aggAttr = scope.view.aggregateAttribute;
+            var gbAttr = scope.view.groupByAttributes;
+            var headerRow = [[gbAttr, 'Dataset 1', 'Dataset 2']];
+            var dataRows = [];
+            var charts = [];
+            var titles = [];
+            var diffs = [];
+            function sortDist(a,b) {
+              if (a[3] > b[3]) return -1;
+              if (a[3] < b[3]) return 1;
+              return 0;
+            }
+            var max1 = -1;
+            var max2 = -1;
+
+            dataRows[0] = _.map(scope.view.result, function (aggValues, groupByValue) {
+              if (max1 < aggValues.datasetValues[0].generic)
+                max1 = aggValues.datasetValues[0].generic;
+              if (max2 < aggValues.datasetValues[1].generic)
+                max2 = aggValues.datasetValues[1].generic;
+
+              return [
+                groupByValue, 
+                aggValues.datasetValues[0].generic, 
+                aggValues.datasetValues[1].generic,
+                Math.abs(aggValues.datasetValues[0].genericNormalized - aggValues.datasetValues[1].genericNormalized)
+                ];
             });
+            dataRows[0].sort(sortDist);
+            titles[0] = scope.view.function + "(" + aggAttr + ") vs. " + gbAttr;
 
-          var sortedAggregateAttrs = _.map(sortedByIndex, function (pair) {
-            return pair[0];
-          });
-
-          scope.sortedAggregateAttrs = sortedAggregateAttrs;
-
-          scope.charts = _.map(scope.sortedAggregateAttrs, function (aggAttr) {
-            var index = scope.view.aggregateAttributeIndex[aggAttr];
-
-            var headerRow = [[scope.view.groupByAttributes[0], 'Dataset 1', 'Dataset 2']];
-            var dataRows = _.map(scope.view.result, function (aggValues, groupByValue) {
-              return [groupByValue, aggValues[0][index], aggValues[1][index]];
+            /*dataRows[1] = _.map(scope.view.result, function (aggValues, groupByValue) {
+              return [
+                groupByValue, 
+                aggValues.datasetValues[0].sumNormalized, 
+                aggValues.datasetValues[1].sumNormalized,
+                Math.abs(aggValues.datasetValues[0].sumNormalized - aggValues.datasetValues[1].sumNormalized)
+                ];
             });
+            dataRows[1].sort(sortDist);
+            titles[1] = "SUM(" + aggAttr + ") vs. " + gbAttr;
 
-            var headerAndData = headerRow.concat(dataRows);
+            dataRows[2] = _.map(scope.view.result, function (aggValues, groupByValue) {
+              return [
+                groupByValue, 
+                aggValues.datasetValues[0].averageNormalized, 
+                aggValues.datasetValues[1].averageNormalized,
+                Math.abs(aggValues.datasetValues[0].averageNormalized - aggValues.datasetValues[1].averageNormalized)
+                ];
+            });
+            dataRows[2].sort(sortDist);
+            titles[2] = "AVG(" + aggAttr + ") vs. " + gbAttr;*/
 
-            console.log(headerAndData);
+            function truncateDist(dist) {
+              return dist.slice(0, 3);
+            }
 
-            return {
-              index: index,
-              data: google.visualization.arrayToDataTable(headerAndData),
-              options: {
-                title: aggAttr,
-                chartArea: {
-                  left: 0
-                }
-              },
-              type: "ColumnChart"
-            };
-          });
+            for (var i = 0; i < 1; i++) {
+              var headerAndData = headerRow.concat(dataRows[i].slice(0,20).map(truncateDist));
+              charts.push({
+                data: google.visualization.arrayToDataTable(headerAndData),
+                utility: scope.view.utility,
+                options: {
+                  title: titles[i],
+                  chartArea: {
+                    //left: -5
+                  },
+                  vAxes: {
+                    0: {logScale: false, maxValue: max1},
+                    1: {logScale: false, maxValue: max2}},
+                  series: {
+                    0:{targetAxisIndex:0},
+                    1:{targetAxisIndex:1}}
+                },
+                type: "ColumnChart"
+              });
+            }
+            return charts;
+          }
+          scope.charts = generateCharts();
         },
         templateUrl: "aggregateView.html"
       };
@@ -138,7 +184,7 @@
           type: "="
         },
         link: function (scope, element) {
-          var chart = new google.visualization[scope.type](element.get(0));
+          var chart = new google.visualization.ColumnChart(element.get(0));
           chart.draw(scope.data, scope.options);
         }
       };

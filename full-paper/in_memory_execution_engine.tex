@@ -22,19 +22,19 @@ pruning strategies.
 \label{subsec:basic_framework}
 Algorithm~\ref{algo:custom_exec_engine} in the appendix shows the basic framework adopted by our
 custom execution engine.
-\VizRecDB\ buffers data from the input file (on disk or in memory) and processes it
+\SeeDB\ buffers data from the input file (on disk or in memory) and processes it
 one record at a time.
 We assume that {\it records in the file are in random order}; if they are not,
 we must apply a pre-processing step to get them in random order.
-For each record read in, \VizRecDB\ determines whether the record satisfies the
+For each record read in, \SeeDB\ determines whether the record satisfies the
 input query, and then updates the target and comparison views for all views
 currently in the running or have been ``accepted'' as being in the top-$k$.
 It also updates the utility values and other algorithm-specific statistics for
 each view.
 To avoid doing expensive pruning computations after reading each record,
-\VizRecDB processes the file in phases where each phase consists of processing a
+\SeeDB processes the file in phases where each phase consists of processing a
 fixed number of records.
-At the end of a phase, \VizRecDB\ checks to see if any views can be pruned,
+At the end of a phase, \SeeDB\ checks to see if any views can be pruned,
 i.e., discarded, or accepted as being in the top-$k$.
 % At one extreme, each phase consists of just one record, in which case views
 % are pruned after ever record is read and the views are updated;
@@ -57,9 +57,9 @@ We use the former as the default stopping condition.
 % as being in the top-$k$. 
 % We use the former option as the default, 
 % and the latter as an additional optimization that may be employed.
-% If at the end of a given phase, \VizRecDB\ finds that the views in running satisfy
-% the given stopping criteria, e.g., that \VizRecDB\ has already identified the
-% top-$k$ views, the \VizRecDB\ engine can stop processing early.
+% If at the end of a given phase, \SeeDB\ finds that the views in running satisfy
+% the given stopping criteria, e.g., that \SeeDB\ has already identified the
+% top-$k$ views, the \SeeDB\ engine can stop processing early.
 
 % \begin{algorithm}
 % \caption {ComputeAggregate(Query
@@ -261,11 +261,11 @@ perform pruning with high confidence.
 % prune views based on the statistic.
 % For confidence interval based pruning, the statistics we track are the mean, 
 % variance, and confidence intervals of the view utility.
-% As \VizRecDB\ reads each record, it updates the data
+% As \SeeDB\ reads each record, it updates the data
 % distributions for all views and calculates the current utility of each view. 
-% Using past measures of utility, \VizRecDB\ also tracks the mean,
+% Using past measures of utility, \SeeDB\ also tracks the mean,
 % variance and confidence intervals for the utility of each view.
-% % At the end of a phase, \VizRecDB\ uses the following rule for pruning low-utility
+% % At the end of a phase, \SeeDB\ uses the following rule for pruning low-utility
 % % views (stated more formally below): {\it if the upperbound on the utility
 % % of view $v_i$ is lesser than the least lowerbound on the utility of the
 % % top-$k$ views, view $v_i$ is discarded.}

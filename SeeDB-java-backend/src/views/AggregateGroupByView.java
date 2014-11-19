@@ -1,10 +1,14 @@
 package views;
 
 import java.util.HashMap;
+import java.util.List;
+
+import com.google.common.collect.Lists;
 
 import settings.ExperimentalSettings.DifferenceOperators;
 import settings.ExperimentalSettings.DistanceMetric;
 import utils.Constants;
+import utils.Constants.AggregateFunctions;
 import utils.UtilityMetrics;
 import views.AggregateValuesWrapper.AggregateValues;
 import common.DifferenceQuery;
@@ -12,8 +16,18 @@ import common.DifferenceQuery;
 public class AggregateGroupByView extends AggregateView {
 
 	private boolean populatedAvg = false;
+	private AggregateFunctions func = AggregateFunctions.ALL;
+	public double utility = -1;
+	
+	public double getUtility() {
+		return utility;
+	}
 	public AggregateGroupByView(DifferenceQuery dq) {
 		super(dq);
+	}
+	
+	public AggregateGroupByView(String groupByAttribute, String aggregateAttribute) {
+		super(groupByAttribute, aggregateAttribute);
 	}
 
 	@Override
@@ -25,6 +39,10 @@ public class AggregateGroupByView extends AggregateView {
 		return this.groupByAttribute;
 	}
 	
+	public String getAggregateAttribute() {
+		return this.aggregateAttribute;
+	}
+	
 	public void populateAvg() {
 		if (populatedAvg) {
 			return;
@@ -33,7 +51,7 @@ public class AggregateGroupByView extends AggregateView {
 			AggregateValuesWrapper wrapper = aggregateValues.get(key);
 			for (int i = 0; i < 2; i++) {
 				if (wrapper.datasetValues[i].count != 0) {
-					wrapper.datasetValues[i].average = wrapper.datasetValues[i].sum / wrapper.datasetValues[i].count;
+					wrapper.datasetValues[i].average = wrapper.datasetValues[i].sum*1.0 / wrapper.datasetValues[i].count;
 				}
 			}
 		}
@@ -42,9 +60,11 @@ public class AggregateGroupByView extends AggregateView {
 
 	public HashMap<String, AggregateValuesWrapper> getResult() {
 		populateAvg();
+		normalize();
+		System.out.println("getResult");
 		return this.aggregateValues;
 	}
-	
+
 	public String toString() {
 		populateAvg();
 		String ret = "";
@@ -56,11 +76,16 @@ public class AggregateGroupByView extends AggregateView {
 			ret += key + ":";
 			for (int i = 0; i < 2; i++) {
 				AggregateValues tmp = aggregateValues.get(key).datasetValues[i];
-				ret += tmp.count + "," + tmp.sum + "," + tmp.average + ";";
+				ret += tmp.genericNormalized + ";";
 			}
 		}
 		ret += "]]";
 		return ret;
+	}
+	
+	private AggregateFunctions getAggregateFunctionForUtility() {
+		if (func == AggregateFunctions.ALL) return AggregateFunctions.SUM;
+		return func;
 	}
 
 	@Override
@@ -71,24 +96,31 @@ public class AggregateGroupByView extends AggregateView {
 		populateAvg();
 		switch (distanceMetric) {
 		case EARTH_MOVER_DISTANCE:
-			return UtilityMetrics.EarthMoverDistance(this.aggregateValues, normalize);
+			utility = UtilityMetrics.EarthMoverDistance(this.aggregateValues, getAggregateFunctionForUtility(), normalize);
+			break;
 		case EUCLIDEAN_DISTANCE:
-			return UtilityMetrics.EuclideanDistance(this.aggregateValues, normalize);
+			utility = UtilityMetrics.EuclideanDistance(this.aggregateValues, getAggregateFunctionForUtility(), normalize);
+			break;
 		case COSINE_DISTANCE:
-			return UtilityMetrics.CosineDistance(this.aggregateValues, normalize);
+			utility = UtilityMetrics.CosineDistance(this.aggregateValues, getAggregateFunctionForUtility(), normalize);
+			break;
 		case FIDELITY_DISTANCE:
-			return UtilityMetrics.FidelityDistance(this.aggregateValues, normalize);
+			utility = UtilityMetrics.FidelityDistance(this.aggregateValues, getAggregateFunctionForUtility(), normalize);
+			break;
 		case CHI_SQUARED_DISTANCE:
-			return UtilityMetrics.ChiSquaredDistance(this.aggregateValues, normalize);
+			utility = UtilityMetrics.ChiSquaredDistance(this.aggregateValues, getAggregateFunctionForUtility(), normalize);
+			break;
 		case KULLBACK_LEIBLER_DISTANCE:
-			return UtilityMetrics.EntropyDistance(this.aggregateValues, normalize);
+			utility = UtilityMetrics.EntropyDistance(this.aggregateValues, getAggregateFunctionForUtility(), normalize);
+			break;
 		}
-		return -1;
+		return utility;
 	}
 	
 	@Override
 	public double getUtility(DistanceMetric distanceMetric) {
-		return getUtility(distanceMetric, true);
+		utility = getUtility(distanceMetric, true);
+		return utility;
 	}
 	
 	private void normalize() {
@@ -122,5 +154,52 @@ public class AggregateGroupByView extends AggregateView {
 
 	public String getId() {
 		return this.groupByAttribute + Constants.spacer + Constants.spacer + this.aggregateAttribute;
+	}
+	
+	public View constituentView(AggregateFunctions f) {
+		if (f == AggregateFunctions.ALL) return this;
+		AggregateGroupByView view = new AggregateGroupByView(this.groupByAttribute, this.aggregateAttribute);
+		for (String key : this.aggregateValues.keySet()) {
+			AggregateValuesWrapper wrapper = aggregateValues.get(key);
+			AggregateValuesWrapper newWrapper = new AggregateValuesWrapper();
+			view.func = f;
+			switch (f) {
+			case COUNT:
+				for (int i = 0; i < 2; i++) {
+					newWrapper.datasetValues[i].generic = wrapper.datasetValues[i].count;
+					newWrapper.datasetValues[i].genericNormalized = wrapper.datasetValues[i].countNormalized;
+				}
+				break;
+			case SUM:
+				for (int i = 0; i < 2; i++) {
+					newWrapper.datasetValues[i].generic = wrapper.datasetValues[i].sum;
+					newWrapper.datasetValues[i].genericNormalized = wrapper.datasetValues[i].sumNormalized;
+				}
+				break;
+			case AVG:
+				for (int i = 0; i < 2; i++) {
+					newWrapper.datasetValues[i].generic = wrapper.datasetValues[i].average;
+					newWrapper.datasetValues[i].genericNormalized = wrapper.datasetValues[i].averageNormalized;
+				}
+				break;
+			}
+			view.aggregateValues.put(key, newWrapper);
+		}
+		return view;
+	}
+
+	@Override
+	public List<View> constituentViews() {
+		populateAvg();
+		normalize();
+		List<View> ret = Lists.newArrayList();
+		ret.add(constituentView(AggregateFunctions.COUNT));
+		ret.add(constituentView(AggregateFunctions.SUM));
+		ret.add(constituentView(AggregateFunctions.AVG));
+		return ret;
+	}
+	
+	public AggregateFunctions getFunction() {
+		return func;
 	}
 }

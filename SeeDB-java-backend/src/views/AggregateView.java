@@ -1,12 +1,15 @@
 package views;
 
 import java.util.HashMap;
+import java.util.List;
 
 import settings.ExperimentalSettings.DifferenceOperators;
 import settings.ExperimentalSettings.DistanceMetric;
 import utils.Constants.AggregateFunctions;
 import views.AggregateValuesWrapper.AggregateValues;
+
 import com.google.common.collect.Maps;
+
 import common.DifferenceQuery;
 
 /**
@@ -15,13 +18,19 @@ import common.DifferenceQuery;
  *
  */
 public abstract class AggregateView implements View {
-	protected HashMap<String, AggregateValuesWrapper> aggregateValues;
-	protected String groupByAttribute;
-	protected String aggregateAttribute;
+	public HashMap<String, AggregateValuesWrapper> aggregateValues;
+	public String groupByAttribute;
+	public String aggregateAttribute;
 	
 	public AggregateView(DifferenceQuery dq) {
 		groupByAttribute = dq.groupByAttributes.get(0).name;
 		aggregateAttribute = dq.aggregateAttributes.get(0).name;
+		aggregateValues = Maps.newHashMap();
+	}
+	
+	public AggregateView(String groupByAttribute, String aggregateAttribute) {
+		this.groupByAttribute = groupByAttribute;
+		this.aggregateAttribute = aggregateAttribute;
 		aggregateValues = Maps.newHashMap();
 	}
 

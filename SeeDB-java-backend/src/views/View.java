@@ -1,5 +1,7 @@
 package views;
 
+import java.util.List;
+
 import settings.ExperimentalSettings.DifferenceOperators;
 import settings.ExperimentalSettings.DistanceMetric;
 
@@ -14,5 +16,6 @@ public interface View {
 	public double getUtility(DistanceMetric distanceMetric);
 	public double getUtility(DistanceMetric distanceMetric,
 			boolean normalizeDistributions);
+	public List<View> constituentViews();
 
 }

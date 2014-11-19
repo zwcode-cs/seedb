@@ -3,19 +3,19 @@
 \section{Qualitative Study}\label{sec:example-viz}
 
 In this section, we study some examples of visualizations recommended and
-not recommended by \VizRecDB for real-world datasets.
+not recommended by \SeeDB for real-world datasets.
 We turn to the BANK and DIAB dataset described in 
 Section~\ref{sec:experiments}.
  
 We begin with the DIAB dataset. The query selects a group of diabetes patients in the age range 30--40;
 these patients are compared against all patients.
 In Figure~\ref{fig:qual-study}, we list one example of a visualization
-that is recommended by \VizRecDB, and one that is not recommended by \VizRecDB.
-We acknowledge that the charts outputted by \VizRecDB could look prettier and be better
+that is recommended by \SeeDB, and one that is not recommended by \SeeDB.
+We acknowledge that the charts outputted by \SeeDB could look prettier and be better
 formatted to make the output more usable and interpretable; this has not been our focus thus far. 
 We plan to address these presentation issues in the future.
 
-The visualization recommended by \VizRecDB (Figure~\ref{fig:time-in-hospital}) has utility 0.174 (via
+The visualization recommended by \SeeDB (Figure~\ref{fig:time-in-hospital}) has utility 0.174 (via
 the Earth Mover's Distance utility metric).
 This visualization depicts the time in hospitals spent by
 individuals of different race, for the selected patients
@@ -29,7 +29,7 @@ by african americans and caucasians is quite close to each other,
 while across all age groups, caucasians spend a lot more time
 in hospital.
 
-The visualization not recommended by \VizRecDB (Figure~\ref{fig:lab-procedures}) has utility 0.004, very close to 0.
+The visualization not recommended by \SeeDB (Figure~\ref{fig:lab-procedures}) has utility 0.004, very close to 0.
 This visualization depicts the fraction of patients that 
 have either had or not had lab procedures. 
 As can be seen in the figure, the same fraction of patients in
@@ -41,7 +41,7 @@ Next, we consider the BANK dataset.
 Here the query selects all divorced individuals, 
 and these are compared against all individuals. 
 In Figure~\ref{fig:qual-study2}, we depict
-a visualization recommended and one that is not recommended by \VizRecDB.
+a visualization recommended and one that is not recommended by \SeeDB.
 The one recommended (Figure~\ref{fig:job}) depicts the fraction of calls made in the previous campaign (hence the y-axis is denoted previous) to those
 who are divorced and had different job categories.
 For instance, the number of retired divorced individuals who were called
@@ -58,7 +58,7 @@ Here the distribution is similar for divorced individuals and the rest.
 Thus, this is not as interesting a visualization.
 
 As can be seen, 
-the visualizations produced by \VizRecDB based on the Earth Mover's Distance
+the visualizations produced by \SeeDB based on the Earth Mover's Distance
 metric ends up giving useful, interesting visualizations on two of
 the real world datasets we have experimented with.
 
@@ -69,17 +69,17 @@ the real world datasets we have experimented with.
 \begin{subfigure}{\linewidth}
 \centering
 {\includegraphics[width=7cm] {Images/seedb_dim_race_measure_time_in_hospital.pdf}}
-\caption{Time in Hospital by Race: Recommended by \VizRecDB}
+\caption{Time in Hospital by Race: Recommended by \SeeDB}
 \label{fig:time-in-hospital}
 \end{subfigure}
 \begin{subfigure}{\linewidth}
 \centering
 {\includegraphics[width=7cm] {Images/seedb_dim_diabetesmed_measure_num_lab_procedures.pdf}}
-\caption{Lab Procedures: Not Recommended by \VizRecDB}
+\caption{Lab Procedures: Not Recommended by \SeeDB}
 \label{fig:lab-procedures}
 \end{subfigure}
 \vspace{-10pt}
-\caption{\VizRecDB Generated Visualizations for DIAB}\label{fig:qual-study}
+\caption{\SeeDB Generated Visualizations for DIAB}\label{fig:qual-study}
 \vspace{-10pt}
 \end{figure}
 
@@ -89,17 +89,17 @@ the real world datasets we have experimented with.
 \begin{subfigure}{\linewidth}
 \centering
 {\includegraphics[width=7cm] {Images/seedb_dim_job_measure_previous.pdf}}
-\caption{Fraction of calls made to different job holders: Recommended by \VizRecDB}
+\caption{Fraction of calls made to different job holders: Recommended by \SeeDB}
 \label{fig:job}
 \end{subfigure}
 \begin{subfigure}{\linewidth}
 \centering
 {\includegraphics[width=7cm] {Images/seedb_dim_loan_measure_campaign.pdf}}
-\caption{Fraction of calls made to those with different loan approval status: Not Recommended by \VizRecDB}
+\caption{Fraction of calls made to those with different loan approval status: Not Recommended by \SeeDB}
 \label{fig:loan}
 \end{subfigure}
 \vspace{-10pt}
-\caption{\VizRecDB Generated Visualizations for BANK}\label{fig:qual-study2}
+\caption{\SeeDB Generated Visualizations for BANK}\label{fig:qual-study2}
 
 \vspace{-10pt}
 \end{figure}

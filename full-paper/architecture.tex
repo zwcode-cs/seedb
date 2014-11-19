@@ -1,12 +1,12 @@
 %!TEX root=document.tex
 
 
-\section{{\large \VizRecDB\ } Design}
+\section{{\large \SeeDB\ } Design}
 \label{sec:system_architecture}
 
-In this section, we present an overview of the \VizRecDB\ architecture.
-\VizRecDB\ is comprised of two main parts: the frontend and the backend. 
-The \VizRecDB\ frontend is a ``thin client''
+In this section, we present an overview of the \SeeDB\ architecture.
+\SeeDB\ is comprised of two main parts: the frontend and the backend. 
+The \SeeDB\ frontend is a ``thin client''
 that is used to issue queries, display visualizations and allow basic interactions
 with the visualizations. 
 The backend, in contrast, performs all the computation required to generate and select views
@@ -22,7 +22,7 @@ discussed in Section \ref{sec:problem_statement}.
 The generated view stubs are then sent to the execution engine that is
 responsible for querying the underlying data, evaluating the utility of each
 candidate view, and identifying the top views of interest. 
-Once the \VizRecDB\ backend has identified the best views, the \VizRecDB\
+Once the \SeeDB\ backend has identified the best views, the \SeeDB\
 frontend generates and displays visualizations for each of these views. 
 
 \begin{figure}[htb]
@@ -31,16 +31,16 @@ frontend generates and displays visualizations for each of these views.
 \hbox{\resizebox{7cm}{!}{\includegraphics[trim=10mm 45mm 55mm 60mm, 
 clip=true]{Images/SeeDB-architecture.pdf}}}}
 \vspace{-15pt}
-\caption{VizRecDB Architecture}
+\caption{SeeDB Architecture}
 \label{fig:sys-arch}
 \vspace{-15pt}
 \end{figure} 
 
-In this paper, we explore two distinct implementations of the \VizRecDB\ execution
+In this paper, we explore two distinct implementations of the \SeeDB\ execution
 engine. 
 Our first implementation of the execution engine is as a wrapper on top of a database
 system: the goal of this implementation is to study how far we can 
-push existing relational databases to support a \VizRecDB-type workload.
+push existing relational databases to support a \SeeDB-type workload.
 As described in the next section, we obtain reasonable performance by
 intelligently combining queries and running queries in parallel. 
 Because evaluating a visualization query typically involves 
@@ -57,14 +57,14 @@ limit the number of passes that must be done over the data.
 % queries or to access intermediate results during scans.
 % As a result, optimization opportunities are limited.
 % To overcome the constraints of existing database systems, we implement a
-% simple, custom Execution Engine for \VizRecDB\ optimized to share scans
+% simple, custom Execution Engine for \SeeDB\ optimized to share scans
 % across all views and perform pruning based on intermediate results. 
 In an ideal solution, shared scans and pruning would be implemented inside the
-database; however, for the purpose of this work, we implement the \VizRecDB\
+database; however, for the purpose of this work, we implement the \SeeDB\
 execution engine as a standalone proof-of-concept. 
-In Appendix \ref{sec:incorporating} we discuss how the \VizRecDB\ engine could
+In Appendix \ref{sec:incorporating} we discuss how the \SeeDB\ engine could
 be made part of a DBMS.
-Next we briefly examine the \VizRecDB frontend and then describe the execution engines
+Next we briefly examine the \SeeDB frontend and then describe the execution engines
 in detail.
 
 
@@ -78,13 +78,13 @@ in detail.
 % Once all the queries have been processed, the top-k views are returned to the
 % frontend.
 % 
-% In the main-memory execution engine, \VizRecDB\ makes a single pass through the
+% In the main-memory execution engine, \SeeDB\ makes a single pass through the
 % data (either read from disk or already present in memory) and keeps running
 % estimates of utility for each of the views stubs obtained from the View
 % Generator. 
 % As the engine processes more of the data, the utility estimates become more
-% accurate and \VizRecDB\ uses various pruning heuristics to prune out views on the fly.
-% By the time the full data has been processed, \VizRecDB\ has identified the top-k
+% accurate and \SeeDB\ uses various pruning heuristics to prune out views on the fly.
+% By the time the full data has been processed, \SeeDB\ has identified the top-k
 % views with the largest utility that are then returned to the frontend.
 
 

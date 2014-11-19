@@ -6,6 +6,7 @@ import settings.ExperimentalSettings.DifferenceOperators;
 import settings.ExperimentalSettings.DistanceMetric;
 
 import com.google.common.collect.Lists;
+
 import common.Utils;
 
 /**
@@ -58,6 +59,12 @@ public class RowSampleView implements View {
 			boolean normalizeDistributions) {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+	
+	public List<View> constituentViews() {
+		List<View> res = Lists.newArrayList();
+		res.add(this);
+		return res;
 	}
 	
 }

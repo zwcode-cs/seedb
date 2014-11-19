@@ -67,8 +67,7 @@
   io.sockets.on("connection", function(socket) {
     var seeDB = java.newInstanceSync("api.SeeDB");
 
-    seeDB.connectToDatabaseSync(0);
-    seeDB.connectToDatabaseSync(1);
+    seeDB.connectToDatabaseSync();
 
     socket.on("call", function(options, callback) {
       console.log("Calling method:", options.methodName, options.args);

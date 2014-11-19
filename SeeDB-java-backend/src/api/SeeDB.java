@@ -175,7 +175,7 @@ public class SeeDB {
 	}
 	
 	/**
-	 * Initialize seeDB with default setings
+	 * Initialize SeeDB with default setings
 	 * @param dataset1
 	 * @param dataset2
 	 * @return true if init is successful
@@ -338,7 +338,6 @@ public class SeeDB {
 			return null;
 		}
 		
-		
 		if (settings.useParallelExecution) {
 			try {
 				pool.closeAllConnections();
@@ -347,6 +346,13 @@ public class SeeDB {
 				System.out.println("Error in closing connections");
 			}
 		}
+		int numViews = views.size();
+		
+		for (int i = 0; i < numViews; i++) {
+			views.addAll(views.get(0).constituentViews());
+			views.remove(0);
+		}
+		
 		// sort views by utility
 		Collections.sort(views, new Comparator<View>() {
            @Override
@@ -368,6 +374,10 @@ public class SeeDB {
 		 */
 		if (settings.makeGraphs) {
 			GraphingUtils.createFilesForGraphs(views);
+		}
+		System.out.println("Finished compute difference");
+		for (View v : views) {
+			System.out.println(v);
 		}
 		return views;
 	}	

@@ -13,19 +13,19 @@
         templateUrl: "/queryBuilder.html",
         controller: function ($scope) {
           $scope.predicates = [{
-            columnName: "cand_nm",  // TODO: this is hardcoded as the first default predicate
+            columnName: "dim_cand_nm",  // TODO: this is hardcoded as the first default predicate
             modifier: "=",
-            value: "Obama, Barack"
+            value: "McCain, John S"
           }];
 
-          $scope.tableNames = ["election_data_full", "election_data", "super_store_data"]; // TODO: hardcoded
+          $scope.tableNames = ["election_data"]; // TODO: hardcoded
           $scope.tableName = $scope.tableNames[0];
 
           $scope.setTable = function() {
             SeeDB.setTable($scope.tableName);
           };
 
-          $scope.columnNames = ["cand_nm", "contbr_zip"];
+          $scope.columnNames = ["dim_cand_nm", "contbr_zip"];
 
           $scope.addPredicate = function () {
             this.predicates.push({
@@ -41,7 +41,7 @@
           $scope.distanceMeasure = $scope.distanceMeasures[0];
 
           $scope.setDistanceMeasure = function() {
-            SeeDB.setDistanceMeasure($scope.distanceMeasure);
+            //SeeDB.setDistanceMeasure($scope.distanceMeasure);
           };
 
           $scope.generateQuery = function() {
@@ -74,7 +74,7 @@
           
           $scope.$watch("predicates", $scope.generateQuery, true);
           $scope.$watch("tableName", $scope.generateQuery, true);
-          $scope.$watch("tableName", $scope.setTable, true);
+          //$scope.$watch("tableName", $scope.setTable, true);
           $scope.$watch("distanceMeasure", $scope.setDistanceMeasure, true);
         }
       };

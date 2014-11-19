@@ -222,29 +222,29 @@ ones that are especially repetitive and tedious are steps (2) and (3)
 where the analyst generates a large number of candidate aggregate queries, 
 and examines each
 of them in turn through visualizations.
-The goal of our system, \VizRecDB, is to automate these 
+The goal of our system, \SeeDB, is to automate these 
 labor-intensive steps of the workflow. 
 Given a query $Q$ indicating the subset
-of data that the analyst is interested in, \VizRecDB\ automatically {\em
+of data that the analyst is interested in, \SeeDB\ automatically {\em
 identifies and highlights to the analyst the most interesting aggregate queries
 using methods based on deviation} (we formalize our notion of ``interestingness'' in Section~\ref{sec:problem_statement}).
-Specifically, \VizRecDB\ explores the space of all possible {\it views} and
+Specifically, \SeeDB\ explores the space of all possible {\it views} and
 measures how much each view deviates from the corresponding view on the entire underlying dataset (e.g. Figure~\ref{fig:staplerX} vs.~Figures~\ref{fig:staplerX-a} or \ref{fig:staplerX-b}.) 
 By {\it view} we mean a (possibly multidimensional) GROUP BY/aggregate with one or more
 measure attributes.
 By generating and
-scoring such views automatically, \VizRecDB\ effectively eliminates
+scoring such views automatically, \SeeDB\ effectively eliminates
 steps (2) and (3) that the analyst currently performs. 
-Instead, once \VizRecDB\
+Instead, once \SeeDB\
 recommends a few interesting views, the analyst can evaluate these
 view using domain knowledge and limit further
 exploration to these views.  
 
-The example presented above illustrates one potential use case for \VizRecDB,
+The example presented above illustrates one potential use case for \SeeDB,
 in particular, one where an analyst compares a subset of the data against all
 the underlying data.
-There are three use cases of \VizRecDB\ that are generalizations of the above
-model and are supported by \VizRecDB:
+There are three use cases of \SeeDB\ that are generalizations of the above
+model and are supported by \SeeDB:
 \begin{denselist}
   \item {\it Use Case I: Comparison of a subset of data against the entire
   underlying data}.
@@ -258,7 +258,7 @@ model and are supported by \VizRecDB:
   imagine that in the app metrics example, an analyst would like to compare
   the metrics for two apps, say one app in the social category and another in
   the music category. In this case, the analyst will select the datasets
-  by executing two different queries and \VizRecDB\ can be used to find
+  by executing two different queries and \SeeDB\ can be used to find
   interesting differences between the two datasets.
 \end{denselist}
 In the rest of the paper, we center our discussion around Use Case I; however,
@@ -310,7 +310,7 @@ our techniques apply unchanged to Use Cases II and III.
 % high-cost patients vs. low-cost patients. The only change in the problem
 % formulation is that we are now comparing views of query Q2 against views of the
 % remaining table, instead of views over the entire table. The rest of the
-% framework remains unchanged. Therefore, \VizRecDB\ can be used to automatically
+% framework remains unchanged. Therefore, \SeeDB\ can be used to automatically
 % construct a large number of views of the high-cost population, compare
 % each view to the corresponding view over the low-cost population, and
 % identify views showing the highest difference between the two populations. These
@@ -335,18 +335,18 @@ our techniques apply unchanged to Use Cases II and III.
 % appears that the average number of app visits on the iOS app have reduced
 % signficantly following the update, it would indicate a problem with the iOS app.
 % 
-% In terms of the \VizRecDB\ framework, log data from the week following the app
+% In terms of the \SeeDB\ framework, log data from the week following the app
 % update constitutes the query results we seek to analyze and the log data from
 % the prior week comprises the comparison dataset. As in Examples 1 and 2, the
 % analysis process requires the specialist to create diverse views of the query
 % results, compare views to equivalent views on the comparison dataset, and
 % pick the views showing the highest difference. 
-% \VizRecDB\ can therefore be used to automate this process and surface only the most
+% \SeeDB\ can therefore be used to automate this process and surface only the most
 % interesting views.
 
 
 \subsection*{Challenges and Contributions}
-We previously described some of the vision for  \VizRecDB\ in our (4 page)
+We previously described some of the vision for  \SeeDB\ in our (4 page)
 vision paper~\cite{DBLP:conf/vldb/Parameswaran2013}---that paper described the
 challenges at a high level without any real implementation; in this paper, we
 demonstrate that we can build real systems that efficiently search for the most
@@ -376,48 +376,48 @@ interesting views at interactive time scales.
 % in this paper, we demonstrate that we can build real systems that efficiently search for the most 
 % interesting views, formalize the notion of ``interestingness'', and thoroughly
 % explore the space of possible optimizations.
-%In this work, we explored two distinct implementations of \VizRecDB, both on top
+%In this work, we explored two distinct implementations of \SeeDB, both on top
 %of a database.
-In this paper, we describe two implementations of \VizRecDB\ that address the
+In this paper, we describe two implementations of \SeeDB\ that address the
 challenges from \cite{DBLP:conf/vldb/Parameswaran2013}.
-In our first implementation, we implement \VizRecDB\ as a wrapper on top of a
+In our first implementation, we implement \SeeDB\ as a wrapper on top of a
 database system and study how far we can push existing systems to support a
-\VizRecDB-type workload.
+\SeeDB-type workload.
 In the second, we overcome the constraints of the DBMS SQL-based API by writing a custom system
 that  shares sequential scans and query results between views, and employs
 statistical methods to perform aggressive pruning
 based on intermediate results.
-For each implementation of \VizRecDB, we also develop implementation-specific
+For each implementation of \SeeDB, we also develop implementation-specific
 optimizations that leverage the underlying system architecture.
 % SRM already said
 %At its core, given a query $Q$ indicating the subset of data that the analyst is
-%interested in, the goal of \VizRecDB\ automatically {\em identifies and
+%interested in, the goal of \SeeDB\ automatically {\em identifies and
 %highlights to the analyst the most interesting views of the query results using
 %methods based on deviation}.
 
 The contributions of this paper are:
 \begin{denselist}
-  \item We design \VizRecDB as a stand-alone visual data exploration system,
+  \item We design \SeeDB as a stand-alone visual data exploration system,
   with an interactive front-end. We explore and evaluate two distinct implementations of the system, one as a
   wrapper around a database and another a custom solution (Section~\ref{sec:system_architecture}).
-  \item For the DBMS-backed implementation of \VizRecDB (Section~\ref{sec:basic_framework}), we
+  \item For the DBMS-backed implementation of \SeeDB (Section~\ref{sec:basic_framework}), we
   design a suite of optimizations to minimize the number of queries executed and to
   maximize the sharing of scans between queries, 
   including bin-packing~\cite{garey} algorithms and parallelization
   (Section~\ref{sec:dbms_optimizations}).
-  \item For the custom implementation of \VizRecDB,  we adapt techniques 
+  \item For the custom implementation of \SeeDB,  we adapt techniques 
   from both traditional confidence-interval-based~\cite{hoeffding1963probability} top-$k$ ranking and the
    multi-armed bandit problem~\cite{bandits} 
    for the problem of finding the top-$k$ views (Section~\ref{sec:in_memory_execution_engine}).
   \item We explore view pruning techniques based on data distribution
-  to prune views even before they are evaluated by the \VizRecDB\ system 
+  to prune views even before they are evaluated by the \SeeDB\ system 
   (Section~\ref{sec:pruning}).
   \item We evaluate the performance of our optimizations on a range of
   real and synthetic datasets and demonstrate the resulting 8--20X speedup 
   (Section~\ref{sec:experiments}). We also demonstrate that our algorithms
   improve performance without affecting utility of visualizations significantly.
 \end{denselist}
-In our appendix, we present a qualitative study of \VizRecDB, 
+In our appendix, we present a qualitative study of \SeeDB, 
 and discuss alternative designs as well as future work.
 
 Finally, we note that although we are primarily motivated by efficiently 
@@ -436,25 +436,25 @@ many other areas.
 
 
 
-% In this demo, we demonstrate a system called \VizRecDB\
+% In this demo, we demonstrate a system called \SeeDB\
 % \cite{DBLP:conf/vldb/Parameswaran2013} that automates the labor-intensive parts
 % of the aforementioned data analysis process by automatically identifying and
 % producing high-quality views for any input query. Specifically, given a query
-% $Q$ posed by the user, \VizRecDB\ explores all possible views of $Q$, determines
+% $Q$ posed by the user, \SeeDB\ explores all possible views of $Q$, determines
 % the ``interesting''-ness of each of the views based on deviation and returns to
 % the user the set of views that it deems the most interesting. The user can then
 % limit his analysis to this high-quality set of views.
 
 % In the process of automatically producing an interesting set of views for any
-% query, \VizRecDB\ must address a few challenges: (a) the size of the space of
+% query, \SeeDB\ must address a few challenges: (a) the size of the space of
 % potential views increases as the square of the number of attributes in a table,
 % and even for a moderately sized table (e.g. 1M rows, 100 attributes) generating
-% all views is prohibitively expensive; as a result, \VizRecDB\ must intelligently
+% all views is prohibitively expensive; as a result, \SeeDB\ must intelligently
 % explore this space; (b) computing each view and its utility independently is
-% expensive and wasteful, and hence \VizRecDB\ must share computation between
-% queries; and (c) since visual analysis must happen in real-time, \VizRecDB\ must
+% expensive and wasteful, and hence \SeeDB\ must share computation between
+% queries; and (c) since visual analysis must happen in real-time, \SeeDB\ must
 % tradeoff accuracy of views for reduced latency. In Section
-% \ref{sec:system_architecture}, we describe how \VizRecDB\ addresses these
+% \ref{sec:system_architecture}, we describe how \SeeDB\ addresses these
 % challenges.
 
 
@@ -493,8 +493,8 @@ many other areas.
 
 
 
-% Since \VizRecDB\ must rank views based on utility, accurately measuring 
-% utility is cruicial. \VizRecDB\ is based on the principle
+% Since \SeeDB\ must rank views based on utility, accurately measuring 
+% utility is cruicial. \SeeDB\ is based on the principle
 % that it is the {\bf deviations from expected behavior that make a view
 % interesting}. For instance, in the above example, the researcher would be
 % interested in the fact that high-cost patients actually visit a specific set of
@@ -502,9 +502,9 @@ many other areas.
 % would be interested in knowing that the high-cost patients have longer hospital
 % stays compared to the rest of the population. Thus, given a query, interesting
 % trends are those that differ significantly between the query and the underlying
-% dataset. \VizRecDB\ therefore assigns higher utility to views that show divergent
+% dataset. \SeeDB\ therefore assigns higher utility to views that show divergent
 % trends. (Since it may be more appropriate to compare the high-cost patients with
-% other patients having the same disease but lower cost, so \VizRecDB\ allows the
+% other patients having the same disease but lower cost, so \SeeDB\ allows the
 % user to specify what dataset to compare with).
 
 
@@ -531,7 +531,7 @@ many other areas.
 % 
 % \item Since visualizations tend to convey approximate information, e.g., a trend
 % in a line plot may be more important than knowing the exact coordinates of each
-% point, we can introduce approximations as part of \VizRecDB.  Thus, the utility of
+% point, we can introduce approximations as part of \SeeDB.  Thus, the utility of
 % a discriminating view may be computed approximately but efficiently, and the
 % recommended discriminating views can be populated with approximate results,
 % based on synopses of the base data or of the query result, that can be generated

@@ -4,7 +4,7 @@
 \section{Problem Statement}
 \label{sec:problem_statement}
 
-Given a database $D$ and a query $Q$, \VizRecDB\ considers a number of views (i.e., aggregate queries) that
+Given a database $D$ and a query $Q$, \SeeDB\ considers a number of views (i.e., aggregate queries) that
 can be generated from $Q$ by adding relational operators.
 For the purposes of this discussion, we will refer to views and visualizations
 interchangeably, since it is straightforward to translate views into
@@ -44,7 +44,7 @@ these are the ones that are typically aggregated.
 We limit the class of queries $Q$ posed over $D$ to be
 those that select one or more rows from the fact table, and denote the results
 as $D_Q$. 
-Given such a query $Q$, \VizRecDB\ considers all views $V_i$ that perform a
+Given such a query $Q$, \SeeDB\ considers all views $V_i$ that perform a
 single-attribute group-by and aggregation on $D_Q$. 
 We represent $V_i$ as a
 triple $(a, m, f)$, where $m \in M, a \in A, f \in F$, i.e., the view
@@ -55,12 +55,12 @@ $${\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D_Q\  {\tt GROUP \ \ BY} \ a$$
 Note that all such $V_i$ give rise to two-column results that can 
 be readily visualized (e.g.
 Table~\ref{tab:staplerX}). 
-\VizRecDB\ techniques can directly be used to recommend views that are
+\SeeDB\ techniques can directly be used to recommend views that are
 generated via multi-attribute grouping and aggregation; however,
 for simplicity, we focus on two-column views. 
 
 
-As discussed previously, \VizRecDB\ determines
+As discussed previously, \SeeDB\ determines
 whether a view $V_i$ is interesting
 by computing the deviation between the view applied to the selected data (i.e., $D_Q$) 
 and the view applied to the entire database.
@@ -88,13 +88,13 @@ The utility of a view is our measure for whether the target view is
 the higher the utility, the more the deviation
 from the comparison view, and the more likely the view is to be interesting.
 % Computing distance between probability distributions has
-% been well studied in the literature, and \VizRecDB\ supports a variety of metrics
+% been well studied in the literature, and \SeeDB\ supports a variety of metrics
 % to compute utility, including Earth Movers Distance~\cite{wikipedia-prob-dist}, 
 % Euclidean Distance, Kullback-Leibler Divergence (K-L
 % divergence)~\cite{wikipedia-KL}, and Jenson-Shannon
 % Distance~\cite{wikipedia-JS,entropy-vis}. 
 Computing distance between probability distributions has
-been well studied, and \VizRecDB\ supports all such
+been well studied, and \SeeDB\ supports all such
 metrics that evaluate a distance between two distributions.
 The metric may be supplied by the user, with their
 application in mind.
@@ -103,7 +103,7 @@ to compute utility:
 \begin{denselist}
   \item {\bf Earth Movers Distance (EMD)}~\cite{wikipedia-prob-dist}: Commonly used to
   measure differences between color histograms from images, EMD is a popular metric for comparing
-  discrete distributions. This is the default metric used in \VizRecDB.
+  discrete distributions. This is the default metric used in \SeeDB.
   \item {\bf Euclidean Distance}: The L2 norm or
   Euclidean distance considers the two distributions to be points in a high
   dimensional space and measures the distance between them.
@@ -118,8 +118,8 @@ utility metrics are possible, for our initial exploration into
 visualization recommendations, we chose to focus on the intuitive definitions above.
 In Appendix~\ref{sec:example-viz}, we perform a qualitative study of the EMD
 metric showing that it returns interesting results on real-world datasets.
-We can formally state the \VizRecDB problem as follows:
-% While we set the default \VizRecDB\ distance metric as EMD (due to its simplicity),
+We can formally state the \SeeDB problem as follows:
+% While we set the default \SeeDB\ distance metric as EMD (due to its simplicity),
 % users can choose to use any of the distance metrics defined above. We note that
 % the above definition of a view and its utility is merely one of many possible
 % definitions and we choose this particular definition for simplicity and its
@@ -132,12 +132,12 @@ have the largest values of $U(V)$ among all the views that can be represented
 using a triple $(a, m, f)$, while minimizing total computation time.
 \vspace{-5pt}
 \end{problem}
-Thus, \VizRecDB\ aims to find the $k$ views (obtained by adding a single aggregate
+Thus, \SeeDB\ aims to find the $k$ views (obtained by adding a single aggregate
  and group-by operator) that have the largest utility based on the function $U$.
 
 While the problem definition above assumes that we have been provided with a
 query $Q$ and we compare views on $Q$ with corresponding views on the entire
-database $D$, the \VizRecDB\ framework is agnostic to where the comparison
+database $D$, the \SeeDB\ framework is agnostic to where the comparison
 dataset is coming from and its contents. So the same formulation works for Use
 Cases II and III discussed in Section \ref{sec:introduction}. 
 

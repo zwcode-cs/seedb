@@ -22,7 +22,7 @@ import difference_operators.DifferenceOperator;
 import api.SeeDB;
 
 public class SeeDBTest_old {
-	private String defaultQuery1 = "select * from election_data where cand_nm='McCain, John S'"; //"select * from table_10_2_2_3_2_1 where measure1 < 2000";
+	private String defaultQuery1 = "select * from election_data where dim_cand_nm='McCain, John S'"; //"select * from table_10_2_2_3_2_1 where measure1 < 2000";
 	private String defaultQuery = "select * from table_10_2_2_3_2_1 where measure1 < 2000"; //"SELECT * FROM adult_census WHERE (dim_sex = 'Male')"; //
 	private String defaultQuery2 = "select * from table_10_2_2_3_2_1 where measure1 >= 2000";
 	private String defaultQuery3 = "select * from election_data where dim_cand_nm='McCain, John S'";
@@ -211,7 +211,7 @@ public class SeeDBTest_old {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void endToEndAggregateGroupByDifferenceWithSingleQueryFullComparisonTest() {
 		System.out.println("testing here");
 		long start = System.currentTimeMillis();
@@ -235,7 +235,7 @@ public class SeeDBTest_old {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void endToEndAggregateGroupByDifferenceWithSingleQueryFullComparisonNoMergeTest() {
 		SeeDB seedb = new SeeDB();
 		ExperimentalSettings settings = new ExperimentalSettings();

@@ -11,7 +11,7 @@ avoid building a one-off, specialized system.
 However, as the current database API stands, there is no way to share table
 scans between operations, keep track of custom statistics or intercept the scan
 mid-way to perform pruning.
-If we are two implement a \VizRecDB-style operator in a traditional database
+If we are two implement a \SeeDB-style operator in a traditional database
 system, we would have to support the following operations:
 \squishlist
 \item Ability to store custom state during aggregation operations (e.g.
@@ -25,7 +25,7 @@ sleep functionality) in order to update the custom state
 \squishend
 
 These operators can be embedded in the query executor or as part of a UDF.
-We lay down these requirements because we expect that not just \VizRecDB\ but
+We lay down these requirements because we expect that not just \SeeDB\ but
 other kinds of similar workloads would also benefit from such an API.
 This implementation is out of scope for the current work, but we plan to explore
 it in future work.

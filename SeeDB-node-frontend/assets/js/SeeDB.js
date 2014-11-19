@@ -58,7 +58,6 @@
       callJava("initialize", query1, query2, function () {
         callJava("computeDifference", function (response) {
           _this.trigger("views", response);
-          console.log(response);
         });
       });
     };

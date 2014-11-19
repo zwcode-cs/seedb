@@ -67,4 +67,11 @@ public class CardinalityView extends AggregateView {
 	public double getUtility(DistanceMetric distanceMetric, boolean normalizeDistributions) {
 		return 0;
 	}
+
+	@Override
+	public List<View> constituentViews() {
+		List<View> res = Lists.newArrayList();
+		res.add(this);
+		return res;
+	}
 }

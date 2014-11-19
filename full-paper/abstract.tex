@@ -5,11 +5,11 @@ Data analysts operating on large volumes of data often rely on visualizations to
 interpret the results of queries.
 However, finding the right visualization given a query of interest is a
 laborious and time-consuming task.
-We propose \VizRecDB, a system to partially automate this task:
-given a query, \VizRecDB\ intelligently explores the space of all possible
+We propose \SeeDB, a system to partially automate this task:
+given a query, \SeeDB\ intelligently explores the space of all possible
 visualizations, evaluates promising visualizations, and automatically recommends
 the most ``interesting'' or ``useful'' visualizations to the analyst.
-In this paper, we present two implementations of \VizRecDB\ which make very
+In this paper, we present two implementations of \SeeDB\ which make very
 different design choices: the first leverages existing database systems as the
 backend and aggressively optimizes queries to get the highest performance; the
 second is a proof-of-concept implementation that has been engineered from
@@ -24,10 +24,10 @@ Similarly, our custom engine can achieve a 10-fold speedup by aggressively
 pruning low-utility views. We further show that pruning does not adversely
 affect the accuracy of views returned.
 With the DBMS optimizations and pruning heuristics, we demonstrate that
-\VizRecDB can be used to recommend interesting views in near-interactive time
+\SeeDB can be used to recommend interesting views in near-interactive time
 scales.
-% Our end-to-end experiments also demonstrate that that \VizRecDB\ can be used to
+% Our end-to-end experiments also demonstrate that that \SeeDB\ can be used to
 % find interesting visualizations in interactive time scales.
 % Finally, we present the results of a user study that evaluates our method for
 % interesting visualizations, the relative quality of different distance metrics
-% and the \VizRecDB\ system.
+% and the \SeeDB\ system.
