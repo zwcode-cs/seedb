@@ -60,6 +60,11 @@ latency in visualization systems reduces the rate at which users observe,
 analyze and draw conclusions from data, thus making a strong case for
 interactive response times.
 
+Finally, finding interesting visualizations in data also involves understanding
+user preferences. 
+In future work, we plan to learn user preference models towards visualizations
+using techniques similar to \cite{CHI:YangLZ14, IUIGotzW09}. 
+
 
 % \agpneutral{Other recent work has addressed other aspects of visualization
 % scalability, including prefetching and caching~\cite{doshi2003prefetching}, data
@@ -71,21 +76,66 @@ interactive response times.
 % online.}\\
 
 \stitle{Data Cubes:}
-The work done in \SeeDB\ is similar to previous literature in
-browsing OLAP data cubes. 
-Instead of building complete data cubes,
-one can think of \SeeDB\ views as projections of the cube along various
-dimensions.
- Data cubes have been very well studied in the literature
-\cite{DBLP:conf/SIGMOD/HarinarayanRU96, DBLP:jounral/DMKD/GrayCBLR97}, and work such as
-~\cite{DBLP:conf/vldb/Sarawagi99, DBLP:conf/vldb/SatheS01,
-DBLP:conf/vldb/Sarawagi00, DBLP:conf/SIGKDD/OrdonezC09} has explored the
-questions of allowing analysts to find explanations for trends, get suggest for
-cubes to visit, identify generalizations or patterns starting from a single
-cube. 
-This literature is not directly applicable to our problem since the cubes we
-are considering have 10s to 100s of dimensions, making traditional cube
-algorithms infeasible. 
+OLAP cubes generalize the idea of group-bys and compute aggregates for all
+possible combinations of dimensions in a table.
+There has been much research in the area of efficiently computing OLAP cubes 
+~\cite{DBLP:jounral/DMKD/GrayCBLR97,  DBLP:conf/VLDB/AgarwalADG96} as well as 
+using data mining techniques to aid in exploration of the cube 
+~\cite{DBLP:conf/vldb/Sarawagi99, DBLP:conf/vldb/SatheS01, DBLP:conf/vldb/Sarawagi00, 
+DBLP:conf/SIGKDD/OrdonezC09}. 
+The views considered by \SeeDB, namely, single aggregate group-bys, are a subset of the 
+aggregates that make up an OLAP cube. 
+The problem addressed by \SeeDB\ is different from traditional cube problems in two important 
+ways: 
+(1) since \SeeDB\ queries are ad-hoc, all computation must happen online, there is
+little room for pre-computation.
+(2) since \SeeDB\ must find the most interesting views, \SeeDB\ routinely evaluates hundreds of 
+views; cubes with hundreds of attributes are unheard of, they are usually limited to low tens 
+of attributes. 
+Our DBMS optimizations from Section \ref{} draw from ~\cite{DBLP:jounral/DMKD/GrayCBLR97, 
+DBLP:conf/VLDB/AgarwalADG96} to efficiently compute a large number of views. 
+However, as seen in the experimental evaluation, these techniques have limited scalability for
+large number of views and we must resort to the heuristic techniques of Section \ref{}
+for interactive response times.
+
+\cite{DBLP:conf/EDBT/SarawagiAM98, DBLP:conf/vldb/Sarawagi00} among others have explored 
+the question of finding ``interesting'' cells in a cube.
+Similar to \SeeDB, the ``interesting''-ness of a cell is defined by how surprising
+its value is given the other values in the cube.
+\cite{DBLP:conf/EDBT/SarawagiAM98} uses techniques based on the table analysis method and
+\cite{DBLP:conf/vldb/Sarawagi00} uses techniques based on entropy to find interesting cells.
+While these questions are of a similar flavor to the one addressed by our work, \SeeDB\ operates
+in a different context.
+First, instead of comparing individual cells, \SeeDB\ evaluates sets of aggregates (i.e. distributions
+for our view), thus focusing on trends in values rather than individual values.
+Second, instead of finding ``intrinsically'' interesting aggregates, \SeeDB\ evaluates aggregate views
+with respect to a comparison dataset. 
+Because of these fundamental differences, the techniques in prior work such as \cite{DBLP:conf/EDBT/SarawagiAM98, 
+DBLP:conf/vldb/Sarawagi00} cannot be applied in our context.
+We note however that incorporating an ``intrinsic'' interesting-ness metric into our utility function is an
+avenue for future work.
+
+Another work by Sarawagi in this space (\cite{DBLP:conf/vldb/Sarawagi99}) proposes techniques to explain an
+increase or decrease in a specific aggregate by drilling down into that aggregate.
+Once again, while related, this work addresses a different question; \SeeDB\ seeks to find interesting
+differences between two datasets rather than explaining known differences. 
+
+% The work done in \SeeDB\ is similar to previous literature in
+% browsing OLAP data cubes. 
+% Instead of building complete data cubes,
+% one can think of \SeeDB\ views as projections of the cube along various
+% dimensions.
+%  Data cubes have been very well studied in the literature
+% \cite{DBLP:conf/SIGMOD/HarinarayanRU96, DBLP:jounral/DMKD/GrayCBLR97}, and work such as
+% ~\cite{DBLP:conf/vldb/Sarawagi99, DBLP:conf/vldb/SatheS01,
+% DBLP:conf/vldb/Sarawagi00, DBLP:conf/SIGKDD/OrdonezC09} has explored the
+% questions of allowing analysts to find explanations for trends, get suggest for
+% cubes to visit, identify generalizations or patterns starting from a single
+% cube. 
+% This literature is not directly applicable to our problem since the cubes we
+% are considering have 10s to 100s of dimensions, making traditional cube
+% algorithms infeasible. 
+
 
 % \stitle{General Purpose Data Analysis Tools:}
 % Our work is also related to data mining and the work on building general purpose
@@ -102,17 +152,19 @@ algorithms infeasible.
 \stitle{Other:}
 The techniques we use in our custom implementation of \SeeDB\ draw upon work
 from top-k ranking, statistical sampling and the multi-armed bandit strategies. 
-In particular, the confidence interval technique discussed in Section
-\ref{sec:confidence_interval} draws inspiration from the seminal top-k ranking
-work by Fagin and others in \cite{DBLP:conf/pods/FaginLN01, DBLP:conf/vldb/IlyasAE04}.
-Similarly, multi-armed bandits (referenced in Section
-\ref{sec:multi_armed_bandit}) form 
+
+The confidence interval-based technique discussed in Section \ref{sec:confidence_interval} 
+draws inspiration from the seminal top-k ranking work by Fagin and others in 
+\cite{DBLP:conf/pods/FaginLN01, DBLP:conf/vldb/IlyasAE04}. The technique we use is broadly
+applicable and has been previously applied to probabilistic top-k ranking~\cite{DBLP:conf/ICDE/ReDS07} 
+and rapid sampling for visualizations~\cite{DBLP:journals/corr/KimBPIMR14}. \mpv{References for statistical
+sampling}
+
+Similarly, multi-armed bandits (referenced in Section \ref{sec:multi_armed_bandit}) form 
 a rich area of research having applications from ad auctions to reinforcement learning. 
-Our technique is related to the original UCB algorithm \cite{AuerCF02, LaiR85}
+Our problem presents a novel application of multi-armed bandit strategy to data analysis\mpv{??} 
+and visualization.
+The technique we adopt is related to the original UCB algorithm \cite{AuerCF02, LaiR85}
 as well as recent work related to the top-$k$ MAB variant \cite{BubeckWV13,
-audibert2010best}.
-Finally, finding interesting visualizations in data also involves understanding
-user preferences. 
-In future work, we plan to learn user preference models towards visualizations
-using techniques similar to \cite{CHI:YangLZ14, IUIGotzW09}. 
+audibert2010best}. \mpv{revisit papers -- how is it related?}
 
