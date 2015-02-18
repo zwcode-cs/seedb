@@ -1,42 +1,42 @@
 %!TEX root=document.tex
 
 
-\subsection{SeeDB Frontend}
+\subsection{SeeDB Client}
 \label{sec:SeeDB_frontend}
-
-The \SeeDB\ frontend, designed as a thin client, performs two main functions: it
-allows the analyst to issue a query, 
-and it displays visualizations of the results (or views) produced by the \SeeDB\
-backend.
-To provide the analyst maximum flexibility in issuing queries, \SeeDB\
-provides the analyst with three
-mechanisms for specifying an input query: 
+\SeeDB\ implements a light-weight client that performs two main functions: it
+allows the user to select data of interest by issuing a query, 
+and it displays recommended visualizations generated from the high-utility views 
+returned by the \SeeDB\ backend.
+% To provide a proxy for the visualization software environment, 
+%To provide the analyst maximum flexibility in issuing queries, 
+The \SeeDB\ client provides the user three mechanisms for specifying an input query: 
 (a) directly filling in SQL into a text box, 
-(b) using a query builder tool that allows analysts
+(b) using a query builder tool that allows users
 unfamiliar with SQL to formulate queries through a form-based interface, and (c)
 using pre-defined query templates which encode commonly performed operations,
 e.g., selecting outliers in a particular column. 
 %We find that pre-defined query
 %templates are particularly useful since analysts are often interested in
 %anomalous data points.
-
-Once the analyst issues a query via the \SeeDB\ frontend, the backend
-evaluates various views and delivers the most interesting ones (based on
-utility) to the frontend.
-For each view delivered by the backend, the frontend creates a visualization
-based on parameters such as the data
-type (e.g. ordinal, numeric), number of distinct values, and semantics (e.g.
-geography vs. time series).
-The resulting set of  visualizations is displayed to the analyst who can then
-easily examine these $k$ (user-specified) ``most interesting'' views at a glance, 
-explore specific views in detail via drill-downs, 
-%by hovering and clicking on various portions of the view, 
-and study metadata for each view (e.g. size of result, sample data, value with
-maximum change and other statistics). 
+Once the user issues a query via the \SeeDB\ client, the backend
+evaluates various views and delivers high-utility views to the frontend.
+For each view delivered by the backend, the frontend creates and displays the 
+corresponding visualization.
+% based on parameters such as the data
+% type (e.g. ordinal, numeric), number of distinct values, and basic semantics (e.g.
+% geography vs. time series).
+% The resulting set of visualizations is displayed to the user who can then
+% easily examine these $k$ (user-specified) ``most interesting'' visualizations
+% at a glance.
+% In a full-fledged visualization system, the user would then be able to explore 
+% specific views in detail via drill-downs, and study metadata for each view 
+% (e.g. size of result, sample data, value with maximum change and other statistics)
+% and perform further analysis. \mpv{do we need the screen shot now, might save space. 
+% Perhaps link to seedb website?}
 %The analyst can also slice-and-dice views further by performing drill-downs on
 %specific attributes in the view. 
-Figure~\ref{fig:frontend1} shows a screenshot of the \SeeDB\ frontend (showing
-the query builder and resulting visualizations) in action.
+Figure~\ref{fig:frontend1} shows a screenshot of the \SeeDB\ frontend showing
+the query builder and resulting visualizations in action.
  
 \begin{figure}[htb]
 \vspace{-15pt}
@@ -52,8 +52,8 @@ clip=true]{Images/viz_panel.pdf}}}}
 \vspace{-10pt}
 \end{figure} 
 
-In this work, we focus on the \SeeDB\ backend and develop techniques to
-speed up identification of interesting views. As a result, we leave the
-development of a more advanced and flexible \SeeDB\ frontend for future work. 
+%In this work, we focus on the \SeeDB\ backend and develop techniques to
+%speed up identification of interesting views. As a result, we leave the
+%development of a more advanced and flexible \SeeDB\ frontend for future work. 
 % In the next section, we describe the \SeeDB\ execution engine and discuss
 % two implementations in detail.

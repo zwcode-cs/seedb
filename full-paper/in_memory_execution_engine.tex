@@ -1,11 +1,9 @@
 %!TEX root=document.tex
 
 
-\subsection{Custom Execution Engine}
+\section{Custom Execution Engine}
 \label{sec:in_memory_execution_engine}
-
-From our implementation of the DBMS-backed execution engine, 
-we learned that its design suffers from two drawbacks:
+The DBMS-backed execution engine from the previous section has two drawbacks:
 (a) the number of scans performed of the data is far too high, and
 (b) far too many resources are wasted on low-utility views.
 As a result, our goals with the custom execution engine are as follows:
@@ -15,32 +13,29 @@ suffices to compute all views;
 be pruned on the fly; and 
 (c) early stopping once the top views have been identified. 
 We now describe the
-basic execution framework adopted by our engine followed by specific
+basic execution framework followed by specific
 pruning strategies.
 
-\subsubsection{Basic Framework}
+\stitle{Basic Framework}:
 \label{subsec:basic_framework}
-Algorithm~\ref{algo:custom_exec_engine} in the appendix shows the basic framework adopted by our
-custom execution engine.
-\SeeDB\ buffers data from the input file (on disk or in memory) and processes it
+\SeeDB\ custom execution engine buffers data from the input table (on disk or in memory) 
+and processes it in phases. 
+Within each phase, \SeeDB\ processes a fixed number of records by reading the input 
 one record at a time.
 We assume that {\it records in the file are in random order}; if they are not,
 we must apply a pre-processing step to get them in random order.
-For each record read in, \SeeDB\ determines whether the record satisfies the
-input query, and then updates the target and comparison views for all views
-currently in the running or have been ``accepted'' as being in the top-$k$.
+For each record, \SeeDB\ determines whether the record satisfies the
+input query and updates the target and comparison views for views
+currently in the running or ``accepted'' as being in the top-$k$.
 It also updates the utility values and other algorithm-specific statistics for
 each view.
-To avoid doing expensive pruning computations after reading each record,
-\SeeDB processes the file in phases where each phase consists of processing a
-fixed number of records.
-At the end of a phase, \SeeDB\ checks to see if any views can be pruned,
-i.e., discarded, or accepted as being in the top-$k$.
+At the end of a phase, \SeeDB\ attempts to prune views by discarding low utility views and
+accepting high utility views (rule depends on the specific pruning technique).
 % At one extreme, each phase consists of just one record, in which case views
 % are pruned after ever record is read and the views are updated;
 % at the other extreme, we use only one phase, in which case views are only pruned
 % after all the records are read (i.e., effectively no pruning). 
-The list of views in the running is updated and processing continues.
+The list of views in the running is updated and the next phase begins.
 Once we meet a pre-defined stopping criteria, $k$ views with the
 highest utility are returned to the frontend.
 We implement two stopping criteria: we either stop once the entire table has
@@ -48,6 +43,33 @@ been processed (and return exact views to the user), or we stop after
 we have ``accepted'' $k$ views as being in the top-$k$ (and return
 approximations of the top-$k$ views to the user).
 We use the former as the default stopping condition.
+Algorithm~\ref{algo:custom_exec_engine} shows the 
+basic framework adopted by our custom execution engine.
+
+\begin{algorithm}[h]
+\caption{Custom Execution Engine Algorithm}
+\label{algo:custom_exec_engine}
+\begin{algorithmic}[1]
+\State viewsInRunning $\gets$ \{all views\}
+\State currPhase $\gets$ 0
+\While {file.hasNext()}
+\State record $\gets$ file.NextRecord()
+\For {view in viewsInRunning}
+\State view.updateView(record)
+\State view.updateStatistics()
+\EndFor
+\If {currPhase.End()}
+\State pruneViews(viewsInRunning)
+\State currPhase.Next()
+\EndIf
+\If {stoppingCondition.True()}
+\State break
+\EndIf
+\EndWhile
+\State return viewsInRunning.sort().getTopK()
+\end{algorithmic}
+\end{algorithm}
+
 
 % Note that we have two alternatives for computing the visualizations for the top-$k$
 % views, once $k$ views have been accepted: 
@@ -80,23 +102,49 @@ We use the former as the default stopping condition.
 % \end{algorithmic}
 % \label{algo:aggregatecomputation}
 % \end {algorithm}
+\stitle{Pruning Techniques}: The pruning techniques we discuss next enable \SeeDB\ to discard low-utility views
+early, thus saving computational resources and potentially allowing \SeeDB\ recommend
+views even before all records have been processed.
+To understand the intuition behind the pruning techniques, recall that we define utility of
+view $V_j$ as $ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$ where $S$ is a distance function measuring
+the distance between the target and comparison distributions, $P[V_i (D_Q)]$ and $P[V_i (D)]$.
+Let the total number of records in the input be denoted by $R$ and the total records
+read by phase $j$ as $R_j$. 
+Once $R_j$ records have been read in, we can estimate target and comparison 
+distributions, $\widetilde{P}^j[V_i (D_Q)]$ and $\widetilde{P}^j[V_i (D)]$.
+As \SeeDB\ processes larger portions of the file, these estimates become more accurate. 
+As one might expect:
 
+$$\lim_{R_j \rightarrow R}\widetilde{P}^j[V_i (D_Q)] \rightarrow P[V_i (D_Q)] \cap 
+\widetilde{P}^j[V_i (D)] \rightarrow P[V_i (D)] $$
 
+% metric discussed in Section \ref{} are of the form $\mathcal{F}:
+% (\mathcal{R}^p, \mathcal{R}^p) \rightarrow \mathcal{R}$, i.e. they are functions
+% measuring the distance between the target and comparison distributions of a view.
+% For view $V_j$ let $\mathcal{P}^j_T$ and $\mathcal{P}^j_C$ respectively denote the 
+% target and comparison view of $V_j$.
 
+Therefore, as we process records in every phase $j$, we can keep running estimates of the
+view distributions as well as view utilities, $\widetilde{U}^j(V_i)$.
+Moreover, {\it we can use these estimates to perform the pruning of low utility views}.
+In this paper, we propose and evaluate two different strategies
+to perform the pruning of views based on utility estimates. 
+The first strategy is based on top-$k$ algorithms that use confidence intervals 
+and the second is based on an adaptation of the Multi-Armed Bandit problem.
 
-The general idea is to keep running estimates of utility for each view, and
-perform pruning of low utility views based on these estimates.
-To implement a pruning strategy, we merely specify two things: (1)
-statistics to track for each view, and 
-(2) the rule used to prune views at the end of a phase.
+% of the view distributions $\widetilde{\mathcal{P}}^{i,j}_T$ and $\widetilde{\mathcal{P}}^{i,j}_C$
+% and estimates of the utility $\mathcal{F}(\widetilde{\mathcal{P}}^{i,j}_T, 
+% \widetilde{\mathcal{P}}^{i,j}_C)$.
+
+% The general idea is to keep running estimates of utility for each view, and
+% perform pruning of low utility views based on these estimates.
+% To implement a pruning strategy, we merely specify two things: (1)
+% statistics to track for each view, and 
+% (2) the rule used to prune views at the end of a phase.
 % An important side effect of our implementation is that
 % as we scan more data from the file, our estimates of utilities become more
 % accurate.
-In this paper, we propose and evaluate three different strategies
-to perform the pruning of views. The first two
-strategies are based on top-$k$ algorithms that use confidence intervals, and
-the third is based on an adaptation of the Multi-Armed Bandit problem to our
-setting.
+
 % 
 % \begin{itemize}
 % \item The first two strategies are based on confidence interval-based top-$k$ algorithms.
@@ -127,17 +175,23 @@ setting.
 % \end{itemize}
 
 
-\subsubsection{Confidence Interval-Based Pruning}
+\subsection{Confidence Interval-Based Pruning}
 \label{sec:confidence_interval}
-We first describe at a high-level our confidence interval-based pruning strategies,
-and then describe the two specific instantiations of these strategies,
-based on worst-case, and normal confidence intervals respectively.
-
-Confidence Interval-based pruning works as follows: at every step of our
-algorithm, we keep an estimate of the mean utility for every view and a
+% We first describe at a high-level our confidence interval-based pruning strategies,
+% and then describe the two specific instantiations of these strategies,
+% based on worst-case, and normal confidence intervals respectively.
+Confidence Intervals and related statistical theory has been widely used in database
+research. 
+For instance, ~\cite{DBLP:conf/ICDE/ReDS07} uses confidence intervals to
+return top-$k$ results from probabilistic databases.
+Similarly, recent work (\cite{DBLP:journals/corr/KimBPIMR14}) uses sampling-based confidence
+intervals to rapidly order aggregate results.
+We adopt a similar strategy and use confidence intervals on utility to prune low-utility views.
+Our strategy works as follows: at every step of our
+algorithm, we keep an estimate of the mean utility for every view $V_i$ and a
 confidence interval around that mean.
-That is, for every view $V_i$ we track its mean utility $u_i$, and a
-confidence interval around the mean, $u_i \pm c_i$. 
+%That is, for every view $V_i$ we track its mean utility $u_i$, and a
+%confidence interval around the mean, $u_i \pm c_i$. 
 At the end of a phase, we use the following rule to prune low-utility
 views:
 {\em If the upper bound of the utility of view $V_i$ is lesser
@@ -146,7 +200,7 @@ than the lower bound of the utility of $k$ or more views, then $V_i$ is discarde
 \begin{figure}[h]
 \vspace{-10pt}
 \centerline{
-\hbox{\resizebox{9cm}{!}{\includegraphics[trim=10mm 100mm 55mm 35mm, 
+\hbox{\resizebox{8cm}{!}{\includegraphics[trim=10mm 100mm 55mm 35mm, 
 clip=true]{Images/confidence_pruning.pdf}}}}
 \vspace{-20pt}
 \caption{Confidence Interval based Pruning}
@@ -154,8 +208,7 @@ clip=true]{Images/confidence_pruning.pdf}}}}
 \vspace{-15pt}
 \end{figure}
 
-We illustrate this with an example. Suppose a dataset has 4 views $V_1$
-to $V_4$ and we want to find the top-$2$ views.
+To illustrate, suppose a dataset has 4 views $V_1$ to $V_4$ and we want to find the top-$2$ views.
 Further suppose that at the end of phase $p$,
 $V_1$-$V_4$ have confidence intervals as shown in Figure \ref{fig:conf_interval}.
 Views $V_1$ and $V_2$ have the highest estimates for utility so far.
@@ -163,34 +216,44 @@ Consider view $V_3$; we see that its confidence interval overlaps with the
 confidence intervals of the current top views, making it possible
 that $V_3$ will be in the final top views. On the other hand, the confidence
 interval for $V_4$ lies entirely below the lowerbounds of $V_1$ and $V_2$.
-Since we can claim with high probability (depending on the confidence threshold)
+Since we can claim with high probability
 that the utility of $V_4$ lies within its confidence interval, it follows that
 with high probability, $V_4$'s utility will be lower than that of both $V_1$ and
 $V_2$, and it will not appear in the top-$2$ views.
 This is our pruning rule. 
 We state the algorithm fomally in
-Algorithm~\ref{algo:ci_based_pruning} in the appendix.
+Algorithm~\ref{algo:ci_based_pruning}.
 
-Next, we discuss two confidence interval computation techniques.
+\begin{algorithm}
+\caption{Confidence Interval Based Pruning}
+\label{algo:ci_based_pruning}
+\begin{algorithmic}[1]
+\State viewsInRunning.sortByUpperbound()
+\State topViews $\gets$ viewsInRunning.getTopK()
+\State lowestLowerbound $\gets$ min(lowerbound(topViews))
+\For {view $\not \in$ topViews}
+\If {view.upperbound < lowestLowerbound}
+\State viewsInRunning.remove(view)
+\EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
 
-
-\stitle{Worst-Case Confidence Intervals.} 
-Suppose we have $N$ values $y_1, \ldots, y_n$ in $[0, 1]$, and we are drawing
-from them without replacement. 
-Say we have drawn $m$ values so far, which are $Y_1, \ldots, Y_m$.
-Then, we use the Hoeffding-Serfling inequality~\cite{serfling1974probability} 
-to derive a running 
-confidence interval around the current mean 
+We choose to work with {\it worst case} confidence intervals as derived from
+the Hoeffding-Serfling inequality~\cite{serfling1974probability}.
+The inequality states that if we are given $N$ values $y_1, \ldots, y_N$ in 
+$[0, 1]$ with average $\mu$, and we have have drawn $m$ values without replacement, $Y_1, \ldots, Y_m$, 
+then we can calculate a running confidence interval around the current mean 
 of the $m$ values such that the actual mean of the $N$
 is always within this confidence interval with a probability of $1 - \delta$:
 \begin{theorem}
 \label{thm:hs}
-Let $\calY = y_1,$ $\ldots,$ $y_N$ be a set of $N$ 
-values in $[0,1]$ with average value
-$\frac1N \sum_{i=1}^N y_i = \mu$.
-Let $Y_1,\ldots,Y_N$ be a 
-sequence of random variables drawn from $\calY$ without
-replacement.
+% Let $\calY = y_1,$ $\ldots,$ $y_N$ be a set of $N$ 
+% values in $[0,1]$ with average value
+% $\frac1N \sum_{i=1}^N y_i = \mu$.
+% Let $Y_1,\ldots,Y_N$ be a 
+% sequence of random variables drawn from $\calY$ without
+% replacement.
 Fix any $\delta > 0$. For $1 \le m \le N-1$, define
 $$
 \varepsilon_m = \sqrt{\frac{(1-\frac{m-1}N)(2\log \log (m) + \log(\pi^2/3\delta))}{2m}}.
@@ -202,53 +265,55 @@ $$
 $$
 
 \end{theorem}
-In our setting, the current mean, $\sum Y_i / m$, is the 
-the current estimate of the utility of a view 
-based on the entire set of records seen thus far. 
-Therefore, to apply this pruning strategy, the only statistics
-we track are the current estimates of view utilities.
+In our setting, each $Y_i$ corresponds to the an estimate of utility computed based on the
+records seen so far. 
+% estimates of utility that we 
+% have obtained based on the set of records seen thus far. 
+% Therefore, to apply this pruning strategy, we track the current estimates of
+% view utilities at each step and use the above confidence interval calculation
+% to perform pruning at the end of every phase.
 
-Note that in this setting, we are assuming that since the
-utility estimate at any stage of processing is in $[0, 1]$, 
-the $Y_i$ values, i.e., the incremental contributions to the utility
-that come from reading each record, are also between $[0, 1]$,
-and are independent of the current value of the utility. 
-This is is not true in our setting, 
-because the utility function could be arbitrary.
-Thus, the theoretical guarantees do not directly apply to our setting. 
+% Note that in this setting, we are assuming that since the
+% utility estimate at any stage of processing is in $[0, 1]$, 
+% the $Y_i$ values, i.e., the incremental contributions to the utility
+% that come from reading each record, are also between $[0, 1]$,
+% and are independent of the current value of the utility. 
+% This is is not true in our setting, 
+% because the utility function could be arbitrary.
+% Thus, the theoretical guarantees do not directly apply to our setting. 
 
-\stitle{Normal Confidence Intervals.} In this scheme, we assume that the utility
-distributions for each view are Gaussian and apply the standard confidence
-intervals to our utility measurements.
-% We describe the equations first assuming that
-% when every time a record is read, for every view,
-% a utility value is ``sampled''
-% from a normal distribution. (This assumption is not
-% quite correct; we will discuss this  below.)
+% \stitle{Normal Confidence Intervals.} In this scheme, we assume that the utility
+% distributions for each view are Gaussian and apply the standard confidence
+% intervals to our utility measurements.
+% % We describe the equations first assuming that
+% % when every time a record is read, for every view,
+% % a utility value is ``sampled''
+% % from a normal distribution. (This assumption is not
+% % quite correct; we will discuss this  below.)
 
-Consider a specific view $V_i$. 
-If the mean utility across the sampled records 
-(i.e., the records read thus far) is $\mu$,
-and the variance in the utility of the sampled records
-is $\sigma$, then, we have:
-\begin{align}
-CI & = \mu \pm z \times \frac{\sigma}{\sqrt{m}}
-\end{align}
-Thus, the CI (or confidence interval) is 
-a confidence interval centered around $\mu$, 
-and depends on $\sigma$. 
-It additionally depends on the number of records
-read thus far, $m$,
-and $z$, the factor that depends on our confidence interval threshold.
-For instance, for a 95\% confidence interval, $z = 1.96$.
+% Consider a specific view $V_i$. 
+% If the mean utility across the sampled records 
+% (i.e., the records read thus far) is $\mu$,
+% and the variance in the utility of the sampled records
+% is $\sigma$, then, we have:
+% \begin{align}
+% CI & = \mu \pm z \times \frac{\sigma}{\sqrt{m}}
+% \end{align}
+% Thus, the CI (or confidence interval) is 
+% a confidence interval centered around $\mu$, 
+% and depends on $\sigma$. 
+% It additionally depends on the number of records
+% read thus far, $m$,
+% and $z$, the factor that depends on our confidence interval threshold.
+% For instance, for a 95\% confidence interval, $z = 1.96$.
 
-We note that the assumption that we are drawing from a normal distribution is
-not quite accurate since our samples vary in size and are not independent.
-As a result, we make two simple adjustments to the confidence interval
-calculations that are described in Appendix~\ref{sec:ci_pruning}.
-In Section \ref{sec:experiments}, we show experimentally on multiple datasets
-that our confidence interval calculations accurately capture utility and can be used to
-perform pruning with high confidence.
+% We note that the assumption that we are drawing from a normal distribution is
+% not quite accurate since our samples vary in size and are not independent.
+% As a result, we make two simple adjustments to the confidence interval
+% calculations that are described in Appendix~\ref{sec:ci_pruning}.
+% In Section \ref{sec:experiments}, we show experimentally on multiple datasets
+% that our confidence interval calculations accurately capture utility and can be used to
+% perform pruning with high confidence.
 
 
 
@@ -364,51 +429,29 @@ perform pruning with high confidence.
 
 
 
-\subsubsection{Multi-Armed Bandit Pruning}
+\subsection{Multi-Armed Bandit Pruning}
 \label{sec:multi_armed_bandit}
 The second class of pruning techniques we explore
-are based on solutions for Multi-Armed Bandit (MAB), a problem 
-in stochastic control. 
-The setting is as follows: 
-a gambler is faced with several slot
-machines (``arms'') that each have an underlying reward
-distribution. 
-At each turn, the gambler must decide which machine
-to play at; when they play the machine, they get a reward.
-The gambler needs to decide on a {\em strategy}, i.e.,
-which machine to play during every turn, to maximize
-eventual, total, or time-decaying rewards~\cite{bandits}.
-Recently, variants of MAB have been proposed 
-which instead of maximizing total reward, 
-focus on finding the arms with the highest mean reward~\cite{BubeckWV13}.
-This is very similar to our setting: each possible view can be thought of as
-one arm and our goal is find the views with the highest reward (i.e.
-utility).
-In MAB, each pull of an arm corresponds to a drawing from a sample
-the underlying probability distribution of that arm.
-In our case, each new record updates the utilities for all views and
-each resulting updated utility can be thought of as a sample from the
-utility distribution of that view.
-There are two approximations we make here to apply MAB techniques
-to our setting: 
-(1) although the utility of a
-view is ultimately a single value, we can approximate it as a probability
-distribution that is normally distributed around the true utility, and 
-(2) our running estimate of utility after reading $i$
-records is a sample derived from the above utility distribution.
-As we show in our evaluation, the approximation works well
-for our purposes.
-
-Algorithm~\ref{algo:mab_based_pruning} (in the appendix) shows the pruning technique used in the
-MAB setting.
-This algorithm is an adaptation of the Successive Accepts and Rejects
-algorithm from \cite{BubeckWV13} for finding the top-$k$ arms with the highest
-mean reward.
-As before, the processing of the whole file is divided into phases.
-% As opposed to the confidence interval technique, we only track a single
-% statistic for MAB, namely the utility mean.
-At the end of every phase, we adopt the following pruning technique: all views
-in running are ranked in order of their utility means. 
+are based on solutions for the Multi-Armed Bandit (MAB)~\cite{bandits}. 
+The setting is as follows: a gambler is faced with several slot
+machines (``one-armed bandit''s), each of which has an underlying 
+(unknown) reward distribution. 
+Every play results in a reward from the corresponding machine's
+reward distribution.
+The goal is to devise a {\it strategy} of which machine to play
+at each turn in order to maximize the reward~\cite{bandits}.
+A recently-studied variation of MAB focuses on finding the arms with the highest
+mean rewards~\cite{BubeckWV13}.
+This variation is similar to the problem addressed by \SeeDB: each possible view 
+can be thought of as a one-armed bandit and our goal is find the views with the 
+highest reward (i.e. utility).
+We therefore adapt the Successive Accepts and Rejects algorithm from \cite{BubeckWV13} 
+to find arms with the highest mean reward. 
+Algorithm~\ref{algo:mab_based_pruning} shows the pseudocode for our pruning technique.
+As before, the processing of the input table is divided into phases.
+In every phase, \SeeDB\ reads in new records and updates the distributions and utilities
+for every view in the running.
+At the end of every phase, all active views are ranked in order of their utility means. 
 We then compute two special differences between the utility means: $\Delta_1$
 is the difference between the highest mean and the $k+1$st highest mean, and
 $\Delta_n$ is the difference between the lowest mean and the $k$th highest mean.
@@ -417,6 +460,45 @@ If $\Delta_1$ is greater than $\Delta_n$, the view with the highest mean is
 in pruning computations).
 On the other hand, if $\Delta_n$ is higher, the view with the lowest mean is discarded
 from the set of views in the running.
+\cite{BubeckWV13} proves that under certain assumptions about reward distributions,
+the above technique identifies the top-$k$ arms with high probability.
+
+We note that the two pruning techniques discussed above place restrictions on sampling
+techniques and distributions that do not strictly hold in our setup. 
+However, we show in our evaluation (Section \ref{}) that in spite of approximations, 
+these algorithms work well for our purpose. \mpv{someone needs to review this justification}
+
+% In MAB, each pull of an arm corresponds to a drawing from a sample
+% the underlying probability distribution of that arm.
+% In our case, each new record updates the utilities for all views and
+% each resulting updated utility can be thought of as a sample from the
+% utility distribution of that view.
+
+% In applying MAB techniques to our problem setup, we make two assumptions:
+% (1) although the utility of a
+% view is ultimately a single value, we can approximate it as a probability
+% distribution that is normally distributed around the true utility, and 
+% (2) our running estimate of utility after reading $i$
+% records is a sample derived from the above utility distribution.
+
+
+\begin{algorithm}
+\caption{MAB Based Pruning}
+\label{algo:mab_based_pruning}
+\begin{algorithmic}[1]
+\State viewsInRunning.sortByUtilityMean()
+\State \{$\bar{u}_{i}$\} $\gets$ sorted utility means
+\State $\Delta_1$ $\gets$ $\bar{u}_{1}$ - $\bar{u}_{k+1}$
+\State $\Delta_n$ $\gets$ $\bar{u}_{k}$ - $\bar{u}_{n}$
+\If {$\Delta_1$ < $\Delta_n$}
+\State viewsInRunning.acceptTop()
+\Else
+\State viewsInRunning.discardBottom()
+\EndIf
+\end{algorithmic}
+\end{algorithm}
+
+
 
 
 

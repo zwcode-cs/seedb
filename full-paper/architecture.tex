@@ -5,25 +5,33 @@
 \label{sec:system_architecture}
 
 In this section, we present an overview of the \SeeDB\ architecture.
-\SeeDB\ is comprised of two main parts: the frontend and the backend. 
-The \SeeDB\ frontend is a ``thin client''
-that is used to issue queries, display visualizations and allow basic interactions
-with the visualizations. 
-The backend, in contrast, performs all the computation required to generate and select views
-to be recommended. 
+Conceptually, \SeeDB\ is designed as a recommendation plugin for any 
+visualization system. Given a dataset, metadata, and an input query, 
+it recommends visualizations that the user would find most valuable.
+% As such, \SeeDB\ would ideally be used as a plug-in for existing 
+% visualization software.
+However, in this work, for ease of development and testing, we built 
+\SeeDB\ as a standalone end-to-end system that allows users to pose 
+arbitrary queries over data and obtain recommended visualizations.
+The standalone version of \SeeDB\ is comprised of two main parts: 
+a light-weight client that is 
+used to issue queries, display recommended visualizations, and allow basic 
+interactions with visualizations; and a server used to generate views, execute
+them over data and identify views with highest utility. 
 Figure \ref{fig:sys-arch} depicts the architecture of our system.
-Once the analyst issues a query via the frontend, the backend takes over.
-First, the view generator queries the system metadata for information such as
-table sizes, column types, correlations between column values etc. 
+Once the analyst chooses the data of interest (by issuing a query $Q$), the
+client makes a call to the backend for visualization recommendations for $Q$.
+At the backend, the view generator module queries the system metadata for table sizes, 
+column types, and correlations between column values. 
 It then uses this metadata and the incoming query to prune the space
 of possible views and generate stubs for the remaining views. 
 View stubs are essentially more elaborate triples of the form $(a, m, f)$ as
 discussed in Section \ref{sec:problem_statement}. 
-The generated view stubs are then sent to the execution engine that is
+The generated view stubs are then sent to the execution engine
 responsible for querying the underlying data, evaluating the utility of each
 candidate view, and identifying the top views of interest. 
 Once the \SeeDB\ backend has identified the best views, the \SeeDB\
-frontend generates and displays visualizations for each of these views. 
+client generates and displays recommended visualizations based on these views. 
 
 \begin{figure}[htb]
 \vspace{-10pt}
@@ -38,33 +46,31 @@ clip=true]{Images/SeeDB-architecture.pdf}}}}
 
 In this paper, we explore two distinct implementations of the \SeeDB\ execution
 engine. 
-Our first implementation of the execution engine is as a wrapper on top of a database
-system: the goal of this implementation is to study how far we can 
-push existing relational databases to support a \SeeDB-type workload.
-As described in the next section, we obtain reasonable performance by
-intelligently combining queries and running queries in parallel. 
-Because evaluating a visualization query typically involves 
-performing a scan of a table to compute  a histogram or other distribution 
-over one or more dimensions, an obvious optimization would be to share 
-these scans between many queries.  
-Some of our relational optimizations attempt to do this, 
-but we find that having to operate through the SQL interface 
-limits the scalability of such approaches.  
-Therefore, we built a custom execution engine that exploits 
-shared scans and sampling to rapidly prune the space of views and 
-limit the number of passes that must be done over the data.
+Our first implementation draws upon traditional multi-query optimization~\cite{}
+and OLAP literature~\cite{} to implement \SeeDB\ as a wrapper
+on top of a database system. \mpv{These techniques are usually inside the DBMS, 
+we are using them outside?}
+The goal of this implementation is to study how far we can push existing 
+relational databases to support a \SeeDB-type workload.
+While we obtain reasonable performance by employing well-known optimizations, we find that 
+operating through the SQL interface limits the performance we can obtain.
+Therefore, we next built a custom execution engine that completely shares query scans between
+all views and uses heuristics to rapidly prune low-utility views.
+These techniques allow us to perform only a single pass over the data
+and rapidly identify top visualizations. \mpv{Incorp into DB?}
 % However, existing systems do not provide a good means to share scans between
 % queries or to access intermediate results during scans.
 % As a result, optimization opportunities are limited.
 % To overcome the constraints of existing database systems, we implement a
 % simple, custom Execution Engine for \SeeDB\ optimized to share scans
 % across all views and perform pruning based on intermediate results. 
-In an ideal solution, shared scans and pruning would be implemented inside the
-database; however, for the purpose of this work, we implement the \SeeDB\
-execution engine as a standalone proof-of-concept. 
-In Appendix \ref{sec:incorporating} we discuss how the \SeeDB\ engine could
-be made part of a DBMS.
-Next we briefly examine the \SeeDB frontend and then describe the execution engines
+% In an ideal solution, shared scans and pruning would be implemented inside the
+% database; however, for the purpose of this work, we implement the \SeeDB\
+% execution engine as a standalone proof-of-concept with a brief discussion of how
+% the \SeeDB\ engine could be made part of a DBMS. \mpv{need to add this discussion 
+% somewhere}
+
+Next we briefly examine the \SeeDB client and then describe the execution engines
 in detail.
 
 

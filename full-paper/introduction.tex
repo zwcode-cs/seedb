@@ -16,13 +16,14 @@ challenging task, particularly for novices unfamiliar with the data\mpv{citation
 %different visualizations.
 To alleviate this problem, major visualization software vendors are attempting to incorporate automatic visualization
 recommendations into their software.
-For instance, Spotfire recently launched a ``Recommendations'' module uses basic attribute metadata to build a deck of
-``best-practice'' visualizations that the user can select to create a 
-dashboard~\footnote{http://spotfire.tibco.com/recommendations}.
-Similarly, Tableau's Show Me capability recommends a visualization type (bar chart, map etc.) that is appropriate
+For instance, Spotfire recently launched a ``Recommendations'' module that uses attribute metadata (e.g. type, number of distinct
+values) to suggest some ``best-practice'' visualizations~\footnote{http://spotfire.tibco.com/recommendations}.
+Similarly, Tableau's Show Me capability recommends a chart type (bar chart, map etc.) that is appropriate
 for the particular view of the data~\cite{DBLP:journals/tvcg/MackinlayHS07}.
-These recommendations use basic metadata about attributes (categorical or numeric, number of distinct values etc)
-to produce simple visualizations that follow best practices of visual design.
+Both of these recommendations are straightforward applications of the best practices of visual design~\cite(); 
+neither incorporates insights about the underlying data or prior user history into its recommendations.
+% These recommendations use basic metadata about attributes (categorical or numeric, number of distinct values etc)
+% to produce simple visualizations that follow best practices of visual design.
 %The ultimate vision for such a recommendation module is that given a dataset or a query, the visualization 
 %software can study trends in data and previous interactions on that dataset to present to the user the 
 %visualizations it deems most valuable.
@@ -33,22 +34,22 @@ to produce simple visualizations that follow best practices of visual design.
 While automatic recommendations hold much promise, identifying the most valuable visualizations for the user is 
 challenging. 
 We have identified six main dimensions that must be taken into account to make meaningful recommendations. 
-These dimensions, which we dub, the ``Big Six'' \mpv{lol} are as follows:  
+These dimensions, which we dub, the ``Big Six'' are as follows:  
 (1) schema and structural information about the dataset ({\it metadata}), 
-(2) the particular subset of the data the user is interested in ({\it query}), 
+(2) the particular subset of data the user is interested in ({\it query}), 
 (3) data distributions for the underlying dataset ({\it data}), 
 (4) semantics and relative importance of attributes in the data ({\it context}), 
 (5) past history of interactions of this user or other users with the dataset ({\it user history}), 
 and (6) visual qualities of visualizations ({\it aesthetics}). 
-Current recommendations systems provided by Spotfire and Tableau leverage basic information about {\it metadata}
-and {\it aesthetics} to recommend visualizations. 
-However, there is much room for research into further leveraging information along these dimensions and 
-incorporating other dimensions into recommendations.
+Current recommendations systems provided by Spotfire and Tableau leverage basic attribute metadata to construct
+visualizations that follow standard visualization best-practices.
+There is much room for research into leveraging information along the remaining dimensions to make more holistic
+recommendations.
 
-\mpv{Should we add a paragraph and schematic of an ideal system, that has an ensemble of models along one or 
-more of the above dimensions to produce a holistic list of recommendations?}
+% \mpv{Should we add a paragraph and schematic of an ideal system, that has an ensemble of models along one or 
+% more of the above dimensions to produce a holistic list of recommendations?}
 
-In this paper, we develop one such model that uses a combination of metadata, query, and statistics to 
+In this paper, we develop a system that uses a combination of metadata, query, and statistics to 
 provide high quality, data-driven visualization recommendations.
 %We envision our model to be used in conjunction with models currently used for recommendation and models that
 %leverage context and user history to produce holisitc recommendations.
@@ -57,8 +58,8 @@ provide high quality, data-driven visualization recommendations.
 
 Metadata about a dataset, the user's query and information about data distributions can together provide powerful
 information to identify potentially interesting visualizations for the user.
-We term these recommendations as data-driven since they do not draw upon any semantic information about the dataset,
-they are guided only by statistics about the dataset.
+We term these recommendations as data-driven since they do not draw upon any semantic information about the dataset;
+they are guided by statistics alone.
 As mentioned before, since we envision these recommendations to be augmented with context information (along with
 information about aesthetics), we can attack the problem piecemeal.
 
@@ -81,10 +82,10 @@ into which we can plug in a variety of metrics.}
 
 Consider a smartphone app analytics team that is tasked with studying the metrics for BadApp, a smartphone app that has
 poor performance and has received a lot of consumer complaints. 
-Suppose that the team uses the AppMetrics database containing metrics for all apps including network usage, 
+Suppose that the team uses the AppMetrics database containing metrics such as network usage, 
 power consumption, load times etc.
 Given the large size of the database (millions of records), an analyst will 
-overwhelmingly use software such as \cite{} to glean insights into the behavior of BadApp.
+overwhelmingly use visualization software to glean insights into the behavior of BadApp.
 
 In a typical workflow, an analyst would begin by using the program's GUI or a custom query language to execute the equivalent
 of the following SQL query and pull all BadApp metrics from the database. 
@@ -97,7 +98,7 @@ For instance, the analyst may visualize average network usage for BadApp, total 
 average load times by carrier, distribution of mobile operating systems -- the list goes on.
 Under the hood, these visualization operations are essentially queries to the underlying data store and subsequent graphing of 
 the results.
-For example, the visualization for average load times by carrier is generated by executing the equivalent of the
+For example, the visualization for average load times by carrier is generated by running an operation equivalent to the
 SQL query (Q') shown below.
 %The result of this query is a two-column table that is very likely going to be viewed as a bar-char~\cite{vql, kristi}.
 Table \ref{tab:staplerX} and Figure \ref{fig:staplerX} respectively show an example of the results of Q' and a potential
@@ -149,24 +150,34 @@ visualization.
 \end{figure}
 
 As discussed previously, what might make one of these visualizations valuable depends on a host of factors.
-In this work, we use a utility metric that is based on two key insights:
-(a) utility of a visualization depends closely on the {\it query} posed by the user, i.e., subset of the data
-the user is interested in; as a result, trends in the queried data ({\it local trends}) are much more relevant 
-than global trends.
-(b) visualizations that show trends that are {\it unexpected or different are interesting}; specifically, we a 
-visualization is valuable {\em if it shows a local trend that deviates from the equivalent global trend}.
-Therefore, a visualization that shows the same trend in both, query $Q$ and the underlying data, is not valuable;
-on the other hand, a visualization that shows a different trend in query $Q$ compared to the underlying data 
-is highly valuable.
+In this work, we use a utility metric that is based on deviation.
+Specifically, we posit that a visualization is {\em potentially ``interesting'' if it shows 
+a trend in the subset of data selected by the analyst
+(i.e., metrics about BadApp)
+that deviates from the equivalent trend in the overall dataset (i.e., metrics
+about all apps)}.
 In our example, the visualization of load times by carrier, as shown in Figure
 \ref{fig:staplerX}, would be valuable if the global trend for load times of all
 apps showed the {\it opposite} trend (e.g. Figure \ref{fig:staplerX-a}).
 However, the same visualization may be uninteresting if the load times of all apps
 follow a similar trend (Figure \ref{fig:staplerX-b}).
+% (a) utility of a visualization depends closely on the {\it query} posed by the user, i.e., subset of the data
+% the user is interested in; as a result, trends in the queried data ({\it local trends}) are much more relevant 
+% than global trends.
+% (b) visualizations that show trends that are {\it unexpected or different are interesting}; specifically, we a 
+% visualization is valuable {\em if it shows a local trend that deviates from the equivalent global trend}.
+% Therefore, a visualization that shows the same trend in both, query $Q$ and the underlying data, is not valuable;
+% on the other hand, a visualization that shows a different trend in query $Q$ compared to the underlying data 
+% is highly valuable.
+Due to the scale of data, most common visualizations show aggregate summaries of data
+as opposed to individual records (e.g. average sales by state vs. sales of each store 
+in every state).
+Consequently, \SeeDB\ also limits recommended visualizations to those showing aggregate 
+summaries of data.
 
-The majority of visualizations that are generated in visualization systems are based on aggregate summaries of the
-underlying data.
-As a result, the {\it trends} we study are the results of grouping and aggregation applied to a given dataset.
+% The majority of visualizations that are generated in visualization systems are based on aggregate summaries of the
+% underlying data.
+% As a result, the {\it trends} we study are the results of grouping and aggregation applied to a given dataset.
 
 
 % Thus, the recommendation algorithm used by \SeeDB\ works as follows: given a dataset $D$ and a query $Q$
