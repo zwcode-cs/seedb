@@ -1,0 +1,578 @@
+\subsection{Custom Execution Engine}
+\label{sec:custom_execution_engine_expts}
+In Section \ref{}, we developed a set of strategies that enable \SeeDB to make a single scan
+of the data and identify top-$k$ views with highest utility.
+Through the next set of experiments, we evaluate 
+their impact on latency and effectiveness in pruning low-utility views.
+% Specifically, our evaluation studies the impact of
+% (a) our pruning strategies, 
+% (b) utility distributions for the dataset, and (c) parameters of our heuristics
+% on latency and accuracy.
+% Specifically, in addition to latency (i.e. time required for \SeeDB to produce recommendations),
+% we evaluate whether the views chosen by \SeeDB actually have the highest utilities.
+
+\stitle{Metrics:}
+We evaluate performance of our custom execution engine along two dimensions, {\em latency} and
+quality of results.
+We measure the quality of results in two ways: 
+(1) {\em accuracy}: if $\{\mathcal{V}_T\}$
+is the set of views with the higest utility and $\{\mathcal{V}_S\}$ is the set of views returned by
+\SeeDB, the accuracy of \SeeDB is defined as $\frac{1}{\{|\mathcal{V}_T\}|} \times 
+|\{\mathcal{V}_T\} \cap \{\mathcal{V}_S\}|$, i.e. the
+fraction of true positives in the views returned by \SeeDB. (2) {\em utility distance}: since multiple
+views can have similar utility values, we use utility distance as a measure of how {\it far} \SeeDB 
+results are from the true top-$k$ views. 
+Formally, we define utility distance as the difference between the average utility of $\{\mathcal{V}_T\}$ 
+and the average utility of $\{\mathcal{V}_S\}$, i.e., $\frac{1}{n}(\sum_{i}U(\mathcal{V}_{T,i}) - 
+\sum_{i}U(\mathcal{V}_{S,i}))$.
+
+\stitle{Techniques:}
+Within the custom execution engine, we evaluate four techniques for pruning low-utility views.
+In addition to the two pruning strategies from Section~\ref{sec:in_memory_execution_engine}, 
+namely the Hoeffding Confidence Intervals (CI) and the Multi-Armed Bandit (MAB),
+we implement two baseline strategies.
+First, the no pruning strategy processes the entire data and does not discard any views (NO\_PRU). 
+It thus provides an upperbound on latency and accuracy, and lower bound on utility distance.
+The other baseline strategy we evaluate is the random strategy (RANDOM) that returns a random 
+set of $k$ views as the result.
+This strategy gives a lowerbound on accuracy and upperbound bound on utility distance: for any 
+technique to be useful, it must do significantly better than RANDOM.
+
+\stitle{Datasets:}
+Since it is hard to capture the complexities of real data distributions in synthetic data, we
+evaluate all our pruning strategies on real-world data. 
+Specifically, we make use of the BANK and DIAB datasets listed in Table
+\ref{tab:datasets}. 
+Both datasets
+contain a mix of numerical and categorical attributes. 
+The diabetes dataset~\cite{diab} contains records of hospital visits by diabetes patients. Records include demographics,
+diagnoses, number of hospital days, and procedures performed. 
+The bank dataset~\cite{bank} contains records of customers who applied for a loan, including demographic information about 
+the customers, information about the bank's previous contact with the customer, and the ultimate loan decision.
+\mpv{verify}
+
+
+
+
+
+% For the custom execution engine, on the other hand, we are concerned with both, {\em latency} 
+% as well as {\em accuracy}, i.e., whether \SeeDB actually returns the top-$k$ views or not.
+
+
+\stitle{Result Highlights:}
+\begin{denselist}
+\item Our pruning strategies
+reduce \SeeDB latency from 20 seconds to less than 2 seconds
+to return the first view, representing a {\em 10X reduction in latency}.
+
+\item Our latency improvements do not impact accuracy significantly;
+the accuracy of our results is $> 80\%$ with an almost zero utility distance.
+% the utility diof the returned views are close to the utilities
+% of the actual top-$k$ views.
+
+\item The distribution of (true) view utilities impacts accuracy of pruning strategies.
+Particularly, accuracy is inversely proportional to $\Delta_k$ the difference in
+utility between the $k$-th highest utility and the two neighboring utilities. 
+
+\item Our technique of making a single pass through the data along with pruning reduces the overall
+resource utilization of \SeeDB compared to the DBMS engine \mpv{quantify}.
+
+% \item Our  indicates that pruning significantly improves \SeeDB performance.
+% In addition, our requirement of only a single pass through the data reduces resource utilization.
+% Most importantly, 
+
+\item In all, the latency reduction of 10X (for top few views) -- 2X (overall) along with low
+utility distance enables \SeeDB to return high-quality recommendations {\bf at interactive time scales}.
+This makes the custom execution engine a better alternative to a DBMS-backed engine
+in terms of latency, accuracy as well as resource utilitzation (more in Section \ref{sec:comp_of_engines}).
+\end{denselist}
+
+% In addition to {\em latency}, we measure {\em accuracy},
+% the number of true top-$k$ views present among the top-$k$ returned by the algorithm.
+% In some cases, we will also measure {\em utility distance}, i.e., the 
+% difference between the mean utility of the returned top-$k$ views
+% and actual top-$k$ views.
+% Unlike accuracy, which is 0-1, {\em utility distance}
+% allows us to assess the benefit of strategies that return views with very high 
+% (but not top) utilities.
+
+
+% that have gone into We believe that comparing such
+% systems offers little value:
+% on one hand, our custom implementation lacks features such as logging or
+% concurrency control that can slow down more complete systems; on the other hand,
+% it also lacks optimizations for exploiting multiple cores, compression,
+% vectorization, and other optimizations that scan-optimized column-stores employ.
+% Rather, our goal is to highlight the relative performance benefits that can be
+% obtained by performing pruning and shared scans.
+
+In each of our experiments, we vary $k$ -- the number of views to select -- between
+1 and 25 (a realistic upper limit on the number of views displayed to the user)
+and measure the latency, accuracy, and utility distance for each of our
+strategies. 
+Since the accuracy and utility distance of our techniques are influenced by the
+order in which data is read in, we repeat each experiment 20
+times and randomize the data between runs. We report average
+metrics over 20 runs.
+We note upfront that our goal is not to directly compare the latency of our custom
+execution engine to that of the DBMS-backed execution
+engine; comparisons between a commercial DBMS-backed system and a proof-of-concept
+system are futile.
+Instead, our goal is to evaluate the performance improvements that can be
+obtained by pruning and sharing table scans in our proof-of-concept 
+implementation.\footnote{We note however that for our experimental datasets, 
+the proof-of-concept prototype provides performance comparable to the DBMS-backed
+system.} We start with an evaluation of the quality of results produced by our custom execution
+engine.
+
+% For example, the DBMS-backed engines (especially the column store) benefits from 
+% many man-years of optimizations, including optimizations for scan-intensive workloads, 
+% vectorization, compression, the ability to exploit multiple cores and so on.  
+
+
+
+
+
+
+
+% \begin{compactenum}[(a)]
+%  \item Hoeffding Confidence Intervals (CI): we use Hoeffding-Serfling
+%  confidence intervals with overall $\delta = 0.05$; 
+%  % \item 95\% Confidence Intervals (95\_CI): this pruning strategy uses normal 95\% confidence intervals; and 
+% \item Multi-armed Bandit (MAB): this pruning strategy uses the multi-armed bandit algorithm.
+% \item No Pruning (NO\_PRU): this strategy returns the top-$k$ views with highest utility,
+% with no intermediate pruning (to study the impact of pruning on latency);
+% \item Random (RANDOM): this strategy returns randomly selected $k$ views (to study the impact of pruning on accuracy).
+% \end{compactenum}
+
+
+\begin{figure}[h]
+\vspace{-10pt}
+	\centering
+	\begin{subfigure}{1\linewidth}
+		\centering
+		\includegraphics[width=7cm]
+		{Images/bank_utility_distribution.pdf}
+		\vspace{-5pt}
+		\caption{Bank dataset: utility distribution}
+		\label{fig:bank_utility_distribution}
+	\end{subfigure}
+	
+	\begin{subfigure}{1\linewidth}
+		\centering
+		\includegraphics[width=7cm]
+		{Images/diabetes_utility_distribution.pdf}
+		\vspace{-5pt}
+		\caption{Diabetes dataset: utility distribution}
+		\label{fig:diabetes_utility_distribution}
+	\end{subfigure}
+
+\vspace{-10pt}
+\label{fig:utility_distribution}
+\caption{Distribution of Utilities}
+\vspace{-15pt}
+\end{figure}
+
+ \stitle{Utility Distributions and Quality of Results}:
+ The custom execution engine prunes views whose utility (based on estimates) 
+ is unlikely to be among the top-$k$ views.
+ As a result, the accuracy of pruning depends on how accurately
+ our estimates can capture the relative order of utilities.
+ Views with utilities that are spread apart can be pruned accurately, while
+ those with similar utilities have similar utility estimates and can 
+ lead to an incorrect ordering of views.
+ This difference between utility values is particularly relevant at the top-$k$
+ boundary.
+ Reusing notation from the MAB technique, we can explain the intuition as follows: 
+ suppose $V_1 \ldots V_n$ is the list of views ordered by decreasing 
+ utility and we have been asked to identify the top-$k$ views.
+ Then the accuracy of pruning will be inversely proportional to the difference between
+ the $k$-th highest utility and the $k+1$-st utility, i.e. $\Delta_k = U(V_k) - U(V_{k+1})$.
+ 
+ % Specifically, if a large number of views around the (true) top-$k$ boundary have similar utilities,
+ % then our pruning strategies may choose views incorrectly at this boundary.
+ % This results in lower accuracy.
+ % On the other hand, since these views have utility similar to the true top-$k$ views, the
+ % resulting utility distance is almost zero.
+ %since utilities that are close together have very similar running
+%estimates of utility and hence are difficult to tease apart and prune.
+ % For each of the test datasets, we first review the utility distributions and then
+ % analyze the performance of our pruning strategies given the utility distribution.
+
+\stitle{Accuracy and Utility Distance:}
+{\em \underline{Summary:} The MAB strategy dominates the CI
+strategy when it comes to both accuracy and utility distance,
+with accuracy $>$75\%  for $k = 1$ and even larger for larger
+values of $k$, and a near-zero utility distance. 
+Smaller $\Delta_k$ values lead to lower accuracy, but this is offset by
+lower utility distance.
+% While the other two strategies also have near-zero utility distance,
+% they have slightly lower accuracies, which may be explained by the 
+% distribution in utility values.
+ }
+
+\noindent {\it \underline {BANK dataset}}:
+The distribution of utilities for all views of the bank dataset is
+shown in Figure~\ref{fig:bank_utility_distribution}. 
+In this chart, vertical lines denote the cutoffs for utilities of the top-$k$ views
+where $k$=\{1,\ldots,10,15, 20,25\}.
+The highest utility for this dataset corresponds to the {\it right-most} line
+in this chart while the 25-th highest utility corresponds to the {\it left-most}
+line. 
+We can make the following observations:
+\begin{denselist}
+\item The highest and second highest utility are spread well apart 
+from the rest of the utilities. ($\Delta_k$=0.0125)
+\item The top 3rd--9th utilities are rather similar ($\Delta_k<$0.002). 
+\item The 10th highest utility is again separated from neighboring utilities with $\Delta_{10}$=0.0125.
+\item The 11th--24th highest utilities have $\Delta_k<$0.001.
+\end{denselist}
+The performance of our pruning strategies for the BANK dataset are shown in Figure 
+\ref{fig:bank_perf}.
+Figure~\ref{fig:bank_accuracy} shows the {\it average} accuracy of our strategies over 20 runs.
+We find that MAB consistently produces 75\% or better accuracy throughout.
+CI also produces 85\% or better accuracy for $k$$>$10.
+As expected, the accuracy of results increases with $k$.
+Next, let us examine accuracy for individual $k$s.
+For $k$=1 and 2, the accuracy is ~75\% for both pruning strategies. This is expected due to the large 
+$\Delta_k$ values.
+Between $k$=3\ldots9, the accuracy for all strategies suffers due to similar utility values 
+($\Delta_k < 0.002$).
+After $k$=10, the performance of all our strategies improves once again and tends to 1.
+Note that NO\_PRU has perfect accuracy, while RANDOM has extremely poor accuracy (close to 50\%) \mpv{need data}.
+Next, we study the quality of our results in terms of utility distance. 
+Recall that utility distance measures how {\it far} our results are from the true top-$k$.
+Figure~\ref{fig:bank_utility_dist} shows the utility distance for
+all of our strategies for the bank dataset.
+The NO\_PRU technique necessarily has 0 utility distance since
+it performs no pruning.
+RANDOM, on the other hand, has very high utility distance ($>$10X) compared to either of 
+CI and MAB.
+CI and MAB have zero or almost zero utility distance for all $k$.
+% As with accuracy, the utility distance tends to zero with large $k$s.
+% All our strategies produce views with 0 or almost 0 utility distance for most $k$. 
+Thus, even if \SeeDB picks a few incorrect views, there is effectively no difference in the 
+utilities of these views and the true top-$k$ views.
+% So even when a top-$k$ strategy picks a few incorrect views, the selected views
+% have utility very close to the real top-$k$ views, i.e., are views are
+% of high quality.
+% This implies that even if our top-$k$ views are
+% approximate, they are of high quality.
+% Another way to analyze mistakes in the top-$k$ views is by examining if the an
+% incorrectly returned view for the top-$k$ views also appears in the top-$2k$,
+% top-$3k$ or top-$4k$.
+% Figure \ref{} shows the results for the banking dataset.
+% We see that XXX,
+
+\begin{figure*}[t]
+	\centering
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		{\includegraphics[width=6cm] {Images/in_memory_bank_accuracy.pdf}}
+		\caption{Accuracy}
+		\label{fig:bank_accuracy}
+	\end{subfigure}
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		{\includegraphics[width=6cm] {Images/in_memory_bank_utility_dist.pdf}}
+		\caption{Utility Distance}
+		\label{fig:bank_utility_dist}
+	\end{subfigure}
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		{\includegraphics[width=6cm] {Images/in_memory_bank_latency.pdf}}
+		\caption{Latency}
+		\label{fig:bank_latency}
+	\end{subfigure}
+	\vspace{-10pt}
+	\caption{Performance of strategies for Bank dataset}
+	\label{fig:bank_perf}
+	\vspace{-10pt}
+\end{figure*}
+
+\begin{figure*}[t]
+	\centering
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		{\includegraphics[width=6cm] {Images/in_memory_dia_accuracy.pdf}}
+		\caption{Accuracy}
+		\label{fig:dia_accuracy}
+	\end{subfigure}
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		{\includegraphics[width=6cm] {Images/in_memory_dia_utility_dist.pdf}}
+		\caption{Utility Distance}
+		\label{fig:dia_utility_dist}
+	\end{subfigure}
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		{\includegraphics[width=6cm] {Images/in_memory_dia_latency.pdf}}
+		\caption{Latency}
+		\label{fig:diabetes_latency}
+	\end{subfigure}
+	\vspace{-10pt}
+	\caption{Performance of strategies for Diabetes dataset}
+	\label{fig:diabetes_perf}
+	\vspace{-10pt}
+\end{figure*}
+
+% \begin{figure}[h]
+% \centering
+% \begin{subfigure}{0.49\linewidth}
+% \centering
+% {\includegraphics[width=4.2cm] {Images/bank_in_memory_accuracy.pdf}}
+% \caption{Accuracy of strategy for bank dataset}
+% \label{fig:bank_accuracy}
+% \end{subfigure}
+% \begin{subfigure}{0.49\linewidth}
+% \centering
+% {\includegraphics[width=4.2cm] {Images/dia_in_memory_accuracy.pdf}}
+% \caption{Accuracy of strategies for diabetes dataset}
+% \label{fig:dia_accuracy}
+% \end{subfigure}
+% \label{fig:accuracy}
+% \caption{Accuracy of strategies}
+% \end{figure}
+
+
+% \begin{figure}[h]
+% \centering
+% \begin{subfigure}{0.49\linewidth}
+% \centering
+% {\includegraphics[width=4.2cm] {Images/bank_in_memory_utility_dist.pdf}}
+% \caption{Utility Distance of strategy for bank dataset}
+% \label{fig:bank_utility_dist}
+% \end{subfigure}
+% \begin{subfigure}{0.49\linewidth}
+% \centering
+% {\includegraphics[width=4.2cm] {Images/dia_in_memory_utility_dist.pdf}}
+% \caption{Utility Distance of strategies for diabetes dataset}
+% \label{fig:dia_utility_dist}
+% \end{subfigure}
+% \label{fig:accuracy}
+% \caption{Utility Distance for strategies}
+% \end{figure}
+
+% \begin{figure}[h]
+% \centering
+% {\includegraphics[trim = 0mm 50mm 0mm 50mm, clip, width=6cm]
+% {Images/bank_utility_distribution.pdf}}
+% \caption{Bank dataset: utility distribution}
+% \label{fig:bank_utility_distribution}
+% \end{figure}
+% \begin{figure}[h]
+% \centering
+% {\includegraphics[trim = 0mm 50mm 0mm 50mm, clip, width=6cm]
+% {Images/diabetes_utility_distribution.pdf}}
+% \caption{Diabetes dataset: utility distribution}
+% \label{fig:diabetes_utility_distribution}
+% \end{figure}
+ 
+\noindent {\it \underline{DIAB dataset:}} 
+Next, we consider the diabetes dataset.
+The distribution of true utilities for all views in this dataset are shown in
+Figure~\ref{fig:diabetes_utility_distribution}.
+We observe that:
+\begin{denselist}
+\item Utilities for $k$=1 \ldots 10 are very closely clustered ($\Delta_k<$0.002).
+\item View corresponding to $k$=15 is well separated from its neighboring views, $Delta_16 >$ 0.025
+\item Views for $k$=20 and 25 are also surrounded by utilities with very 
+similar values ($\Delta_k < $0.001).
+\end{denselist}
+Since $\Delta_k$ for $k<$10 are small, we expect lower pruning accuracy for $k<10$ but high accuracy for
+large $k$'s.
+We see this behavior in Figure~\ref{fig:dia_accuracy} where the accuracy of
+pruning is quite low ($<60\%$) for $k$=1 but improves consistently to $k$=10 
+($>80\%$) and is $>80\%$ for larger $k$s.
+We notice the MAB performs consistently better than CI even when the utility
+values are very similar.
+While NO\_PRU has perfect accuracy, RANDOM performs poorly. \mpv{NEED DATA}
+In Figure~\ref{fig:dia_utility_dist} we see that
+utility distance is small for $k<10$ and then reduces to almost 0 for larger
+$k$s.
+We find that CI and MAB produce much smaller utility distances (40X smaller)
+compared to RANDOM.
+Thus, we observe that both our strategies CI and MAB produce high quality results 
+in terms of accuracy as well as utility distance. 
+% While the quality depends on the distribution of utilities, particularly on the 
+% $\Delta$s at the top-$k$ boundary.
+For the most commonly used $k$ value, $k$=10, we find that our strategies obtain 
+90\% or more accuracy.
+
+% We also observe an important property of our strategies: the accuracy of both
+% of our pruning strategies, MAB and CI, is comparable; MAB appears to
+% perform better for small number of $k$s but all three produce similar results
+% for $k>10$. (NO\_PRU is guaranteed to have perfect accuracy).
+% This suggests that since all strategies perform similarly on accuracy, we can
+% choose the strategy with the minimum latency.\\
+
+% 95\_CI does the best among all our strategies for the whole range of $k$ values.
+% MAB and HOEFF produce similar accuracy values with MAB being slightly better
+% than HOEFF.
+% There are a few reasons why 95\_CI performs better: the MAB strategy is tied to
+% either accepting or discarding a view at the end of each phase; therefore, even
+% if MAB is not very confidence in the action of accepting or discarding, it must
+% reduce one view in each phase. HOEFF on the other hand is less accurate because
+% XXX.
+% All our strategies however seem to have low accuracy for $k<10$. 
+
+\stitle{Latency:}
+{\em \underline{Summary:} All strategies provide a reduction in latency of 50\% or more
+relative to NO\_PRU. For smaller $k$, reductions can be even higher, closer to 90\%; this can be
+especially useful when we want to identify and quickly display the first one or two top views.}
+Figures~\ref{fig:bank_latency} and \ref{fig:diabetes_latency} show the latency
+of our strategies for the banking and diabetes dataset.
+First off, we observe that the use of either of CI or MAB produces a 2X reduction in latency
+throughout.
+In fact, for CI, we obtain almost a 10X reduction in latency for small $k$. 
+MAB, on the other hand, has a consistent 50\% reduction in latency. 
+As expected, as $k$ increases, latency also increases because we can prune fewer views.
+These reductions bring latency down from multiple tens of seconds to {\bf single digit latencies}, i.e.,
+\SeeDB can operate on interactive time scales.
+% Since these latency numbers come from our prototype implementation, a well-tuned system could
+% produce results in few seconds, i.e., {\it in interactive time scales}. 
+% Clearly, we give up some accuracy when we obtain this reduction in latency, however, as demonstrated
+% experimentally, our strategies consistently provide high utility views with low utility distance.op-$k$.
+% This latency-accuracy tradeoff is particularly important in a real-time system where we want to quickly 
+% provide recommendations for the analyst to browse.
+
+\stitle{Resource Utilization:}
+% \mpv{Not sure about this section. Someone needs to review}
+% We contrast the resource utilization of our custom execution engine to the DBMS-backed engine. 
+% Specifically:
+Compared to the resource utilization in the DBMS-backed engine, our custom engine requires much fewer resources.
+Specifically, since the custom engine makes a single pass through the data, the CPU utilization is expected to be lower compared to the repeated scans of the DBMS-backed engine.
+Another consequence of the single scan is that there is
+no thrashing introduced by multiple parallel scan queries.
+Lastly, there is no {\it query bloat} associated with
+the custom engine, saving overheads of per-query state such as iterators, buffers etc.
+% means that the custom engine is expected to
+% have lower CPU as compared to the multiple scans of data resulting from the DBMS-backed engine (assuming that the
+% additional state maintenance is not significant).
+
+% Each \SeeDB query translates to only a single query in the custom execution engine.
+% The DBMS-backed engine, in contrast, issues $~$ 50 queries for each \SeeDB query. 
+% Consequently, additional resources must be wasted by the DBMS in keeping state for each query such as 
+% iterators, buffers etc.
+
+\subsection{Comparison of Execution Engines}
+\label{sec:comp_of_engines}
+
+The previous sections discussed the performance of the DBMS-backed and Custom execution engines of \SeeDB.
+We found that with a set of clever optimizations, we could reduce the latency of the DBMS-backed engine by
+20X.
+However, the resulting latency of few tens of seconds was too large for interactive visualization.
+In addition, we found that the query bloat led to large memory footprint, repeated scans of data, and
+higher resource utilization.
+In contrast, the custom engine provided a means to perform a single scan of the data and identify top-$k$ views
+with high accuracy. \mpv{numbers?}
+Moreover, the custom engine produced latencies of a few seconds -- {\bf it enabled \SeeDB to respond at interactive
+time scales}.
+These performance results together indicate that the custom execution engine and its pruning strategies are a superior 
+alternative to a DBMS-backed execution engine.
+Since the goal of \SeeDB is to provide recommendations in real time, we can pay a small penalty in accuracy 
+and instead provide almost instantaneous results.
+
+Clearly, the ideal solution would be to integrate the custom execution engine functionality into a vanilla database.
+This would enable the DBMS to use existing structures to efficienly scan a dataset while maintaining and pruning
+views on the fly. 
+The SQL GROUPING SETS\footnote{} functionality, i.e. multiple independent group-bys in a single query is a first step in this direction.
+However, GROUPING SETS needs to be supplemented with much finer control and scalability to support \SeeDB-like  functionality.
+
+% In summary, the performance results of this section indicate that due to the lower latency, high accuracy,
+% and overall lower resource utilization, the custom engine is a superior alternative to a DBMS-backed
+% execution engine.
+% It enables \SeeDB to make a single pass through the data, avoids unnecessary {\it query bloat} leading to
+% lower resource utilization and lowers latency by upto 10X enabling \SeeDB to work in a real 
+% interactive visualization system.
+
+% so all of these strategies are promising alternatives to use 
+% in a production system --- especially when we want to quickly identify and provide a few 
+% views for the analyst to browse.
+% If latency is paramount, then CI may be used,
+% and if utility is paramount, then MAB may be used. \mpv {counter-intuitive}
+% We observe that the latency of CI increases almost linearly
+% with $k$. This trend arises because as $k$
+% increases, we throw out fewer views and therefore perform more
+% computation per record.
+% This exact trend is not seen in MAB because MAB's view pruning is agnostic
+% to the number of views that must be selected.
+
+% The next set of experiments vary the parameters for each strategy to study
+% the accuracy vs. latency tradeoff.
+
+% \begin{figure}[h]
+% \centering
+% \begin{subfigure}{0.49\linewidth}
+% \centering
+% {\includegraphics[width=4.2cm] {Images/bank_in_memory_latency.pdf}}
+% \caption{Bank dataset: latency}
+% \label{fig:bank_latency}
+% \end{subfigure}
+% \begin{subfigure}{0.49\linewidth}
+% \centering
+% {\includegraphics[width=4.2cm] {Images/dia_in_memory_latency.pdf}}
+% \caption{Diabetes dataset: latency}
+% \label{fig:diabetes_latency}
+% \end{subfigure}
+% \label{fig:accuracy}
+% \caption{Latency for strategies}
+% \end{figure}
+
+% \stitle{Accuracy vs.~Latency:}
+% {\em \underline{Summary:} Tuning the knobs in the pruning strategies
+% gives us further reduction in latency for some losses in accuracy.}
+% All of our strategies have ``knobs'' we can use to study the
+% trade-off between accuracy and latency: for MAB, this corresponds to the
+% number of phases used during processing while for the CI pruning, it 
+% corresponds to the size of confidence intervals.
+% As expected, if we set these respective parameters to favor greater accuracy 
+% (i.e. fewer pruning phases in MAB or larger confidence intervals in CI pruning),
+% it also leads to larger latency since fewer views can be pruned at any step.
+
+% Here, we study the impact of these knobs on MAB and 95\_CI, which represent
+% two extremes in our set of pruning strategies.
+% For MAB, the knob is the number of phases involved in
+% processing file; since MAB reduces the number of 
+% views by 1 after each phase, the number of
+% phases is proportional to the pruning power of our algorithm.
+% A large number of phases means that MAB will prune more views and will prune
+% them more often.
+% Figure \ref{fig:latency_vs_accuracy_mab} shows how latency and accuracy both
+% reduce as we increase the number of phases in MAB ($k$=15).
+% Each point on the chart corresponds to a different setting for the number of
+% phases uses in that implementation of the MAB strategy.
+% For 95\_CI, we can vary the $z$-score used
+% to determine the size of our confidence intervals.
+% That is, we can decide to take a 50\% confidence interval or a 80\% interval or
+% a 95\% interval.
+% If we take a smaller confidence interval, we will have higher pruning and
+% therefore lower latency.
+% However, a smaller confidence interval also leads to lower latency since we
+% prune views with lower confidence.
+% Figure \ref{fig:latency_vs_accuracy_ci} shows that as the $z$-score of the
+% confidence interval increases, the accuracy of our strategies increases, but so
+% does its latency ($k$=15).
+% Every point corresponds to a different size of the confidence intervals.
+
+% \begin{figure}[h] 
+% \centering
+% \vspace{-10pt}
+% \begin{subfigure}{0.49\linewidth}
+% \centering
+% {\includegraphics[width=4.2cm] {Images/latency_vs_accuracy_ci.pdf}}
+% \caption{95\_CI: Values depict CI \%}
+% \label{fig:latency_vs_accuracy_ci}
+% \end{subfigure}
+% \begin{subfigure}{0.49\linewidth}
+% \centering
+% {\includegraphics[width=4.2cm] {Images/latency_vs_accuracy_mab.pdf}}
+% \caption{MAB: Values depict no. of phases}
+% \label{fig:latency_vs_accuracy_mab}
+% \end{subfigure}
+% \label{fig:accuracy}
+% \vspace{-10pt}
+% \caption{Latency vs. Accuracy for different strategies}
+% \vspace{-20pt}
+% \end{figure}
+
