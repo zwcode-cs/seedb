@@ -4,64 +4,84 @@
 \label{sec:introduction}
 
 
-Data analysts, and increasingly often {\it data enthusiasts}, must sift through very large volumes of data 
-to identify trends, insights, or anomalies. 
-Given the scale of data, and the relative ease and intuitiveness of examining data visually,
-analysts often use visualizations as a tool to identify patterns of interest.
-Consequently, visualization software such as Tableau~\cite{}, Spotfire~\cite{} and Many Eyes~\cite{} 
-has seen unprecedented user adoption~\cite{kristi-tech-report}.
-In spite of user friendly software, however, selecting the ``right'' visualization still remains a laborious and 
-challenging task, particularly for novices unfamiliar with the data\mpv{citation?}. 
+Data visualization is one of the most common techniques for identifying 
+trends and finding anomalies in data.
+However, with high-dimensional datasets, finding visualizations that 
+show interesting variations or patterns in the data is a non-trivial task:  a
+user may have to plot thousands of pairs of attributes against each other 
+before arriving at one that shows something valuable.
+
+%The hope is that these recommendations, combined with the current interactivity and ease of use of visualization 
+%software, can help analysts quickly glean insights form the data.
+
+In this paper, we tackle the problem of automatically finding such valuable visualizations.
+This problem is complicated, because a ``good'' visualization needs to take into account several
+different dimensions, including:
+\begin{asparaenum}
+\item the types and properties of the different attributes in the dataset ({\it metadata}), 
+\item the particular subset of data the user is interested in ({\it query}), 
+\item the variation in and distribution of the data itself ({\it data}), 
+\item the semantics and relative importance of attributes in the data ({\it context}), 
+\item past history of interactions of this user or other users with the dataset ({\it user history}), and
+\item visual qualities of visualizations ({\it aesthetics}). 
+\end{asparaenum}
+
+Current recommendations systems provided by systems like Spotfire~\cite{} and Tableau~\cite{} leverage basic attribute types to suggest
+visualizations that follow standard visualization best-practices from a user-supplied query, thus focusing on only the metadata, query,
+and aesthetics  of this taxonomy.  No existing system that we are aware of 
+incorporates insights about the underlying data or prior user history into its recommendations.
+
+%There is much room for research into leveraging information along the remaining dimensions to make more holistic
+%recommendations.
+
+
+
+%Data analysts must sift through very large volumes of data 
+%to identify trends, insights, or anomalies.  This task often involves the visual inspection of data, 
+%Given the scale of data, and the relative ease and intuitiveness of examining data visually,
+%analysts often use visualizations as a tool to identify patterns of interest.
+%Consequently, visualization software such as Tableau~\cite{}, Spotfire~\cite{} and Many Eyes~\cite{} 
+%has seen unprecedented user adoption~\cite{kristi-tech-report}.
+%In spite of user friendly software, however, selecting the ``right'' visualization still remains a laborious and 
+%challenging task, particularly for novices unfamiliar with the data\mpv{citation?}. 
 %As demonstrated by the paper on the Tableau use, majority of an analyst's time is spent in exploring
 %different visualizations.
-To alleviate this problem, major visualization software vendors are attempting to incorporate automatic visualization
-recommendations into their software.
-For instance, Spotfire recently launched a ``Recommendations'' module that uses attribute metadata (e.g. type, number of distinct
-values) to suggest some ``best-practice'' visualizations~\footnote{http://spotfire.tibco.com/recommendations}.
-Similarly, Tableau's Show Me capability recommends a chart type (bar chart, map etc.) that is appropriate
-for the particular view of the data~\cite{DBLP:journals/tvcg/MackinlayHS07}.
-Both of these recommendations are straightforward applications of the best practices of visual design~\cite(); 
-neither incorporates insights about the underlying data or prior user history into its recommendations.
+%To alleviate this problem, major visualization software vendors are attempting to incorporate automatic visualization
+%recommendations into their software.
+%For instance, Spotfire recently launched a ``Recommendations'' module that uses attribute metadata (e.g. type, number of distinct
+%values) to suggest some ``best-practice'' visualizations~\footnote{http://spotfire.tibco.com/recommendations}.
+%Similarly, Tableau's Show Me capability recommends a chart type (bar chart, map etc.) that is appropriate
+%for the particular view of the data~\cite{DBLP:journals/tvcg/MackinlayHS07}.
+%Both of these recommendations are straightforward applications of the best practices of visual design~\cite(); 
+%neither incorporates insights about the underlying data or prior user history into its recommendations.
 % These recommendations use basic metadata about attributes (categorical or numeric, number of distinct values etc)
 % to produce simple visualizations that follow best practices of visual design.
 %The ultimate vision for such a recommendation module is that given a dataset or a query, the visualization 
 %software can study trends in data and previous interactions on that dataset to present to the user the 
 %visualizations it deems most valuable.
 
-%The hope is that these recommendations, combined with the current interactivity and ease of use of visualization 
-%software, can help analysts quickly glean insights form the data.
-
-While automatic recommendations hold much promise, identifying the most valuable visualizations for the user is 
-challenging. 
-We have identified six main dimensions that must be taken into account to make meaningful recommendations. 
-These dimensions, which we dub, the ``Big Six'' are as follows:  
-(1) schema and structural information about the dataset ({\it metadata}), 
-(2) the particular subset of data the user is interested in ({\it query}), 
-(3) data distributions for the underlying dataset ({\it data}), 
-(4) semantics and relative importance of attributes in the data ({\it context}), 
-(5) past history of interactions of this user or other users with the dataset ({\it user history}), 
-and (6) visual qualities of visualizations ({\it aesthetics}). 
-Current recommendations systems provided by Spotfire and Tableau leverage basic attribute metadata to construct
-visualizations that follow standard visualization best-practices.
-There is much room for research into leveraging information along the remaining dimensions to make more holistic
-recommendations.
 
 % \mpv{Should we add a paragraph and schematic of an ideal system, that has an ensemble of models along one or 
 % more of the above dimensions to produce a holistic list of recommendations?}
 
-In this paper, we develop a system that uses a combination of metadata, query, and statistics to 
-provide high quality, data-driven visualization recommendations.
+%In this paper, we develop a system that uses a combination of metadata, query, and statistics to 
+%provide high quality, data-driven visualization recommendations.
 %We envision our model to be used in conjunction with models currently used for recommendation and models that
 %leverage context and user history to produce holisitc recommendations.
 
 \subsection*{Data-driven Recommendations in \SeeDB}
 
-Metadata about a dataset, the user's query and information about data distributions can together provide powerful
-information to identify potentially interesting visualizations for the user.
-We term these recommendations as data-driven since they do not draw upon any semantic information about the dataset;
+To this end, in this work, we develop a system, called {\it \SeeDB}, that focuses less on the aesthetics of good visualizations, and more
+ on developing general techniques that explore the space
+of possible visualizations and recommend those that highlight data variability in the subset of data specified by a user's query.
+%Metadata about a dataset, the user's query and information about data distributions can together provide powerful
+%information to identify potentially interesting visualizations for the user.
+We call these recommendations {\it data-driven} since they do not draw upon any semantic information about the dataset;
 they are guided by statistics alone.
-As mentioned before, since we envision these recommendations to be augmented with context information (along with
-information about aesthetics), we can attack the problem piecemeal.
+We envision these techniques being incorporated into existing visualization systems that allow users to supply context (via, e.g.,
+interaction), and that focus more on the aesthetics of good visualization.
+%As mentioned before, since we envision these recommendations to be augmented with context information (along with
+%information about aesthetics), we can attack the problem piecemeal.
 
 Even in the area of data-driven recommendations, one can imagine a large variety of ways to model the quality or utility
 of a visualization.
@@ -71,11 +91,18 @@ Similarly, drawing upon the literature on data cubes, one might choose visualiza
 are unusual given the remaining values in the cube~\cite{sarawagi}.
 Finally, one might choose to not aggregate any values but show correlations between attributes by plotting a random
 sampling of datapoints.
-In this paper, we focus on one specific model for generating data-driven recommendations, a model that uses
-deviation as means to quantify utility of a visualization; however, we note upfront
-that {\it there is a variety of ways to quantifying utility and these merit further exploration}.
-\mpv{In fact, we hope that the techniques and framework we describe in subsequent sections may be a general framework 
-into which we can plug in a variety of metrics.}
+In this paper, we develop a general suite of techniques for efficiently searching the space of such visualizations.
+Our techniques work with a wide range of {\it utility functions} that capture the goodness of a visualization according
+to some metric (e.g., skewness of outliers in a data set).  We then evaluate our approach on a particular utility function
+that that uses
+deviation as means to quantify utility of a visualization and show via user studies that this often
+highlight useful or interesting trends in data.
+We note that of the vision for \SeeDB\ has been described in a previous vision paper~\cite{DBLP:conf/vldb/Parameswaran2013}, but
+that paper presented neither the specific visualization search techniques nor any evaluation.
+%Of course,  however, we note upfront
+%that {\it there is a variety of ways to quantifying utility and these merit further exploration}.
+%\mpv{In fact, we hope that the techniques and framework we describe in subsequent sections may be a general framework 
+%into which we can plug in a variety of metrics.}
 
 
 \subsection*{Illustrative Example}
@@ -189,14 +216,15 @@ summaries of data.
 \mpv{mention the 3 different settings in problem definition}.
 
 \subsection*{Contributions}
-Some of the vision for \SeeDB\ has been described in our (4 page) vision paper~\cite{DBLP:conf/vldb/Parameswaran2013}.
+
 In this paper, we demonstrate that we can build real systems that efficiently search for the most
-interesting views at interactive time scales.
-In this paper, we describe two implementations of \SeeDB\ that address the challenges from \cite{DBLP:conf/vldb/Parameswaran2013}.
-In our first implementation, we draw upon traditional multi-query optimization and OLAP literature to implement \SeeDB\ 
+interesting visualizations, or {\it views} at interactive time scales.
+Specifically, we describe two approaches to searching the space of possible views.
+In our first approach, we draw upon traditional multi-query optimization and OLAP literature to implement \SeeDB\ 
 as a wrapper on top of a database system. Our goal was to study how far we can push existing systems to support a
 \SeeDB-type workload.
-In our second implementation, we implement a custom system that  shares sequential scans and query results between views, and 
+\srm{revise the following, based on what we actually present in terms of UDFs vs a custom system}
+In our second approach, we implement a system that  shares sequential scans and query results between views, and 
 employs statistical techniques to perform aggressive pruning based on intermediate results.
 % SRM already said
 %At its core, given a query $Q$ indicating the subset of data that the analyst is
@@ -206,9 +234,9 @@ employs statistical techniques to perform aggressive pruning based on intermedia
 
 The contributions of this paper are:
 \begin{denselist}
-  \item We design \SeeDB as a system for data-driven visualization recommendations.
-  We explore and evaluate two distinct implementations of the system, one as a
-  wrapper around a database and another a custom solution (Section~\ref{sec:system_architecture}).
+%  \item We design \SeeDB as a system for data-driven visualization recommendations.
+%  We explore and evaluate two distinct implementations of the system, one as a
+%  wrapper around a database and another a custom solution (Section~\ref{sec:system_architecture}).
   \item For the DBMS-backed implementation of \SeeDB (Section~\ref{sec:basic_framework}), we
   design a suite of optimizations to minimize the number of queries executed and to
   maximize the sharing of scans between queries, 
