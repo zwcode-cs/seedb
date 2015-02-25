@@ -7,9 +7,10 @@
 Data visualization is one of the most common techniques for identifying 
 trends and finding anomalies in data.
 However, with high-dimensional datasets, finding visualizations that 
-show interesting variations or patterns in the data is a non-trivial task:  a
+effectively present interesting variations or patterns in the data is a non-trivial task:  a
 user may have to plot thousands of pairs of attributes against each other 
-before arriving at one that shows something valuable.
+before arriving at one that shows something valuable, optimizing for a range of visualization 
+types, aesthetic features, and so on.
 
 %The hope is that these recommendations, combined with the current interactivity and ease of use of visualization 
 %software, can help analysts quickly glean insights form the data.
@@ -71,34 +72,24 @@ incorporates insights about the underlying data or prior user history into its r
 
 \subsection*{Data-driven Recommendations in \SeeDB}
 
-To this end, in this work, we develop a system, called {\it \SeeDB}, that focuses less on the aesthetics of good visualizations, and more
- on developing general techniques that explore the space
-of possible visualizations and recommend those that highlight data variability in the subset of data specified by a user's query.
+To this end, in this work, we describe a new visualization recommendation engine we are building called {\it \SeeDB}.
+Eventually, we aim to optimize for all six dimensions of this taxonomy, by developing a suite of optimization techniques designed to explore
+the possible range of visualizations of a user-supplied data set or query result.  
+As a first step in this paper, we focus on  a general deviation-based metric that can capture all six dimensions to a limited extent (see Section~\ref{sec:problem_statement}).  However, because contextual information and aesthetics has been addressed in prior visualization, we focus in most of this paper on 
+{\it data-driven} recommendations that consider the inherent variations in the data from a user-supplied query.  Such visualizations are particularly appropriate when
+approaching a dataset for the first time, with limited domain knowledge or historical context.
+%   that focuses less on the aesthetics of good visualizations, and more
+% on developing general techniques that explore the space
+%of possible visualizations and recommend those that highlight data variability in the subset of data specified by a user's query.
 %Metadata about a dataset, the user's query and information about data distributions can together provide powerful
 %information to identify potentially interesting visualizations for the user.
-We call these recommendations {\it data-driven} since they do not draw upon any semantic information about the dataset;
-they are guided by statistics alone.
-We envision these techniques being incorporated into existing visualization systems that allow users to supply context (via, e.g.,
-interaction), and that focus more on the aesthetics of good visualization.
+%We call these recommendations {\it data-driven} since they do not draw upon any semantic information about the dataset;
+%they are guided by statistics alone.
+%We envision these techniques being incorporated into existing visualization systems that allow users to supply context (via, e.g.,
+%interaction), and that focus more on the aesthetics of good visualization.
 %As mentioned before, since we envision these recommendations to be augmented with context information (along with
 %information about aesthetics), we can attack the problem piecemeal.
 
-Even in the area of data-driven recommendations, one can imagine a large variety of ways to model the quality or utility
-of a visualization.
-For instance, one might focus on visualizations that show order statistics or anomalies~\cite{kandel}. 
-These would be important for spotting say unsual spikes in machine load.
-Similarly, drawing upon the literature on data cubes, one might choose visualizations that highlight aggregates that
-are unusual given the remaining values in the cube~\cite{sarawagi}.
-Finally, one might choose to not aggregate any values but show correlations between attributes by plotting a random
-sampling of datapoints.
-In this paper, we develop a general suite of techniques for efficiently searching the space of such visualizations.
-Our techniques work with a wide range of {\it utility functions} that capture the goodness of a visualization according
-to some metric (e.g., skewness of outliers in a data set).  We then evaluate our approach on a particular utility function
-that that uses
-deviation as means to quantify utility of a visualization and show via user studies that this often
-highlight useful or interesting trends in data.
-We note that of the vision for \SeeDB\ has been described in a previous vision paper~\cite{DBLP:conf/vldb/Parameswaran2013}, but
-that paper presented neither the specific visualization search techniques nor any evaluation.
 %Of course,  however, we note upfront
 %that {\it there is a variety of ways to quantifying utility and these merit further exploration}.
 %\mpv{In fact, we hope that the techniques and framework we describe in subsequent sections may be a general framework 
@@ -107,6 +98,7 @@ that paper presented neither the specific visualization search techniques nor an
 
 \subsection*{Illustrative Example}
 
+Before presenting our specific deviation-based model for evaluating the quality of a visualization, we provide a brief illustrative example.
 Consider a smartphone app analytics team that is tasked with studying the metrics for BadApp, a smartphone app that has
 poor performance and has received a lot of consumer complaints. 
 Suppose that the team uses the AppMetrics database containing metrics such as network usage, 
@@ -199,8 +191,22 @@ follow a similar trend (Figure \ref{fig:staplerX-b}).
 Due to the scale of data, most common visualizations show aggregate summaries of data
 as opposed to individual records (e.g. average sales by state vs. sales of each store 
 in every state).
-Consequently, \SeeDB\ also limits recommended visualizations to those showing aggregate 
+Consequently, our current implementation of \SeeDB\ also limits recommended visualizations to those showing aggregate 
 summaries of data.
+
+Of course, there are a variety of other possible data-driven metrics for  quality or utility
+of a visualization.
+For instance, one might focus on visualizations that show order statistics or anomalies~\cite{kandel}. 
+These would be important for spotting, for example unusual spikes in machine load.
+Similarly, drawing upon the literature on data cubes, one might choose visualizations that highlight aggregates that
+are unusual given the remaining values in the cube~\cite{sarawagi}.
+Finally, one might choose to not aggregate any values but show correlations between attributes by plotting a random
+sampling of datapoints.  Incorporating these other types of visualizations into our framework is an interesting
+direction for future work.
+
+Finally, we note that of the vision for \SeeDB\ has been described in a previous vision paper~\cite{DBLP:conf/vldb/Parameswaran2013}, but
+that paper presented neither the specific visualization search techniques nor any evaluation.
+
 
 % The majority of visualizations that are generated in visualization systems are based on aggregate summaries of the
 % underlying data.
@@ -218,13 +224,13 @@ summaries of data.
 \subsection*{Contributions}
 
 In this paper, we demonstrate that we can build real systems that efficiently search for the most
-interesting visualizations, or {\it views} at interactive time scales.
-Specifically, we describe two approaches to searching the space of possible views.
+interesting visualizations at interactive time scales.
+Specifically, we describe two approaches to searching the space of possible visualizations.
 In our first approach, we draw upon traditional multi-query optimization and OLAP literature to implement \SeeDB\ 
 as a wrapper on top of a database system. Our goal was to study how far we can push existing systems to support a
 \SeeDB-type workload.
 \srm{revise the following, based on what we actually present in terms of UDFs vs a custom system}
-In our second approach, we implement a system that  shares sequential scans and query results between views, and 
+In our second approach, we implement a system that  shares sequential scans and query results between visualizations, and 
 employs statistical techniques to perform aggressive pruning based on intermediate results.
 % SRM already said
 %At its core, given a query $Q$ indicating the subset of data that the analyst is
@@ -237,17 +243,21 @@ The contributions of this paper are:
 %  \item We design \SeeDB as a system for data-driven visualization recommendations.
 %  We explore and evaluate two distinct implementations of the system, one as a
 %  wrapper around a database and another a custom solution (Section~\ref{sec:system_architecture}).
-  \item For the DBMS-backed implementation of \SeeDB (Section~\ref{sec:basic_framework}), we
-  design a suite of optimizations to minimize the number of queries executed and to
+\item We describe a general deviation-based framework for evaluating the quality of a visualization,
+and present and evaluate a specific metric that identifies aggregate dimensions in a dataset that
+show maximal variation.  We develop two classes of optimizations to make such aggregates run fast 
+in a conventional DBMS.
+  \item The first set of techniques
+  combine queries and aggregates to minimize the number of queries executed and 
   maximize the sharing of scans between queries, 
   including bin-packing~\cite{garey} algorithms and parallelization
   (Section~\ref{sec:dbms_optimizations}).
-  \item For the custom implementation of \SeeDB,  we adapt techniques 
+  \item The second set of techniques further optimize the process by adapting techniques 
   from both traditional confidence-interval-based~\cite{hoeffding1963probability} top-$k$ ranking and the
    multi-armed bandit problem~\cite{bandits} 
-   for the problem of finding the top-$k$ views (Section~\ref{sec:in_memory_execution_engine}).
-  \item We explore view pruning techniques based on data distribution
-  to prune views even before they are evaluated by the \SeeDB\ system 
+   to the problem finding the top-$k$ visualizations (Section~\ref{sec:in_memory_execution_engine}).
+  \item We explore visualization pruning techniques based on data distribution
+  to prune visualizations even before they are evaluated by the \SeeDB\ system 
   (Section~\ref{sec:pruning}).
   \item We evaluate the performance of our optimizations on a range of
   real and synthetic datasets and demonstrate the resulting 8--20X speedup 
