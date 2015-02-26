@@ -13,19 +13,19 @@
         templateUrl: "/queryBuilder.html",
         controller: function ($scope) {
           $scope.predicates = [{
-            columnName: "dim_cand_nm",  // TODO: this is hardcoded as the first default predicate
+            columnName: "cand_nm",  // TODO: this is hardcoded as the first default predicate
             modifier: "=",
             value: "McCain, John S"
           }];
 
-          $scope.tableNames = ["election_data"]; // TODO: hardcoded
+          $scope.tableNames = ["election_data_all_subset", "diabetes_data"]; // TODO: hardcoded
           $scope.tableName = $scope.tableNames[0];
 
           $scope.setTable = function() {
             SeeDB.setTable($scope.tableName);
           };
 
-          $scope.columnNames = ["dim_cand_nm", "contbr_zip"];
+          $scope.columnNames = ["cand_nm", "dim_gender"];
 
           $scope.addPredicate = function () {
             this.predicates.push({
