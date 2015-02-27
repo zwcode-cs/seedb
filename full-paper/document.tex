@@ -3,7 +3,7 @@
 %\documentstyle{article}
 %\documentstyle[amsmath,amsthm,amssymb,twocolumn]{article}
 %\usepackage{times}
-
+\usepackage{mathtools}
 
 
 %\usepackage{MnSymbol} 
@@ -44,6 +44,9 @@
 \newcommand{\calA}{\mathcal{A}\xspace}
 \newcommand{\calX}{\mathcal{X}\xspace}
 \newcommand{\calY}{\mathcal{Y}\xspace}
+
+\newcommand{\hc}{\hat{c}\xspace}
+\newcommand{\htt}{\hat{t}\xspace}
 
 
 
@@ -119,12 +122,12 @@
  \input{dbms_execution_engine.tex}
  \input{in_memory_execution_engine.tex}
  \input{view_pruning.tex}
+ \input{extensions.tex}
  \input{experiments.tex}
 \input{user_study.tex}
  \input{related_work.tex}
  \input{conclusions.tex}
-\clearpage
-{
+{\scriptsize
 \bibliographystyle{abbrv}
 \bibliography{visubib}
 }

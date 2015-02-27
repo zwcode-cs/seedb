@@ -1,0 +1,165 @@
+%!TEX root=document.tex
+
+\section{Extensions}
+In this section we prove that our sampling 
+algorithms converge, and then describe our generalized
+distance metric.
+\subsection{Convergence of Sampling Algorithms}
+In this section, we demonstrate how,
+when applied to the utility function $U$ as described
+in Section~\ref{sec:problem_statement},
+sampling algorithms 
+converge to the correct value of $U$ beyond a certain number of samples.
+We reproduce the utility equation here:
+$ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$.
+Here, $P$ refers to the probability distribution
+of either the target visualization
+or the comparison visualization.
+$P$ is represented as a normalized vector
+whose entries sum up to $1$.
+
+For now, we focus on the case where the visualization $V_i$
+corresponds to the AVG aggregate. 
+Similar results can be shown for the SUM and STD
+aggregates. 
+Unfortunately, MAX and MIN are not amenable to sampling-based
+optimizations, as is traditionally well-known in the approximate
+query processing literature~\cite{wavelets,dbo}.
+
+Additionally, we focus on the case when $S$ is defined to be
+$\ell_2$, i.e., the Euclidean distance metric. 
+Once again, similar results can be shown for other distance metrics,
+such as the $\ell_1$ or the Earth Movers Distance metric.
+
+
+
+\begin{lemma}
+Let the target and comparison visualizations
+both have $m$ groups.
+Let $\hat{U}$ denote our estimate of $U$ based on a uniformly random sample 
+across all $m$ groups. 
+Then, as the number of samples tends to $\infty$, $\hat{U} \rightarrow U$
+with probability $1-\delta$, for as small $\delta$ as needed.
+\end{lemma}
+
+
+\begin{proof} (Sketch)
+Let us say the estimated average for the target visualization
+for each of the groups is $\hat{t}_i$,
+and the estimated averages for the comparison visualization
+for each of the groups is $\hat{c}_i$.
+We further define $\hat{t}$ (respectively $\hat{c}$) to be the estimated sum of
+averages for the target visualization (respectively comparison visualization).
+We let the true values for each of these quantities be the same variables without
+the hats.
+Then, it can be shown that that $U$ evaluates to:
+$$\hat{U} = \frac{\sum{\hc_i^2}}{\hc^2} +  \frac{\sum{\htt_i^2}}{\htt^2} - 2 \frac{\sum{\htt_i \hc_i}}{\hc\htt}$$
+
+
+Now we informally describe the steps of our proof:
+say we sample enough to get $\hc$ within $\epsilon$ of $c$, with a high enough probability,
+and we sample enough to get $\htt$ within $\epsilon$ of $t$, with a high enough probability.
+Then, we have 
+\begin{align*}
+\hat{U} & \geq \frac{\sum{\hc_i^2}}{(c + \epsilon)^2} +  \frac{\sum{\htt_i^2}}{(t + \epsilon)^2} - 2 \frac{\sum{\htt_i \hc_i}}{(c - \epsilon) (t - \epsilon)} \\
+& \geq \frac{\sum{\hc_i^2}}{c^2} (1 - \epsilon ) +  \frac{\sum{\htt_i^2}}{t ^2} (1-\epsilon) - 2 \frac{\sum{\htt_i \hc_i}}{(c - \epsilon) (t - \epsilon)} \\
+& \geq \frac{\sum{\hc_i^2}}{c^2} (1 - \epsilon ) +  \frac{\sum{\htt_i^2}}{t ^2} (1-\epsilon) - 2 \frac{\sum{\htt_i \hc_i}}{ct}(1 + \epsilon^2 + \epsilon) 
+\end{align*}
+Similarly, if we have sampled enough to get the $\hc_i$ and the $\htt_i$ within $\gamma$ close 
+of their actual values, we will have:
+\begin{align*}
+\hat{U} \geq &  \frac{\sum{c_i^2}}{c^2} (1 + f(\gamma)) (1 - \epsilon ) +   \frac{\sum{t_i^2}}{t ^2}  (1 + f(\gamma)) (1-\epsilon) \\ & - 2 \frac{\sum{t_i c_i}}{ct}(1 + h(\gamma))(1 + \epsilon^2 + \epsilon) 
+\end{align*}
+where $f(.)$ and $h(.)$ are small polynomial functions.
+Thus,
+we will have sandwiched $\hat{U}$ from the bottom by $U-\rho$,
+and similarly by $U + \rho'$ from the top.
+$\rho, \rho'$ will be polynomials that depend on $\epsilon$ and $\gamma$.
+Now, we will use the Hoeffding's inequality for the last step of the proof.
+Hoeffding's inequality, when
+applied to a collection of $n$ i.i.d. random variables,
+whose sum is represented by $X$, gives us:
+\begin{equation}
+Pr (|X - E[X]| \geq t) \leq 2 e^{-\frac{2 n t^2}{c^2}}
+\end{equation}
+where $c$ is a bound on the range. 
+If we set the right hand side to some $\delta$, and set $t = \epsilon$,
+we have
+$$ \epsilon = \sqrt{\frac{1}{2 n} \ln \frac{2}{\delta}}$$
+and therefore, as $n$ tends to $\infty$, $\epsilon$ tends to $0$,
+for fixed values of $\delta$.
+The same holds true for $t = \gamma$.
+Thus, $\hat{U}$ will tend to $U$ as the number of samples
+increases to infinity.
+\end{proof}
+It is also possible to explicitly derive a number of samples 
+such that $\hat{U}$ is close to $U$ within a certain error bound
+and with a certain probability. 
+
+
+
+
+\subsection{The Generalized Distance Metric}
+
+In Section~\ref{sec:problem_statement}, we described our
+distance metric that depended only on the data selected
+by the query $D_Q$ and the background data $D$,
+with the metric being defined as:
+$ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$.
+This metric made sense for the simple case
+when an analyst is studying a dataset for the first time.
+We now describe how we can generalize this distance
+metric to take into account more information,
+in order to provide more useful visualization recommendations.
+Our generalized metric is as follows:
+$$ U (V_i) = f(V_i) \times (w_1\times S_1 + w_2 \times S_2 + w_3 \times S_3)$$
+Our generalized metric has three distribution
+distance components, $S_1, S_2,$ and $S_3$,
+weighted by suitable weights $w_1, w_2,$ and $w_3$.
+The first component $f(V_i)$ takes into
+account user preferences for seeing the specific 
+visualization attributes.
+For instance, if the analyst typically looks at
+sales over time, $f(V_i)$ for sales over time
+may be high.
+Then, let us consider the three distribution distance
+components $S_1, S_2,$ and $S_3$.
+The first component is unchanged from Section~\ref{sec:problem_statement},
+$S_1 = S ( P[V_i (D_Q)],$ $P[V_i (D)] )$,
+taking into account the data selected by the query and
+the comparison data.
+The second component takes into account context.
+That is, $S_2 = S ( P[V_i (D_Q)], $ $P[V_i (D_C)] )$.
+Here, $P[V_i (D_C)]$ refers to the typical value of the distribution 
+$P[V_i (D_Q)]$,
+given historical data.
+For instance, when $V_i$ refers to sales by
+region while $D_Q$ refers to a certain brand of chairs,
+$V_i(D_C)$ could be sales by region for that brand of chairs
+historically --- say taking the average of $k$ year's worth of data.
+This will allow us to tell whether the value for sales for a particular
+region is deviating significantly from past patterns.
+The third component takes into account local changes,
+and only makes sense when the $x$ axis is an ordinal attribute
+(such as time, or location, or rating).
+$S_3 = S ( P[V_i (D_Q)], P'[V_i (D_Q)] )$.
+Here, $P'[V_i (D_Q)]$ refers to the distribution $P$, but shifted slightly.
+By measuring the deviation between these two distributions,
+we can estimate the amount of rapid local changes that have happened
+within the distribution corresponding to $P[V_i (D_Q)]$.
+
+In this manner, the generalized distribution metric can take into
+account (a) data and query, as before
+(b) user preferences, (c) context,
+and (d) local changes.
+Naturally, the generalized distribution metric that
+we have proposed is only a starting point for further exploration
+into visualization recommendation metrics.
+We expect any metric to take into account all the features
+that we have listed, and more.
+
+
+
+
+
+
