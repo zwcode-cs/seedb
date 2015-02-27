@@ -250,6 +250,10 @@ pre-computed data samples.  Such optimizations are orthogonal to the
 problem of efficiently evaluating a large number of views, which we will have to
 do even in the presence of pre-computaiton or sampling, so we don't focus on them here.
 
+In the experimental evaluation, we show that the optimizations described in this section can lead to speedups of XXX.
+The absolute latency numbers are in the interactive range for small and medium datasets, but we find that for larger datasets latency falls in the 50-150 range which is unacceptable for an interactive system.
+In the next section, we discuss a few techniques that allow us to reliably prune out  views what will have low utility. 
+
 %do not address the more important challenge of evaluating a large number of views.
 
 %In Section \ref{XXX} we show that this optimization gives us a speedup of XXX.

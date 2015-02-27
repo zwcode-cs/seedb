@@ -1,0 +1,26 @@
+\section{Hybrid Execution Engine}
+\label{sec:hybrid_exectution_engine}
+
+In the previous section, we described a general framework to perform pruning of low-utility views and discussed two specific pruning strategies adopted by \SeeDB.
+As shown in the experimental evaluation (Section \ref{sec:experiments}), we find that
+our pruning strategies allow us to reduce latency by XXX without a significant hit in view utility.
+Similarly, we find that the DBMS optimizations from Section \ref{} provide a speed up of XXX to YYY over the unoptimized framework. 
+Therefore, we built a hybrid execution engine that combines the gains from both solutions by implementing pruning strategies on top of our DBMS optimizations. 
+
+% to further improve the performance of the DBMS-backed Execution Engine \mpv{change name now that there's no custom engine?}, we implement the pruning strategies from Section \ref{} on top of our DBMS-backed engine.
+
+Recall that the view pruning strategies work in phases where during each phase, we process data and obtain utility estimates, while at the end of each phase, we perform view pruning based on utility estimates.
+We recreate this framework within a DBMS by horizontally partitioning tables.
+Processing of each table partition corresponds to a {\it phase} in our pruning framework. 
+Thus, during each phase, we invoke the DBMS-engine of \SeeDB to process the corresponding table partition and obtain utility estimates.
+At the end of each phase, the current utility estimates are consolidated with previous estimates and used to prune low-utility views.
+As before, \SeeDB can choose to stop processing once it has identified the top-$k$ views or choose to process the entire table.
+%  processed table partitions
+
+% Each phase produces estimates for utility that are combined with previous estimates to perform pruning of low-utility views.
+% In subsequent phases, pruned views are no longer evaluated on the data.
+
+% Therefore, we decided to combine the efficienct processing of the DBMS-backed engine with the power of pruning strategies.
+% During each phase, we run the DBMS-backed execution engine of \SeeDB on the particular table partition and compute the utility estimates for all views in the running.
+% These utility estimates are then consolidated with previous utility estimates to obtain updated utility estimates.
+% The pruning strategies of the previous section are then applied to these estimates to discard low-utility views.

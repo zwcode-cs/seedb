@@ -1,70 +1,79 @@
 %!TEX root=document.tex
 
 
-\section{Custom Execution Engine}
+\section{Low-Utility View Pruning}
 \label{sec:in_memory_execution_engine}
-The DBMS-backed execution engine from the previous section has two drawbacks:
-(a) the number of scans performed of the data is far too high, and
-(b) far too many resources are wasted on low-utility views.
-As a result, our goals with the custom execution engine are as follows:
-(a) complete sharing of table scans between views so that a single table scan
-suffices to compute all views; 
-(b) sharing of intermediate results between views so that low utility views can
-be pruned on the fly; and 
-(c) early stopping once the top views have been identified. 
-We now describe the
-basic execution framework followed by specific
-pruning strategies.
+The DBMS-backed execution engine from the previous section provides reasonable performance for small datasets.
+However, we find that for medium and large size datasets, the optimized engine take tens to hundreds of produce the top visualizations.
+There are a few reasons for this. (a) Since our engine runs a large number (50-200) queries for each \SeeDB invocation, a large number of scans of the data are performed needlessly; (b) Far too many resources are wasted on low-utility views; and (3) Results of \SeeDB are not available until the entire dataset has been processed.
+
+To mitigate these drawbacks, we explored a set of pruning strategies to identify and then discard low utility views.
+Pruning low-utility views can allow \SeeDB to reduce the number of queries run on the database, reduce resources spent on eventually-discarded views, and give \SeeDB the ability to return as soon as it has identified the top views.
+In order to evaluate various pruning strategies, we built a simple framework to process records sequentially and perform pruning on the fly.
+We now decribe our test framework and two specific pruning strategies adopted in \SeeDB.
+
+% has two drawbacks:
+% (a) the number of scans performed of the data is far too high, and
+% (b) far too many resources are wasted on low-utility views.
+% As a result, our goals with the custom execution engine are as follows:
+% (a) complete sharing of table scans between views so that a single table scan
+% suffices to compute all views; 
+% (b) sharing of intermediate results between views so that low utility views can
+% be pruned on the fly; and 
+% (c) early stopping once the top views have been identified. 
+% We now describe the
+% basic execution framework followed by specific
+% pruning strategies.
 
 \stitle{Basic Framework}:
 \label{subsec:basic_framework}
-\SeeDB\ custom execution engine buffers data from the input table (on disk or in memory) 
-and processes it in phases. 
-Within each phase, \SeeDB\ processes a fixed number of records by reading the input 
+Our basic framework functions as follows: It buffers data from the input table (on disk or in memory) and processes it in phases. 
+Within each phase, it processes a fixed number of records by reading the input 
 one record at a time.
 We assume that {\it records in the file are in random order}; if they are not,
 we must apply a pre-processing step to get them in random order.
-For each record, \SeeDB\ determines whether the record satisfies the
-input query and updates the target and comparison views for views
-currently in the running or ``accepted'' as being in the top-$k$.
-It also updates the utility values and other algorithm-specific statistics for
-each view.
-At the end of a phase, \SeeDB\ attempts to prune views by discarding low utility views and
-accepting high utility views (rule depends on the specific pruning technique).
+It processes each record, and updates the target and comparison distributions for views currently in the running.
+% For each record, \SeeDB\ determines whether the record satisfies the
+% input query and updates the target and comparison views for views
+% currently in the running or ``accepted'' as being in the top-$k$.
+% It also updates the utility values and other algorithm-specific statistics for
+% each view.
+At the end of a phase, it attempts to prune views by discarding low utility views and
+{\it accepting} high utility views (rule depends on the specific pruning technique).
 % At one extreme, each phase consists of just one record, in which case views
 % are pruned after ever record is read and the views are updated;
 % at the other extreme, we use only one phase, in which case views are only pruned
 % after all the records are read (i.e., effectively no pruning). 
 The list of views in the running is updated and the next phase begins.
-Once we meet a pre-defined stopping criteria, $k$ views with the
-highest utility are returned to the frontend.
-We implement two stopping criteria: we either stop once the entire table has
-been processed (and return exact views to the user), or we stop after
-we have ``accepted'' $k$ views as being in the top-$k$ (and return
-approximations of the top-$k$ views to the user).
-We use the former as the default stopping condition.
-Algorithm~\ref{algo:custom_exec_engine} shows the 
-basic framework adopted by our custom execution engine.
+We can choose to return results once the $k$ views with higest utility have been identified (and provide approximate results), or to return results only when the whole dataset has been processed.
+Depending on latency requirements, we can choose one or the other.
+
+% Once we meet a pre-defined stopping criteria, $k$ views with the
+% highest utility are returned to the frontend.
+% We implement two stopping criteria: we either stop once the entire table has
+% been processed (and return exact views to the user), or we stop after
+% we have ``accepted'' $k$ views as being in the top-$k$ (and return
+% approximations of the top-$k$ views to the user).
+% We use the former as the default stopping condition.
+Algorithm~\ref{algo:custom_exec_engine} shows the outline of our framework.
+% basic framework adopted by our custom execution engine.
 
 \begin{algorithm}[h]
-\caption{Custom Execution Engine Algorithm}
+\caption{Pruning Framework}
 \label{algo:custom_exec_engine}
 \begin{algorithmic}[1]
 \State viewsInRunning $\gets$ \{all views\}
 \State currPhase $\gets$ 0
-\While {file.hasNext()}
-\State record $\gets$ file.NextRecord()
-\For {view in viewsInRunning}
-\State view.updateView(record)
-\State view.updateStatistics()
-\EndFor
+\While {currPhase.hasNext()}
+\State processNextRecord()
+\State updateUtilityEstimates()
 \If {currPhase.End()}
 \State pruneViews(viewsInRunning)
 \State currPhase.Next()
 \EndIf
-\If {stoppingCondition.True()}
-\State break
-\EndIf
+% \If {stoppingCondition.True()}
+% \State break
+% \EndIf
 \EndWhile
 \State return viewsInRunning.sort().getTopK()
 \end{algorithmic}
@@ -101,22 +110,23 @@ basic framework adopted by our custom execution engine.
 % \STATE {\bf return} $currCard[d+1]$
 % \end{algorithmic}
 % \label{algo:aggregatecomputation}
-% \end {algorithm}
-\stitle{Pruning Techniques}: The pruning techniques we discuss next enable \SeeDB\ to discard low-utility views
-early, thus saving computational resources and potentially allowing \SeeDB\ recommend
-views even before all records have been processed.
-To understand the intuition behind the pruning techniques, recall that we define utility of
-view $V_j$ as $ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$ where $S$ is a distance function measuring
-the distance between the target and comparison distributions, $P[V_i (D_Q)]$ and $P[V_i (D)]$.
-Let the total number of records in the input be denoted by $R$ and the total records
-read by phase $j$ as $R_j$. 
-Once $R_j$ records have been read in, we can estimate target and comparison 
-distributions, $\widetilde{P}^j[V_i (D_Q)]$ and $\widetilde{P}^j[V_i (D)]$.
-As \SeeDB\ processes larger portions of the file, these estimates become more accurate. 
-As one might expect:
+% % \end {algorithm}
+% \mpv{should we remove this?}
+% \stitle{Pruning Techniques}: The pruning techniques we discuss next enable \SeeDB\ to discard low-utility views
+% early, thus saving computational resources and potentially allowing \SeeDB\ recommend
+% views even before all records have been processed.
+% To understand the intuition behind the pruning techniques, recall that we define utility of
+% view $V_j$ as $ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$ where $S$ is a distance function measuring
+% the distance between the target and comparison distributions, $P[V_i (D_Q)]$ and $P[V_i (D)]$.
+% Let the total number of records in the input be denoted by $R$ and the total records
+% read by phase $j$ as $R_j$. 
+% Once $R_j$ records have been read in, we can estimate target and comparison 
+% distributions, $\widetilde{P}^j[V_i (D_Q)]$ and $\widetilde{P}^j[V_i (D)]$.
+% As \SeeDB\ processes larger portions of the file, these estimates become more accurate. 
+% As one might expect:
 
-$$\lim_{R_j \rightarrow R}\widetilde{P}^j[V_i (D_Q)] \rightarrow P[V_i (D_Q)] \cap 
-\widetilde{P}^j[V_i (D)] \rightarrow P[V_i (D)] $$
+% $$\lim_{R_j \rightarrow R}\widetilde{P}^j[V_i (D_Q)] \rightarrow P[V_i (D_Q)] \cap 
+% \widetilde{P}^j[V_i (D)] \rightarrow P[V_i (D)] $$
 
 % metric discussed in Section \ref{} are of the form $\mathcal{F}:
 % (\mathcal{R}^p, \mathcal{R}^p) \rightarrow \mathcal{R}$, i.e. they are functions
@@ -124,13 +134,13 @@ $$\lim_{R_j \rightarrow R}\widetilde{P}^j[V_i (D_Q)] \rightarrow P[V_i (D_Q)] \c
 % For view $V_j$ let $\mathcal{P}^j_T$ and $\mathcal{P}^j_C$ respectively denote the 
 % target and comparison view of $V_j$.
 
-Therefore, as we process records in every phase $j$, we can keep running estimates of the
-view distributions as well as view utilities, $\widetilde{U}^j(V_i)$.
-Moreover, {\it we can use these estimates to perform the pruning of low utility views}.
-In this paper, we propose and evaluate two different strategies
-to perform the pruning of views based on utility estimates. 
-The first strategy is based on top-$k$ algorithms that use confidence intervals 
-and the second is based on an adaptation of the Multi-Armed Bandit problem.
+% Therefore, as we process records in every phase $j$, we can keep running estimates of the
+% view distributions as well as view utilities, $\widetilde{U}^j(V_i)$.
+% Moreover, {\it we can use these estimates to perform the pruning of low utility views}.
+% In this paper, we propose and evaluate two different strategies
+% to perform the pruning of views based on utility estimates. 
+% The first strategy is based on top-$k$ algorithms that use confidence intervals 
+% and the second is based on an adaptation of the Multi-Armed Bandit problem.
 
 % of the view distributions $\widetilde{\mathcal{P}}^{i,j}_T$ and $\widetilde{\mathcal{P}}^{i,j}_C$
 % and estimates of the utility $\mathcal{F}(\widetilde{\mathcal{P}}^{i,j}_T, 
