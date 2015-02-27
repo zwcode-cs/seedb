@@ -1,6 +1,6 @@
 %!TEX root=document.tex
 \section{{\large \SeeDB\ } Execution Engine}
-In the following sections, we discuss the 3-stages of implementation of the \SeeDB\
+In the following sections, we discuss the 3 stages of implementation of the \SeeDB\
 execution engine, specifically, the DBMS-backed engine, the pruning framework, and the hybrid engine.
 %The goals of the \SeeDB\ engine are two fold:
 %(1) to efficiently compute the utility of a large number of views, and 
@@ -17,15 +17,15 @@ execution engine, specifically, the DBMS-backed engine, the pruning framework, a
 % and $f$ is the aggregation function) and the output is the top-$k$ views 
 % with the highest utility.
 
-Our first \SeeDB\ engine uses SQL queries in a
+Our first instantiation of the \SeeDB\ engine uses SQL queries in a
 traditional database system to evaluate the utility of each view.
 %We explore this design because it enables \SeeDB\ to be easily integrated 
 %with visualization systems that use DBMSs for data storage (e.g. Tableau, 
 %Spotfire etc).
-The advantage of this design is that it does not is able to benefit
-from all the features of a standard relational engine, and
-exposes a JDBC-compliant interface.
-However, the efficiency is somewhat limit because
+The advantage of this design is that it benefits
+from all the features of a standard relational engine and can be easily integrated into systems
+that use DBMSs for data storage.
+However, the efficiency of this approach is somewhat limit because
 the only way to interact with data is via SQL queries.
 %On the downside, this design limits \SeeDB\ to using the API
 %exposed by the DBMS; essentially, 
@@ -62,7 +62,7 @@ large data sets (with hundreds of attributes and millions of rows), which is too
 % executes each view query independently.
 To improve upon this approach, we can apply various
 multi-query optimization techniques (similar to those in~\ref{XXX}).
-Specifically, we apply four optimizations to speed up \SeeDB\ queries in an RDBMS.
+Specifically, we apply the following optimizations to speed up \SeeDB\ queries in an RDBMS.
 
 \stitle{Combine Multiple Aggregates}: All view queries with the same group-by attribute can be 
 rewritten as a single, 
