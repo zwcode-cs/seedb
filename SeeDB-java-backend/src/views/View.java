@@ -17,5 +17,6 @@ public interface View {
 	public double getUtility(DistanceMetric distanceMetric,
 			boolean normalizeDistributions);
 	public List<View> constituentViews();
+	//public View getTopDifferent();
 
 }

@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+
 import optimizer.Optimizer;
 import settings.DBSettings;
 import settings.ExperimentalSettings;
@@ -14,6 +15,7 @@ import settings.ExperimentalSettings.ComparisonType;
 import settings.ExperimentalSettings.DifferenceOperators;
 import settings.ExperimentalSettings.DistanceMetric;
 import views.AggregateGroupByView;
+import views.AggregateValuesWrapper;
 import views.AggregateView;
 import views.View;
 
@@ -120,6 +122,7 @@ public class SeeDB {
 			ExperimentalSettings settings) throws Exception {
 		long start = System.currentTimeMillis();
 		
+		System.out.println(query1 + ";" + query2);
 		// create log file
 		if (settings.logFile != null) {
 			this.logFile = new File(settings.logFile);
@@ -346,12 +349,14 @@ public class SeeDB {
 				System.out.println("Error in closing connections");
 			}
 		}
-		int numViews = views.size();
+		
+		/* int numViews = views.size();
 		
 		for (int i = 0; i < numViews; i++) {
 			views.addAll(views.get(0).constituentViews());
 			views.remove(0);
 		}
+		*/
 		
 		// sort views by utility
 		Collections.sort(views, new Comparator<View>() {
@@ -376,11 +381,198 @@ public class SeeDB {
 			GraphingUtils.createFilesForGraphs(views);
 		}
 		System.out.println("Finished compute difference");
-		for (View v : views) {
-			System.out.println(v);
+		//System.out.println(views.get(0));
+		List<View> ret = views; //.subList(0, 10);
+		for (int i = 0; i < 10; i++) {
+			System.out.println(((AggregateGroupByView) ret.get(i)).getId() + " " + ret.get(i).getUtility(settings.distanceMetric, settings.normalizeDistributions));
 		}
-		return views;
+		return ret;
 	}	
+	
+	public List<View> computeDifferenceWithPruningSupport(List<String> prunedViews, int lowerbound, int upperbound) {
+		// get the table metadata and identify the attributes that we want to analyze
+		InputTablesMetadata[] queryMetadatas = this.getMetadata(inputQueries[0].tables,
+				inputQueries[1].tables, this.numQueries);
+		
+		// we do not want to consider dimension attributes from the where clause
+		for (Attribute attr : queryMetadatas[0].getDimensionAttributes()) {
+			if (inputQueries[0].whereClause.contains(attr.name)) {
+				queryMetadatas[0].getDimensionAttributes().remove(attr);
+				break;
+			}
+		}
+		
+		if (queryMetadatas[0].getDimensionAttributes().isEmpty() ||
+			queryMetadatas[0].getMeasureAttributes().isEmpty()) {
+			System.out.println("There are no dimensions or measures, quitting");
+			return Lists.newArrayList();
+		}
+		fixOptimizationSettings();
+		
+		// modify the where clause
+		if (inputQueries[0].whereClause != null && !inputQueries[0].whereClause.isEmpty()) {
+			inputQueries[0].whereClause += " AND ";
+		}
+		
+		if (inputQueries[1].whereClause != null && !inputQueries[1].whereClause.isEmpty()) {
+			inputQueries[1].whereClause += " AND ";
+		}
+		
+		inputQueries[0].whereClause += " id <=" + upperbound + " AND id >" + lowerbound;
+		inputQueries[1].whereClause += " id <=" + upperbound + " AND id >" + lowerbound;
+		
+		// compute queries we want to execute
+		List<DifferenceOperator> ops = this.getDifferenceOperators();
+		List<DifferenceQuery> queries = Lists.newArrayList();
+		for (DifferenceOperator op : ops) {
+			queries.addAll(op.getDifferenceQueries(inputQueries, queryMetadatas, 
+					numQueries, settings));
+		}
+		
+		for (int i = 0; i < queries.size(); i++) {
+			if (prunedViews.contains(queries.get(i).toString())) {
+				queries.remove(i);
+				i--;
+			}
+		}
+		
+		// ask optimizer to optimize queries  
+		Optimizer optimizer = new Optimizer(settings, logFile);
+		List<DifferenceQuery> optimizedQueries = 
+				optimizer.optimizeQueries(queries, queryMetadatas[0]);
+		//System.out.println(optimizedQueries.size());
+		
+		List<View> views = null;
+		QueryExecutor qe = new QueryExecutor(pool, settings, logFile);
+		try {
+			views = qe.execute(optimizedQueries, queries, connection, numQueries);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+		/*
+		int numViews = views.size();
+		
+		for (int i = 0; i < numViews; i++) {
+			views.addAll(views.get(0).constituentViews());
+			views.remove(0);
+		}
+		*/
+		return views;
+	}
+
+	public List<View> computeDifferenceWrapper() {
+		List<View> views = Lists.newArrayList();
+		List<String> prunedViews = Lists.newArrayList();
+		// for number of partitions (fix by id)
+		// {
+		//		find the views you need to execute
+		//		optimize
+		//		execute
+		//		update old data
+		// 		prune
+		// }
+		int numPhases = 10;
+		int phaseSize = (int) Math.ceil(settings.num_rows * 1.0/numPhases);
+		InputQuery q1 = InputQuery.deepCopy(inputQueries[0]);
+		InputQuery q2 = InputQuery.deepCopy(inputQueries[1]);
+		
+		for (int i = 0; i < numPhases; i++) {
+			List<View> tmp;
+			inputQueries[0] = InputQuery.deepCopy(q1);
+			inputQueries[1] = InputQuery.deepCopy(q2);
+			tmp = computeDifferenceWithPruningSupport(prunedViews, i * phaseSize, 
+				(i +1) * phaseSize);
+			if (i == 0) {
+				views.addAll(tmp);
+			} else {
+				consolidateViews(views, tmp);
+			}
+			pruneViews(views, prunedViews);
+		}
+
+		closeConnections();
+		
+		sortViewsByUtility(views);
+		
+		System.out.println("Finished compute difference");
+		List<View> ret = views; //.subList(0, 10);
+
+		for (int i = 0; i < 10; i++) {
+			System.out.println(((AggregateGroupByView) ret.get(i)).getId() + " " + ret.get(i).getUtility(settings.distanceMetric, settings.normalizeDistributions));
+		}
+		return ret;
+	}
+	
+	private void closeConnections() {
+		if (settings.useParallelExecution) {
+			try {
+				pool.closeAllConnections();
+			} catch (SQLException e) {
+				e.printStackTrace();
+				System.out.println("Error in closing connections");
+			}
+		}
+	}
+		
+	private void sortViewsByUtility(List<View> views) {
+		Collections.sort(views, new Comparator<View>() {
+	           @Override
+				public int compare(View arg0, View arg1) {
+					if (arg0 instanceof AggregateView || arg0 instanceof AggregateGroupByView) {
+						return arg0.getUtility(settings.distanceMetric, settings.normalizeDistributions) - 
+								arg1.getUtility(settings.distanceMetric, settings.normalizeDistributions) >= 0 ? -1 : 1;
+					} else {
+						return 1;
+					}
+				}
+			});
+	}
+	
+	private void pruneViews(List<View> views, List<String> prunedViews) {
+		sortViewsByUtility(views);
+		if (settings.MAB) {
+			double delta1 = views.get(0).getUtility(settings.distanceMetric, settings.normalizeDistributions) -
+					views.get(11).getUtility(settings.distanceMetric, settings.normalizeDistributions);
+			double deltak = views.get(10).getUtility(settings.distanceMetric, settings.normalizeDistributions) - 
+					views.get(views.size() - 1).getUtility(settings.distanceMetric, settings.normalizeDistributions);
+			if (delta1 > deltak) {
+				prunedViews.add(((AggregateGroupByView) views.get(views.size()-1)).getId());
+				views.remove(views.size()-1);
+			}
+			// accept is not implemented
+		} else { // CI
+			System.out.println("here");
+			prunedViews.add(((AggregateGroupByView) views.get(views.size()-1)).getId());
+			views.remove(views.size()-1);
+		}
+		
+	}
+
+	private void consolidateViews(List<View> views, List<View> tmp) {
+		for (View t : tmp) {
+			AggregateGroupByView t_ = (AggregateGroupByView) t;
+			for (View v : views) {
+				AggregateGroupByView v_ = (AggregateGroupByView) v;
+				if (t_.getId().equals(v_.getId())) {
+					// combine the two distributions
+					for (String s : t_.aggregateValues.keySet()) {
+						if (!v_.aggregateValues.containsKey(s)) {
+							v_.aggregateValues.put(s, new AggregateValuesWrapper());
+						}
+						AggregateValuesWrapper viewAggValues = v_.aggregateValues.get(s);
+						AggregateValuesWrapper tmpAggValues = t_.aggregateValues.get(s);
+						for (int i =0; i < 2; i++) {
+							viewAggValues.datasetValues[i].count += tmpAggValues.datasetValues[i].count;
+							viewAggValues.datasetValues[i].sum += tmpAggValues.datasetValues[i].sum;
+							viewAggValues.datasetValues[i].generic += tmpAggValues.datasetValues[i].generic;
+						}
+					}
+				}
+			}
+		}	
+	}
 
 	public void closeConnection() {
 		this.connection.close();

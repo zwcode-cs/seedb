@@ -27,6 +27,8 @@ public class PaperExperiments2 {
 	private enum GroupByOptimizations {NUMATTRS, HUFFMAN};
 	private static String[] tables = {"s_1", "s_1_1", "s_1_2", "s_1_100k", "s_1_100k_1", 
 		"s_1_100k_2", "s_1_500k", "s_1_500k_1", "s_1_500k_2", "s_1_3", "s_1_4", "s_1_5"};
+	private static int[] rows = {1000000, 1000000,1000000, 100000, 100000, 100000,
+		500000, 500000, 500000}; // missing a few
 	private static String[] queries = {
 		"select * from s_1 where dim29_50='6r2mr3'",
 		"select * from s_1_1 where dim29_50='6r2mr3'",
@@ -56,6 +58,25 @@ public class PaperExperiments2 {
 		try {
 			seedb.initialize(query, null, exptSetting);
 			List<View> result = seedb.computeDifference();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
+		} finally {
+			File f = null;
+			if (exptSetting.logFile != null) {
+				f = new File(exptSetting.logFile);
+			}
+			Utils.writeToFile(f, "Total time: " + (System.currentTimeMillis() - start));
+		}
+	}
+	
+	private void runSeeDB2(String query, ExperimentalSettings exptSetting, DBSettings dbsetting) {
+		long start 	= System.currentTimeMillis();
+		SeeDB seedb = new SeeDB();
+		seedb.connectToDatabase(dbsetting);
+		try {
+			seedb.initialize(query, null, exptSetting);
+			List<View> result = seedb.computeDifferenceWrapper();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
@@ -183,9 +204,9 @@ public class PaperExperiments2 {
 	
 	public void getBestParallel() {
 		for (Backend b : backends) {
-			b= Backend.POSTGRES;
-			for (int j = 0; j < numConns.length; j++) {
-				for (int i = 0; i < tables.length; i++) {
+			b= Backend.VERTICA;
+			//for (int j = 0; j < numConns.length; j++) {
+				for (int i = 0; i < 4; i++) { // tables.length
 					ExperimentalSettings settings 			= new ExperimentalSettings();
 					settings.backend						= b;
 					settings.comparisonType 				= ComparisonType.ONE_DATASET_FULL;
@@ -196,18 +217,52 @@ public class PaperExperiments2 {
 					settings.maxAggSize						= 5;
 					settings.useBinPacking					= true;
 					settings.maxGroupBySize					= 100;
-					settings.maxDBConnections				= numConns[j];
+					settings.maxDBConnections				= 16; //numConns[j];
 					settings.useTempTables 					= true;
 					settings.useParallelExecution 			= true;
 					settings.mergeQueries 					= true;
+					settings.num_rows						= rows[i];
 					
 					settings.differenceOperators.add(DifferenceOperators.AGGREGATE);
-					settings.logFile = "testResults/all_bp_" + settings.getDescriptor() + "_" + tables[i] +"_" +queries[i];
+					settings.logFile = "testResults/new_test_" + settings.getDescriptor() + "_" + tables[i] +"_" +queries[i];
 					if (b == Backend.POSTGRES) {
 						runSeeDB(queries[i], settings, DBSettings.getPostgresDefault());
 					} else if (b == Backend.VERTICA) {
 						runSeeDB(queries[i], settings, DBSettings.getVerticaDefault());
 					}
+				}
+			//}
+			break;
+		}
+	}
+
+	public void getParallelMABPruning() {
+		for (Backend b : backends) {
+			b= Backend.VERTICA;
+			for (int i = 0; i < 4 ; i++) { //tables.length
+				ExperimentalSettings settings 			= new ExperimentalSettings();
+				settings.backend						= b;
+				settings.comparisonType 				= ComparisonType.ONE_DATASET_FULL;
+				settings.differenceOperators 			= Lists.newArrayList();
+				settings.optimizeAll					= false;
+				settings.combineMultipleAggregates		= true;
+				settings.combineMultipleGroupBys		= true;
+				settings.maxAggSize						= 5;
+				settings.useBinPacking					= true;
+				settings.maxGroupBySize					= 100;
+				settings.maxDBConnections				= 16;
+				settings.useTempTables 					= true;
+				settings.useParallelExecution 			= true;
+				settings.mergeQueries 					= true;
+				settings.MAB							= false;
+				settings.num_rows						= rows[i];
+				
+				settings.differenceOperators.add(DifferenceOperators.AGGREGATE);
+				settings.logFile = "testResults/pruning_" + settings.getDescriptor() + "_" + tables[i] +"_" +queries[i];
+				if (b == Backend.POSTGRES) {
+					runSeeDB2(queries[i], settings, DBSettings.getPostgresDefault());
+				} else if (b == Backend.VERTICA) {
+					runSeeDB2(queries[i], settings, DBSettings.getVerticaDefault());
 				}
 			}
 			break;
@@ -216,7 +271,8 @@ public class PaperExperiments2 {
 	
 	public static void main(String[] args) {
 		PaperExperiments2 pe = new PaperExperiments2();
-		pe.getGBOptimizedSerial();
+		pe.getBestParallel();
+		//pe.getParallelMABPruning();
 	}
 
 }

@@ -110,7 +110,7 @@ public class MainMemorySeeDB {
 			br = new BufferedReader(new FileReader(filename));
 			String line = br.readLine();
 			if (line == null) return false;
-			
+			 
 			// read first line to schema
 			getSchemaAndCreateViewStubs(line, q_idx);
 			if (settings.mainMemoryPruning == MainMemoryPruningAlgorithm.MAB4 || 

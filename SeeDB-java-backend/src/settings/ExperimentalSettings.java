@@ -6,7 +6,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 /**
- * This class contains the settings for each run of VizRecDB. It is mainly used for
+ * This class contains the settings for each run of SeeDB. It is mainly used for
  * experimentation, in other cases, supplied default instance is used
  * @author manasi
  *
@@ -14,7 +14,7 @@ import com.google.common.collect.Lists;
 public class ExperimentalSettings {
 	public enum ComparisonType {TWO_DATASETS, ONE_DATASET_FULL, 
 		ONE_DATASET_DIFF, MANUAL_VIEW}; 
-	public ComparisonType comparisonType = ComparisonType.ONE_DATASET_FULL; // Default VizRecDB q vs. entire data
+	public ComparisonType comparisonType = ComparisonType.ONE_DATASET_FULL; // Default SeeDB q vs. entire data
 	public enum Backend {POSTGRES, VERTICA, MAIN_MEMORY};
 	public enum MainMemoryPruningAlgorithm {
 		NONE, // no pruning 
@@ -84,12 +84,13 @@ public class ExperimentalSettings {
 	public int mainMemoryMinRows = 1000;				    // minimum # of rows to process before pruning
 	public double mainMemoryCIMultiplier = 2;				// threshold for CI 
 	public int mainMemoryMaxGroups = 30;					// maximum number of distinct values in any column
+	public boolean MAB = false;								// use MAB for pruning
 	
 	//public String shared_buff="32MB";						
 
 	
 	/**
-	 * Get default settings for VizRecDB
+	 * Get default settings for SeeDB
 	 * @return settings object
 	 */
 	public static ExperimentalSettings getDefault() {
@@ -98,7 +99,7 @@ public class ExperimentalSettings {
 		return settings;
 	}
 	
-	// returns a description of the settings used to run the VizRecDB test
+	// returns a description of the settings used to run the SeeDB test
 	public String getDescriptor() {
 		List<String> l = Lists.newArrayList();
 		l.add(backend == Backend.POSTGRES ? "row" : "column");
@@ -126,6 +127,10 @@ public class ExperimentalSettings {
 		}
 		if (useTempTables) {
 			l.add("TempTables");
+		}
+		
+		if (MAB) {
+			l.add("MAB");
 		}
 		return Joiner.on("_").join(l);
 	}

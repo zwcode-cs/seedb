@@ -3,10 +3,11 @@
 \section{Experimental Evaluation}
 \label{sec:experiments}
  
-In this section, we present our evaluation of \SeeDB from a performance perspective.
+In this section, we present our evaluation of \SeeDB in terms of its performance 
+at exploring alternative visualizations.
 Results of our user study are presented in the following section.
 We begin with a study of the DBMS-backed execution engine and examine how far we can
-push vanilla databases to support a \SeeDB workload.
+push conventional relational engines to support a \SeeDB workload.
 The results motivate empirically the need for our custom execution engine.
 We then present our evaluation of the custom execution engine and pruning strategies.
 The datasets used in our experiments are listed in Table~\ref{tab:datasets}.
@@ -15,8 +16,10 @@ techniques on a variety of syntheic as well as real datasets to evaluate
 their performance and accuracy.
 All experiments were run on a single machine with 8 GB RAM and a 16 core Intel 
 Xeon E5530 processor. 
+In these experiments, use the {\it earth mover distance (EMD)} as our utility function.
 % Unless described otherwise, experiments were repeated 3 times and the latency measures 
 % were averaged.
+\srm{small data, attributes}
 \begin{table}[htb]
   \centering \scriptsize
   \begin{tabular}{|c|c|c|c|c|c|} \hline

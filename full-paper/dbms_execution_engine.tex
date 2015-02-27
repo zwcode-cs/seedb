@@ -15,23 +15,26 @@ with the highest utility.
 \section{DBMS-backed Execution Engine}
 \label{sec:dbms-exec-engine}
 
-Our first design implements the \SeeDB\ engine as a wrapper on top of a
-traditional database system.
-We explore this design because it enables \SeeDB\ to be easily integrated 
-with visualization systems that use DBMSs for data storage (e.g. Tableau, 
-Spotfire etc).
-In fact, this design is oblivious to the particular data store as long as
-it supports a JDBC-like interface.
-On the downside, this design limits \SeeDB\ to using the API
-exposed by the DBMS; essentially, 
-\SeeDB\ can only open/close connections to the
-database and execute one or more SQL queries. 
+Our first \SeeDB\ engine uses SQL queries in a
+traditional database system to evaluate the utility of each view.
+%We explore this design because it enables \SeeDB\ to be easily integrated 
+%with visualization systems that use DBMSs for data storage (e.g. Tableau, 
+%Spotfire etc).
+The advantage of this design is that it does not is able to benefit
+from all the features of a standard relational engine, and
+exposes a JDBC-compliant interface.
+However, the efficient is somewhat limit because
+the only way to interact with data is via SQL queries.
+%On the downside, this design limits \SeeDB\ to using the API
+%exposed by the DBMS; essentially, 
+%\SeeDB\ can only open/close connections to the
+%database and execute one or more SQL queries. 
 %Since we have no control over how queries are executed or access to intermediate
 %results, 
-As a result, our optimizations minimize total execution time by minimizing the
+As a result, we focus on minimizing the total execution time by reducing the
 total number of queries and total scans of the underlying table.
 
-The basic procedure for identifying top-$k$ views is the following: generate 
+The basic procedure for identifying top-$k$ views is the following: we generate 
 SQL queries for the target and comparison view for each potential visualization, 
 execute each query to compute aggregate distributions; and compute distance between
 distributions to pick the $k$ visualizations with the highest utility. 
@@ -51,22 +54,21 @@ distributions to pick the $k$ visualizations with the highest utility.
 % and select the top-$k$ views with the largest utility,
 % which are then sent to the frontend.
 In a table with $a$ dimensions, $m$ measures, and $f$ aggregation functions, 
-$2\times f \times a \times  m$ queries must be executed independently, a 
-solution that takes prohibitively long (over a minute in row
-stores, Section \ref{sec:experiments}). \mpv{Talk about grouping sets somewhere}.
+$2\times f \times a \times  m$ queries must be executed independently.  As we show in Section~\ref{sec:experiments}, this can take minutes in
+large data sets (with hundreds of attributes and millions of rows), which is too long for interactive use. \mpv{Talk about grouping sets somewhere}.
 % This strawman approach is clearly inefficient since it examines every possible view and 
 % executes each view query independently.
-We can apply a set of well-studied optimization techniques from OLAP cube computation and
-multi-query optimization to improve upon this strawman approach.
-Specifically, we apply the following set of four optimizations to speed up \SeeDB\ processing
-within a database.
+To improve upon this approach, we can apply various
+multi-query optimization techniques (similar to those in~\ref{XXX}).
+Specifically, we apply four optimizations to speed up \SeeDB\ queries in an RDBMS.
 
-\stitle{Combine Multiple Aggregates}: All view queries with the same group-by attribute are 
+\stitle{Combine Multiple Aggregates}: All view queries with the same group-by attribute can be 
 rewritten as a single, 
 combined view query. So instead of executing
 queries for views $(a_1$, $m_1$, $f_1)$, $(a_1$, $m_2$, $f_2)$ \ldots $(a_1$, $m_k$, $f_k)$
 independently, we combine them into a single view represented by
-$(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$. 
+$(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$.  We have found that there is no penalty
+to grouping as many aggregates as possible in both row and column stores. 
 
 \stitle{Combine target and comparison view query}:
 Since the target view and comparison views only differ in the subset of data
@@ -135,24 +137,27 @@ END}\\
 % Efficient cube materialization is a problem well studied in the OLAP literature.
 % Since the views considered by \SeeDB\ can be thought of as projections of the OLAP
 % cube, we can adapt efficient materialization techniques to our problem.
-Our multiple aggregate optimization reduces the problem of evaluating
-all views to that of evaluating a multi-aggregate group-by along each dimension 
-attribute of a table.
+After applying our multiple aggregate optimization, we are left with a number of 
+queries with a group-by on a single aggregate.
+We can of course group these together into a single query, but but each additional 
+group by attribute will increase the number of groups, and (possibly) lead to slower
+overall performance when the number of groups becomes large.  
 Therefore, \SeeDB\ has to determine the optimal way of executing these multi-attribute
 {\it group-by} queries.
-Savvy readers will recognize this problem as being a special case of materializing
-an OLAP cube~\cite{olap_cube}.
-Views evaluated by \SeeDB\ are projections of the OLAP cube and we can adapt techniqes
-from the cube literature~\cite{} to find the optimial execution strategy for these queries.
+%Savvy readers will recognize this problem as being a special case of materializing
+%an OLAP cube~\cite{olap_cube}.
+%Views evaluated by \SeeDB\ are projections of the OLAP cube and we can adapt techniqes
+%from the cube literature~\cite{} to find the optimial execution strategy for these queries.
 % There are few differences in the \SeeDB\ setting and traditional OLAP cubes: (1) OLAP
 % cube materialization is performed inside the database giving more flexibility in the
 % techniques used; in \SeeDB\ every evaluation corresponds to a separate query; (2) 
-Specifically, we work with a similar problem formulation: given a space budget $\mathcal{S}$,
-and estimates of sizes of views (i.e. number of rows in the result), determine the optimal
+%Specifically, we work with a similar problem formulation: 
+Our specific problem is as follows: given a space budget $\mathcal{S}$,
+and estimates of sizes of views (i.e. number of rows in the result), we need to the optimal
 way to combine multiple single-attribute group-by queries into multi-attribute group-by queries.
 If we know the number of distinct values for each attribute, we can estimate the
 size of a view containing dimension attributes $a_i$ and $a_j$ as $|a_i|\times |a_j|$.
-Our problem becomes:
+Formally, our problem becomes:
 \vspace{-5pt}
 \begin{problem}[Optimal Grouping]
 Given a set of dimension attributes $A$ = \{$a_1$\ldots$a_n$\}, divide the
@@ -170,6 +175,13 @@ then packing items into bins is identical to finding groups $A_1, \ldots, A_l$,
 such that the estimated size of any query result is below $\mathcal{S}$.
 We use the standard first-fit algorithm~\cite{first-fit} to find the optimal
 grouping of dimension attributes.
+
+This problem is superficially similar to the problem of OLAP cube materialization~\cite{olap_cube}, where
+the goal is to pre-compute aggregates across some dimensions of a dataset to optimize cube queries,
+subject to a total space budget and given a historical workload.  The problem, however, is actually quite different:
+we have a set of aggregates we {\it must} compute as efficiently as possible, whereas in the cube materialization
+literature the goal is to pre-compute a part of the cube subject to a space bound, without concern for how long the 
+(offline) pre-computation takes.
 
 % The first-fit algorithm works as follows:
 % on initialization, all groups $A_1, \ldots, $ $A_l$ are empty.
@@ -234,11 +246,10 @@ grouping of dimension attributes.
 \stitle{Other Optimizations}: 
 To further speedup processing, we can pre-compute results for 
 static views (e.g. comparison views on full tables) or operate on
-pre-computed data samples. 
-While we acknowledge these optimizations, we focus instead on techniques
-that address the core problem of rapidly evaluating a large number of views.
-Any of the above optimizations can take advantage of pre-computed results or 
-samples.
+pre-computed data samples.  Such optimizations are orthogonal to the
+problem of efficiently evaluating a large number of views, which we will have to
+do even in the presence of pre-computaiton or sampling, so we don't focus on them here.
+
 %do not address the more important challenge of evaluating a large number of views.
 
 %In Section \ref{XXX} we show that this optimization gives us a speedup of XXX.

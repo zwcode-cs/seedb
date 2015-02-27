@@ -22,7 +22,7 @@ is the set of views with the higest utility and $\{\mathcal{V}_S\}$ is the set o
 fraction of true positives in the views returned by \SeeDB. (2) {\em utility distance}: since multiple
 views can have similar utility values, we use utility distance as a measure of how {\it far} \SeeDB 
 results are from the true top-$k$ views. 
-Formally, we define utility distance as the difference between the average utility of $\{\mathcal{V}_T\}$ 
+Formally, using notation from Section \ref{}, we define utility distance as the difference between the average utility of $\{\mathcal{V}_T\}$ 
 and the average utility of $\{\mathcal{V}_S\}$, i.e., $\frac{1}{n}(\sum_{i}U(\mathcal{V}_{T,i}) - 
 \sum_{i}U(\mathcal{V}_{S,i}))$.
 
@@ -62,7 +62,7 @@ the customers, information about the bank's previous contact with the customer, 
 \stitle{Result Highlights:}
 \begin{denselist}
 \item Our pruning strategies
-reduce \SeeDB latency from 20 seconds to less than 2 seconds
+reduce \SeeDB latency from 20 seconds (without pruning in custom engine) to less than 2 seconds
 to return the first view, representing a {\em 10X reduction in latency}.
 
 \item Our latency improvements do not impact accuracy significantly;

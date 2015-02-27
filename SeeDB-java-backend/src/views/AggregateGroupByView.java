@@ -84,7 +84,7 @@ public class AggregateGroupByView extends AggregateView {
 	}
 	
 	private AggregateFunctions getAggregateFunctionForUtility() {
-		if (func == AggregateFunctions.ALL) return AggregateFunctions.SUM;
+		if (func == AggregateFunctions.ALL) return AggregateFunctions.ALL;
 		return func;
 	}
 

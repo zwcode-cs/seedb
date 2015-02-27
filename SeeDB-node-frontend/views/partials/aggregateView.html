@@ -1,5 +1,17 @@
-  <div ng-repeat="chart in charts" class="col-md-4">
-    <div google-chart type="chart.type" data="chart.data" options="chart.options">
+  <div ng-repeat="chart in charts" class="col-md-12">
+  	<div google-chart type="chart.type" data="chart.data" options="chart.options">
     </div>
+    <span>[[chart.chart_title]]</span> <br />
     <span>Utility: [[chart.utility]]</span>
   </div>
+
+<!--   <div ng-repeat="chart in charts" class="col-md-12" >
+  	<div class="col-md-12" style="border:1px solid #cccccc;margin: 25px">
+      <div ng-repeat="subchart in chart">
+        <div google-chart type="subchart.type" data="subchart.data" options="subchart.options">
+        </div>
+      </div>
+    </div>
+    <div>[[chart.chart_title]]</div> 
+    <div>Utility: [[chart.utility]]</div>
+  </div> -->

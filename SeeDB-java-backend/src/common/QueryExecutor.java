@@ -261,7 +261,7 @@ public class QueryExecutor {
 				else {
 					List<String> gbValues = Lists.newArrayList();
 					for (String attr : gbAttrs) {
-						gbValues.add((String) row.get(attr));	
+						gbValues.add(row.get(attr).toString());	
 					}
 					groupBy = Joiner.on("__").join(gbValues);
 				}
