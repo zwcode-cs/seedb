@@ -6,30 +6,30 @@
 
 Data visualization is one of the most common techniques for identifying 
 trends and finding anomalies in data.
-However, with high-dimensional datasets, finding visualizations that 
+However, with high-dimensional datasets, identifying visualizations that 
 effectively present interesting variations or patterns in the data is a non-trivial task:  a
 user may have to plot thousands of pairs of attributes against each other 
 before arriving at one that shows something valuable, optimizing for a range of visualization 
-types, aesthetic features, and so on.
+types, aesthetic features, and more.
 
 %The hope is that these recommendations, combined with the current interactivity and ease of use of visualization 
 %software, can help analysts quickly glean insights form the data.
 
-In this paper, we tackle the problem of automatically finding such valuable visualizations.
+In this paper, we tackle the problem of automatically recommending such valuable visualizations.
 This problem is complicated, because a ``good'' visualization needs to take into account several
 different dimensions, including:
-\begin{asparaenum}
+\begin{inparaenum}
 \item the types and properties of the different attributes in the dataset ({\it metadata}), 
 \item the particular subset of data the user is interested in ({\it query}), 
 \item the variation in and distribution of the data itself ({\it data}), 
 \item the semantics and relative importance of attributes in the data ({\it context}), 
-\item past history of interactions of this user or other users with the dataset ({\it user history}), and
+\item past history of interactions of this user  with the dataset ({\it user history}), and
 \item visual qualities of visualizations ({\it aesthetics}). 
-\end{asparaenum}
+\end{inparaenum}
 
-Current recommendations systems provided by systems like Spotfire~\cite{} and Tableau~\cite{} leverage basic attribute types to suggest
-visualizations that follow standard visualization best-practices from a user-supplied query, thus focusing on only the metadata, query,
-and aesthetics  of this taxonomy.  No existing system that we are aware of 
+Current visualization systems like Spotfire~\cite{} and Tableau~\cite{} have limited capabilities to recommend
+visualizations, following standard visualization best-practices from a user-specified subset of the data, thus focusing on only the metadata and aesthetics  
+dimensions of the above taxonomy.  No existing system that we are aware of 
 incorporates insights about the underlying data or prior user history into its recommendations.
 
 %There is much room for research into leveraging information along the remaining dimensions to make more holistic
@@ -75,7 +75,7 @@ incorporates insights about the underlying data or prior user history into its r
 To this end, in this work, we describe a new visualization recommendation engine we are building called {\it \SeeDB}.
 Eventually, we aim to optimize for all six dimensions of this taxonomy, by developing a suite of optimization techniques designed to explore
 the possible range of visualizations of a user-supplied data set or query result.  
-As a first step in this paper, we focus on  a general deviation-based metric that can capture all six dimensions to a limited extent (see Section~\ref{sec:problem_statement}).  However, because contextual information and aesthetics has been addressed in prior visualization, we focus in most of this paper on 
+As a first step in this paper, we focus on  a general deviation-based metric that can capture all six dimensions to a limited extent (see Section~\ref{sec:problem_statement}).  However, because aesthetics has been addressed in prior visualization, we focus in most of this paper on 
 {\it data-driven} recommendations that consider the inherent variations in the data from a user-supplied query.  Such visualizations are particularly appropriate when
 approaching a dataset for the first time, with limited domain knowledge or historical context.
 %   that focuses less on the aesthetics of good visualizations, and more
