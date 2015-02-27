@@ -1,45 +1,64 @@
 %!TEX root=document.tex
 \section{{\large \SeeDB\ } Execution Engine}
-In the following sections, we discuss the 3 stages of implementation of the \SeeDB\
-execution engine, specifically, the DBMS-backed engine, the pruning framework, and the hybrid engine.
-%The goals of the \SeeDB\ engine are two fold:
-%(1) to efficiently compute the utility of a large number of views, and 
-%(2) to accurately rank views in order of
-%utility to find the $k$ views with highest utility.
-% As discussed in the architecture overview, we explore two distinct
-% implementations of the \SeeDB\ execution engine.
+The goals of the \SeeDB execution engine are to efficiently
+compute the utility of a large number of aggregate views
+and to then find and display the $k$ visualizations with the highest utility.
 
-\subsection{DBMS-backed Execution Engine}
-\label{sec:dbms-exec-engine}
+\subsection{Basic Implementation} \label{sec:dbms-exec-engine}
 
-% Recall that the input to the \SeeDB\ engine is a set of view stubs (triples of the form
-% $(a, m, f)$, where $a$ is the dimension attribute, $m$ is the measure,
-% and $f$ is the aggregation function) and the output is the top-$k$ views 
-% with the highest utility.
+We now describe the basic implementation of \SeeDB
+over a traditional relational database system.
+Recall that the input to the \SeeDB engine is a set of 
+aggregate view stubs, i.e., triples of the form
+$(a, m, f)$, where $a$ is the dimension attribute, $m$ is the measure,
+and $f$ is the aggregation function.
+For each aggregate view stub, we craft
+a SQL query corresponding to the target
+and comparison view, and issue
+the two queries, one at a time, to the database.
+We then repeat this for each aggregate view stub.
+As the results are obtained, we can compute the
+distance between the target and comparison view
+distributions, and keep track of the $k$ visualizations
+with highest utility. These are then displayed
+to the analyst.
 
-Our first instantiation of the \SeeDB\ engine uses SQL queries in a
-traditional database system to evaluate the utility of each view.
-%We explore this design because it enables \SeeDB\ to be easily integrated 
-%with visualization systems that use DBMSs for data storage (e.g. Tableau, 
-%Spotfire etc).
-The advantage of this design is that it benefits
-from all the features of a standard relational engine and can be easily integrated into systems
-that use DBMSs for data storage.
-However, the efficiency of this approach is somewhat limit because
-the only way to interact with data is via SQL queries.
-%On the downside, this design limits \SeeDB\ to using the API
-%exposed by the DBMS; essentially, 
-%\SeeDB\ can only open/close connections to the
-%database and execute one or more SQL queries. 
-%Since we have no control over how queries are executed or access to intermediate
-%results, 
-As a result, we focus on minimizing the total execution time by reducing the
-total number of queries and total scans of the underlying table.
 
-The basic procedure for identifying top-$k$ views is the following: we generate 
-SQL queries for the target and comparison view for each potential visualization, 
-execute each query to compute aggregate distributions; and compute distance between
-distributions to pick the $k$ visualizations with the highest utility. 
+Naturally, this basic implementation has many inefficiencies.
+In a table with $a$ dimensions, $m$ measures, and $f$ aggregation functions, 
+$2\times f \times a \times  m$ queries must be executed independently.  
+As we show in Section~\ref{sec:experiments}, this can take minutes in
+large data sets (with hundreds of attributes and millions of rows), which is too long for interactive use.
+
+We propose two different suites of optimizations to deal with these
+inefficiencies.
+The first suite of optimizations, discussed in Section~\ref{sec:sharing-opt}, concerns {\em sharing},
+i.e., sharing as much work as possible while leveraging the 
+backend database system.
+The second suite of optimizations, discussed in Section~\ref{sec:in_memory_execution_engine}, concerns {\em pruning},
+i.e., avoiding the complete computation of some aggregate views
+by pruning them away. The second suite of optimizations
+are approximate, in that they, in rare occasions may lead
+to inaccurate results (in that the visualizations
+displayed need not be the ones with the best utilities).
+
+% Our first instantiation of the \SeeDB\ engine uses SQL queries in a
+% traditional database system to evaluate the utility of each view.
+% %We explore this design because it enables \SeeDB\ to be easily integrated 
+% %with visualization systems that use DBMSs for data storage (e.g. Tableau, 
+% %Spotfire etc).
+% The advantage of this design is that it benefits
+% from all the features of a standard relational engine and can be easily integrated into systems
+% that use DBMSs for data storage.
+% However, the efficiency of this approach is somewhat limit because
+% the only way to interact with data is via SQL queries.
+% %On the downside, this design limits \SeeDB\ to using the API
+% %exposed by the DBMS; essentially, 
+% %\SeeDB\ can only open/close connections to the
+% %database and execute one or more SQL queries. 
+% %Since we have no control over how queries are executed or access to intermediate
+% %results, 
+
 % Given a set of view stubs provided to the execution engine, conceptually,
 % the basic approach proceeds as follows:
 % (1) for each view, we generate SQL queries for the target and
@@ -55,18 +74,20 @@ distributions to pick the $k$ visualizations with the highest utility.
 % (4) we compute utility for each view 
 % and select the top-$k$ views with the largest utility,
 % which are then sent to the frontend.
-In a table with $a$ dimensions, $m$ measures, and $f$ aggregation functions, 
-$2\times f \times a \times  m$ queries must be executed independently.  As we show in Section~\ref{sec:experiments}, this can take minutes in
-large data sets (with hundreds of attributes and millions of rows), which is too long for interactive use. \mpv{Talk about grouping sets somewhere}.
 % This strawman approach is clearly inefficient since it examines every possible view and 
 % executes each view query independently.
-To improve upon this approach, we can apply various
-multi-query optimization techniques (similar to those in~\ref{XXX}).
-Specifically, we apply the following optimizations to speed up \SeeDB\ queries in an RDBMS.
 
-\stitle{Combine Multiple Aggregates}: All view queries with the same group-by attribute can be 
-rewritten as a single, 
-combined view query. So instead of executing
+\subsection{Sharing Optimizations}\label{sec:sharing-opt}
+In this section, we focus on minimizing total execution time
+by reducing the
+total number of queries issued to the database,
+and by reducing the total number of scans of the underlying table.
+Specifically, we apply the following optimizations:
+\agp{I didn't make a smoothing pass on the rest of this..}
+
+\stitle{Combine Multiple Aggregates}: All aggregate view queries 
+with the same group-by attribute can be 
+rewritten as a single, combined query. So instead of executing
 queries for views $(a_1$, $m_1$, $f_1)$, $(a_1$, $m_2$, $f_2)$ \ldots $(a_1$, $m_k$, $f_k)$
 independently, we combine them into a single view represented by
 $(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$.  We have found that there is no penalty

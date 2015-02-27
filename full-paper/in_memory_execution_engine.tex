@@ -1,32 +1,38 @@
 %!TEX root=document.tex
 
 
-\subsection{Low-Utility View Pruning}
+\subsection{Pruning-Based Optimizations}
 \label{sec:in_memory_execution_engine}
-The DBMS-backed execution engine from the previous section provides reasonable performance for small datasets.
-However, we find that for medium and large size datasets, the optimized engine take tens to hundreds of produce the top visualizations.
-There are a few reasons for this. (a) Since our engine runs a large number (50-200) queries for each \SeeDB invocation, a large number of scans of the data are performed needlessly; (b) Far too many resources are wasted on low-utility views; and (3) Results of \SeeDB are not available until the entire dataset has been processed.
+The previous section described techniques to
+batch and share computations across queries---however,
+if the number of queries is large, this could still 
+lead to high execution times, especially
+because a lot of resources
+are wasted on computing low-utility views. 
+In this section, we describe mechanisms to prune away
+some aggregate views without complete evaluation. 
+Naturally, pruning schemes are {\em approximate},
+in that they sometimes incorrectly prune away some
+high utility visualizations. 
+That said, the visualizations that are displayed
+may still be close to high utility 
+(which may be good enough for analysts) 
+and will certainly be
+correct; thus there is still merit to considering approximate schemes.
 
-To mitigate these drawbacks, we explored a set of pruning strategies to identify and then discard low utility views.
-Pruning low-utility views can allow \SeeDB to reduce the number of queries run on the database, reduce resources spent on eventually-discarded views, and give \SeeDB the ability to return as soon as it has identified the top views.
-In order to evaluate various pruning strategies, we built a simple framework to process records sequentially and perform pruning on the fly.
-We now decribe our test framework and two specific pruning strategies adopted in \SeeDB.
+% The DBMS-backed execution engine from the previous section provides reasonable performance for small datasets.
+% However, we find that for medium and large size datasets, the optimized engine take tens to hundreds of produce the top visualizations.
+% There are a few reasons for this. (a) Since our engine runs a large number (50-200) queries for each \SeeDB invocation, a large number of scans of the data are performed needlessly; (b) Far too many resources are wasted on low-utility views; and (3) Results of \SeeDB are not available until the entire dataset has been processed.
 
-% has two drawbacks:
-% (a) the number of scans performed of the data is far too high, and
-% (b) far too many resources are wasted on low-utility views.
-% As a result, our goals with the custom execution engine are as follows:
-% (a) complete sharing of table scans between views so that a single table scan
-% suffices to compute all views; 
-% (b) sharing of intermediate results between views so that low utility views can
-% be pruned on the fly; and 
-% (c) early stopping once the top views have been identified. 
-% We now describe the
-% basic execution framework followed by specific
-% pruning strategies.
+% To mitigate these drawbacks, we explored a set of pruning strategies to identify and then discard low utility views.
+% Pruning low-utility views can allow \SeeDB to reduce the number of queries run on the database, reduce resources spent on eventually-discarded views, and give \SeeDB the ability to return as soon as it has identified the top views.
+% In order to evaluate various pruning strategies, we built a simple framework to process records sequentially and perform pruning on the fly.
+% We now decribe our test framework and two specific pruning strategies adopted in \SeeDB.
 
 \stitle{Basic Framework}:
 \label{subsec:basic_framework}
+\agp{Change this to argue that we can use the DBMS version in phases
+where in each phase we throw away a bunch of views. Reuse content from Section~\ref{sec:hybrid_exectution_engine}}
 Our basic framework functions as follows: It buffers data from the input table (on disk or in memory) and processes it in phases. 
 Within each phase, it processes a fixed number of records by reading the input 
 one record at a time.
@@ -185,7 +191,7 @@ Algorithm~\ref{algo:custom_exec_engine} shows the outline of our framework.
 % \end{itemize}
 
 
-\subsection{Confidence Interval-Based Pruning}
+\subsubsection{Confidence Interval-Based Pruning}
 \label{sec:confidence_interval}
 % We first describe at a high-level our confidence interval-based pruning strategies,
 % and then describe the two specific instantiations of these strategies,
@@ -439,7 +445,7 @@ records seen so far.
 
 
 
-\subsection{Multi-Armed Bandit Pruning}
+\subsubsection{Multi-Armed Bandit Pruning}
 \label{sec:multi_armed_bandit}
 The second class of pruning techniques we explore
 are based on solutions for the Multi-Armed Bandit (MAB)~\cite{bandits}. 
