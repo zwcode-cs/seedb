@@ -13,6 +13,7 @@ it recommends visualizations that the user would find most valuable.
 However, in this work, for ease of development and testing, we built 
 \SeeDB\ as a standalone end-to-end system that allows users to pose 
 arbitrary queries over data and obtain recommended visualizations.
+
 The standalone version of \SeeDB\ is comprised of two main parts: 
 a light-weight client that is 
 used to issue queries, display recommended visualizations, and allow basic 
@@ -23,8 +24,7 @@ Once the analyst chooses the data of interest (by issuing a query $Q$), the
 client makes a call to the backend for visualization recommendations for $Q$.
 At the backend, the view generator module queries the system metadata for table sizes, 
 column types, and correlations between column values. 
-It then uses this metadata and the incoming query to prune the space
-of possible views and generate stubs for the remaining views. 
+It then uses this metadata and the incoming query to remove redundant views and generate stubs for the remaining views. 
 View stubs are essentially more elaborate triples of the form $(a, m, f)$ as
 discussed in Section \ref{sec:problem_statement}. 
 The generated view stubs are then sent to the execution engine
@@ -44,20 +44,28 @@ clip=true]{Images/SeeDB-architecture.pdf}}}}
 \vspace{-15pt}
 \end{figure} 
 
-In this paper, we explore two distinct implementations of the \SeeDB\ execution
-engine. 
-Our first implementation draws upon traditional multi-query optimization~\cite{}
-and OLAP literature~\cite{} to implement \SeeDB\ as a wrapper
-on top of a database system. \mpv{These techniques are usually inside the DBMS, 
-we are using them outside?}
-The goal of this implementation is to study how far we can push existing 
-relational databases to support a \SeeDB-type workload.
-While we obtain reasonable performance by employing well-known optimizations, we find that 
-operating through the SQL interface limits the performance we can obtain.
-Therefore, we next built a custom execution engine that completely shares query scans between
-all views and uses heuristics to rapidly prune low-utility views.
-These techniques allow us to perform only a single pass over the data
-and rapidly identify top visualizations. \mpv{Incorp into DB?}
+In this paper, we build the execution engine in three stages. 
+In the first stage \mpv{better word?}, we implement \SeeDB as a layer on top of the database system and apply traditional multi-query optimization techniques to see how far we can push existing relational databases to support a \SeeDB-type workload.
+While we obtain resonable performance for small datasets, we find the optimizations are insufficient to support large datasets \mpv{quantify?}.
+Therefore, next, we develop a set of pruning techniques that can use running statistics about utility estimates to rapidly prune low-utility views. 
+By reducing the number of views evaluated, these techniques reduce overall latency and also allow \SeeDB to return results without processing the entire dataset.
+We implement these pruning strategies in a simple shared scan system to test the efficacy of our techniques.
+Finally, we develop a general way to incorporate our pruning strategies back into the DBMS-backed execution engine to obtain the {\it best of both worlds}.
+
+% In this paper, we explore two distinct implementations of the \SeeDB\ execution
+% engine. 
+% Our first implementation draws upon traditional multi-query optimization~\cite{}
+% and OLAP literature~\cite{} to implement \SeeDB\ as a wrapper
+% on top of a database system. \mpv{These techniques are usually inside the DBMS, 
+% we are using them outside?}
+% The goal of this implementation is to study how far 
+
+% While we obtain reasonable performance by employing well-known optimizations, we find that 
+% operating through the SQL interface limits the performance we can obtain.
+% Therefore, we next built a custom execution engine that completely shares query scans between
+% all views and uses heuristics to rapidly prune low-utility views.
+% These techniques allow us to perform only a single pass over the data
+% and rapidly identify top visualizations. \mpv{Incorp into DB?}
 % However, existing systems do not provide a good means to share scans between
 % queries or to access intermediate results during scans.
 % As a result, optimization opportunities are limited.
@@ -72,7 +80,6 @@ and rapidly identify top visualizations. \mpv{Incorp into DB?}
 
 Next we briefly examine the \SeeDB client and then describe the execution engines
 in detail.
-
 
 % In the DBMS-based execution engine (Section \ref{}), the view stubs are passed
 % through the optimizer that identifies the best ways to combine the queries to minimize
