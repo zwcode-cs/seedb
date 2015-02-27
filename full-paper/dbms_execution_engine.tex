@@ -1,10 +1,7 @@
 %!TEX root=document.tex
-In the next two sections, we discuss our implementations of the \SeeDB\
-execution engine. 
-Input to the \SeeDB\ engine is a set of view stubs (triples of the form
-$(a, m, f)$, where $a$ is the dimension attribute, $m$ is the measure,
-and $f$ is the aggregation function) and the output is the top-$k$ views 
-with the highest utility.
+\section{{\large \SeeDB\ } Execution Engine}
+In the following sections, we discuss the 3-stages of implementation of the \SeeDB\
+execution engine, specifically, the DBMS-backed engine, the pruning framework, and the hybrid engine.
 %The goals of the \SeeDB\ engine are two fold:
 %(1) to efficiently compute the utility of a large number of views, and 
 %(2) to accurately rank views in order of
@@ -12,8 +9,13 @@ with the highest utility.
 % As discussed in the architecture overview, we explore two distinct
 % implementations of the \SeeDB\ execution engine.
 
-\section{DBMS-backed Execution Engine}
+\subsection{DBMS-backed Execution Engine}
 \label{sec:dbms-exec-engine}
+
+% Recall that the input to the \SeeDB\ engine is a set of view stubs (triples of the form
+% $(a, m, f)$, where $a$ is the dimension attribute, $m$ is the measure,
+% and $f$ is the aggregation function) and the output is the top-$k$ views 
+% with the highest utility.
 
 Our first \SeeDB\ engine uses SQL queries in a
 traditional database system to evaluate the utility of each view.
@@ -23,7 +25,7 @@ traditional database system to evaluate the utility of each view.
 The advantage of this design is that it does not is able to benefit
 from all the features of a standard relational engine, and
 exposes a JDBC-compliant interface.
-However, the efficient is somewhat limit because
+However, the efficiency is somewhat limit because
 the only way to interact with data is via SQL queries.
 %On the downside, this design limits \SeeDB\ to using the API
 %exposed by the DBMS; essentially, 
