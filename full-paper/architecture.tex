@@ -1,10 +1,10 @@
 %!TEX root=document.tex
 
 
-\section{{\large \SeeDB\ } Design Overview}
+\section{{\large \SeeDB\ } Architecture}
 \label{sec:system_architecture}
 
-In this section, we present an overview of the \SeeDB\ architecture.
+%In this section, we present an overview of the \SeeDB\ architecture.
 Given an input query on a dataset, 
 \SeeDB recommends visualizations that the analyst would find most valuable,
 taking into account aspects such as the background, user preferences,
@@ -27,7 +27,7 @@ them over data and identify the aggregate views with highest utility.
 Figure \ref{fig:sys-arch} depicts the architecture of our system.
 Once the analyst chooses the data of interest (by issuing a query $Q$), the
 client makes a call to the backend for visualization recommendations for $Q$.
-At the backend, the view generator module queries the system metadata for table sizes, 
+In the backend, the view generator module queries the system metadata for table sizes, 
 column types, and correlations between column values. 
 It then uses this metadata and the incoming query to remove redundant aggregate views and generate ``stubs'' for the remaining aggregate views. 
 Aggregate view stubs are essentially more elaborate triples of the form $(a, m, f)$ as
@@ -56,12 +56,14 @@ traditional relational database system.
 This enables us to seamlessly reuse all the benefits
 of traditional relational databases --- the ability
 to pose declarative queries, query optimization, transactional guarantees,
-and so on.
-That said, naively using a traditional database system
-would lead to severe performance issues.
+and so on.  Because of the large number of queries SeeDB needs to execute,
+the baseline performance of running a single query per aggregate view
+is prohibitively slow. Simple caching and pre-computation schemes can't be applied,
+because our utility metric depends not only on data distribution, but on
+the user-supplied query. Hence,
 Our core focus in the subsequent sections will
-be to propose a collection of optimization schemes
-that will enable \SeeDB to be much more performant 
+be to propose a collection of dynamic optimizations
+that enable \SeeDB to be perform well 
 on large datasets. \mpv{something about how this fits in with other data stores?}
 
 
