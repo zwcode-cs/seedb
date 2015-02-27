@@ -3,7 +3,7 @@
 
 \section{Related Work}
 \label{sec:related_work}
-\SeeDB\ is related to work from multiple areas;
+\SeeDB\ is draws on related work from multiple areas;
 we review papers in each of the areas, and describe how they relate to
 \SeeDB. 
 
@@ -12,46 +12,52 @@ The visualization
 research community has introduced a number of
 visual analytics tools such as ShowMe, Polaris, Spotfire and 
 Tableau~\cite{DBLP:journals/cacm/StolteTH08, DBLP:journals/tvcg/MackinlayHS07,spotfire}.
-In these tools, the goal is to make it simpler for analysts 
-to pose specifications of what they would like to examine
-(e.g., they would like to examine sales by year for cars),
-and the visual analytics tool would provide an appropriate
-visualization medium for this visualization specification
-(e.g., a trend line or a bar chart).
-Most of the ``smarts'' in these tools is restricted
-to a set of aesthetic rules of thumb that
-guide which visualization is appropriate
-given a visual specification.
+These tools do provide some features for automatically selecting
+the best visualization for a data set, 
+% In these tools, the goal is to make it simpler for analysts 
+% to pose specifications of what they would like to examine
+% (e.g., they would like to examine sales by year for cars),
+% and the visual analytics tool would provide an appropriate
+% visualization medium for this visualization specification
+% (e.g., a trend line or a bar chart).
+% Most of the ``smarts'' in these tools is restricted
+%to a set of 
+but these features are restricted to a set of aesthetic rules of thumb that
+guide which visualization most appropriate.
+%given a visual specification.
 Similar visual specification tools 
 have also been introduced by the
 database community, including Fusion
 Tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10} and the
 Devise~\cite{DBLP:conf/sigmod/LivnyRBCDLMW97} toolkit. 
 
-In all these tools, the onus is on the analyst to specify
-which visualization they would like to generate.
-For datasets with a large number of attributes,
-it is often hard for the analyst to manually study
-every single attribute.
-Hence, in \SeeDB, our goal is to support powerful
-automated visualization recommendation functionality
-based on a generalized distance function,
-in addition to the simple visualization
-specification functionalities described above,
-which is more appropriate when the analyst already
-knows which visualizations they should be examining.
+In all these tools, the user must choose the data they want to visualize, requiring
+a tedious iteration through all sets of attributes.
+%
+%%For datasets with a large number of attributes,
+%it is often hard for the analyst to manually study
+%every single attribute.
+In contrast, in \SeeDB, our goal is to automatically recommend visualizations
+based on a generalized distance function, finding
+attribute sets that maximize the value of this function.
+%in addition to the simple visualization
+%specification functionalities described above,
+%which is more appropriate when the analyst already
+%knows which visualizations they should be examining.
 
-Statistical analysis and graphing packages such as R, SAS and Matlab could also
-be used generate visualizations, but they lack the ability to filter and
-recommend visualizations. 
+% SRM -- I don't think anyone is going to say that Matlab does what we do
+%Statistical analysis and graphing packages such as R, SAS and Matlab could also
+%be used generate visualizations, but they lack the ability to filter and
+%recommend visualizations. 
 
 
-\stitle{Partial Automation.}
-A few recent systems have attempted to automate some aspects of data analysis
-and visualization. Profiler is one such automated tool that allows analysts to
-detect anomalies in data \cite{DBLP:conf/AVI/KandelPPHH12}.
-Profiler provides some visualization recommendation functionality,
-but is restricted to the determination of the binning 
+\stitle{Partial Automated Selection of Visualizations.}
+%A few systems have attempted to automate some aspects of data analysis
+%and visualization. For example, 
+Profiler 
+detects anomalies in data \cite{DBLP:conf/AVI/KandelPPHH12} and provides
+some visualization recommendation functionality,
+but is restricted determining the best binning for the
 for the $x$ axis: in particular, it decides which granularity
 is appropriate to bin on to depict the most interesting relationships 
 between data. 
@@ -68,37 +74,49 @@ than ours, sophisticated techniques are not necessary.
 % It would be instructive to augment
 % VizDeck visualizations with \SeeDB\ visualizations to study their relative
 % utility.
-Another related tool 
-is VizDeck~\cite{DBLP:conf/sigmod/KeyHPA12}, which, given a dataset,
-depicts all possible 2-D visualizations on a dashboard that the user can
-manipulate by reordering or pinning visualizations.
+%Another related tool 
+%is 
+VizDeck~\cite{DBLP:conf/sigmod/KeyHPA12} is a tool that, given a dataset,
+depicts all possible 2-D visualizations on a dashboard.
+% that the user can
+%manipulate by reordering or pinning visualizations.
 Given that VizDeck generates all visualizations, it is only meant for 
 small datasets; additionally, the VizDeck does not discuss techniques
 to speed-up the generation of these visualizations. 
 
 
-\stitle{Scalable Visualizations.} 
-There has been some recent work on
-scalable visualizations in the information visualization community. Immens~\cite{2013-immens} and Profiler (mentioned above) maintain a data cube in memory and use it to support rapid user interactions. While this approach is possible when the dimensionality
-and cardinality is small (e.g., simple map visualizations of a single
-attribute) it cannot be used with large tables and ad-hoc queries.
-Pre-computation and pre-fetching are two other techniques that have
-been used for scalability, e.g., \cite{hotmap} uses
-precomputed image tiles for geographic visualization,
-\cite{doshi2003prefetching} uses extensive pre-fetching and caching. 
-Our recent paper describes techniques for generating visualizations
-approximately, but with ordering guarantees~\cite{DBLP:journals/corr/KimBPIMR14};
-these techniques could be easily employed in our setting to further
-improve the response times.
-A recent paper \cite{2014-viz-latency} discusses how high
-latency in visualization systems reduces the rate at which users observe,
-analyze and draw conclusions from data, thus making a strong case for
-interactive response times.
+\stitle{Scalable Visualizations.}  There has been some recent work on
+scalable visualizations that employ in-memory caching, sampling, and
+pre-fetching to improve the interactivity of visualization systems
+backed by
+databases~\cite{2013-immens,DBLP:conf/AVI/KandelPPHH12,hotmap,doshi2003prefetching,DBLP:journals/corr/KimBPIMR14}.
+Such techniques could be employed in our settings to further improve
+response times (although some of these techniques, such as in-memory caching,
+can only work with small datasets.)
 
-Finally, finding interesting visualizations in data also involves understanding
-user preferences. 
-In future work, we plan to learn user preference models towards visualizations
-using techniques similar to \cite{CHI:YangLZ14, IUIGotzW09}. 
+
+% . Immens~\cite{2013-immens} and Profiler (mentioned above)
+% maintain a data cube in memory and use it to support rapid user
+% interactions. While this approach is possible when the dimensionality
+% and cardinality is small (e.g., simple map visualizations of a single
+% attribute) it cannot be used with large tables and ad-hoc queries.
+% Pre-computation and pre-fetching are two other techniques that have
+% been used for scalability, e.g., \cite{hotmap} uses precomputed image
+% tiles for geographic visualization, \cite{doshi2003prefetching} uses
+% extensive pre-fetching and caching.  Our recent paper describes
+% techniques for generating visualizations approximately, but with
+% ordering guarantees~\cite{DBLP:journals/corr/KimBPIMR14}; these
+% techniques could be easily employed in our setting to further improve
+% the response times.  
+%A recent paper \cite{2014-viz-latency} discusses
+%how high latency in visualization systems reduces the rate at which
+%users observe, analyze and draw conclusions from data, thus making a
+%strong case for interactive response times.
+
+%Finally, finding interesting visualizations in data also involves understanding
+%user preferences. 
+%In future work, we plan to learn user preference models towards visualizations
+%using techniques similar to \cite{CHI:YangLZ14, IUIGotzW09}. 
 
 
 % \agpneutral{Other recent work has addressed other aspects of visualization
@@ -111,54 +129,54 @@ using techniques similar to \cite{CHI:YangLZ14, IUIGotzW09}.
 % online.}\\
 
 \stitle{Data Cube Materialization:} 
-\srm{we can cut this way back -- some of it has now been repeated in discussion in S4.}
-OLAP (Online Analytical Processing)~\cite{olap} 
-concerns itself with the 
-computation and materialization of all possible 
-{\em data cubes}~\cite{DBLP:jounral/DMKD/GrayCBLR97},
-considering all possible groupings of attributes,
-at different granularities, and all possible aggregations of other attributes.
-These data cubes are used for report generation for Business Intelligence
-(BI) applications.
-Often, even when the number of attributes and number
+%OLAP (Online Analytical Processing)~\cite{olap} 
+%concerns itself with the 
+Computations on {\em data cubes}~\cite{DBLP:jounral/DMKD/GrayCBLR97}
+involve aggregating across multiple dimensions.
+%,
+%considering all possible groupings of attributes,
+%at different granularities, and all possible aggregations of other attributes.
+%These data cubes are used for report generation for Business Intelligence
+%(BI) applications.
+Even when the number of attributes and number
 of distinct values of each attribute is relatively small,
-the space required to materialize and store these data cubes is
-very large --- as a result of this, in practice, data cubes
-are only stored, if at all, for a small number of attributes 
-(typically less than a handful).
+the space required to materialize then entire cube can be prohibitive,
+meaning that only a few (if any) dimensions can be pre-aggregated.
+%and store these data cubes is
+%very large --- as a result of this, in practice, data cubes
+%are only stored, if at all, for a small number of attributes 
+%(typically less than a handful).
 There has been some work on identifying, given a query workload,
 which cubes to materialize within a certain storage budget,
 so as to minimize the amount of work to be performed when a
 query is provided~\cite{DBLP:conf/VLDB/AgarwalADG96,DBLP:conf/SIGMOD/HarinarayanRU96}.
-In our setting, since the number of attributes can be rather large,
-and since any ad-hoc data exploration queries can be provided on-the-fly, materialization
-is not an option except for the most common or popular attributes.
+%In our setting, since the number of attributes can be rather large,
+%and since any ad-hoc data exploration queries can be provided on-the-fly, materialization
+%is not an option except for the most common or popular attributes.
 
-That said, the optimization techniques underlying cube materialization 
-is similar in spirit to our batching optimizations in Section~\ref{XXX}
+The optimization techniques underlying cube materialization 
+are similar in spirit to our batching optimizations in Section~\ref{XXX}
 (but not similar to our pruning optimizations).
-However, the underlying techniques are different from ours in three ways:
-(a) Cube materialization concerns itself with the computation
-of these aggregates offline, as opposed to online: the bottleneck
+However, the underlying techniques are different from ours in two ways:
+(1) Cube materialization computes
+ these aggregates offline, as opposed to online: the bottleneck
 is not computation, but storage.
-(b) In our case, we definitely need to compute the results for
-all possible views; as a result we create several batches,
+(2) We must compute the results for
+all possible views, cube materialization only seeks 
+to compute a few (good) sub-cubes. Our algorithms focus on
+grouping views into batches,
 each of which fit within our resource constraints. 
 In cube materialization there is a single ``batch'' of aggregates
 that is computed offline (rather than multiple batches) and then stored.
-(c) Furthermore, there can be several cubes that are simply not materialized---queries
-that refer to these cubes can certainly make a pass on the entire dataset if need be.
-In our case, we cannot afford to not compute some views.
-
 
 
 \stitle{Browsing Data Cubes:}
-There has been some limited work on using data mining techniques
-to aid in the exploration of the 
-cube~\cite{DBLP:conf/vldb/Sarawagi99, DBLP:conf/vldb/SatheS01, DBLP:conf/vldb/Sarawagi00, 
+There has been some  work on using data mining techniques
+to aid in the exploration of data 
+cubes~\cite{DBLP:conf/vldb/Sarawagi99, DBLP:conf/vldb/SatheS01, DBLP:conf/vldb/Sarawagi00, 
 DBLP:conf/SIGKDD/OrdonezC09}
-For instance, Sarawagi et al.~\cite{DBLP:conf/EDBT/SarawagiAM98, DBLP:conf/vldb/Sarawagi00} 
-have explored 
+Sarawagi et al.~\cite{DBLP:conf/EDBT/SarawagiAM98, DBLP:conf/vldb/Sarawagi00} 
+ explored 
 the question of finding ``interesting'' cells in a cube.
 The interestingness of a cell is defined by how surprising
 its value is given the other values in the cube:
@@ -180,11 +198,14 @@ and examined on visual interfaces.
 Another work by Sarawagi in this space (\cite{DBLP:conf/vldb/Sarawagi99}) 
 proposes techniques to explain an
 increase or decrease in a specific aggregate by drilling down into that aggregate.
-Once again, while related, 
+While related, 
 this work addresses a different question; \SeeDB\ seeks to find interesting
-differences between two datasets rather than explaining known differences. 
-\agp{The prev paragraph is quite weak. I'll need to look into the paper to identify the 
-differences.}
+differences between two datasets that have not yet been aggregated along any dimensions,
+ rather than explaining the cause of variations observed in several already aggregated
+quantities by drilling down.  Wu et al~\cite{scorpion} tackle a similar problem in Scorpion,
+and differ for similar reasons.
+%\agp{The prev paragraph is quite weak. I'll need to look into the paper to identify the 
+%differences.}
 
 % Second, instead of finding ``intrinsically'' interesting aggregates, 
 % \SeeDB\ evaluates aggregate views with respect to a comparison dataset. 
@@ -193,27 +214,30 @@ differences.}
 % We note however that incorporating an ``intrinsic'' interesting-ness metric into our utility function is an avenue for future work.
 
 
-\stitle{Multi-Query Optimization:} Our goal of evaluating
-many views in parallel is an instance of multi-query 
-optimization~\cite{DBLP:journals/tods/Sellis88,DBLP:journals/pvldb/KementsietsidisNCV08,DBLP:journals/pvldb/WangC13},
-i.e., optimizing the execution of a collection of queries rather
-than one at a time.
-The work on multi-query optimization focuses on the creation of ``global''
-query plans for a collection of queries rather than a single one,
-such that the intermediate operators and results are shared across queries.
-A special case of multi-query optimization 
-is the work on {\em shared scans}~\cite{DBLP:conf/VLDB/ZukowskiHNB07,DBLP:conf/sigmod/HollowayRSD07,DBLP:journals/pvldb/UnterbrunnerGAFK09,DBLP:conf/icde/RamanSQRDKNS08,DBLP:journals/pvldb/QiaoRRHL08},
-where the goal is share scans to evaluate in parallel a collection of queries.
-In our case, the problem is much simpler than both the shared scans work and 
-the general multi-query optimization
-framework, since we precisely know which candidate visualizations we need to evaluate,
-given a query: this means we can batch them, potentially in advance of any
-queries arriving in the system; these candidate visualizations are all simple
-aggregation queries, and have predictable selectivities,
-leading them to be more amenable to optimization tailored to our setting.
-Furthermore, in our case, we can avoid evaluating some visualizations beyond a point
-if we find that their utility is low---other shared scans and multi-query optimization
-schemes do not have the luxury of not evaluating some visualizations.
+\stitle{Multi-Query Optimization:} Our batching optimizations
+presented in Section~\ref{sec:dbms-exec-engine} make use draw on
+related techniques from literature on shared
+scans~\cite{Fernandez:1994:RBW:191843.191947} and multi-query
+optimization
+~\cite{DBLP:journals/tods/Sellis88,DBLP:journals/pvldb/KementsietsidisNCV08,DBLP:journals/pvldb/WangC13}.
+%{\em shared scans}~\cite{DBLP:conf/VLDB/ZukowskiHNB07,DBLP:conf/sigmod/HollowayRSD07,DBLP:journals/pvldb/UnterbrunnerGAFK09,DBLP:conf/icde/RamanSQRDKNS08,DBLP:journals/pvldb/QiaoRRHL08}
+% Our goal of evaluating
+%many views in parallel is an instance of multi-query 
+%optimization,
+%i.e., optimizing the execution of a collection of queries rather
+%than one at a time.
+%Multi-query optimization focuses on the creation of ``global''
+%query plans for a collection of queries rather than a single one,
+%such that the intermediate operators and results are shared across queries.
+Our problem is simpler however, since we know which candidate
+visualizations we need to evaluate, given a query, rather than having
+to wait for a batch of queries to arrive.  Hence, we can choose how to
+batch aggregates.  Further, because we are only executing simple
+aggregation queries with predictable selectivities, we can deploy
+optimizations tailored to our setting.  Finally, our pruning
+techniques allow us to stop evaluating some visualizations if we find
+that their utility is low---other multi-query schemes do not have the
+luxury of not performing particular computations.
 
 
 
@@ -257,16 +281,16 @@ related to work in top-k ranking, statistical sampling and the multi-armed bandi
 The confidence interval-based technique discussed in Section \ref{sec:confidence_interval} 
 is similar to top-k based pruning algorithms developed 
 in other contexts~\cite{DBLP:conf/pods/FaginLN01, 
-DBLP:conf/vldb/IlyasAE04, DBLP:conf/ICDE/ReDS07},
-and similar to our work on  
-sampling for visualizations~\cite{DBLP:journals/corr/KimBPIMR14}.
-The techniques in the former papers on top-$k$ pruning are 
+DBLP:conf/vldb/IlyasAE04, DBLP:conf/ICDE/ReDS07}.
+%and similar to our work on  
+%sampling for visualizations~\cite{DBLP:journals/corr/KimBPIMR14}.
+The techniques in these papers on top-$k$ pruning are 
 tailored more towards picking individual desirable tuples,
 rather than visualizations (which correspond to an array of aggregates),
 and thus the techniques are very different.
-The emphasis in the latter work is to ensure the generation of
-approximate visualizations with certain guarantees---here,
-our goal is to evaluate visualizations (possibly approximately). 
+%The emphasis in the latter work is to ensure the generation of
+%approximate visualizations with certain guarantees---here,
+%our goal is to evaluate visualizations (possibly approximately). 
 
 Similarly, multi-armed bandits (referenced in Section \ref{sec:multi_armed_bandit}) form 
 a rich area of research having applications from ad auctions to reinforcement learning. 

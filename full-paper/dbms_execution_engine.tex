@@ -199,12 +199,9 @@ such that the estimated size of any query result is below $\mathcal{S}$.
 We use the standard first-fit algorithm~\cite{first-fit} to find the optimal
 grouping of dimension attributes.
 
-\agp{get rid of this para if we are describing in related work. This problem is superficially similar to the problem of OLAP cube materialization~\cite{olap_cube}, where
-the goal is to pre-compute aggregates across some dimensions of a dataset to optimize cube queries,
-subject to a total space budget and given a historical workload.  The problem, however, is actually quite different:
-we have a set of aggregates we {\it must} compute as efficiently as possible, whereas in the cube materialization
-literature the goal is to pre-compute a part of the cube subject to a space bound, without concern for how long the 
-(offline) pre-computation takes.}
+This problem is superficially similar to the problem of OLAP cube materialization~\cite{olap_cube};
+we discuss the relationship in more detail in Section~\ref{sec:related_work}.
+
 
 % The first-fit algorithm works as follows:
 % on initialization, all groups $A_1, \ldots, $ $A_l$ are empty.
