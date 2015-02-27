@@ -28,19 +28,19 @@ Naturally, this basic implementation has many inefficiencies.
 In a table with $a$ dimensions, $m$ measures, and $f$ aggregation functions, 
 $2\times f \times a \times  m$ queries must be executed independently.  
 As we show in Section~\ref{sec:experiments}, this can take minutes in
-large data sets (with hundreds of attributes and millions of rows), which is too long for interactive use.
-
+large data sets (with hundreds of attributes and millions of rows), which is too long for interactive use. \mpv{are we at interactive time scales?}
 We propose two different suites of optimizations to deal with these
 inefficiencies.
-The first suite of optimizations, discussed in Section~\ref{sec:sharing-opt}, concerns {\em sharing},
+The first suite of optimizations, discussed in Section~\ref{sec:sharing-opt}, concerns {\em sharing}, \mpv{grouping sets are the other end of sharing}
 i.e., sharing as much work as possible while leveraging the 
 backend database system.
 The second suite of optimizations, discussed in Section~\ref{sec:in_memory_execution_engine}, concerns {\em pruning},
 i.e., avoiding the complete computation of some aggregate views
 by pruning them away. The second suite of optimizations
-are approximate, in that they, in rare occasions may lead
-to inaccurate results (in that the visualizations
-displayed need not be the ones with the best utilities).
+are approximate, in that they, since they use utility estimates, there is a small likelihood that the returned visualizations may not have the highest utility.
+%  in rare occasions may lead
+% to inaccurate results (in that the visualizations
+% displayed need not be the ones with the best utilities).
 
 % Our first instantiation of the \SeeDB\ engine uses SQL queries in a
 % traditional database system to evaluate the utility of each view.
