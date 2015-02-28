@@ -263,7 +263,6 @@ grouping of dimension attributes.
 % \vspace{-5pt}
 % \end{problem}
 
-\techreport{
 \stitle{Other Optimizations}: 
 To further speedup processing, we can pre-compute results for 
 static views (e.g. comparison views on full tables) or operate on
@@ -271,12 +270,9 @@ pre-computed data samples.  Such optimizations are orthogonal to the
 problem of efficiently evaluating a large number of views, which we will have to
 do even in the presence of pre-computation or sampling, so we don't focus on them here.
 
-\agp{consider deleting the rest of this. even the stuff before is not essential, since
-we anyway don't use it.}
-In the experimental evaluation, we show that the optimizations described in this section can lead to speedups of XXX.
-The absolute latency numbers are in the interactive range for small and medium datasets, but we find that for larger datasets latency falls in the 50-150 range which is unacceptable for an interactive system.
-In the next section, we discuss a few techniques that allow us to reliably prune out  views what will have low utility. 
-}
+
+% In the experimental evaluation, we show that the optimizations described in this section can lead to speedups of XXX.
+% The absolute latency numbers are in the interactive range for small and medium datasets, but we find that for larger datasets latency falls in the 50-150 range which is unacceptable for an interactive system.
 
 %do not address the more important challenge of evaluating a large number of views.
 
