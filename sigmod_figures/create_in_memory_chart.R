@@ -7,16 +7,21 @@ in_memory <- function(filename) {
 	limits_accuracy<-aes(ymax=accuracy + accuracy_se, ymin=accuracy - accuracy_se);
 	limits_utility_dist<-aes(ymax=utility_dist+utility_dist_se, ymin=utility_dist- utility_dist_se);
 	tmp$algo = factor(tmp$algo);
+	avg_no_pru_latency = mean(tmp[tmp$algo=="NO_PRU", "latency"]);
+	print(avg_no_pru_latency);
 
-	ggplot(tmp[tmp$algo!='RANDOM',], aes(k, latency/1000, color=algo)) +  theme_bw() + geom_line(size=1.5) + geom_point() + 
-		ylab("latency(s)") + theme(text = element_text(size=24))  + scale_fill_brewer(palette="Paired");
+	tmp[tmp$algo=="RANDOM","latency"] = avg_no_pru_latency;
+	tmp[,"latency"] = 1 - (tmp[,"latency"]/avg_no_pru_latency);
+
+	ggplot(tmp[((tmp$algo!="RANDOM") & (tmp$algo!="NO_PRU") & (tmp$algo!="95_CI")),], aes(k, latency*100, color=algo)) +  theme_bw() + geom_line(size=1.5) + geom_point() + 
+		ylab("% reduction in latency") + theme(text = element_text(size=24))  + scale_fill_brewer(palette="Paired");
 	ggsave(file=paste(outdirname, filename, "_latency.pdf", sep=""),width=7,height=5);
 
 	#ggplot(tmp, aes(k, utility_dist, color=algo)) + geom_line() + geom_point() + 
 	#	ylab("utility distance") + theme(text = element_text(size=24)) + 
 	#	geom_errorbar(limits_utility_dist, width=0.25); #ylim(0, 1) + 
 
-	ggplot(tmp, aes(k, utility_dist, color=algo, ymax= utility_dist + 
+	ggplot(tmp[(tmp$algo!="95_CI"),], aes(k, utility_dist, color=algo, ymax= utility_dist + 
 		utility_dist_se, ymin= utility_dist - utility_dist_se))+
 		geom_line(size=1.5) + geom_point() +  theme_bw() + 
 		ylab("utility distance") + theme(text = element_text(size=24)) +
@@ -27,7 +32,7 @@ in_memory <- function(filename) {
 	#	ylab("accuracy") + theme(text = element_text(size=24)) +
 	#	geom_errorbar(width=0.25);
 
-	ggplot(tmp[tmp$algo!='RANDOM',], aes(k, accuracy, color=algo, ymax=accuracy + accuracy_se, ymin=accuracy - accuracy_se)) + 
+	ggplot(tmp[(tmp$algo!="95_CI"),], aes(k, accuracy, color=algo, ymax=accuracy + accuracy_se, ymin=accuracy - accuracy_se)) + 
 		ylim(0, 1.2) + geom_line(size=1.5) +  theme_bw() + geom_point() + 
  		ylab("accuracy") + theme(text = element_text(size=24)) +
  		scale_fill_brewer(palette="Paired");
