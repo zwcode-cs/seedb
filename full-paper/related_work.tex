@@ -23,20 +23,20 @@ the best visualization for a data set,
 % Most of the ``smarts'' in these tools is restricted
 %to a set of 
 but these features are restricted to a set of aesthetic rules of thumb that
-guide which visualization most appropriate.
+guide which visualization is most appropriate.
 %given a visual specification.
 Similar visual specification tools 
 have also been introduced by the
 database community, including Fusion
 Tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10} and the
 Devise~\cite{DBLP:conf/sigmod/LivnyRBCDLMW97} toolkit. 
-
 In all these tools, the user must choose the data they want to visualize, requiring
 a tedious iteration through all sets of attributes.
-%
-%%For datasets with a large number of attributes,
-%it is often hard for the analyst to manually study
-%every single attribute.
+\techreport{
+For datasets with a large number of attributes,
+it is often hard for the analyst to manually study
+every single attribute.
+}
 In contrast, in \SeeDB, our goal is to automatically recommend visualizations
 based on a generalized distance function, finding
 attribute sets that maximize the value of this function.
@@ -174,7 +174,7 @@ that is computed offline (rather than multiple batches) and then stored.
 There has been some  work on using data mining techniques
 to aid in the exploration of data 
 cubes~\cite{DBLP:conf/vldb/Sarawagi99, DBLP:conf/vldb/SatheS01, DBLP:conf/vldb/Sarawagi00, 
-DBLP:conf/SIGKDD/OrdonezC09}
+DBLP:conf/SIGKDD/OrdonezC09}.
 Sarawagi et al.~\cite{DBLP:conf/EDBT/SarawagiAM98, DBLP:conf/vldb/Sarawagi00} 
  explored 
 the question of finding ``interesting'' cells in a cube.
@@ -276,8 +276,7 @@ luxury of not performing particular computations.
 
 \stitle{Other Related Work:}
 The techniques we use in our custom implementation of \SeeDB\ is
-related to work in top-k ranking, statistical sampling and the multi-armed bandit strategies. 
-
+related to work in top-k ranking and multi-armed bandits.
 The confidence interval-based technique discussed in Section \ref{sec:confidence_interval} 
 is similar to top-k based pruning algorithms developed 
 in other contexts~\cite{DBLP:conf/pods/FaginLN01, 
@@ -291,13 +290,9 @@ and thus the techniques are very different.
 %The emphasis in the latter work is to ensure the generation of
 %approximate visualizations with certain guarantees---here,
 %our goal is to evaluate visualizations (possibly approximately). 
-
-Similarly, multi-armed bandits (referenced in Section \ref{sec:multi_armed_bandit}) form 
-a rich area of research having applications from ad auctions to reinforcement learning. 
-Our problem presents a novel application of multi-armed bandit strategy to 
+Similarly, multi-armed bandits (see Section \ref{sec:multi_armed_bandit}) is another
+related area of research. 
+Our problem presents a novel application of multi-armed bandit strategies to 
 exploratory data analysis.
-The technique we adopt is 
-a variant of the original UCB algorithm \cite{AuerCF02, LaiR85},
-as well as recent work related to the top-$k$ MAB variant \cite{BubeckWV13,
-audibert2010best}. \mpv{revisit papers -- how is it related?}
-
+The technique we adopt is from a recent paper on top-$k$ MAB~\cite{BubeckWV13,audibert2010best} and is a 
+a variant of the original UCB algorithm \cite{AuerCF02, LaiR85}.

@@ -5,27 +5,43 @@ Data analysts operating on large volumes of data often rely on visualizations to
 interpret the results of queries.
 However, finding the right visualization given a query of interest is a
 laborious and time-consuming task.
-We propose \SeeDB, a system to partially automate this task:
+We propose \SeeDB, a visualization recommendation 
+engine that aims to partially automate this task:
 given a query, \SeeDB\ intelligently explores the space of all possible
 visualizations, evaluates promising visualizations, and automatically recommends
 the most ``interesting'' or ``useful'' visualizations to the analyst.
-In this paper, we present two implementations of \SeeDB\ which make very
-different design choices: the first leverages existing database systems as the
-backend and aggressively optimizes queries to get the highest performance; the
-second is a proof-of-concept implementation that has been engineered from
-scratch and, without the constraints of the DBMS API, can overcome many of the
-limitations of the first design.
-For both implementations, we develop and evaluate a suite of optimizations that
-leverage the underlying system properties.
-Our experiments on a range of real world and synthetic datasets demonstrate
-that our optimizations speed up processing by up to 8-20X in the DBMS-backed
-execution engine.
-Similarly, our custom engine can achieve a 10-fold speedup by aggressively
-pruning low-utility views. We further show that pruning does not adversely
-affect the accuracy of views returned.
-With the DBMS optimizations and pruning heuristics, we demonstrate that
-\SeeDB can be used to recommend interesting views in near-interactive time
-scales.
+We present two types of optimizations for \SeeDB: sharing-based optimizations,
+that try to share as much computation as possible,
+and pruning-based optimizations, that try to avoid as much computation
+on not-so-useful visualizations as possible,
+and show that these optimizations may be applied to implementations of \SeeDB over
+a relational row store database and  a column store database.
+We demonstrate how our optimizations lead to {\em multiple
+orders of magnitude speedup} on \SeeDB on both types of databases,
+while not significantly impacting accuracy.
+We further demonstrate via a user study that \SeeDB returns
+interesting and useful visualizations. 
+Overall, \SeeDB represents significant progress 
+ towards the challenging and important task of automated visualization generation.
+
+
+% In this paper, we present two implementations of \SeeDB\ which make very
+% different design choices: the first leverages existing database systems as the
+% backend and aggressively optimizes queries to get the highest performance; the
+% second is a proof-of-concept implementation that has been engineered from
+% scratch and, without the constraints of the DBMS API, can overcome many of the
+% limitations of the first design.
+% For both implementations, we develop and evaluate a suite of optimizations that
+% leverage the underlying system properties.
+% Our experiments on a range of real world and synthetic datasets demonstrate
+% that our optimizations speed up processing by up to 8-20X in the DBMS-backed
+% execution engine.
+% Similarly, our custom engine can achieve a 10-fold speedup by aggressively
+% pruning low-utility views. We further show that pruning does not adversely
+% affect the accuracy of views returned.
+% With the DBMS optimizations and pruning heuristics, we demonstrate that
+% \SeeDB can be used to recommend interesting views in near-interactive time
+% scales.
 % Our end-to-end experiments also demonstrate that that \SeeDB\ can be used to
 % find interesting visualizations in interactive time scales.
 % Finally, we present the results of a user study that evaluates our method for

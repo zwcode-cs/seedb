@@ -5,18 +5,31 @@
 
 Finding the right visualization given a query of interest is a
 laborious and time-consuming task.
-In this paper, we presented \SeeDB, a system to help data scientists 
-rapidly identify possible visualizations of their data by finding
-attributes that show the most deviation in comparison to an underlying data set.
-We presented two implementations of \SeeDB, one that runs on top of existing
-DBMSs and another that is a custom execution engine that supports shared table scans
-and aggressive pruning of low-quality views.
-Our experimental evaluation on a range of real and synthetic datasets shows that
-our optimizations reduce latency to just a few seconds to evaluate hundreds of different
-visualizations.
-In addition, our experiments on our custom execution engine show that our pruning
-heuristics can reduce latency by 10-fold by aggresively pruning low-utility views.
-This provides us a means to rapdily surface the top few views and then
-gradually return additional views.
-Finally, we demonstrated that our pruning
-strategies do not adversely affect accuracy of views returned.
+In this paper, we presented \SeeDB, a visualization recommendation
+engine to help data scientists 
+rapidly identify interesting and useful visualizations of their data.
+Our implementation of \SeeDB on top of traditional DBMSs led
+to several inefficiencies that we remedied using two suites of optimization 
+techniques, scanning-based, and pruning-based techniques. 
+These techniques help us reduce latency from XXX to YYY to ZZZ,
+and the gains from the two suites are in fact additive. 
+Our user study indicated that \SeeDB provides {\em statistically significantly} useful
+visualizations, and helped us identify some directions for future improvement.
+\SeeDB is an important first step in our exploration of 
+automated visualization recommendation tools, 
+paving the way toward automating all the tedium of data analysis.
+
+
+
+% We presented two implementations of \SeeDB, one that runs on top of existing
+% DBMSs and another that is a custom execution engine that supports shared table scans
+% and aggressive pruning of low-quality views.
+% Our experimental evaluation on a range of real and synthetic datasets shows that
+% our optimizations reduce latency to just a few seconds to evaluate hundreds of different
+% visualizations.
+% In addition, our experiments on our custom execution engine show that our pruning
+% heuristics can reduce latency by 10-fold by aggresively pruning low-utility views.
+% This provides us a means to rapdily surface the top few views and then
+% gradually return additional views.
+% Finally, we demonstrated that our pruning
+% strategies do not adversely affect accuracy of views returned.
