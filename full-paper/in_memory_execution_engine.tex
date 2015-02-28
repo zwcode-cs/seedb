@@ -69,7 +69,7 @@ We evaluate both of these schemes in our experiments.
 Note that the two pruning schemes described have guarantees
 in other settings that do not directly carry over to our setting.
 In our evaluation, we show that in spite of this, the pruning schemes
-work rather well in our setting. 
+work rather well in practice. 
 We can, however, show that as we sample more and more, the estimated utility
 $\hat{U}$ can be made to be arbitrarily close to $U$ for all aggregate views.
 We show this formally in Section~\ref{sec:discussion}.
@@ -240,9 +240,9 @@ Since we can claim with high probability
 that the utility of $V_4$ lies within its confidence interval, it follows that
 with high probability, $V_4$'s utility will be lower than that of both $V_1$ and
 $V_2$, and it will not appear in the top-$2$ views.
-\papertext{Our pruning scheme can be found in our technical report~\cite{seedb-tr}.}
-We state the algorithm formally in
-Algorithm~\ref{algo:ci_based_pruning}.
+\papertext{Pseudocode for our pruning scheme can be found in our technical report~\cite{seedb-tr}.}
+\techreport{We state the algorithm formally in
+Algorithm~\ref{algo:ci_based_pruning}.}
 
 \techreport{
 \begin{algorithm}
