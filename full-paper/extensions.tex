@@ -1,22 +1,16 @@
 %!TEX root=document.tex
 
-\section{Extensions}
+\section{Discussion}\label{sec:discussion}
 In this section we prove that our sampling 
 algorithms converge, and then describe our generalized
 distance metric.
-\subsection{Convergence of Sampling Algorithms}
-In this section, we demonstrate how,
+
+\stitle{Convergence of Sampling Algorithms.}
+We now demonstrate how,
 when applied to the utility function $U$ as described
 in Section~\ref{sec:problem_statement},
 sampling algorithms 
 converge to the correct value of $U$ beyond a certain number of samples.
-We reproduce the utility equation here:
-$ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$.
-Here, $P$ refers to the probability distribution
-of either the target visualization
-or the comparison visualization.
-$P$ is represented as a normalized vector
-whose entries sum up to $1$.
 
 For now, we focus on the case where the visualization $V_i$
 corresponds to the AVG aggregate. 
@@ -29,10 +23,18 @@ query processing literature~\cite{wavelets,dbo}.
 Additionally, we focus on the case when $S$ is defined to be
 $\ell_2$, i.e., the Euclidean distance metric. 
 Once again, similar results can be shown for other distance metrics,
-such as the $\ell_1$ or the Earth Movers Distance metric.
+such as the $\ell_1$, the Earth Movers Distance metric, or
+the Jenson-Shannon metric.
 
-
-
+\techreport{We reproduce the utility equation here:
+$ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$.
+Here, $P$ refers to the probability distribution
+of either the target visualization
+or the comparison visualization.
+$P$ is represented as a normalized vector
+whose entries sum up to $1$.}
+We have the following: 
+\papertext{(The proof can be found in the extended technical report~\cite{seedb-tr}.)}
 \begin{lemma}
 Let the target and comparison visualizations
 both have $m$ groups.
@@ -41,8 +43,11 @@ across all $m$ groups.
 Then, as the number of samples tends to $\infty$, $\hat{U} \rightarrow U$
 with probability $1-\delta$, for as small $\delta$ as needed.
 \end{lemma}
-
-
+\papertext{At a high level, the proof
+involves repeated applications of Hoeffding's inequality to
+upper and lower-bound $\hat{U}$ within $U$ along with terms 
+that tend to $0$ as the number of samples increases.}
+\techreport{
 \begin{proof} (Sketch)
 Let us say the estimated average for the target visualization
 for each of the groups is $\hat{t}_i$,
@@ -92,20 +97,18 @@ The same holds true for $t = \gamma$.
 Thus, $\hat{U}$ will tend to $U$ as the number of samples
 increases to infinity.
 \end{proof}
-It is also possible to explicitly derive a number of samples 
+}
+It is in fact also possible to explicitly derive a number of samples 
 such that $\hat{U}$ is close to $U$ within a certain error bound
 and with a certain probability. 
 
 
 
 
-\subsection{The Generalized Distance Metric}\label{sec:general-metric}
-
+\stitle{The Generalized Distance Metric.}\label{sec:general-metric}
 In Section~\ref{sec:problem_statement}, we described our
-distance metric that depended only on the data selected
-by the query $D_Q$ and the background data $D$,
-with the metric being defined as:
-$ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$.
+distance metric that depended only on the deviation of the data selected
+by the query $D_Q$ from the background data $D$.
 This metric made sense for the simple case
 when an analyst is studying a dataset for the first time.
 We now describe how we can generalize this distance

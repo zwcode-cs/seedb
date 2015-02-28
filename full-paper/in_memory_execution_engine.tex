@@ -20,6 +20,8 @@ may still be close to high utility
 and will certainly be
 correct; thus there is still merit to considering approximate schemes.
 
+
+
 % The DBMS-backed execution engine from the previous section provides reasonable performance for small datasets.
 % However, we find that for medium and large size datasets, the optimized engine take tens to hundreds of produce the top visualizations.
 % There are a few reasons for this. (a) Since our engine runs a large number (50-200) queries for each \SeeDB invocation, a large number of scans of the data are performed needlessly; (b) Far too many resources are wasted on low-utility views; and (3) Results of \SeeDB are not available until the entire dataset has been processed.
@@ -29,41 +31,52 @@ correct; thus there is still merit to considering approximate schemes.
 % In order to evaluate various pruning strategies, we built a simple framework to process records sequentially and perform pruning on the fly.
 % We now decribe our test framework and two specific pruning strategies adopted in \SeeDB.
 
-\stitle{Basic Framework}:
+\stitle{Basic Pruning Framework.}
 \label{subsec:basic_framework}
-\agp{Change this to argue that we can use the DBMS version in phases
-where in each phase we throw away a bunch of views. Reuse content from Section~\ref{sec:hybrid_exectution_engine}}
-Our basic framework functions as follows: It buffers data from the input table (on disk or in memory) and processes it in phases. 
-Within each phase, it processes a fixed number of records by reading the input 
-one record at a time.
-We assume that {\it records in the file are in random order}; if they are not,
-we must apply a pre-processing step to get them in random order.
-It processes each record, and updates the target and comparison distributions for views currently in the running.
-% For each record, \SeeDB\ determines whether the record satisfies the
-% input query and updates the target and comparison views for views
-% currently in the running or ``accepted'' as being in the top-$k$.
-% It also updates the utility values and other algorithm-specific statistics for
-% each view.
-At the end of a phase, it attempts to prune views by discarding low utility views and
-{\it accepting} high utility views (rule depends on the specific pruning technique).
-% At one extreme, each phase consists of just one record, in which case views
-% are pruned after ever record is read and the views are updated;
-% at the other extreme, we use only one phase, in which case views are only pruned
-% after all the records are read (i.e., effectively no pruning). 
-The list of views in the running is updated and the next phase begins.
-We can choose to return results once the $k$ views with higest utility have been identified (and provide approximate results), or to return results only when the whole dataset has been processed.
-Depending on latency requirements, we can choose one or the other.
+We have two kinds of pruning optimizations that we employ.
+The first kind is performed {\em online}, i.e., after the
+query is provided,
+while the second kind is performed {\em offline},
+before any queries have been provide.
+Our primary focus in this section is the online view pruning;
+we will only briefly describe offline view pruning.
 
-% Once we meet a pre-defined stopping criteria, $k$ views with the
-% highest utility are returned to the frontend.
-% We implement two stopping criteria: we either stop once the entire table has
-% been processed (and return exact views to the user), or we stop after
-% we have ``accepted'' $k$ views as being in the top-$k$ (and return
-% approximations of the top-$k$ views to the user).
-% We use the former as the default stopping condition.
-Algorithm~\ref{algo:custom_exec_engine} shows the outline of our framework.
-% basic framework adopted by our custom execution engine.
+Our online view pruning approach involves
+multiple {\em phases};
+at the end of each phase, we evaluate each aggregate view,
+and then decide to prune a number of them, and then keep the rest.
+This evaluation and pruning is certainly easy to implement if we were to push these
+decisions ``within'' the database layer; however, since
+our goal is to operate outside the database without making
+any significant changes to the database, we will need some pre-processing
+of the underlying tables.
+We partition our table horizontally into a number of partitions;
+processing each partition corresponds to one of our phases. 
+Since we have a collection of these partitions, we can 
+choose to operate on them in any random order; if further randomness
+is needed, we can preprocess each partition such that the records are internally
+in random order.
+For each partition in sequence, we update our candidate and target
+views for each aggregate view, 
+compute the resulting utility, and then 
+prune (i.e., discard) or accept (i.e., select to be in those to be displayed) some aggregate views.
+When only $k$ aggregate views remain, we can choose to display them
+to the analyst (if approximate visualizations are permissible, and latency is paramount),
+or we can completely compute the visualizations for those $k$ aggregate views (if not).
+We now describe two different schemes used for pruning.
+We evaluate both of these schemes in our experiments.
 
+Note that the two pruning schemes described have guarantees
+in other settings that do not directly carry over to our setting.
+In our evaluation, we show that in spite of this, the pruning schemes
+work rather well in practice. 
+We can, however, show that as we sample more and more, the estimated utility
+$\hat{U}$ can be made to be arbitrarily close to $U$ for all aggregate views.
+We show this formally in Section~\ref{sec:discussion}.
+
+\techreport{Algorithm~\ref{algo:custom_exec_engine} shows the outline of our framework.}
+
+\techreport{
 \begin{algorithm}[h]
 \caption{Pruning Framework}
 \label{algo:custom_exec_engine}
@@ -84,7 +97,7 @@ Algorithm~\ref{algo:custom_exec_engine} shows the outline of our framework.
 \State return viewsInRunning.sort().getTopK()
 \end{algorithmic}
 \end{algorithm}
-
+}
 
 % Note that we have two alternatives for computing the visualizations for the top-$k$
 % views, once $k$ views have been accepted: 
@@ -191,23 +204,14 @@ Algorithm~\ref{algo:custom_exec_engine} shows the outline of our framework.
 % \end{itemize}
 
 
-\subsubsection{Confidence Interval-Based Pruning}
+\stitle{Confidence Interval-Based Online Pruning.}
 \label{sec:confidence_interval}
-% We first describe at a high-level our confidence interval-based pruning strategies,
-% and then describe the two specific instantiations of these strategies,
-% based on worst-case, and normal confidence intervals respectively.
-Confidence Intervals and related statistical theory has been widely used in database
-research. 
-For instance, ~\cite{DBLP:conf/ICDE/ReDS07} uses confidence intervals to
-return top-$k$ results from probabilistic databases.
-Similarly, recent work (\cite{DBLP:journals/corr/KimBPIMR14}) uses sampling-based confidence
-intervals to rapidly order aggregate results.
-We adopt a similar strategy and use confidence intervals on utility to prune low-utility views.
-Our strategy works as follows: at every step of our
-algorithm, we keep an estimate of the mean utility for every view $V_i$ and a
+Our first pruning scheme uses worst-case statistical confidence intervals.
+Our scheme is as follows: during execution,
+we keep an estimate of the mean utility for every aggregate view $V_i$ and a
 confidence interval around that mean.
-%That is, for every view $V_i$ we track its mean utility $u_i$, and a
-%confidence interval around the mean, $u_i \pm c_i$. 
+That is, for every view $V_i$ we track its mean utility $u_i$, and a
+confidence interval around the mean, $u_i \pm c_i$. 
 At the end of a phase, we use the following rule to prune low-utility
 views:
 {\em If the upper bound of the utility of view $V_i$ is lesser
@@ -236,10 +240,11 @@ Since we can claim with high probability
 that the utility of $V_4$ lies within its confidence interval, it follows that
 with high probability, $V_4$'s utility will be lower than that of both $V_1$ and
 $V_2$, and it will not appear in the top-$2$ views.
-This is our pruning rule. 
-We state the algorithm fomally in
-Algorithm~\ref{algo:ci_based_pruning}.
+\papertext{Pseudocode for our pruning scheme can be found in our technical report~\cite{seedb-tr}.}
+\techreport{We state the algorithm formally in
+Algorithm~\ref{algo:ci_based_pruning}.}
 
+\techreport{
 \begin{algorithm}
 \caption{Confidence Interval Based Pruning}
 \label{algo:ci_based_pruning}
@@ -254,8 +259,9 @@ Algorithm~\ref{algo:ci_based_pruning}.
 \EndFor
 \end{algorithmic}
 \end{algorithm}
+}
 
-We choose to work with {\it worst case} confidence intervals as derived from
+We use {\it worst case} confidence intervals as derived from
 the Hoeffding-Serfling inequality~\cite{serfling1974probability}.
 The inequality states that if we are given $N$ values $y_1, \ldots, y_N$ in 
 $[0, 1]$ with average $\mu$, and we have have drawn $m$ values without replacement, $Y_1, \ldots, Y_m$, 
@@ -271,7 +277,7 @@ is always within this confidence interval with a probability of $1 - \delta$:
 % sequence of random variables drawn from $\calY$ without
 % replacement.
 Fix any $\delta > 0$. For $1 \le m \le N-1$, define
-$$
+{\small $$
 \varepsilon_m = \sqrt{\frac{(1-\frac{m-1}N)(2\log \log (m) + \log(\pi^2/3\delta))}{2m}}.
 $$
 $$
@@ -279,6 +285,7 @@ $$
   \left|\frac{\sum_{i=1}^m Y_i}{m} - \mu\right| > \varepsilon_m \right] 
 \le \delta.
 $$
+}
 
 \end{theorem}
 In our setting, each $Y_i$ corresponds to the an estimate of utility computed based on the
@@ -445,17 +452,15 @@ records seen so far.
 
 
 
-\subsubsection{Multi-Armed Bandit Pruning}
+\stitle{Multi-Armed Bandit Online Pruning.}
 \label{sec:multi_armed_bandit}
-The second class of pruning techniques we explore
-are based on solutions for the Multi-Armed Bandit (MAB)~\cite{bandits}. 
-The setting is as follows: a gambler is faced with several slot
+Our second pruning scheme uses Multi-Armed Bandit (MAB)~\cite{bandits} policies.\techreport{The setting of MAB is as follows: a gambler is faced with several slot
 machines (``one-armed bandit''s), each of which has an underlying 
 (unknown) reward distribution. 
 Every play results in a reward from the corresponding machine's
 reward distribution.
 The goal is to devise a {\it strategy} of which machine to play
-at each turn in order to maximize the reward~\cite{bandits}.
+at each turn in order to maximize the reward~\cite{bandits}.}
 A recently-studied variation of MAB focuses on finding the arms with the highest
 mean rewards~\cite{BubeckWV13}.
 This variation is similar to the problem addressed by \SeeDB: each possible view 
@@ -463,10 +468,10 @@ can be thought of as a one-armed bandit and our goal is find the views with the
 highest reward (i.e. utility).
 We therefore adapt the Successive Accepts and Rejects algorithm from \cite{BubeckWV13} 
 to find arms with the highest mean reward. 
-Algorithm~\ref{algo:mab_based_pruning} shows the pseudocode for our pruning technique.
-As before, the processing of the input table is divided into phases.
-In every phase, \SeeDB\ reads in new records and updates the distributions and utilities
-for every view in the running.
+\techreport{Algorithm~\ref{algo:mab_based_pruning} shows the pseudocode for our pruning technique.}
+% As before, the processing of the input table is divided into phases.
+% In every phase, \SeeDB\ reads in new records and updates the distributions and utilities
+% for every view in the running.
 At the end of every phase, all active views are ranked in order of their utility means. 
 We then compute two special differences between the utility means: $\Delta_1$
 is the difference between the highest mean and the $k+1$st highest mean, and
@@ -479,10 +484,6 @@ from the set of views in the running.
 \cite{BubeckWV13} proves that under certain assumptions about reward distributions,
 the above technique identifies the top-$k$ arms with high probability.
 
-We note that the two pruning techniques discussed above place restrictions on sampling
-techniques and distributions that do not strictly hold in our setup. 
-However, we show in our evaluation (Section \ref{}) that in spite of approximations, 
-these algorithms work well for our purpose. \mpv{someone needs to review this justification}
 
 % In MAB, each pull of an arm corresponds to a drawing from a sample
 % the underlying probability distribution of that arm.
@@ -497,7 +498,7 @@ these algorithms work well for our purpose. \mpv{someone needs to review this ju
 % (2) our running estimate of utility after reading $i$
 % records is a sample derived from the above utility distribution.
 
-
+\techreport{
 \begin{algorithm}
 \caption{MAB Based Pruning}
 \label{algo:mab_based_pruning}
@@ -513,7 +514,7 @@ these algorithms work well for our purpose. \mpv{someone needs to review this ju
 \EndIf
 \end{algorithmic}
 \end{algorithm}
-
+}
 
 
 

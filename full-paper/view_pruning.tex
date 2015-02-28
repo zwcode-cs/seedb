@@ -1,20 +1,44 @@
 %!TEX root=document.tex
 
-\section{View Pruning}
-\label{sec:pruning}
+% \section{View Pruning}
+% \label{sec:pruning}
 
-The previous sections described the \SeeDB\ execution engine;
-next, we discuss the view generator which is invoked before the
-execution engine and is responsible for using table metadata
-to prune redundant views.
-To illustrate the concept of redundant views, consider a hypothetical dataset that stores the names of airports along
-with the corresponding airport code. 
-Since airport names and airport codes have a 1:1 relationship, views produced by grouping data along each of these attributes will be identical.
-Consequently, it would suffice to compute and recommend only one of these views while providing the user the ability to explore the redundant view if required.
+\stitle{Offline Pruning.}
+Even before any queries are issued to \SeeDB, we
+have the ability to identify clusters of attributes
+that are strongly correlated with each other, 
+such that if we decide to select a visualization 
+on one of them to display to the analyst, we can avoid 
+displaying visualizations on others
+(since they would be redundant).
+Consider the following example using a hypothetical
+dataset storing \agp{is this hypothetical?}
+names of airports (as one attribute)
+and airport codes (as another attribute).
+Since names of airports and airport codes have
+a 1:1 relationship, generating, say, 
+average delay by airport name, and
+average delay by airport code would lead
+to identical visualizations. 
+Consequently, it would suffice to compute and recommend
+only one of these visualizations,
+since the rest would contain redundant information.
+\papertext{We describe how we perform
+offline pruning, and describe the experimental
+gains from offline pruning in our extended technical report.
+At a high-level, we use clustering of attributes,
+followed by clique detection to detect
+and eliminate redundant aggregate views.}
+View pruning allows us to significantly 
+reduce the number of views (and execution time) in real
+datasets; for the DIAB dataset described in Section \ref{sec:experiments},
+we reduce the number of possible views from 72 to 41 (45\% reduction), and from
+70 to 54 (25\% reduction) for the BANK dataset. 
+
+
 % Intuitively, this pruning is important because fewer views equates to better
 % performance.
 % Note that the pruning performed by the view generator is based on redundancy while that performed by the execution engine is based on low utility.
-\mpv{should we have figures of real views?}
 % We distinguish between the pruning performed by the execution engine and the pruning
 % performed by the view generator: the execution engine prunes {\it low-utility} views
 % while the view generator prunes {\it redundant} views. 
@@ -38,11 +62,13 @@ Consequently, it would suffice to compute and recommend only one of these views 
 % In both of the above cases, it suffices to compute and show a single view
 % that is representative of multiple views (and list redundant
 % views that have been omitted).
-
-The view generator largely works offline, and adopts the following steps to prune redundant views: 
-(1) For each table, the view generator uses metadata about
-attributes to determine the entire space of views. 
-(2) The view generator prunes all views containing attributes with 0 or low variance since
+\techreport{
+\agp{this needs fixing but probably more immediate things
+need fixing as well.}
+We adopt the following steps to prune redundant views: 
+(1) For each table, the we first use the metadata about
+attributes to determine the entire space of aggregate views. 
+(2) We first prune all aggregate views containing attributes with 0 or low variance since
 corresponding visualizations are unlikely to be interesting.
 (3) For each remaining view $V_i$, it computes the distribution 
 $P[V_i (D)]$ for the comparison view.
@@ -52,6 +78,9 @@ correlation.
 At run time, the view generator accesses previously generated view stubs, removes any views that would be redundant given
 the input query (e.g. views grouping by state when the query only selects records
 with \'state=``MA''\') and passes the remaining stubs to the execution engine.
+\agp{Also, would be good to have some experimental figures or more details on this}
+}
+
 
 % We next compute pairwise correlations between these vectors (note: correlation is
 % only defined for equi-sized vectors) and cluster views based on this correlation.
@@ -70,11 +99,6 @@ with \'state=``MA''\') and passes the remaining stubs to the execution engine.
 
 % Details of our pruning algorithm are presented in Appendix
 % \ref{sec:view_pruning} along with examples of view clusters.
-View pruning allows us to significantly reduce the number of views (and execution time) in real
-datasets; for the DIAB dataset described in Section \ref{sec:experiments},
-we reduce the number of possible views from 72 to 41 (45\% reduction), and from
-70 to 54 (25\% reduction) for the BANK dataset. 
-
 
 
 % In this section, we discuss an important component of \SeeDB\ that is invoked
