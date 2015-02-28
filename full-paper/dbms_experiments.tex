@@ -3,17 +3,11 @@
 
 Our primary metric for evaluating the DBMS-backed
 execution engine is {\em latency},
-i.e., how long does it take \SeeDB to return the top-$k$ results.
+i.e., .
 Specifically, we study the impact of the following properties on latency:
 (a) parameters of the dataset including size and number of views.
 (b) the optimizations detailed in Section~\ref{sec:dbms_optimizations}, and
-(c) the DBMS architecture: a row-store DBMS vs.~a column-store DBMS.
-% In our first set of experiments, we investigate 
-% how well a DBMS-backed engine
-% can support a \SeeDB-style workload.
-We run all experiments in this section on two database systems: a
-row-oriented database (denoted ROW) and a
-column-oriented database (denoted COL).
+(c) 
 % Our goal is to identify which data layout is a better
 % fit for \SeeDB, and study the gains of each optimization
 % for row-stores vs.~column stores. 

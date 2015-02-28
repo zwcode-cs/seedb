@@ -4,22 +4,37 @@
 \label{sec:experiments}
  
 In this section, we present our evaluation of \SeeDB in terms of its performance 
-at exploring alternative visualizations.
+at exploring alternative visualizations. \mpv{reword}
 Results of our user study are presented in the following section.
-We begin with a study of the DBMS-backed execution engine and examine how far we can
-push conventional relational engines to support a \SeeDB workload.
-The results motivate empirically the need for our custom execution engine.
-We then present our evaluation of the custom execution engine and pruning strategies.
-The datasets used in our experiments are listed in Table~\ref{tab:datasets}.
-We test our 
-techniques on a variety of syntheic as well as real datasets to evaluate 
-their performance and accuracy.
+The following set of experiments evaluate the basic framework of \SeeDB, our sharing optimizations 
+(Section \ref{}), our pruning optimizations (Section \ref{}), and the combination of both sets of optimizations.
+In each experiment, our primary metric for evaluation is latency, i.e. how long does it take \SeeDB to return the top-$k$ results. 
+For experiments involving our pruning strategies, we also measure quality of results through {\it accuracy} and {\it utility distance}. 
+We defer a detailed discussion of these metrics to our evaluation of pruning strategies.
+We evaluate our techniques on both, a row-oriented database (denoted ROW) and a
+column-oriented database (denoted COL) since the particular data layout impacts the efficacy of our optimizations.
+We evaluate the performance of \SeeDB on a variety of real and synthetic datasets (Table 
+\ref{tab:datasets}) using {\it earth mover distance (EMD)} as our utility function.
+% In our first set of experiments, we investigate 
+% how well a DBMS-backed engine
+% can support a \SeeDB-style workload.
 All experiments were run on a single machine with 8 GB RAM and a 16 core Intel 
 Xeon E5530 processor. 
-In these experiments, use the {\it earth mover distance (EMD)} as our utility function.
-% Unless described otherwise, experiments were repeated 3 times and the latency measures 
-% were averaged.
-\srm{small data, attributes}
+
+We begin by presenting a summary of our experimental findings and then dive into performance results for individual optimization strategies.
+
+%  present the overall results of our applying all our optimizations and then dive into
+% performance results for each of our optimizations.
+% We begin with a study of the DBMS-backed execution engine and examine how far we can
+% push conventional relational engines to support a \SeeDB workload.
+% The results motivate empirically the need for our custom execution engine.
+% We then present our evaluation of the custom execution engine and pruning strategies.
+% The datasets used in our experiments are listed in Table~\ref{tab:datasets}.
+% We test our 
+% techniques on a variety of syntheic as well as real datasets to evaluate 
+% their performance and accuracy.
+
+
 \begin{table}[htb]
   \centering \scriptsize
   \begin{tabular}{|c|c|c|c|c|c|} \hline
@@ -36,9 +51,12 @@ In these experiments, use the {\it earth mover distance (EMD)} as our utility fu
   SYN*-100 & Synthetic data & 1M & 20 & 1 & 20 \\
   & Randomly distributed, & & & & \\ 
   & 100 distinct values/dim & & & & \\ \hline
-  BANK  & Customer Loan dataset  \mpv{fix} & 40K & 10 & 8 & 80* \\ \hline
-  DIAB  & Hospital data \mpv{fix} & 100K & 10 & 8 & 80* \\
+  BANK  & Customer Loan dataset & 40K & 10 & 8 & 77 \\ \hline
+  DIAB  & Hospital data & 100K & 10 & 8 & 88 \\
   & about diabetic patients & & & & \\ \hline
+  AIR & Airline delays dataset & 6M & 12 & 9 \\ \hline
+  AIR10 & Airline dataset & 60M & 12 & 9 \\ 
+  & scaled 10X & & & \\ \hline
   \end{tabular}
   \vspace{-10pt}
   \caption{Datasets used for testing}
@@ -49,7 +67,7 @@ In these experiments, use the {\it earth mover distance (EMD)} as our utility fu
 
 
 
-
+\input{summary_experiments.tex}
 \input{dbms_experiments.tex}
 \input{custom_experiments.tex}
 
