@@ -20,6 +20,8 @@ We evaluate the performance of \SeeDB on a variety of real and synthetic dataset
 % can support a \SeeDB-style workload.
 All experiments were run on a single machine with 8 GB RAM and a 16 core Intel 
 Xeon E5530 processor. 
+Unless described otherwise, experiments were repeated 3 times and the latency measures 
+were averaged.
 
 We begin by presenting a summary of our experimental findings and then dive into performance results for individual optimization strategies.
 
@@ -51,12 +53,12 @@ We begin by presenting a summary of our experimental findings and then dive into
   SYN*-100 & Synthetic data & 1M & 20 & 1 & 20 \\
   & Randomly distributed, & & & & \\ 
   & 100 distinct values/dim & & & & \\ \hline
-  BANK  & Customer Loan dataset & 40K & 10 & 8 & 77 \\ \hline
-  DIAB  & Hospital data & 100K & 10 & 8 & 88 \\
+  BANK  & Customer Loan dataset & 40K & 11 & 7 & 77 \\ \hline
+  DIAB  & Hospital data & 100K & 11 & 8 & 88 \\
   & about diabetic patients & & & & \\ \hline
-  AIR & Airline delays dataset & 6M & 12 & 9 \\ \hline
-  AIR10 & Airline dataset & 60M & 12 & 9 \\ 
-  & scaled 10X & & & \\ \hline
+  AIR & Airline delays dataset & 6M & 12 & 9 & 108 \\ \hline
+  AIR10 & Airline dataset & 60M & 12 & 9 & 108 \\ 
+  & scaled 10X & & & & \\ \hline
   \end{tabular}
   \vspace{-10pt}
   \caption{Datasets used for testing}

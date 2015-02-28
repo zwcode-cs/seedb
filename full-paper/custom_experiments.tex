@@ -1,9 +1,8 @@
-\subsection{Custom Execution Engine}
+\subsection{Pruning Optimizations}
 \label{sec:custom_execution_engine_expts}
-In Section \ref{}, we developed a set of strategies that enable \SeeDB to make a single scan
-of the data and identify top-$k$ views with highest utility.
+In Section \ref{sec:pruning_opt}, we developed a set of strategies that enable \SeeDB to eliminate views with low utility early on and identify top-$k$ views with highest utility.
 Through the next set of experiments, we evaluate 
-their impact on latency and effectiveness in pruning low-utility views.
+the impact of these optimizations.
 % Specifically, our evaluation studies the impact of
 % (a) our pruning strategies, 
 % (b) utility distributions for the dataset, and (c) parameters of our heuristics
@@ -12,7 +11,7 @@ their impact on latency and effectiveness in pruning low-utility views.
 % we evaluate whether the views chosen by \SeeDB actually have the highest utilities.
 
 \stitle{Metrics:}
-We evaluate performance of our custom execution engine along two dimensions, {\em latency} and
+We evaluate performance of pruning optimizations along two dimensions, {\em latency} and
 quality of results.
 We measure the quality of results in two ways: 
 (1) {\em accuracy}: if $\{\mathcal{V}_T\}$
@@ -27,8 +26,8 @@ and the average utility of $\{\mathcal{V}_S\}$, i.e., $\frac{1}{n}(\sum_{i}U(\ma
 \sum_{i}U(\mathcal{V}_{S,i}))$.
 
 \stitle{Techniques:}
-Within the custom execution engine, we evaluate four techniques for pruning low-utility views.
-In addition to the two pruning strategies from Section~\ref{sec:in_memory_execution_engine}, 
+In the following experiments, we evaluate four techniques for pruning low-utility views.
+In addition to the two pruning strategies from Section~\ref{sec:sharing_opt}, 
 namely the Hoeffding Confidence Intervals (CI) and the Multi-Armed Bandit (MAB),
 we implement two baseline strategies.
 First, the no pruning strategy processes the entire data and does not discard any views (NO\_PRU). 
@@ -40,7 +39,8 @@ technique to be useful, it must do significantly better than RANDOM.
 
 \stitle{Datasets:}
 Since it is hard to capture the complexities of real data distributions in synthetic data, we
-evaluate all our pruning strategies on real-world data. 
+evaluate all our pruning strategies on real-world data. In this section, we focus on the results of BANK and DIAB. The results for AIR and AIR10 are similar and not discussed for brevity. 
+\techreport{
 Specifically, we make use of the BANK and DIAB datasets listed in Table
 \ref{tab:datasets}. 
 Both datasets
@@ -49,7 +49,7 @@ The diabetes dataset~\cite{diab} contains records of hospital visits by diabetes
 diagnoses, number of hospital days, and procedures performed. 
 The bank dataset~\cite{bank} contains records of customers who applied for a loan, including demographic information about 
 the customers, information about the bank's previous contact with the customer, and the ultimate loan decision.
-\mpv{verify}
+}
 
 
 
@@ -58,7 +58,7 @@ the customers, information about the bank's previous contact with the customer, 
 % For the custom execution engine, on the other hand, we are concerned with both, {\em latency} 
 % as well as {\em accuracy}, i.e., whether \SeeDB actually returns the top-$k$ views or not.
 
-
+\techreport {
 \stitle{Result Highlights:}
 \begin{denselist}
 \item Our pruning strategies
@@ -74,8 +74,8 @@ the accuracy of our results is $> 80\%$ with an almost zero utility distance.
 Particularly, accuracy is inversely proportional to $\Delta_k$ the difference in
 utility between the $k$-th highest utility and the two neighboring utilities. 
 
-\item Our technique of making a single pass through the data along with pruning reduces the overall
-resource utilization of \SeeDB compared to the DBMS engine \mpv{quantify}.
+% \item Our technique of making a single pass through the data along with pruning reduces the overall
+% resource utilization of \SeeDB compared to the DBMS engine \mpv{quantify}.
 
 % \item Our  indicates that pruning significantly improves \SeeDB performance.
 % In addition, our requirement of only a single pass through the data reduces resource utilization.
@@ -86,6 +86,7 @@ utility distance enables \SeeDB to return high-quality recommendations {\bf at i
 This makes the custom execution engine a better alternative to a DBMS-backed engine
 in terms of latency, accuracy as well as resource utilitzation (more in Section \ref{sec:comp_of_engines}).
 \end{denselist}
+}
 
 % In addition to {\em latency}, we measure {\em accuracy},
 % the number of true top-$k$ views present among the top-$k$ returned by the algorithm.
@@ -114,16 +115,16 @@ Since the accuracy and utility distance of our techniques are influenced by the
 order in which data is read in, we repeat each experiment 20
 times and randomize the data between runs. We report average
 metrics over 20 runs.
-We note upfront that our goal is not to directly compare the latency of our custom
-execution engine to that of the DBMS-backed execution
-engine; comparisons between a commercial DBMS-backed system and a proof-of-concept
-system are futile.
-Instead, our goal is to evaluate the performance improvements that can be
-obtained by pruning and sharing table scans in our proof-of-concept 
-implementation.\footnote{We note however that for our experimental datasets, 
-the proof-of-concept prototype provides performance comparable to the DBMS-backed
-system.} We start with an evaluation of the quality of results produced by our custom execution
-engine.
+% We note upfront that our goal is not to directly compare the latency of our custom
+% execution engine to that of the DBMS-backed execution
+% engine; comparisons between a commercial DBMS-backed system and a proof-of-concept
+% system are futile.
+% Instead, our goal is to evaluate the performance improvements that can be
+% obtained by pruning \techreport{and sharing table scans }in our proof-of-concept 
+% implementation.\footnote{We note however that for our experimental datasets, 
+% the proof-of-concept prototype provides performance comparable to the DBMS-backed
+% system.} We start with an evaluation of the quality of results produced by our custom execution
+% engine.
 
 % For example, the DBMS-backed engines (especially the column store) benefits from 
 % many man-years of optimizations, including optimizations for scan-intensive workloads, 
@@ -174,9 +175,8 @@ engine.
 \end{figure}
 
  \stitle{Utility Distributions and Quality of Results}:
- The custom execution engine prunes views whose utility (based on estimates) 
- is unlikely to be among the top-$k$ views.
- As a result, the accuracy of pruning depends on how accurately
+ Since our pruning optimizations use utility estimates to prune views, 
+ the accuracy of pruning depends on how accurately
  our estimates can capture the relative order of utilities.
  Views with utilities that are spread apart can be pruned accurately, while
  those with similar utilities have similar utility estimates and can 
@@ -187,7 +187,8 @@ engine.
  suppose $V_1 \ldots V_n$ is the list of views ordered by decreasing 
  utility and we have been asked to identify the top-$k$ views.
  Then the accuracy of pruning will be inversely proportional to the difference between
- the $k$-th highest utility and the $k+1$-st utility, i.e. $\Delta_k = U(V_k) - U(V_{k+1})$.
+ the $k$-th highest utility and the $k+1$-st utility, 
+ i.e. $\Delta_k = U(V_k) - U(V_{k+1})$.
  
  % Specifically, if a large number of views around the (true) top-$k$ boundary have similar utilities,
  % then our pruning strategies may choose views incorrectly at this boundary.
@@ -436,6 +437,7 @@ These reductions bring latency down from multiple tens of seconds to {\bf single
 % This latency-accuracy tradeoff is particularly important in a real-time system where we want to quickly 
 % provide recommendations for the analyst to browse.
 
+\techreport{
 \stitle{Resource Utilization:}
 % \mpv{Not sure about this section. Someone needs to review}
 % We contrast the resource utilization of our custom execution engine to the DBMS-backed engine. 
@@ -446,6 +448,7 @@ Another consequence of the single scan is that there is
 no thrashing introduced by multiple parallel scan queries.
 Lastly, there is no {\it query bloat} associated with
 the custom engine, saving overheads of per-query state such as iterators, buffers etc.
+}
 % means that the custom engine is expected to
 % have lower CPU as compared to the multiple scans of data resulting from the DBMS-backed engine (assuming that the
 % additional state maintenance is not significant).
@@ -455,6 +458,7 @@ the custom engine, saving overheads of per-query state such as iterators, buffer
 % Consequently, additional resources must be wasted by the DBMS in keeping state for each query such as 
 % iterators, buffers etc.
 
+\techreport{
 \subsection{Comparison of Execution Engines}
 \label{sec:comp_of_engines}
 
@@ -477,7 +481,8 @@ Clearly, the ideal solution would be to integrate the custom execution engine fu
 This would enable the DBMS to use existing structures to efficienly scan a dataset while maintaining and pruning
 views on the fly. 
 The SQL GROUPING SETS\footnote{} functionality, i.e. multiple independent group-bys in a single query is a first step in this direction.
-However, GROUPING SETS needs to be supplemented with much finer control and scalability to support \SeeDB-like  functionality.
+However, GROUPING SETS needs to be supplemented with much finer control and scalability to support \SeeDB-like  functionality.}
+\mpv{need to address grouping sets}
 
 % In summary, the performance results of this section indicate that due to the lower latency, high accuracy,
 % and overall lower resource utilization, the custom engine is a superior alternative to a DBMS-backed
@@ -497,6 +502,41 @@ However, GROUPING SETS needs to be supplemented with much finer control and scal
 % computation per record.
 % This exact trend is not seen in MAB because MAB's view pruning is agnostic
 % to the number of views that must be selected.
+
+\subsection{Combining Optimizations}
+\label{sec:sharing_and_pruning}
+As discussed in the previous sections, sharing optimizations can provide performance gains upto 10X for COL and 40X for ROW while pruning optimizations can reduce latency by YYY.
+In this section, we evaluate the performance gains that can be obtained by combining both types of optimizations.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=9.5cm] {Images/all_opt_real_data_col.pdf}
+	\caption{Performance gains of all optimizations in COL}
+	\label{fig:share_prune_col}
+	\vspace{-15pt}
+\end{figure}
+
+Figure \ref{fig:share_prune_col} shows the relative performance gains that can be obtained by applying a combination of pruning and sharing optimizations in COL stores. 
+The corresponding data for ROW stores was already described in Figure \ref{fig:share_prune_row}. 
+As seen in Figure \ref{fig:share_prune_col}, we find that the combination of optimizations can produce performance gains upto 40X (COMB) - 80X (COMB\_EARLY) as compared to the basic \SeeDB framework.
+In particular we find that pruning optimizations add a speedup of upto 4X to that obtained by sharing optimizations.
+We see similar results for ROW where pruning provides a similar 4X speedup.
+However, we make a few observations. First, pruning doesn't benefit small datasets (e.g. BANK, DIAB). In fact, due to the overhead of multiple phases (and the associated query costs), the combined optimization (COMB) does worse than SHARING alone. Since the SHARING latencies for small datasets are under a few seconds, we do not find the need to perform sharing.
+Second, as noted before, due to different data layout, COL stores have significantly lower latencies for the \SeeDB workload compared to ROW.
+However, the data layout for ROW benefits more from the sharing of scans and pruning since the cost of a table scan is much higher for ROW.
+Thus, we conclude that the COMB optimization is best suited for moderate (AIR) and large (AIR10) datasets while SHARING only is suited for small datasets.
+COL stores in general are a better fit for the \SeeDB workload.
+
+% Compared to the performance of ROW stores in Figure \ref{}, we find that COL stores benefit less from optimizations.
+% As before, this is because column stores can selectively load attributes that are relevant for the particular visualization. \mpv{verify}
+
+% % We also find a few differences in the performance gains obtained by pruning in Section \ref{} () and those obtained by the combined optimizations ().
+
+% The reasons for this difference are two-fold: (1) the simple pruning implementation described in Section \ref{} is based on shared scans and does not incur any overhead for each phase of the algorithm; in contrast, when we implement pruning in \SeeDB, each phase involves \SeeDB issuing a large number of queries to the DBMS and thus incuring overheads such as query dispatch, maintaining query state etc. (2) due to the specific implementations of ROW and COL stores, there is threshold on table size below which the time to scan tables is essentially the same.
+% As a consequence of these two factors, we find that the combination of pruning and sharing degrades performance for small datasets (e.g. BANK, DIAB) due to phase overhead.
+% The combination of optimizations is well suited to moderate and large datasets such as AIR and AIR10 and produces a CCC speedup.
+
+
 
 % The next set of experiments vary the parameters for each strategy to study
 % the accuracy vs. latency tradeoff.
