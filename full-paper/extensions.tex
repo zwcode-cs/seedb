@@ -1,11 +1,12 @@
 %!TEX root=document.tex
 
-\section{Discussion}
+\section{Discussion}\label{sec:discussion}
 In this section we prove that our sampling 
 algorithms converge, and then describe our generalized
 distance metric.
-\subsection{Convergence of Sampling Algorithms}
-In this section, we demonstrate how,
+
+\stitle{Convergence of Sampling Algorithms.}
+We now demonstrate how,
 when applied to the utility function $U$ as described
 in Section~\ref{sec:problem_statement},
 sampling algorithms 
@@ -32,7 +33,7 @@ of either the target visualization
 or the comparison visualization.
 $P$ is represented as a normalized vector
 whose entries sum up to $1$.}
-We can show the following: 
+We have the following: 
 \papertext{(The proof can be found in the extended technical report~\cite{seedb-tr}.)}
 \begin{lemma}
 Let the target and comparison visualizations
@@ -104,8 +105,7 @@ and with a certain probability.
 
 
 
-\subsection{The Generalized Distance Metric}\label{sec:general-metric}
-
+\stitle{The Generalized Distance Metric.}\label{sec:general-metric}
 In Section~\ref{sec:problem_statement}, we described our
 distance metric that depended only on the deviation of the data selected
 by the query $D_Q$ from the background data $D$.
