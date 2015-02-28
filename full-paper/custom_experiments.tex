@@ -520,7 +520,7 @@ However, GROUPING SETS needs to be supplemented with much finer control and scal
 % This exact trend is not seen in MAB because MAB's view pruning is agnostic
 % to the number of views that must be selected.
 
-\subsection{Combining Optimizations}
+\subsection{Combining Sharing \& Pruning}
 \label{sec:sharing_and_pruning}
 As discussed in the previous sections, sharing optimizations can provide performance gains upto 10X for COL and 40X for ROW while pruning optimizations can reduce latency by 2X -- 5X.
 In this section, we evaluate the performance gains that can be obtained by combining both types of optimizations. 
@@ -537,12 +537,12 @@ In the ideal case, we expect the gains to be {\it multiplicative}, i.e., we woul
 Figure \ref{fig:share_prune_col} shows the relative performance gains that can be obtained by applying various combinations of optimizations in the COL store. 
 As seen in figure, we find that the combination of optimizations can produce performance gains upto 40X (COMB) - 80X (COMB\_EARLY) as compared to the basic \SeeDB framework.
 In particular we find that pruning optimizations provide an additional speedup of upto 4X to that obtained by sharing-based optimizations alone.
-The corresponding data for ROW stores was presented in the evaluation summary of Section \ref{sec:expt_summary}.
+The corresponding data for ROW stores was presented in Figure~\ref{fig:share_prune_row} above.
 We find that the combination of optimizations produce gains of upto 50X (COMB) -- 150X (COMB\_EARLY) for ROW, with pruning-based
 optimizations providing a 4X speedup over the sharing optimizations.
 We find that indeed the two techniques prodive gains that are multiplicative; in general, the application of one set of optimizations does not preclude the use of the other.
-However, we find one exception to this observation: for small datasets such as BANK, the time taken by the DBMS to process the entire
-table is comparable to the time taken to process a partition of the table. 
+However, we find one exception to this observation: for small datasets such as BANK and DIAB, per-query overheads, especially in the column store, lead to the time taken by the DBMS to process the entire
+table being comparable to the time taken to process a partition of the table. 
 Therefore, pruning merely adds extra computation overhead and actually degrades performance.
 In fact, since the latencies for small datasets are <5s with sharing-based optimizations alone, we do not find it necessary to perform additonal optimizations.
 Thus, we conclude that the COMB and COMB\_EARLY optimizations are best suited for large datasets like AIR and AIR10 while SHARING is suitable for small datasets. 
