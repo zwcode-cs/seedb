@@ -81,15 +81,18 @@ In this section, we focus on minimizing total execution time
 by reducing the
 total number of queries issued to the database,
 and by reducing the total number of scans of the underlying table.
+Sharing computation in our setting is a special case of the general problem
+of multi-query optimization~\cite{DBLP:journals/tods/Sellis88}; we discuss the 
+relationship in more detail in Section~\ref{sec:related_work}.
 Specifically, we apply the following optimizations:
-\agp{I didn't make a smoothing pass on the rest of this..}
 
 \stitle{Combine Multiple Aggregates}: All aggregate view queries 
 with the same group-by attribute can be 
 rewritten as a single, combined query. So instead of executing
 queries for views $(a_1$, $m_1$, $f_1)$, $(a_1$, $m_2$, $f_2)$ \ldots $(a_1$, $m_k$, $f_k)$
 independently, we combine them into a single view represented by
-$(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$.  We have found that there is no penalty
+$(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$.  
+We have found that there is minimal to no impact on latency 
 to grouping as many aggregates as possible in both row and column stores. 
 
 \stitle{Combine target and comparison view query}:
@@ -198,8 +201,6 @@ such that the estimated size of any query result is below $\mathcal{S}$.
 We use the standard first-fit algorithm~\cite{first-fit} to find the optimal
 grouping of dimension attributes.
 
-This problem is superficially similar to the problem of OLAP cube materialization~\cite{olap_cube};
-we discuss the relationship in more detail in Section~\ref{sec:related_work}.
 
 
 % The first-fit algorithm works as follows:
@@ -267,11 +268,11 @@ To further speedup processing, we can pre-compute results for
 static views (e.g. comparison views on full tables) or operate on
 pre-computed data samples.  Such optimizations are orthogonal to the
 problem of efficiently evaluating a large number of views, which we will have to
-do even in the presence of pre-computaiton or sampling, so we don't focus on them here.
+do even in the presence of pre-computation or sampling, so we don't focus on them here.
 
-In the experimental evaluation, we show that the optimizations described in this section can lead to speedups of XXX.
-The absolute latency numbers are in the interactive range for small and medium datasets, but we find that for larger datasets latency falls in the 50-150 range which is unacceptable for an interactive system.
-In the next section, we discuss a few techniques that allow us to reliably prune out  views what will have low utility. 
+
+% In the experimental evaluation, we show that the optimizations described in this section can lead to speedups of XXX.
+% The absolute latency numbers are in the interactive range for small and medium datasets, but we find that for larger datasets latency falls in the 50-150 range which is unacceptable for an interactive system.
 
 %do not address the more important challenge of evaluating a large number of views.
 
