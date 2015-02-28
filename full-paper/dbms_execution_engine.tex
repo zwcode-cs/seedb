@@ -6,18 +6,18 @@ and to then find and display the $k$ visualizations with the highest utility.
 
 \subsection{Basic Implementation} \label{sec:dbms-exec-engine}
 
-We now describe the basic implementation of \SeeDB
-over a traditional relational database system.
-Recall that the input to the \SeeDB engine is a set of 
+We now describe the basic implementation of \SeeDB.
+\SeeDB run top of SQL-based relational 
+engines.  Recall that it takes as input a set of 
 aggregate view stubs, i.e., triples of the form
 $(a, m, f)$, where $a$ is the dimension attribute, $m$ is the measure,
 and $f$ is the aggregation function.
-For each aggregate view stub, we craft
+For each aggregate view stub, it generates
 a SQL query corresponding to the target
-and comparison view, and issue
+and comparison view, and issues
 the two queries, one at a time, to the database.
-We then repeat this for each aggregate view stub.
-As the results are obtained, we can compute the
+It repeats this process for each aggregate view stub.
+As the results are receives, \SeeDB can compute the
 distance between the target and comparison view
 distributions, and keep track of the $k$ visualizations
 with highest utility. These are then displayed
@@ -31,12 +31,11 @@ As we show in Section~\ref{sec:experiments}, this can take minutes in
 large data sets (with hundreds of attributes and millions of rows), which is too long for interactive use. \mpv{are we at interactive time scales?}
 We propose two different suites of optimizations to deal with these
 inefficiencies.
-The first suite of optimizations, discussed in Section~\ref{sec:sharing-opt}, concerns {\em sharing}, \mpv{grouping sets are the other end of sharing}
-i.e., sharing as much work as possible while leveraging the 
-backend database system.
-The second suite of optimizations, discussed in Section~\ref{sec:in_memory_execution_engine}, concerns {\em pruning},
-i.e., avoiding the complete computation of some aggregate views
-by pruning them away. The second suite of optimizations
+The first type of optimizations, discussed in Section~\ref{sec:sharing-opt}, involve work {\em sharing}, \mpv{grouping sets are the other end of sharing}
+combining view-computation queries as much as possible.
+The second type of optimizations, discussed in Section~\ref{sec:in_memory_execution_engine}, involve {\em pruning}, where some aggregate views are
+not completely evaluated over the whole data set.
+ The second suite of optimizations
 are approximate, in that they, since they use utility estimates, there is a small likelihood that the returned visualizations may not have the highest utility.
 %  in rare occasions may lead
 % to inaccurate results (in that the visualizations
