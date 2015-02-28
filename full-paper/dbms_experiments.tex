@@ -1,59 +1,3 @@
-\subsection{Basic \large{\SeeDB} Framework}
-\label{sec:basic_framework_expts}
-
-{\em \underline{Summary:} Applying no optimizations 
-leads to latencies in the 100s of seconds for both ROW and COL;
-latency increases linearly in the size of the dataset and  number
-of views. 
-Column stores are superior to row stores,
-with $\frac{1}{5}$th the latency.}
-Without any optimizations, the basic DBMS-backed execution engine
-serially executes individual view queries, two for each possible view.
-Figure \ref{fig:baseline_size} shows latency of \SeeDB\ vs. the number of rows (100K rows--1M rows) in the dataset while  
-Figure \ref{fig:baseline_views} shows latency as a function 
-of the number of views (50--250).
-This chart shows results for the SYN dataset obtained by varying the size of the
-table and number of attributes (SYN is comparable to the AIR dataset).
-% and we created subsets of the dataset with
-% varying numbers of rows and views, by varying the number of dimension attributes. 
-First, notice that the basic no optimization framework has very 
-poor performance: latency for ROW is between 50-500s, 
-while it is between 10-100s for COL. 
-This is because both ROW and COL run 50 to 250 SQL queries for each \SeeDB query.
-These time scales are not practical for interactive applications. 
-Second, COL runs about 5X faster than ROW. 
-This is expected because individual view queries only select one dimension
-attribute and one measure attribute at a time.  
-COL can just read these two
-columns, whereas ROW must read all columns.
-Third, as expected, the latency of the
-basic framework is proportional to the number of rows as well as the 
-number of views in the table.
-Since the latencies for the basic framework are very high for interactive
-applications, it is clear that aggressive optimization needs to be employed.
-
-\subsection{Sharing Optimizations}
-\label{sec:expts_dbms_execution_engine}
-
-% Our primary metric for evaluating the DBMS-backed
-% execution engine is {\em latency},
-% i.e., .
-% Specifically, we study the impact of the following properties on latency:
-% (a) parameters of the dataset including size and number of views.
-% (b) the optimizations detailed in Section~\ref{sec:dbms_optimizations}, and
-% (c) 
-% Our goal is to identify which data layout is a better
-% fit for \SeeDB, and study the gains of each optimization
-% for row-stores vs.~column stores. 
-In this section, we study the performance of the sharing optimizations described in Section \ref{sec:sharing-opt}.
-Recall that the goal of these optimizations is to reduce the number of queries run against the DBMS and to share scans as much as possible between queries.
-The following experiments report results on the synthetic datasets SYN and SYN* 
-(Table~\ref{tab:datasets}).
-We chose to test these optimizations on synthetic data since we can control all parameters of the data including size, number of attributes, and data distribution.
-Results on real datasets are shown in Figure \ref{fig:share_prune_row} and \ref{fig:share_prune_col}.
-We find that our sharing optimizations can provide upto a 40X speedup for ROW and 10X speedup for COL allowing small and moderate sized datasets to be processed at interactive time scales (< 5s) and reduce latency on large datasets from 
-500 seconds (ROW) and 100 seconds (COL) to <10 seconds for COL, and <20 seconds for ROW.
-
 \begin{figure*}[t]
 	\centering
 	\begin{subfigure}{0.33\linewidth}
@@ -103,6 +47,62 @@ We find that our sharing optimizations can provide upto a 40X speedup for ROW an
 	\label{fig:bank_perf}
 	\vspace{-10pt}
 \end{figure*}
+
+\subsection{Basic \large{\SeeDB} Framework}
+\label{sec:basic_framework_expts}
+
+{\em \underline{Summary:} Applying no optimizations 
+leads to latencies in the 100s of seconds for both ROW and COL;
+latency increases linearly in the size of the dataset and  number
+of views. 
+Column stores are superior to row stores,
+with $\frac{1}{5}$th the latency.}
+Without any optimizations, the basic \SeeDB execution engine
+serially executes individual view queries, two for each possible view.
+Figure \ref{fig:baseline_size} shows latency of \SeeDB\ vs. the number of rows (100K rows--1M rows) in the dataset while  
+Figure \ref{fig:baseline_views} shows latency as a function 
+of the number of views (50--250).
+This chart shows results for the SYN dataset obtained by varying the size of the
+table and number of attributes (SYN is comparable to the AIR dataset).
+% and we created subsets of the dataset with
+% varying numbers of rows and views, by varying the number of dimension attributes. 
+First, notice that the basic no optimization framework has very 
+poor performance: latency for ROW is between 50-500s, 
+while it is between 10-100s for COL. 
+This is because both ROW and COL run 50 to 250 SQL queries for each \SeeDB query.
+These time scales are not practical for interactive applications. 
+Second, COL runs about 5X faster than ROW. 
+This is expected because individual view queries only select one dimension
+attribute and one measure attribute at a time.  
+COL can just read these two
+columns, whereas ROW must read all columns.
+Third, as expected, the latency of the
+basic framework is proportional to the number of rows as well as the 
+number of views in the table.
+Since the latencies for the basic framework are very high for interactive
+applications, it is clear that aggressive optimization needs to be employed.
+
+\subsection{Sharing Optimizations}
+\label{sec:expts_dbms_execution_engine}
+
+% Our primary metric for evaluating the DBMS-backed
+% execution engine is {\em latency},
+% i.e., .
+% Specifically, we study the impact of the following properties on latency:
+% (a) parameters of the dataset including size and number of views.
+% (b) the optimizations detailed in Section~\ref{sec:dbms_optimizations}, and
+% (c) 
+% Our goal is to identify which data layout is a better
+% fit for \SeeDB, and study the gains of each optimization
+% for row-stores vs.~column stores. 
+In this section, we study the performance of the sharing optimizations described in Section \ref{sec:sharing_opt}.
+Recall that the goal of these optimizations is to reduce the number of queries run against the DBMS and to share scans as much as possible between queries.
+The following experiments report results on the synthetic datasets SYN and SYN* 
+(Table~\ref{tab:datasets}).
+We chose to test these optimizations on synthetic data since we can control all parameters of the data including size, number of attributes, and data distribution.
+(Results on real datasets are shown in Figure \ref{fig:share_prune_row} and \ref{fig:share_prune_col}).
+We find that our sharing optimizations can provide upto a 40X speedup for ROW and 10X speedup for COL allowing small and moderate sized datasets to be processed at interactive time scales (< 5s) and reduce latency on large datasets from 
+500 seconds (ROW) and 100 seconds (COL) to <10 seconds for COL, and <20 seconds for ROW.
 
 
 \techreport{
@@ -245,7 +245,7 @@ has 100, a query with $n_{gb}=p$ would require memory proportional to $\max(10^p
 num\_rows)$ for SYN*-10 and proportional to $\max(100^p, num\_rows)$ for SYN*-100.
 The results of the experiment are shown in Figure \ref{fig:multi_gb_same}.
 As the number of group-by attributes increases from 1 to 10, the latency of ROW (blue) decreases initially.
-However, once the space budget (proxied by the number of distinct groups) exceeds 10000, latency increases significantly. \mpv{rewrite}
+However, once the space budget (proxied by the number of distinct groups) exceeds 10000, latency increases significantly.
 We see a similar trend for COL, but with a space budget of 100.\footnote{The different space
 budgets can be explained based on the different internal parameteres and implementations of
 the two systems.}
@@ -405,8 +405,8 @@ threshold of 100 biases the optimal grouping to contain many single attribute gr
 \end{figure}
 
 
-\stitle{All Optimizations:} 
-{\em \underline{Summary:} Applying all of our optimizations together
+\stitle{All Sharing Optimizations:} 
+{\em \underline{Summary:} Applying all of our sharing optimizations
 leads to a speedup of up to 20X for row stores, and 8X for column stores;
 column stores are still much faster than row stores.}
 Based on the optimal parameters identified from the previous experiments, we combined 
@@ -422,9 +422,11 @@ but did not apply the group-by optimization.
 Figure~\ref{fig:all_opt} shows the latency of \SeeDB\ on SYN when all
 optimizations have been applied.
 We see that our optimizations lead to a speed up of 20X for ROW 
-(Figures~\ref{fig:all_opt}a) and a speedup of 8X in COL (Figures~\ref{fig:all_opt}b).
+(Figures~\ref{fig:all_opt}a) and a speedup of 10X in COL (Figures~\ref{fig:all_opt}b).
 Furthermore, we notice that our optimizations are most effective for datasets with 
-large sizes and many views.
+large sizes and many views. This is particularly true for ROW where each scan
+of a large table is expensive, and hence reduction in number of queries 
+has larger benefits.
 % , with proportionally larger speedups as these numbers grow.
 
 \techreport{
@@ -437,9 +439,9 @@ In addition, we find that although parallel queries share buffer pool pages, run
 parallel can lead to thrashing due to timing issues.
 As a result, we find the DBMS-backed engine has large overheads of memory, CPU and query state due to the query bloat.}
 
-In summary, the above set of experiments shows that the application of well-designed optimizations
-and parallelism can reduce \SeeDB\ latency by 8-20X depending on the DBMS.
-We notice, however, that in spite of aggressive optimizations, the latencies with sharing optimizations are between 10-20s.
+% In summary, the above set of experiments shows that the application of well-designed optimizations
+% and parallelism can reduce \SeeDB\ latency by 8-20X depending on the DBMS.
+% We notice, however, that in spite of aggressive optimizations, the latencies with sharing optimizations are between 10-20s.
 % Such latencies are unacceptable in any interactive system.
 % Moreover, we observe that query bloat associated with each \SeeDB invocation unnecessarily consumes DBMS resources.
 % In an environment where the DBMS serves multiple users with more than just visualization

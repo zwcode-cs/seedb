@@ -4,26 +4,30 @@
 \label{sec:experiments}
  
 In this section, we present our evaluation of \SeeDB in terms of its performance 
-at exploring alternative visualizations. \mpv{reword}
+in select the top-$k$ visualizations. 
 Results of our user study are presented in the following section.
 The following set of experiments evaluate the basic framework of \SeeDB, our sharing optimizations 
-(Section \ref{}), our pruning optimizations (Section \ref{}), and the combination of both sets of optimizations.
-In each experiment, our primary metric for evaluation is latency, i.e. how long does it take \SeeDB to return the top-$k$ results. 
-For experiments involving our pruning strategies, we also measure quality of results through {\it accuracy} and {\it utility distance}. 
-We defer a detailed discussion of these metrics to our evaluation of pruning strategies.
-We evaluate our techniques on both, a row-oriented database (denoted ROW) and a
-column-oriented database (denoted COL) since the particular data layout impacts the efficacy of our optimizations.
-We evaluate the performance of \SeeDB on a variety of real and synthetic datasets (Table 
-\ref{tab:datasets}) using {\it earth mover distance (EMD)} as our utility function.
+(Section \ref{sec:sharing_opt}), our pruning optimizations (Section \ref{sec:in_memory_execution_engine}), 
+and the combination of both sets of optimizations.
+In each experiment, our primary metric for evaluation is latency, 
+i.e. how long does it take \SeeDB to return the top-$k$ results. 
+For experiments involving our pruning strategies, we also measure quality of results 
+through {\it accuracy} and {\it utility distance} (discussed further in Section \ref{sec:custom_execution_engine_expts}).
+Since we expect data layout to impact the efficacy of our optimizations, we 
+evaluate our techniques on both, a row-oriented database (denoted ROW) and a
+column-oriented database (denoted COL).
+We run experiments on four real-world and three synthetic datasets shown in Table 
+\ref{tab:datasets} using {\it earth mover distance (EMD)} as our utility function.
 % In our first set of experiments, we investigate 
 % how well a DBMS-backed engine
 % can support a \SeeDB-style workload.
 All experiments were run on a single machine with 8 GB RAM and a 16 core Intel 
 Xeon E5530 processor. 
-Unless described otherwise, experiments were repeated 3 times and the latency measures 
+Unless described otherwise, experiments were repeated 3 times and the measurements 
 were averaged.
 
-We begin by presenting a summary of our experimental findings and then dive into performance results for individual optimization strategies.
+We begin by presenting a summary of our experimental findings and then dive into performance results for 
+individual optimizations.
 
 %  present the overall results of our applying all our optimizations and then dive into
 % performance results for each of our optimizations.

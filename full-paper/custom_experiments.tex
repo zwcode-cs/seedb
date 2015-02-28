@@ -36,10 +36,22 @@ The other baseline strategy we evaluate is the random strategy (RANDOM) that ret
 set of $k$ views as the result.
 This strategy gives a lowerbound on accuracy and upperbound bound on utility distance: for any 
 technique to be useful, it must do significantly better than RANDOM.
+Finally, note that latencies of any pruning strategy depend closely on the sharing techniques 
+used within phases. 
+For instance, using the basic \SeeDB framework (Section \ref{sec:dbms_exec_engine}) within each phase
+will produce much larger latencies than applying all the sharing-based optimizations.
+%In addition, each phase is associated with a fixed amount of overhead that depends on the DBMS.
+Therefore, when we study latency improvements in this section, we will focus only on relative 
+improvements in latency, i.e. what is the percent improvement in latency compared to the latency
+achieved without pruning.
+Absolute latency numbers are discussed in Section \ref{sec:sharing_and_pruning}.
+
+%we present latencies in this section 
 
 \stitle{Datasets:}
-Since it is hard to capture the complexities of real data distributions in synthetic data, we
-evaluate all our pruning strategies on real-world data. In this section, we focus on the results of BANK and DIAB. The results for AIR and AIR10 are similar and not discussed for brevity. 
+We evaluate our pruning strategies on the real-world datasets from Table \ref{tab:datasets}. 
+We describe the results for BANK and DIAB in this section while AIR and AIR10 are discussed 
+in Section \ref{sec:sharing_and_pruning}. 
 \techreport{
 Specifically, we make use of the BANK and DIAB datasets listed in Table
 \ref{tab:datasets}. 
@@ -107,13 +119,40 @@ in terms of latency, accuracy as well as resource utilitzation (more in Section 
 % Rather, our goal is to highlight the relative performance benefits that can be
 % obtained by performing pruning and shared scans.
 
+\begin{figure}[h]
+\vspace{-10pt}
+	\centering
+	\begin{subfigure}{1\linewidth}
+		\centering
+		\includegraphics[width=7cm]
+		{Images/bank_utility_distribution.pdf}
+		\vspace{-5pt}
+		\caption{Bank dataset: utility distribution}
+		\label{fig:bank_utility_distribution}
+	\end{subfigure}
+	
+	\begin{subfigure}{1\linewidth}
+		\centering
+		\includegraphics[width=7cm]
+		{Images/diabetes_utility_distribution.pdf}
+		\vspace{-5pt}
+		\caption{Diabetes dataset: utility distribution}
+		\label{fig:diabetes_utility_distribution}
+	\end{subfigure}
+
+\vspace{-10pt}
+\label{fig:utility_distribution}
+\caption{Distribution of Utilities}
+\vspace{-15pt}
+\end{figure}
+
 In each of our experiments, we vary $k$ -- the number of views to select -- between
 1 and 25 (a realistic upper limit on the number of views displayed to the user)
 and measure the latency, accuracy, and utility distance for each of our
 strategies. 
 Since the accuracy and utility distance of our techniques are influenced by the
-order in which data is read in, we repeat each experiment 20
-times and randomize the data between runs. We report average
+ordering of data, we repeat each experiment 20
+times and randomize data between runs. We report average
 metrics over 20 runs.
 % We note upfront that our goal is not to directly compare the latency of our custom
 % execution engine to that of the DBMS-backed execution
@@ -146,33 +185,57 @@ metrics over 20 runs.
 % \item Random (RANDOM): this strategy returns randomly selected $k$ views (to study the impact of pruning on accuracy).
 % \end{compactenum}
 
-
-\begin{figure}[h]
-\vspace{-10pt}
+\begin{figure*}[t]
 	\centering
-	\begin{subfigure}{1\linewidth}
+	\begin{subfigure}{0.33\linewidth}
 		\centering
-		\includegraphics[width=7cm]
-		{Images/bank_utility_distribution.pdf}
-		\vspace{-5pt}
-		\caption{Bank dataset: utility distribution}
-		\label{fig:bank_utility_distribution}
+		{\includegraphics[width=6cm] {Images/in_memory_bank_accuracy.pdf}}
+		\caption{Accuracy}
+		\label{fig:bank_accuracy}
 	\end{subfigure}
-	
-	\begin{subfigure}{1\linewidth}
+	\begin{subfigure}{0.33\linewidth}
 		\centering
-		\includegraphics[width=7cm]
-		{Images/diabetes_utility_distribution.pdf}
-		\vspace{-5pt}
-		\caption{Diabetes dataset: utility distribution}
-		\label{fig:diabetes_utility_distribution}
+		{\includegraphics[width=6cm] {Images/in_memory_bank_utility_dist.pdf}}
+		\caption{Utility Distance}
+		\label{fig:bank_utility_dist}
 	\end{subfigure}
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		{\includegraphics[width=6cm] {Images/in_memory_bank_latency.pdf}}
+		\caption{Latency}
+		\label{fig:bank_latency}
+	\end{subfigure}
+	\vspace{-10pt}
+	\caption{Performance of strategies for Bank dataset}
+	\label{fig:bank_perf}
+	\vspace{-10pt}
+\end{figure*}
 
-\vspace{-10pt}
-\label{fig:utility_distribution}
-\caption{Distribution of Utilities}
-\vspace{-15pt}
-\end{figure}
+\begin{figure*}[t]
+	\centering
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		{\includegraphics[width=6cm] {Images/in_memory_dia_accuracy.pdf}}
+		\caption{Accuracy}
+		\label{fig:dia_accuracy}
+	\end{subfigure}
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		{\includegraphics[width=6cm] {Images/in_memory_dia_utility_dist.pdf}}
+		\caption{Utility Distance}
+		\label{fig:dia_utility_dist}
+	\end{subfigure}
+	\begin{subfigure}{0.33\linewidth}
+		\centering
+		{\includegraphics[width=6cm] {Images/in_memory_dia_latency.pdf}}
+		\caption{Latency}
+		\label{fig:diabetes_latency}
+	\end{subfigure}
+	\vspace{-10pt}
+	\caption{Performance of strategies for Diabetes dataset}
+	\label{fig:diabetes_perf}
+	\vspace{-10pt}
+\end{figure*}
 
  \stitle{Utility Distributions and Quality of Results}:
  Since our pruning optimizations use utility estimates to prune views, 
@@ -201,16 +264,20 @@ metrics over 20 runs.
  % analyze the performance of our pruning strategies given the utility distribution.
 
 \stitle{Accuracy and Utility Distance:}
-{\em \underline{Summary:} The MAB strategy dominates the CI
-strategy when it comes to both accuracy and utility distance,
-with accuracy $>$75\%  for $k = 1$ and even larger for larger
-values of $k$, and a near-zero utility distance. 
-Smaller $\Delta_k$ values lead to lower accuracy, but this is offset by
-lower utility distance.
-% While the other two strategies also have near-zero utility distance,
-% they have slightly lower accuracies, which may be explained by the 
-% distribution in utility values.
- }
+{\em \underline{Summary:} The MAB and CI strategy both produce results with 
+accuracy $>$75\% and near-zero utility distance for a variety of $k$ values.
+MAB does slightly better than CI when utlity values are closely spaced.
+However, in general, smaller $\Delta_k$ values lead to lower accuracy, but this is offset by
+lower utility distance that is a consequence of the smaller $\Delta_k$s. 
+}
+
+%  \em \underline{Summary:} The MAB strategy dominates the CI
+% strategy when it comes to both accuracy and utility distance,
+% with accuracy $>$75\%  for $k = 1$ and even larger for larger
+% values of $k$, and a near-zero utility distance. 
+% Smaller $\Delta_k$ values lead to lower accuracy, but this is offset by
+% lower utility distance.
+%  }
 
 \noindent {\it \underline {BANK dataset}}:
 The distribution of utilities for all views of the bank dataset is
@@ -265,57 +332,7 @@ utilities of these views and the true top-$k$ views.
 % Figure \ref{} shows the results for the banking dataset.
 % We see that XXX,
 
-\begin{figure*}[t]
-	\centering
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		{\includegraphics[width=6cm] {Images/in_memory_bank_accuracy.pdf}}
-		\caption{Accuracy}
-		\label{fig:bank_accuracy}
-	\end{subfigure}
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		{\includegraphics[width=6cm] {Images/in_memory_bank_utility_dist.pdf}}
-		\caption{Utility Distance}
-		\label{fig:bank_utility_dist}
-	\end{subfigure}
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		{\includegraphics[width=6cm] {Images/in_memory_bank_latency.pdf}}
-		\caption{Latency}
-		\label{fig:bank_latency}
-	\end{subfigure}
-	\vspace{-10pt}
-	\caption{Performance of strategies for Bank dataset}
-	\label{fig:bank_perf}
-	\vspace{-10pt}
-\end{figure*}
 
-\begin{figure*}[t]
-	\centering
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		{\includegraphics[width=6cm] {Images/in_memory_dia_accuracy.pdf}}
-		\caption{Accuracy}
-		\label{fig:dia_accuracy}
-	\end{subfigure}
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		{\includegraphics[width=6cm] {Images/in_memory_dia_utility_dist.pdf}}
-		\caption{Utility Distance}
-		\label{fig:dia_utility_dist}
-	\end{subfigure}
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		{\includegraphics[width=6cm] {Images/in_memory_dia_latency.pdf}}
-		\caption{Latency}
-		\label{fig:diabetes_latency}
-	\end{subfigure}
-	\vspace{-10pt}
-	\caption{Performance of strategies for Diabetes dataset}
-	\label{fig:diabetes_perf}
-	\vspace{-10pt}
-\end{figure*}
 
 % \begin{figure}[h]
 % \centering
@@ -376,7 +393,7 @@ Figure~\ref{fig:diabetes_utility_distribution}.
 We observe that:
 \begin{denselist}
 \item Utilities for $k$=1 \ldots 10 are very closely clustered ($\Delta_k<$0.002).
-\item View corresponding to $k$=15 is well separated from its neighboring views, $Delta_16 >$ 0.025
+\item View corresponding to $k$=15 is well separated from its neighboring views, $\Delta_{16} >$ 0.025
 \item Views for $k$=20 and 25 are also surrounded by utilities with very 
 similar values ($\Delta_k < $0.001).
 \end{denselist}
@@ -423,13 +440,13 @@ relative to NO\_PRU. For smaller $k$, reductions can be even higher, closer to 9
 especially useful when we want to identify and quickly display the first one or two top views.}
 Figures~\ref{fig:bank_latency} and \ref{fig:diabetes_latency} show the latency
 of our strategies for the banking and diabetes dataset.
-First off, we observe that the use of either of CI or MAB produces a 2X reduction in latency
+First off, we observe that the use of either of CI or MAB produces a 50\% reduction in latency
 throughout.
-In fact, for CI, we obtain almost a 10X reduction in latency for small $k$. 
+In fact, for CI, we obtain almost a 90\% reduction in latency for small $k$. 
 MAB, on the other hand, has a consistent 50\% reduction in latency. 
 As expected, as $k$ increases, latency also increases because we can prune fewer views.
-These reductions bring latency down from multiple tens of seconds to {\bf single digit latencies}, i.e.,
-\SeeDB can operate on interactive time scales.
+% These reductions bring latency down from multiple tens of seconds to {\bf single digit latencies}, i.e.,
+% \SeeDB can operate on interactive time scales.
 % Since these latency numbers come from our prototype implementation, a well-tuned system could
 % produce results in few seconds, i.e., {\it in interactive time scales}. 
 % Clearly, we give up some accuracy when we obtain this reduction in latency, however, as demonstrated
@@ -505,27 +522,37 @@ However, GROUPING SETS needs to be supplemented with much finer control and scal
 
 \subsection{Combining Optimizations}
 \label{sec:sharing_and_pruning}
-As discussed in the previous sections, sharing optimizations can provide performance gains upto 10X for COL and 40X for ROW while pruning optimizations can reduce latency by YYY.
-In this section, we evaluate the performance gains that can be obtained by combining both types of optimizations.
+As discussed in the previous sections, sharing optimizations can provide performance gains upto 10X for COL and 40X for ROW while pruning optimizations can reduce latency by 2X -- 5X.
+In this section, we evaluate the performance gains that can be obtained by combining both types of optimizations. 
+In the ideal case, we expect the gains to be {\it multiplicative}, i.e., we would expect gains between 20X -- 200X.
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=9.5cm] {Images/all_opt_real_data_col.pdf}
+	\includegraphics[width=9cm] {Images/all_opt_real_data_col.pdf}
 	\caption{Performance gains of all optimizations in COL}
 	\label{fig:share_prune_col}
 	\vspace{-15pt}
 \end{figure}
 
-Figure \ref{fig:share_prune_col} shows the relative performance gains that can be obtained by applying a combination of pruning and sharing optimizations in COL stores. 
-The corresponding data for ROW stores was already described in Figure \ref{fig:share_prune_row}. 
-As seen in Figure \ref{fig:share_prune_col}, we find that the combination of optimizations can produce performance gains upto 40X (COMB) - 80X (COMB\_EARLY) as compared to the basic \SeeDB framework.
-In particular we find that pruning optimizations add a speedup of upto 4X to that obtained by sharing optimizations.
-We see similar results for ROW where pruning provides a similar 4X speedup.
-However, we make a few observations. First, pruning doesn't benefit small datasets (e.g. BANK, DIAB). In fact, due to the overhead of multiple phases (and the associated query costs), the combined optimization (COMB) does worse than SHARING alone. Since the SHARING latencies for small datasets are under a few seconds, we do not find the need to perform sharing.
-Second, as noted before, due to different data layout, COL stores have significantly lower latencies for the \SeeDB workload compared to ROW.
-However, the data layout for ROW benefits more from the sharing of scans and pruning since the cost of a table scan is much higher for ROW.
-Thus, we conclude that the COMB optimization is best suited for moderate (AIR) and large (AIR10) datasets while SHARING only is suited for small datasets.
-COL stores in general are a better fit for the \SeeDB workload.
+Figure \ref{fig:share_prune_col} shows the relative performance gains that can be obtained by applying various combinations of optimizations in the COL store. 
+As seen in figure, we find that the combination of optimizations can produce performance gains upto 40X (COMB) - 80X (COMB\_EARLY) as compared to the basic \SeeDB framework.
+In particular we find that pruning optimizations provide an additional speedup of upto 4X to that obtained by sharing-based optimizations alone.
+The corresponding data for ROW stores was presented in the evaluation summary of Section \ref{sec:expt_summary}.
+We find that the combination of optimizations produce gains of upto 50X (COMB) -- 150X (COMB\_EARLY) for ROW, with pruning-based
+optimizations providing a 4X speedup over the sharing optimizations.
+We find that indeed the two techniques prodive gains that are multiplicative; in general, the application of one set of optimizations does not preclude the use of the other.
+However, we find one exception to this observation: for small datasets such as BANK, the time taken by the DBMS to process the entire
+table is comparable to the time taken to process a partition of the table. 
+Therefore, pruning merely adds extra computation overhead and actually degrades performance.
+In fact, since the latencies for small datasets are <5s with sharing-based optimizations alone, we do not find it necessary to perform additonal optimizations.
+Thus, we conclude that the COMB and COMB\_EARLY optimizations are best suited for large datasets like AIR and AIR10 while SHARING is suitable for small datasets. 
+
+% We see similar results for ROW where pruning provides a similar 4X speedup.
+% However, we make a few observations. First, pruning doesn't benefit small datasets (e.g. BANK, DIAB). In fact, due to the overhead of multiple phases (and the associated query costs), the combined optimization (COMB) does worse than SHARING alone. Since the SHARING latencies for small datasets are under a few seconds, we do not find the need to perform sharing.
+% Second, as noted before, due to different data layout, COL stores have significantly lower latencies for the \SeeDB workload compared to ROW.
+% However, the data layout for ROW benefits more from the sharing of scans and pruning since the cost of a table scan is much higher for ROW.
+% T
+% COL stores in general are a better fit for the \SeeDB workload.
 
 % Compared to the performance of ROW stores in Figure \ref{}, we find that COL stores benefit less from optimizations.
 % As before, this is because column stores can selectively load attributes that are relevant for the particular visualization. \mpv{verify}

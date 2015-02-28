@@ -4,7 +4,7 @@ The goals of the \SeeDB execution engine are to efficiently
 compute the utility of a large number of aggregate views
 and to then find and display the $k$ visualizations with the highest utility.
 
-\subsection{Basic Implementation} \label{sec:dbms-exec-engine}
+\subsection{Basic Implementation} \label{sec:dbms_exec_engine}
 
 We now describe the basic implementation of \SeeDB.
 \SeeDB run top of SQL-based relational 
@@ -76,7 +76,7 @@ are approximate, in that they, since they use utility estimates, there is a smal
 % This strawman approach is clearly inefficient since it examines every possible view and 
 % executes each view query independently.
 
-\subsection{Sharing-Based Optimizations}\label{sec:sharing-opt}
+\subsection{Sharing-Based Optimizations}\label{sec:sharing_opt}
 In this section, we focus on minimizing total execution time
 by reducing the
 total number of queries issued to the database,
