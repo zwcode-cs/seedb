@@ -72,13 +72,23 @@ incorporates insights about the underlying data, or for that matter, any of the 
 
 \stitle{Data-driven Recommendations in \SeeDB.}
 To this end, in this work, we describe a new visualization recommendation engine we are building called {\it \SeeDB}.
-Eventually, we aim to address all six dimensions of the above taxonomy by developing a suite of optimization techniques designed to explore
+Eventually, we aim to address all six dimensions of the above list of dimensions by developing a suite of optimization techniques designed to explore
 the entire range of visualizations of a user-supplied data set or query result.  
-As a first step in this paper, we focus on a general data-driven deviation-based metric that can capture all six dimensions to a limited extent (see Section~\ref{sec:problem_statement} and Section~\ref{sec:discussion}).  However, because metadata and aesthetics based recommendations have been addressed in prior work, in this paper we focus on {\it data-driven} recommendations that use information about data distribution, metadata and the user query to recommend visualizations.
+As a first step in this paper, we develop a general data-driven deviation-based metric that can capture all six dimensions to a limited extent (see Section~\ref{sec:problem_statement} and Section~\ref{sec:discussion}).  
+We focus on the query and data distribution aspects as a special case:
+these add significant utility, and at the same time significant complexity to 
+the visualization recommendation process,
+and are particularly relevant when an analyst is approaching a dataset 
+for the first time. 
+We leverage lessons from metadata and aesthetics-based recommendation
+generation from prior work.
+
+% However, because metadata and aesthetics based recommendations have been addressed in prior work, in this paper we focus on {\it data-driven} recommendations that use information about data distribution, metadata and the user query to recommend visualizations.
+% Such visualizations are particularly appropriate when
+% approaching a dataset for the first time, with limited domain knowledge or historical context.
+
 % that identify unusual variations in the result of the user-supplied query as compared to the underlying data.
 % consider the inherent variations in the data from a user-supplied query. 
-Such visualizations are particularly appropriate when
-approaching a dataset for the first time, with limited domain knowledge or historical context.
 %   that focuses less on the aesthetics of good visualizations, and more
 % on developing general techniques that explore the space
 %of possible visualizations and recommend those that highlight data variability in the subset of data specified by a user's query.
