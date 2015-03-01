@@ -54,16 +54,16 @@ Absolute latency numbers are discussed in Section \ref{sec:expt_summary}.
 We evaluate our pruning strategies on the real-world datasets from Table \ref{tab:datasets}. 
 We describe the results for BANK and DIAB in this section while AIR and AIR10 are discussed 
 in Section \ref{sec:expt_summary}. 
-\techreport{
-Specifically, we make use of the BANK and DIAB datasets listed in Table
-\ref{tab:datasets}. 
-Both datasets
-contain a mix of numerical and categorical attributes. 
-The diabetes dataset~\cite{diab} contains records of hospital visits by diabetes patients. Records include demographics,
-diagnoses, number of hospital days, and procedures performed. 
-The bank dataset~\cite{bank} contains records of customers who applied for a loan, including demographic information about 
-the customers, information about the bank's previous contact with the customer, and the ultimate loan decision.
-}
+% \techreport{
+% Specifically, we make use of the BANK and DIAB datasets listed in Table
+% \ref{tab:datasets}. 
+% Both datasets
+% contain a mix of numerical and categorical attributes. 
+% The diabetes dataset~\cite{diab} contains records of hospital visits by diabetes patients. Records include demographics,
+% diagnoses, number of hospital days, and procedures performed. 
+% The bank dataset~\cite{bank} contains records of customers who applied for a loan, including demographic information about 
+% the customers, information about the bank's previous contact with the customer, and the ultimate loan decision.
+% }
 
 
 
@@ -72,35 +72,35 @@ the customers, information about the bank's previous contact with the customer, 
 % For the custom execution engine, on the other hand, we are concerned with both, {\em latency} 
 % as well as {\em accuracy}, i.e., whether \SeeDB actually returns the top-$k$ views or not.
 
-\techreport {
-\stitle{Result Highlights:}
-\begin{denselist}
-\item Our pruning strategies
-reduce \SeeDB latency from 20 seconds (without pruning in custom engine) to less than 2 seconds
-to return the first view, representing a {\em 10X reduction in latency}.
+% \techreport {
+% \stitle{Result Highlights:}
+% \begin{denselist}
+% \item Our pruning strategies
+% reduce \SeeDB latency from 20 seconds (without pruning in custom engine) to less than 2 seconds
+% to return the first view, representing a {\em 10X reduction in latency}.
 
-\item Our latency improvements do not impact accuracy significantly;
-the accuracy of our results is $> 80\%$ with an almost zero utility distance.
-% the utility diof the returned views are close to the utilities
-% of the actual top-$k$ views.
+% \item Our latency improvements do not impact accuracy significantly;
+% the accuracy of our results is $> 80\%$ with an almost zero utility distance.
+% % the utility diof the returned views are close to the utilities
+% % of the actual top-$k$ views.
 
-\item The distribution of (true) view utilities impacts accuracy of pruning strategies.
-Particularly, accuracy is inversely proportional to $\Delta_k$ the difference in
-utility between the $k$-th highest utility and the two neighboring utilities. 
+% \item The distribution of (true) view utilities impacts accuracy of pruning strategies.
+% Particularly, accuracy is inversely proportional to $\Delta_k$ the difference in
+% utility between the $k$-th highest utility and the two neighboring utilities. 
 
-% \item Our technique of making a single pass through the data along with pruning reduces the overall
-% resource utilization of \SeeDB compared to the DBMS engine \mpv{quantify}.
+% % \item Our technique of making a single pass through the data along with pruning reduces the overall
+% % resource utilization of \SeeDB compared to the DBMS engine \mpv{quantify}.
 
-% \item Our  indicates that pruning significantly improves \SeeDB performance.
-% In addition, our requirement of only a single pass through the data reduces resource utilization.
-% Most importantly, 
+% % \item Our  indicates that pruning significantly improves \SeeDB performance.
+% % In addition, our requirement of only a single pass through the data reduces resource utilization.
+% % Most importantly, 
 
-\item In all, the latency reduction of 10X (for top few views) -- 2X (overall) along with low
-utility distance enables \SeeDB to return high-quality recommendations {\bf at interactive time scales}.
-This makes the custom execution engine a better alternative to a DBMS-backed engine
-in terms of latency, accuracy as well as resource utilitzation (more in Section \ref{sec:comp_of_engines}).
-\end{denselist}
-}
+% \item In all, the latency reduction of 10X (for top few views) -- 2X (overall) along with low
+% utility distance enables \SeeDB to return high-quality recommendations {\bf at interactive time scales}.
+% This makes the custom execution engine a better alternative to a DBMS-backed engine
+% in terms of latency, accuracy as well as resource utilitzation (more in Section \ref{sec:comp_of_engines}).
+% \end{denselist}
+% }
 
 % In addition to {\em latency}, we measure {\em accuracy},
 % the number of true top-$k$ views present among the top-$k$ returned by the algorithm.
@@ -462,18 +462,18 @@ can discard.
 Consequently, MAB must execute a larger number of phases compared to CI, making it less attractive
 when latency is paramount (e.g. when querying large datasets).
 
-\techreport{
-\stitle{Resource Utilization:}
-% \mpv{Not sure about this section. Someone needs to review}
-% We contrast the resource utilization of our custom execution engine to the DBMS-backed engine. 
-% Specifically:
-Compared to the resource utilization in the DBMS-backed engine, our custom engine requires much fewer resources.
-Specifically, since the custom engine makes a single pass through the data, the CPU utilization is expected to be lower compared to the repeated scans of the DBMS-backed engine.
-Another consequence of the single scan is that there is
-no thrashing introduced by multiple parallel scan queries.
-Lastly, there is no {\it query bloat} associated with
-the custom engine, saving overheads of per-query state such as iterators, buffers etc.
-}
+% \techreport{
+% \stitle{Resource Utilization:}
+% % \mpv{Not sure about this section. Someone needs to review}
+% % We contrast the resource utilization of our custom execution engine to the DBMS-backed engine. 
+% % Specifically:
+% Compared to the resource utilization in the DBMS-backed engine, our custom engine requires much fewer resources.
+% Specifically, since the custom engine makes a single pass through the data, the CPU utilization is expected to be lower compared to the repeated scans of the DBMS-backed engine.
+% Another consequence of the single scan is that there is
+% no thrashing introduced by multiple parallel scan queries.
+% Lastly, there is no {\it query bloat} associated with
+% the custom engine, saving overheads of per-query state such as iterators, buffers etc.
+% }
 % means that the custom engine is expected to
 % have lower CPU as compared to the multiple scans of data resulting from the DBMS-backed engine (assuming that the
 % additional state maintenance is not significant).
@@ -483,30 +483,30 @@ the custom engine, saving overheads of per-query state such as iterators, buffer
 % Consequently, additional resources must be wasted by the DBMS in keeping state for each query such as 
 % iterators, buffers etc.
 
-\techreport{
-\subsection{Comparison of Execution Engines}
-\label{sec:comp_of_engines}
+% \techreport{
+% \subsection{Comparison of Execution Engines}
+% \label{sec:comp_of_engines}
 
-The previous sections discussed the performance of the DBMS-backed and Custom execution engines of \SeeDB.
-We found that with a set of clever optimizations, we could reduce the latency of the DBMS-backed engine by
-20X.
-However, the resulting latency of few tens of seconds was too large for interactive visualization.
-In addition, we found that the query bloat led to large memory footprint, repeated scans of data, and
-higher resource utilization.
-In contrast, the custom engine provided a means to perform a single scan of the data and identify top-$k$ views
-with high accuracy. \mpv{numbers?}
-Moreover, the custom engine produced latencies of a few seconds -- {\bf it enabled \SeeDB to respond at interactive
-time scales}.
-These performance results together indicate that the custom execution engine and its pruning strategies are a superior 
-alternative to a DBMS-backed execution engine.
-Since the goal of \SeeDB is to provide recommendations in real time, we can pay a small penalty in accuracy 
-and instead provide almost instantaneous results.
+% The previous sections discussed the performance of the DBMS-backed and Custom execution engines of \SeeDB.
+% We found that with a set of clever optimizations, we could reduce the latency of the DBMS-backed engine by
+% 20X.
+% However, the resulting latency of few tens of seconds was too large for interactive visualization.
+% In addition, we found that the query bloat led to large memory footprint, repeated scans of data, and
+% higher resource utilization.
+% In contrast, the custom engine provided a means to perform a single scan of the data and identify top-$k$ views
+% with high accuracy. \mpv{numbers?}
+% Moreover, the custom engine produced latencies of a few seconds -- {\bf it enabled \SeeDB to respond at interactive
+% time scales}.
+% These performance results together indicate that the custom execution engine and its pruning strategies are a superior 
+% alternative to a DBMS-backed execution engine.
+% Since the goal of \SeeDB is to provide recommendations in real time, we can pay a small penalty in accuracy 
+% and instead provide almost instantaneous results.
 
-Clearly, the ideal solution would be to integrate the custom execution engine functionality into a vanilla database.
-This would enable the DBMS to use existing structures to efficiently scan a dataset while maintaining and pruning
-views on the fly. 
-The SQL GROUPING SETS\footnote{} functionality, i.e. multiple independent group-bys in a single query is a first step in this direction.
-However, GROUPING SETS needs to be supplemented with much finer control and scalability to support \SeeDB-like  functionality.}
+% Clearly, the ideal solution would be to integrate the custom execution engine functionality into a vanilla database.
+% This would enable the DBMS to use existing structures to efficiently scan a dataset while maintaining and pruning
+% views on the fly. 
+% The SQL GROUPING SETS\footnote{} functionality, i.e. multiple independent group-bys in a single query is a first step in this direction.
+% However, GROUPING SETS needs to be supplemented with much finer control and scalability to support \SeeDB-like  functionality.}
 
 % In summary, the performance results of this section indicate that due to the lower latency, high accuracy,
 % and overall lower resource utilization, the custom engine is a superior alternative to a DBMS-backed

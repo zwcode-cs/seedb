@@ -21,12 +21,30 @@ average delay by airport code would lead
 to identical visualizations. 
 Consequently, it would suffice to compute and recommend
 only one of these visualizations.
-To prune redundant views, we
+\papertext{To prune redundant views, we
 cluster (comparison) views by degree of correlation,
 perform clique detection and choose a representative
 view from every clique.
 Details of our offline pruning procedure are described in
-the extended technical report.  
+the extended technical report. }
+\techreport{
+%\agp{this needs fixing but probably more immediate things
+%need fixing as well.}
+We adopt the following steps to prune redundant views: 
+(1) For each table, the we first use the metadata about
+attributes to determine the entire space of aggregate views. 
+(2) We first prune all aggregate views containing attributes with 0 or low variance since
+corresponding visualizations are unlikely to be interesting.
+(3) For each remaining view $V_i$, it computes the distribution 
+$P[V_i (D)]$ for the comparison view.
+The resulting distributions are then clustered based on pairwise
+correlation.
+(4) From each cluster, the view generator picks one view to compute as a cluster representative and stores the clustered views compactly for subsequent use.
+At run time, the view generator accesses previously generated view stubs, removes any views that would be redundant given
+the input query (e.g. views grouping by state when the query only selects records
+with \'state=``MA''\') and passes the remaining stubs to the execution engine.
+%\agp{Also, would be good to have some experimental figures or more details on this}
+} 
 % since the rest would contain redundant information.
 % \papertext{We describe how we perform
 % offline pruning, and describe the experimental
@@ -67,24 +85,6 @@ we reduce the number of possible views from 72 to 41 (45\% reduction), and from
 % In both of the above cases, it suffices to compute and show a single view
 % that is representative of multiple views (and list redundant
 % views that have been omitted).
-\techreport{
-\agp{this needs fixing but probably more immediate things
-need fixing as well.}
-We adopt the following steps to prune redundant views: 
-(1) For each table, the we first use the metadata about
-attributes to determine the entire space of aggregate views. 
-(2) We first prune all aggregate views containing attributes with 0 or low variance since
-corresponding visualizations are unlikely to be interesting.
-(3) For each remaining view $V_i$, it computes the distribution 
-$P[V_i (D)]$ for the comparison view.
-The resulting distributions are then clustered based on pairwise
-correlation.
-(4) From each cluster, the view generator picks one view to compute as a cluster representative and stores the clustered views compactly for subsequent use.
-At run time, the view generator accesses previously generated view stubs, removes any views that would be redundant given
-the input query (e.g. views grouping by state when the query only selects records
-with \'state=``MA''\') and passes the remaining stubs to the execution engine.
-\agp{Also, would be good to have some experimental figures or more details on this}
-}
 
 
 % We next compute pairwise correlations between these vectors (note: correlation is

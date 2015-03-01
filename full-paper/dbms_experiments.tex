@@ -109,34 +109,33 @@ We find that our sharing optimizations can provide up to a 40X speedup for ROW a
 500 seconds (ROW) and 100 seconds (COL) to $<$10s for COL, and $<$20s for ROW.
 
 
-\techreport{
-\stitle{Result Highlights:}
-\begin{denselist}
-\item Our optimizations to the DBMS-based execution engine can reduce
-latency on large datasets from 500 seconds (ROW) and 100 seconds (COL)
-to $<$10 seconds for COL, and $<$20 seconds for ROW.
-% This is particularly noteworthy given that
-% \SeeDB is running 100s of queries on the DBMS for each \SeeDB query.
+% \stitle{Result Highlights:}
+% \begin{denselist}
+% \item Our optimizations to the DBMS-based execution engine can reduce
+% latency on large datasets from 500 seconds (ROW) and 100 seconds (COL)
+% to $<$10 seconds for COL, and $<$20 seconds for ROW.
+% % This is particularly noteworthy given that
+% % \SeeDB is running 100s of queries on the DBMS for each \SeeDB query.
 
-\item Latency scales linearly 
-with dataset size and number of views.
+% \item Latency scales linearly 
+% with dataset size and number of views.
 
-\item Column stores are superior to row stores 
-for our workload. Row stores, however, benefit more from the
-proposed optimizations. 
-% For instance, row stores benefit
-% significantly (with reductions of up to 2.5X on latency) from applying
-% bin-packing-based algorithms for aggregation, 
-% while column stores are not significantly affected. 
+% \item Column stores are superior to row stores 
+% for our workload. Row stores, however, benefit more from the
+% proposed optimizations. 
+% % For instance, row stores benefit
+% % significantly (with reductions of up to 2.5X on latency) from applying
+% % bin-packing-based algorithms for aggregation, 
+% % while column stores are not significantly affected. 
 
-\item Although our optimizations lead to a 8X-20X speedup, the total latency remains in the 10s of seconds.
- % - a number unacceptable in interactive systems.
-In addition, each \SeeDB query translates to 50+ SQL queries. 
-This {\it query bloat} unnecessarily consumes DBMS resources including memory and CPU.
-Consequently, we see the need for a custom solution with  lower latencies and a
-smaller resource footprint.
-\end{denselist}
-}
+% \item Although our optimizations lead to a 8X-20X speedup, the total latency remains in the 10s of seconds.
+%  % - a number unacceptable in interactive systems.
+% In addition, each \SeeDB query translates to 50+ SQL queries. 
+% This {\it query bloat} unnecessarily consumes DBMS resources including memory and CPU.
+% Consequently, we see the need for a custom solution with  lower latencies and a
+% smaller resource footprint.
+% \end{denselist}
+
 
 % As mentioned in Section \ref{sec:dbms_execution_engine}, our DBMS-based
 % execution engine leverages the DBMS API to execute view queries directly on the

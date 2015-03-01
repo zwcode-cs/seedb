@@ -76,9 +76,11 @@ In our evaluation, we show that in spite of this limitation, the pruning schemes
 work rather well in practice. 
 We can, however, show that as we sample more and more, the estimated utility
 $\hat{U}$ can be made to be arbitrarily close to $U$ for all aggregate views.
-We can state our claim formally in the following lemma. The proof based on 
+We can state our claim formally in the following lemma. 
+\papertext{The proof based on 
 Hoeffding's inequality can be found in the extended
-technical report ~\cite{seedb-tr}.
+technical report ~\cite{seedb-tr}.}
+\techreport{The proof of this lemma is presented in Section \ref{sec:convergence}.}
 % At a high level, the proof
 % involves repeated applications of Hoeffding's inequality to
 % upper and lower-bound $\hat{U}$ within $U$ along with terms 
@@ -260,7 +262,7 @@ Since we can claim with high probability
 that the utility of $V_4$ lies within its confidence interval, it follows that
 with high probability, $V_4$'s utility will be lower than that of both $V_1$ and
 $V_2$, and it will not appear in the top-$2$ views.
-\techreport{Pseudocode for our pruning scheme can be found in our technical report~\cite{seedb-tr}.}
+\papertext{Pseudocode for our pruning scheme can be found in our technical report~\cite{seedb-tr}.}
 \techreport{We state the algorithm formally in
 Algorithm~\ref{algo:ci_based_pruning}.}
 
