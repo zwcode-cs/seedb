@@ -1,10 +1,134 @@
 %!TEX root=document.tex
 
-\section{Discussion}\label{sec:discussion}
-In this section we prove that our sampling 
-algorithms converge, and then describe our generalized
-distance metric.
+\section{Extensions}
+\label{sec:discussion}
+% In this section we prove that our sampling 
+% algorithms converge, and then describe our generalized
+% distance metric.
 
+In Section \ref{sec:introduction}, we introduced a set of desirable qualities or {\it dimensions} that
+that a visualization system must take into account to provide high quality visualization recommendations.
+In subsequent sections, we developed a system that used metadata, data distributions, and the input query
+to provide recommendations based on deviation.
+In this section, we discuss how our deviation-based metric can encompass a variety of distribution-based metrics and how we can augment our utility to take other dimensions of interest into account.
+
+Consider an extension of the utility function $U (V_i)$ denoted as $f_D (V_i)\ =\ w_1 \times S_1 + w_2 \times S_2 + w_3  \times S_3$.
+Here, the first component corresponds to the utility definition from Section~\ref{sec:problem_statement}
+so that $S_1 = S ( P[V_i (D_Q)],$ $P[V_i (D)] )$ taking into account the deviation between the data selected by the query and the comparison data.
+We can use the same distance metric $S$ to also capture utility based on historical context. 
+For instance, let $S_2 = S ( P[V_i (D_Q)], $ $P[V_i (D_C)] )$ where
+$P[V_i (D_C)]$ refers to the typical value of the distribution 
+$P[V_i (D_Q)]$, given historical data.
+For instance, when $V_i$ refers to sales of a particular chair in 
+Boston, $V_i(D_C)$ could be historical sales of that chair in Boston.
+This measure would then allow us to identify whether the value for particular sales is 
+deviating significantly from past patterns and is therefore interesting.
+Finally, we can also use the deviation-based metric to capture local trends.
+For instance, let $S_3 = S ( P[V_i (D_Q)], P'[V_i (D_Q)] )$ where
+$P'[V_i (D_Q)]$ refers to the distribution $P$, but shifted slightly.
+For instance, if the sensor readings in the last five minutes differ greatly
+for current readings, the utility of $V_i$ would be high.
+This component can capture
+the amount of rapid local changes that have happened
+within the distribution corresponding to $P[V_i (D_Q)]$.
+A combination of the above deviation-based metrics provides a rich model to capture a large
+portion of distribution-based utility.
+
+Next, we turn to the question of incorporating other recommendation dimensions into our utility 
+metric.
+Recall from Section \ref{sec:introduction} that along with metadata, query and distribution (the
+dimensions supported by our metric), other recommendation dimensions include aesthetics, user
+preferences and semantics.
+Consider the following form of a generalized utility function:
+$$ U (V_i) = f_{MA}(V_i) \times f_P (V_i) \times f_D (V_i)$$
+
+Let $f_D (V_i)$ be the utility function from above measuring distribution-based utility of $V_i$.
+We can then augment $f_D (V_i)$ with $f_{MA}(V_i)$ and $f_P (V_i)$ capturing metadata and semantics, and user preferences respectively.
+For instance, $f_{MA}(V_i)$ can capture best-practices about visualization and output a utility value accordingly (this is what current visualization systems support).
+Similarly, let $f_P (V_i)$ be a function that models the users' preference towards seeing visualization $V_i$. 
+This function can take into account past user history at both the individual and global levels.
+For instance, if the analyst typically looks at sales over time, $f_P (V_i)$ for sales over time
+may be high.
+Similarly, if sales is a popular attribute across all data analysts, $f_P (V_i)$ could be large for
+a $V_i$ that depicts sales.
+We can also think of $P (V_i)$ as capture (in a limited way) semantics about the data that can be mined from previous user interactions (e.g. prior knowledge such as patients with a particular disease under lots of surgeries).
+We note however that semantics is one dimension that an automated recommendation system will not be able to capture fully.
+
+In terms of the visualization recommendations, we find that $f_{MA}(V_i)$ and $P (V_i)$ are independent
+of the data distribution.
+Once a user poses a query, we can merely reuse previously computed values for these functions while
+making the recommendation.
+For \SeeDB, these functions amount merely to constants in the utility function $U (V_i)$ that would assign weights to each view.
+Thus, in this form, we find that \SeeDB can easily incorporate other recommendation dimensions into
+the utility metric without any changes to the \SeeDB framework.
+
+% Let $f_{MA}(V_i)$ be a function that captures utility of visualization $V_i$ along the dimensions of metadata and aesthetics (e.g. a heatmap of city temperatures would have a high utility value while a bar chart of the same data would have low utility).
+
+% Finally, we turn to $f_D (V_i)$, a function capturing utility of a visualization based on distributions in
+% the data.
+% As mentioned before, there is a large host of means to capture utility based on data distributions.
+% In this work, we focused on a particular component of $D (V_i)$, namely the one measuring deviation between
+% the query distribution and the background distribution.
+% However, we can easily use the deviation model to capture various aspects of distribution-based
+% utility.
+% Imagine that $D (V_i)$ is decomposed into $w_1 \times S_1 + w_2 \times S_2 + w_3  \times S_3$.
+
+
+
+% The third component can into account local changes.
+% ,
+% and only makes sense when the $x$ axis is an ordinal attribute
+% (such as time, or location, or rating).
+
+% By adopting a (well-behaved) utility metric $U (V_i)$ of the form described above, 
+% we can use \SeeDB to make recommendations based not only on distribution but also take other dimensions into account.
+
+% For well-behaved distance metrics $U (V_i)$ of the form described above, we use the existing \SeeDB framework to make recommendations incorporating other distribution based utility functions, and different recommendation dimensions including user preferences and semantics.
+
+% The taxonomy in Section \ref{sec:introduction} introduced various desirable qualities in a utility
+% mertric for visualization recommendation. These were metadata, aesthetics, query, data distribution, 
+% user preferences, and semantics.
+% Current systems like Tableau and Spotfire only use metadata and aesthetics to make recommendations about
+% visualizations.
+% In this work, we focused on developing a system that incorporates metadata, query and data distribution into
+% its recommendations. 
+% % We ignore aesthetics for the moment since decisions about aesthetics can be made once the system has chosen 
+% % the particular view of the data to be visualized (e.g. individual records, order statistics etc).
+% Specifically, our utility metric from Section \ref{sec:problem_statement} captured a particular instance of 
+% turning the query and data distribution into a visualization utility.
+
+
+% Consider the following generalized distance metric.
+% $M(V_i)$ denotes the utility of a visualization based
+% on metadata, 
+% $A(V_i)$ denotes utility based on aesthetics (e.g. whether a bar chart is more appropriate or a pie chart),
+% $P (V_i)$ denotes utility based on user preferences for seeing the specific 
+% visualization attributes.
+
+% $S (V_i)$ corresponds to semantics or external knowledge unknown to the system.
+% $D (V_i)$ corresponds to utility of a visualization based on data distribution.
+% Each of these functions in turn have sub-components that capture various means of measuring utility
+% along that dimension.
+% We do not explicitly model the impact of the input query because it is an essential component of all the above
+% functions.
+
+% $$ U (V_i) = f_{MA}(V_i) \times P (V_i) \times S (V_i) \times D (V_i)$$
+
+
+
+% In this manner, the generalized distribution metric can take into
+% account (a) data and query, as before
+% (b) user preferences, (c) context,
+% and (d) local changes.
+% Naturally, the generalized distribution metric that
+% we have proposed is only a starting point for further exploration
+% into visualization recommendation metrics.
+% We expect any metric to take into account all the features
+% that we have listed, and more.
+
+
+
+\techreport{
 \stitle{Convergence of Sampling Algorithms.}
 We now demonstrate how,
 when applied to the utility function $U$ as described
@@ -26,13 +150,13 @@ Once again, similar results can be shown for other distance metrics,
 such as the $\ell_1$, the Earth Movers Distance metric, or
 the Jenson-Shannon metric.
 
-\techreport{We reproduce the utility equation here:
+We reproduce the utility equation here:
 $ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$.
 Here, $P$ refers to the probability distribution
 of either the target visualization
 or the comparison visualization.
 $P$ is represented as a normalized vector
-whose entries sum up to $1$.}
+whose entries sum up to $1$.
 We have the following: 
 \papertext{(The proof can be found in the extended technical report~\cite{seedb-tr}.)}
 \begin{lemma}
@@ -47,6 +171,7 @@ with probability $1-\delta$, for as small $\delta$ as needed.
 involves repeated applications of Hoeffding's inequality to
 upper and lower-bound $\hat{U}$ within $U$ along with terms 
 that tend to $0$ as the number of samples increases.}
+}
 \techreport{
 \begin{proof} (Sketch)
 Let us say the estimated average for the target visualization
@@ -97,73 +222,31 @@ The same holds true for $t = \gamma$.
 Thus, $\hat{U}$ will tend to $U$ as the number of samples
 increases to infinity.
 \end{proof}
-}
+
 It is in fact also possible to explicitly derive a number of samples 
 such that $\hat{U}$ is close to $U$ within a certain error bound
 and with a certain probability. 
+}
 
 
 
 
-\stitle{The Generalized Distance Metric.}\label{sec:general-metric}
-In Section~\ref{sec:problem_statement}, we described our
-distance metric that depended only on the deviation of the data selected
-by the query $D_Q$ from the background data $D$.
-This metric made sense for the simple case
-when an analyst is studying a dataset for the first time.
-We now describe how we can generalize this distance
-metric to take into account more information,
-in order to provide more useful visualization recommendations.
-Our generalized metric is as follows:
-$$ U (V_i) = f(V_i) \times (w_1\times S_1 + w_2 \times S_2 + w_3 \times S_3)$$
-Our generalized metric has three distribution
-distance components, $S_1, S_2,$ and $S_3$,
-weighted by suitable weights $w_1, w_2,$ and $w_3$.
-The first component $f(V_i)$ takes into
-account user preferences for seeing the specific 
-visualization attributes.
-For instance, if the analyst typically looks at
-sales over time, $f(V_i)$ for sales over time
-may be high.
-It could also take into account global user preferences,
-for instance, across all analysts, if sales is a popular
-attribute for data analysis, $f(V_i)$ could be large for
-a $V_i$ that depicts sales.
-Then, let us consider the three distribution distance
-components $S_1, S_2,$ and $S_3$.
-The first component is unchanged from Section~\ref{sec:problem_statement},
-$S_1 = S ( P[V_i (D_Q)],$ $P[V_i (D)] )$,
-taking into account the data selected by the query and
-the comparison data.
-The second component takes into account context.
-That is, $S_2 = S ( P[V_i (D_Q)], $ $P[V_i (D_C)] )$.
-Here, $P[V_i (D_C)]$ refers to the typical value of the distribution 
-$P[V_i (D_Q)]$,
-given historical data.
-For instance, when $V_i$ refers to sales by
-region while $D_Q$ refers to a certain brand of chairs,
-$V_i(D_C)$ could be sales by region for that brand of chairs
-historically --- say taking the average of $k$ year's worth of data.
-This will allow us to tell whether the value for sales for a particular
-region is deviating significantly from past patterns.
-The third component takes into account local changes,
-and only makes sense when the $x$ axis is an ordinal attribute
-(such as time, or location, or rating).
-$S_3 = S ( P[V_i (D_Q)], P'[V_i (D_Q)] )$.
-Here, $P'[V_i (D_Q)]$ refers to the distribution $P$, but shifted slightly.
-By measuring the deviation between these two distributions,
-we can estimate the amount of rapid local changes that have happened
-within the distribution corresponding to $P[V_i (D_Q)]$.
+% In Section~\ref{sec:problem_statement}, we described our
+% distance metric that depended only on the deviation of the data selected
+% by the query $D_Q$ from the background data $D$.
+% This metric made sense for the simple case
+% when an analyst is studying a dataset for the first time.
+% We now describe how we can generalize this distance
+% metric to take into account more information,
+% in order to provide more useful visualization recommendations.
+% Our generalized metric is as follows:
 
-In this manner, the generalized distribution metric can take into
-account (a) data and query, as before
-(b) user preferences, (c) context,
-and (d) local changes.
-Naturally, the generalized distribution metric that
-we have proposed is only a starting point for further exploration
-into visualization recommendation metrics.
-We expect any metric to take into account all the features
-that we have listed, and more.
+% $$ U (V_i) = f(V_i) \times (w_1\times S_1 + w_2 \times S_2 + w_3 \times S_3)$$
+% Our generalized metric has three distribution
+% distance components, $S_1, S_2,$ and $S_3$,
+% weighted by suitable weights $w_1, w_2,$ and $w_3$.
+
+
 
 
 
