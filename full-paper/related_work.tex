@@ -55,7 +55,7 @@ attribute sets that maximize the value of this function.
 %A few systems have attempted to automate some aspects of data analysis
 %and visualization. For example, 
 Profiler 
-detects anomalies in data \cite{DBLP:conf/AVI/KandelPPHH12} and provides
+detects anomalies in data \cite{DBLP:conf/avi/KandelPPHH12} and provides
 some visualization recommendation functionality,
 but is restricted determining the best binning for the
 for the $x$ axis: in particular, it decides which granularity
@@ -89,7 +89,7 @@ to speed-up the generation of these visualizations.
 scalable visualizations that employ in-memory caching, sampling, and
 pre-fetching to improve the interactivity of visualization systems
 backed by
-databases~\cite{2013-immens,DBLP:conf/AVI/KandelPPHH12,hotmap,doshi2003prefetching,DBLP:journals/corr/KimBPIMR14}.
+databases~\cite{2013-immens,DBLP:conf/avi/KandelPPHH12,hotmap,doshi2003prefetching,DBLP:journals/corr/KimBPIMR14}.
 Such techniques could be employed in our settings to further improve
 response times (although some of these techniques, such as in-memory caching,
 can only work with small datasets.)
@@ -155,7 +155,7 @@ query is provided~\cite{DBLP:conf/VLDB/AgarwalADG96,DBLP:conf/SIGMOD/Harinarayan
 %is not an option except for the most common or popular attributes.
 
 The optimization techniques underlying cube materialization 
-are similar in spirit to our batching optimizations in Section~\ref{XXX}
+are similar in spirit to our batching optimizations in Section~\ref{sec:sharing_opt}
 (but not similar to our pruning optimizations).
 However, the underlying techniques are different from ours in two ways:
 (1) Cube materialization computes
@@ -215,7 +215,7 @@ and differ for similar reasons.
 
 
 \stitle{Multi-Query Optimization:} Our batching optimizations
-presented in Section~\ref{sec:dbms-exec-engine} make use draw on
+presented in Section~\ref{sec:sharing_opt} make use draw on
 related techniques from literature on shared
 scans~\cite{Fernandez:1994:RBW:191843.191947} and multi-query
 optimization
