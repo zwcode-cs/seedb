@@ -11,8 +11,8 @@ all_opt_real2 <- function(filename) {
         scale=subset(tmp,latency<=100000)
     ggplot(tmp, aes(opt, latency)) + 
 		geom_bar(aes(fill=opt), position="dodge", stat="identity") + 
-                    ylab("latency (ms)") +  theme_bw() + xlab("") + scale_y_log10(labels = trans_format("log10", format_labels)) + #math_format(x/1000))) +
-                        geom_text(data = scale, aes(opt, label = ceiling(latency/1000)), size=3, vjust=-.1) +
+                    ylab("latency (s)") +  theme_bw() + xlab("") + scale_y_log10(labels = trans_format("log10", format_labels)) + #math_format(x/1000))) +
+                        geom_text(data = scale, aes(opt, label = sprintf("%.1f",latency/1000)), size=3, vjust=-.1) +
                         geom_text(data = offscale, aes(y=134000, label = ceiling(latency/1000)), size=3) + 
                         facet_grid(. ~ dataset) +
                             theme(axis.text.x = element_blank(), axis.ticks = element_blank()) + theme(legend.position="top") +
@@ -23,7 +23,8 @@ all_opt_real2 <- function(filename) {
 }
 
 format_labels <- function(x) {
-  paste("", (10^x)/1000, sep="");
+    s <- sprintf("%.0f",(10^x)/1000)
+    paste("",s, sep="");
 }
 
 all_opt_real <- function(filename) {
