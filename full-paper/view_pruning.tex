@@ -7,29 +7,34 @@
 Even before any queries are issued to \SeeDB, we
 have the ability to identify clusters of attributes
 that are strongly correlated with each other, 
-such that if we decide to select a visualization 
-on one of them to display to the analyst, we can avoid 
+such that if we elect to display a visualization 
+on one of them, we can avoid 
 displaying visualizations on others
 (since they would be redundant).
-Consider the following example using a hypothetical
-dataset storing \agp{is this hypothetical?}
-names of airports (as one attribute)
-and airport codes (as another attribute).
+Consider for example a flight dataset that 
+stores names of airports as well as the corresponding
+airport codes.
 Since names of airports and airport codes have
 a 1:1 relationship, generating, say, 
 average delay by airport name, and
 average delay by airport code would lead
 to identical visualizations. 
 Consequently, it would suffice to compute and recommend
-only one of these visualizations,
-since the rest would contain redundant information.
-\papertext{We describe how we perform
-offline pruning, and describe the experimental
-gains from offline pruning in our extended technical report.
-At a high-level, we use clustering of attributes,
-followed by clique detection to detect
-and eliminate redundant aggregate views.}
-View pruning allows us to significantly 
+only one of these visualizations.
+To prune redundant views, we
+cluster (comparison) views by degree of correlation,
+perform clique detection and choose a representative
+view from every clique.
+Details of our offline pruning procedure are described in
+the extended technical report.  
+% since the rest would contain redundant information.
+% \papertext{We describe how we perform
+% offline pruning, and describe the experimental
+% gains from offline pruning in our extended technical report.
+% At a high-level, we use clustering of attributes,
+% followed by clique detection to detect
+% and eliminate redundant aggregate views.}
+Offline pruning allows us to significantly 
 reduce the number of views (and execution time) in real
 datasets; for the DIAB dataset described in Section \ref{sec:experiments},
 we reduce the number of possible views from 72 to 41 (45\% reduction), and from

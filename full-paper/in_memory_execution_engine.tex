@@ -11,14 +11,14 @@ because a lot of resources
 are wasted on computing low-utility views. 
 In this section, we describe mechanisms to prune away
 some aggregate views without complete evaluation. 
-Naturally, pruning schemes are {\em approximate},
-in that they sometimes incorrectly prune away some
-high utility visualizations. 
-That said, the visualizations that are displayed
-may still be close to high utility 
-(which may be good enough for analysts) 
-and will certainly be
-correct; thus there is still merit to considering approximate schemes.
+% Naturally, pruning schemes are {\em approximate},
+% in that they sometimes incorrectly prune away some
+% high utility visualizations. 
+% That said, the visualizations that are displayed
+% may still be close to high utility 
+% (which may be good enough for analysts) 
+% and will certainly be
+% correct; thus there is still merit to considering approximate schemes.
 
 
 
@@ -33,48 +33,65 @@ correct; thus there is still merit to considering approximate schemes.
 
 \stitle{Basic Pruning Framework.}
 \label{subsec:basic_framework}
-We have two kinds of pruning optimizations that we employ.
-The first kind is performed {\em online}, i.e., after the
+\SeeDB employs two kinds of optimizations to eliminate low-utility views
+and redundant views respectively.
+The pruning of low-utility views is performed {\em online}, i.e., after the
 query is provided,
-while the second kind is performed {\em offline},
-before any queries have been provide.
+while the pruning of redundant views is performed {\em offline},
+before any queries have been provided.
 Our primary focus in this section is the online view pruning;
 we will only briefly describe offline view pruning.
 
-Our online view pruning approach involves
+Our online view pruning approach involves querying the underlying tables in
 multiple {\em phases};
 at the end of each phase, we evaluate each aggregate view,
-and then decide to prune a number of them, and then keep the rest.
+and optionally prune a number of views, and then keep the rest.
 This evaluation and pruning is certainly easy to implement if we were to push these
 decisions ``within'' the database layer; however, since
-our goal is to operate outside the database without making
-any significant changes to the database, we will need some pre-processing
+our goal is to operate outside the database, 
+% without making
+% any significant changes to the database, 
+we need some pre-processing
 of the underlying tables.
-We partition our table horizontally into a number of partitions;
-processing each partition corresponds to one of our phases. 
+Specifically, we partition our table horizontally into a number of partitions
+such that processing each partition corresponds to one of our phases. 
 Since we have a collection of these partitions, we can 
-choose to operate on them in any random order; if further randomness
+choose to operate on them in any order; if further randomness
 is needed, we can preprocess each partition such that the records are internally
 in random order.
-For each partition in sequence, we update our candidate and target
+After each partition is processed, we update our candidate and target
 views for each aggregate view, 
 compute the resulting utility, and then 
 prune (i.e., discard) or accept (i.e., select to be in those to be displayed) some aggregate views.
-When only $k$ aggregate views remain, we can choose to display them
-to the analyst (if approximate visualizations are permissible, and latency is paramount),
-or we can completely compute the visualizations for those $k$ aggregate views (if not).
-We now describe two different schemes used for pruning.
-We evaluate both of these schemes in our experiments.
+When only $k$ aggregate views remain (or $k$ are accepted), we can choose to display them
+to the analyst (if approximate visualizations are permissible),
+or we can completely compute the visualizations for those $k$ aggregate views.
+\papertext{Algorithm~\ref{algo:custom_exec_engine} shows the outline of our framework.}
+We now describe two different schemes used by \SeeDB for pruning low-utility views.
+%We evaluate both of these schemes in our experiments.
 
-Note that the two pruning schemes described have guarantees
+Note that the two pruning schemes described below have guarantees
 in other settings that do not directly carry over to our setting.
-In our evaluation, we show that in spite of this, the pruning schemes
+In our evaluation, we show that in spite of this limitation, the pruning schemes
 work rather well in practice. 
 We can, however, show that as we sample more and more, the estimated utility
 $\hat{U}$ can be made to be arbitrarily close to $U$ for all aggregate views.
-We show this formally in Section~\ref{sec:discussion}.
+We can state our claim formally in the following lemma. The proof based on 
+Hoeffding's inequality can be found in the extended
+technical report ~\cite{seedb-tr}.
+% At a high level, the proof
+% involves repeated applications of Hoeffding's inequality to
+% upper and lower-bound $\hat{U}$ within $U$ along with terms 
+% that tend to $0$ as the number of samples increases.
 
-\papertext{Algorithm~\ref{algo:custom_exec_engine} shows the outline of our framework.}
+\begin{lemma}
+Let the target and comparison visualizations
+both have $m$ groups.
+Let $\hat{U}$ denote our estimate of $U$ based on a uniformly random sample 
+across all $m$ groups. 
+Then, as the number of samples tends to $\infty$, $\hat{U} \rightarrow U$
+with probability $1-\delta$, for as small $\delta$ as needed.
+\end{lemma}
 
 \papertext{
 \begin{algorithm}[h]
@@ -84,8 +101,8 @@ We show this formally in Section~\ref{sec:discussion}.
 \State viewsInRunning $\gets$ \{all views\}
 \State currPhase $\gets$ 0
 \While {currPhase.hasNext()}
-\State processNextRecord()
-\State updateUtilityEstimates()
+\State processNextPartition()
+%\State updateUtilityEstimates()
 \If {currPhase.End()}
 \State pruneViews(viewsInRunning)
 \State currPhase.Next()
@@ -207,7 +224,10 @@ We show this formally in Section~\ref{sec:discussion}.
 \stitle{Confidence Interval-Based Online Pruning.}
 \label{sec:confidence_interval}
 Our first pruning scheme uses worst-case statistical confidence intervals.
-Our scheme is as follows: during execution,
+This technique is similar to top-k based pruning algorithms developed 
+in other contexts as described in ~\cite{DBLP:conf/pods/FaginLN01, 
+DBLP:conf/vldb/IlyasAE04, DBLP:conf/ICDE/ReDS07}.
+Our scheme works as follows: during processing each partition,
 we keep an estimate of the mean utility for every aggregate view $V_i$ and a
 confidence interval around that mean.
 That is, for every view $V_i$ we track its mean utility $u_i$, and a
@@ -454,7 +474,8 @@ records seen so far.
 
 \stitle{Multi-Armed Bandit Online Pruning.}
 \label{sec:multi_armed_bandit}
-Our second pruning scheme uses Multi-Armed Bandit (MAB)~\cite{bandits} policies.\techreport{The setting of MAB is as follows: a gambler is faced with several slot
+Our second pruning scheme uses Multi-Armed Bandit (MAB)~\cite{bandits, AuerCF02, LaiR85} policies.
+\techreport{The setting of MAB is as follows: a gambler is faced with several slot
 machines (``one-armed bandit''s), each of which has an underlying 
 (unknown) reward distribution. 
 Every play results in a reward from the corresponding machine's
@@ -462,7 +483,7 @@ reward distribution.
 The goal is to devise a {\it strategy} of which machine to play
 at each turn in order to maximize the reward~\cite{bandits}.}
 A recently-studied variation of MAB focuses on finding the arms with the highest
-mean rewards~\cite{BubeckWV13}.
+mean rewards~\cite{BubeckWV13, audibert2010best}.
 This variation is similar to the problem addressed by \SeeDB: each possible view 
 can be thought of as a one-armed bandit and our goal is find the views with the 
 highest reward (i.e. utility).

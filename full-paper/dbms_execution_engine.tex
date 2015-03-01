@@ -6,35 +6,35 @@ and to then find and display the $k$ visualizations with the highest utility.
 
 \subsection{Basic Implementation} \label{sec:dbms_exec_engine}
 
-We now describe the basic implementation of \SeeDB.
-\SeeDB run top of SQL-based relational 
-engines.  Recall that it takes as input a set of 
+As discussed in Section \ref{sec:system_architecture},
+\SeeDB is designed to run on top of a SQL-based relational 
+engine.  Recall that the \SeeDB execution engine takes as input a set of 
 aggregate view stubs, i.e., triples of the form
 $(a, m, f)$, where $a$ is the dimension attribute, $m$ is the measure,
 and $f$ is the aggregation function.
-For each aggregate view stub, it generates
+In the basic implementation, for each aggregate view stub, \SeeDB generates
 a SQL query corresponding to the target
 and comparison view, and issues
 the two queries, one at a time, to the database.
 It repeats this process for each aggregate view stub.
-As the results are receives, \SeeDB can compute the
+As the results are received, \SeeDB can compute the
 distance between the target and comparison view
-distributions, and keep track of the $k$ visualizations
-with highest utility. These are then displayed
+distributions, and identify the $k$ visualizations
+with highest utility. These visualizations are then displayed
 to the analyst.
 
 
 Naturally, this basic implementation has many inefficiencies.
 In a table with $a$ dimensions, $m$ measures, and $f$ aggregation functions, 
 $2\times f \times a \times  m$ queries must be executed independently.  
-As we show in Section~\ref{sec:experiments}, this can take minutes in
-large data sets (with hundreds of attributes and millions of rows), which is too long for interactive use. \mpv{are we at interactive time scales?}
-We propose two different suites of optimizations to deal with these
+As we show in Section~\ref{sec:experiments}, this can >100s for
+large data sets (with hundreds of attributes and millions of rows).
+These latencies are unacceptable for interactive use.
+In this paper, we propose two different suites of optimizations to deal with these
 inefficiencies.
-The first type of optimizations, discussed in Section~\ref{sec:sharing-opt}, involve work {\em sharing}, \mpv{grouping sets are the other end of sharing}
-combining view-computation queries as much as possible.
-The second type of optimizations, discussed in Section~\ref{sec:in_memory_execution_engine}, involve {\em pruning}, where some aggregate views are
-not completely evaluated over the whole data set.
+The first type of optimizations, discussed in Section~\ref{sec:sharing_opt}, involve work {\em sharing},
+i.e., combining view-computation queries as much as possible.
+The second type of optimizations, discussed in Section~\ref{sec:in_memory_execution_engine}, involve {\em pruning}, where some aggregate views are not completely evaluated over the whole data set.
  The second suite of optimizations
 are approximate, in that they, since they use utility estimates, there is a small likelihood that the returned visualizations may not have the highest utility.
 %  in rare occasions may lead
@@ -79,7 +79,7 @@ are approximate, in that they, since they use utility estimates, there is a smal
 \subsection{Sharing-Based Optimizations}\label{sec:sharing_opt}
 In this section, we focus on minimizing total execution time
 by reducing the
-total number of queries issued to the database,
+total number of queries issued to the database
 and by reducing the total number of scans of the underlying table.
 Sharing computation in our setting is a special case of the general problem
 of multi-query optimization~\cite{DBLP:journals/tods/Sellis88}; we discuss the 
@@ -178,7 +178,7 @@ Therefore, \SeeDB\ has to determine the optimal way of executing these multi-att
 % techniques used; in \SeeDB\ every evaluation corresponds to a separate query; (2) 
 %Specifically, we work with a similar problem formulation: 
 Our specific problem is as follows: given a space budget $\mathcal{S}$,
-and estimates of sizes of views (i.e. number of rows in the result), we need to the optimal
+and estimates of sizes of views (i.e. number of rows in the result), we need to find the optimal
 way to combine multiple single-attribute group-by queries into multi-attribute group-by queries.
 If we know the number of distinct values for each attribute, we can estimate the
 size of a view containing dimension attributes $a_i$ and $a_j$ as $|a_i|\times |a_j|$.
