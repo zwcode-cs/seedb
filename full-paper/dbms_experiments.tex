@@ -340,8 +340,8 @@ memory threshold.
 Since the latency results in this experiment are greatly impacted by how attributes are grouped,
 we randomize the grouping 20 times and report average latency.
 The dotted lines show the latency obtained by performing optimal grouping via bin-packing.
-\agp{Check: In both cases, bin packing offers a significant performance
-advantage than naively grouping queries into batches with a certain number of groups-by attributes---this is because naive batching can often demand excessive resources.}
+In both cases, bin packing offers a significant performance
+advantage than naively grouping queries into batches with a certain number of groups-by attributes---this is because naive batching can often demand excessive resources.
 We observe a significant, 2.5X improvement in ROW latency due to bin-packing.
 This can be attributed to the fact that ROW's large threshold on space (10000) allows many queries
 to be combined.
