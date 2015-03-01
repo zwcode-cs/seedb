@@ -8,14 +8,12 @@ laborious and time-consuming task.
 In this paper, we presented \SeeDB, a visualization recommendation
 engine to help data scientists 
 rapidly identify interesting and useful visualizations of their data.
-Our implementation of \SeeDB on top of traditional DBMSs led
-to several inefficiencies that we remedied using two suites of optimization 
-techniques, scanning-based, and pruning-based techniques. 
-These techniques help us reduce latency from XXX to YYY to ZZZ,
-and the gains from the two suites are in fact additive. 
-Our user study indicated that \SeeDB provides {\em statistically significantly} useful
+Our implementation of \SeeDB runs on top of a relational engine, and employs two types of optimization 
+techniques, scanning-based, and pruning-based techniques, to obtain near-interactive performance.
+These techniques help us reduce by a factor of 40X--100X, with the optimizations combining in an additive way. 
+Futhermore, our user study shows that \SeeDB provides useful
 visualizations, and helped us identify some directions for future improvement.
-\SeeDB is an important first step in our exploration of 
+In conclusion, \SeeDB is an important first step in our exploration of 
 automated visualization recommendation tools, 
 paving the way toward automating all the tedium of data analysis.
 

@@ -212,23 +212,23 @@ that paper presented neither the specific visualization search techniques nor an
 
 
 \stitle{Contributions.}
-In this paper, we demonstrate that we can build \SeeDB,
-a visualization recommendation engine that efficiently manage the search
+In this paper, describe \SeeDB,
+a visualization recommendation engine that efficiently manages the search
 for interesting visualizations at interactive time scales.
-Furthermore, we demonstrate that this engine
-can be built on top of a traditional relational database,
-seamlessly taking advantage of all the benefits of relational database systems.
-Building \SeeDB on top of a traditional database system
-also brings its own host of inefficiencies that 
-we manage by introducing two suites of optimizations:
+We show that \SeeDB can be implemented on top of a traditional relational database,
+allowing it to take advantage of the benefits of the interfaces and features
+relation engines expose.
+Doing this, however,
+also leads to inefficiencies that arise due to the requirement that data be
+accessed via SQL.   
+We manage these inefficiencies introducing two classes of optimizations:
 {\em sharing-based} optimizations, that try to batch
-and share as much computation as possible,
+and share as much computation as possible to minimize the number of SQL queries,
 and {\em pruning-based optimizations}, that try to avoid
-as much redundant work as possible.
+as much unnecessary work as possible, but discarding candidate aggregate views
+that are of low utility.
 
-
-
-The contributions of this paper are:
+In summary, the contributions of this paper are:
 \begin{denselist}
 %  \item We design \SeeDB as a system for data-driven visualization recommendations.
 %  We explore and evaluate two distinct implementations of the system, one as a
@@ -255,7 +255,7 @@ in a conventional DBMS.
   \item We evaluate the performance of our optimizations on a range of
   real and synthetic datasets and demonstrate the resulting 40-100X speedup 
   (Section~\ref{sec:experiments}). We also demonstrate that our algorithms
-  improve performance without affecting utility of visualizations significantly.
+  improve performance while still finding very high or maximum utility visualizations.
   \item We present the results of a user study evaluating the recommendations produced by \SeeDB.
 \end{denselist}
 
