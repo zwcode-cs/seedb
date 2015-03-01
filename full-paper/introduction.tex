@@ -20,16 +20,17 @@ In this paper, we tackle the problem of automatically recommending such valuable
 The problem of recommending visualizations is complicated because a ``good'' visualization needs to take into account several different dimensions, including:
 \begin{inparaenum}
 \item types and properties of the different attributes in the dataset ({\it metadata}), 
+\item visual qualities of the visualization ({\it aesthetics}). 
 \item the particular subset of data the user is interested in ({\it query}), 
 \item variation in and distribution of the data itself ({\it data distribution}), 
-\item meaning and relative importance of attributes in the data ({\it semantics}), 
-\item past history of interactions with this user and other users ({\it user preferences}), and
-\item visual qualities of the visualization ({\it aesthetics}). 
+\item meaning and relative importance of attributes in the data ({\it semantics}),  and
+\item past history of interactions with this user and other users ({\it user preferences})
 \end{inparaenum}
 
-Current visualization systems like Spotfire~\cite{} and Tableau~\cite{} have limited capabilities to recommend visualizations, following standard visualization best-practices from a user-specified subset of the data, thus focusing on only the metadata and aesthetics  
-dimensions of the above taxonomy.  No existing system that we are aware of 
-incorporates insights about the underlying data (or the other dimensions) into its recommendations.
+Current visualization systems like Spotfire and Tableau have limited capabilities to recommend visualizations --- they only focus on metadata and aesthetics dimensions, following standard visualization best-practices, e.g., choice of appropriate colors,
+rules defining when a bar chart is more appropriate than a trend line, etc.  
+No existing system that we are aware of 
+incorporates insights about the underlying data, or for that matter, any of the other dimensions into its recommendations.
 
 %There is much room for research into leveraging information along the remaining dimensions to make more holistic
 %recommendations.
@@ -71,9 +72,9 @@ incorporates insights about the underlying data (or the other dimensions) into i
 
 \stitle{Data-driven Recommendations in \SeeDB.}
 To this end, in this work, we describe a new visualization recommendation engine we are building called {\it \SeeDB}.
-Eventually, we aim to optimize for all six dimensions of the above taxonomy by developing a suite of optimization techniques designed to explore
-the possible range of visualizations of a user-supplied data set or query result.  
-As a first step in this paper, we focus on a general deviation-based metric that can capture all six dimensions to a limited extent (see Section~\ref{sec:problem_statement} and Section~\ref{sec:discussion}).  However, because metadata and aesthetics based recommendations have been addressed in prior work, in this paper we focus on {\it data-driven} recommendations that use information about data distribution, metadata and the user query to recommend visualizations.
+Eventually, we aim to address all six dimensions of the above taxonomy by developing a suite of optimization techniques designed to explore
+the entire range of visualizations of a user-supplied data set or query result.  
+As a first step in this paper, we focus on a general data-driven deviation-based metric that can capture all six dimensions to a limited extent (see Section~\ref{sec:problem_statement} and Section~\ref{sec:discussion}).  However, because metadata and aesthetics based recommendations have been addressed in prior work, in this paper we focus on {\it data-driven} recommendations that use information about data distribution, metadata and the user query to recommend visualizations.
 % that identify unusual variations in the result of the user-supplied query as compared to the underlying data.
 % consider the inherent variations in the data from a user-supplied query. 
 Such visualizations are particularly appropriate when
