@@ -1,3 +1,6 @@
+%!TEX root=document.tex
+
+
 \begin{figure*}[t]
 	\centering
 	\begin{subfigure}{0.33\linewidth}
@@ -48,17 +51,18 @@
 	\vspace{-10pt}
 \end{figure*} 
 
-\subsection{Basic \large{\SeeDB} Framework}
+\subsection{Basic {\large \SeeDB} Framework}
 \label{sec:basic_framework_expts}
 
-{\em \underline{Summary:} Applying no optimizations 
+\noindent {\em \underline{Summary:} Applying no optimizations 
 leads to latencies in the 100s of seconds for both ROW and COL;
 latency increases linearly in the size of the dataset and  number
 of views. 
 Column stores are superior to row stores,
 with $\frac{1}{5}$th the latency.}
 Without any optimizations, the basic \SeeDB execution engine
-serially executes individual view queries, two for each possible view.
+serially executes individual aggregate 
+view queries, two for each possible view.
 Figure \ref{fig:baseline_size} shows latency of \SeeDB\ vs. the number of rows (100K rows--1M rows) in the dataset while  
 Figure \ref{fig:baseline_views} shows latency as a function 
 of the number of views (50--250).
@@ -66,7 +70,7 @@ These charts show results for the SYN dataset obtained by varying the size of th
 table and number of attributes (SYN is comparable to the AIR dataset).
 % and we created subsets of the dataset with
 % varying numbers of rows and views, by varying the number of dimension attributes. 
-First, notice that the basic no optimization framework has very 
+First, notice that the basic framework with no optimizations has very 
 poor performance: latency for ROW is between 50-500s, 
 while it is between 10-100s for COL. 
 This is because both ROW and COL run 50 to 250 SQL queries for each \SeeDB query.
@@ -101,8 +105,8 @@ The following experiments report results on the synthetic datasets SYN and SYN*
 (Table~\ref{tab:datasets}).
 We chose to test these optimizations on synthetic data since we can control all parameters of the data including size, number of attributes, and data distribution.
 (Results on real datasets are shown in Figure \ref{fig:share_prune_row} and \ref{fig:share_prune_col}).
-We find that our sharing optimizations can provide upto a 40X speedup for ROW and 10X speedup for COL allowing small and moderate sized datasets to be processed at interactive time scales (< 5s) and reduce latency on large datasets from 
-500 seconds (ROW) and 100 seconds (COL) to <10 seconds for COL, and <20 seconds for ROW.
+We find that our sharing optimizations can provide up to a 40X speedup for ROW and 10X speedup for COL allowing small and moderate sized datasets to be processed at interactive time scales ($<$5s) and reduce latency on large datasets from 
+500 seconds (ROW) and 100 seconds (COL) to $<$10s for COL, and $<$20s for ROW.
 
 
 \techreport{
@@ -110,7 +114,7 @@ We find that our sharing optimizations can provide upto a 40X speedup for ROW an
 \begin{denselist}
 \item Our optimizations to the DBMS-based execution engine can reduce
 latency on large datasets from 500 seconds (ROW) and 100 seconds (COL)
-to <10 seconds for COL, and <20 seconds for ROW.
+to $<$10 seconds for COL, and $<$20 seconds for ROW.
 % This is particularly noteworthy given that
 % \SeeDB is running 100s of queries on the DBMS for each \SeeDB query.
 
@@ -182,7 +186,8 @@ smaller resource footprint.
 % \end{figure}
 
 \stitle{Combining Multiple Aggregates:} 
-{\em \underline{Summary:} Combining view queries with the same group-by attribute
+{\em \underline{Summary:} Combining aggregate 
+view queries with the same group-by attribute
 but different aggregates gives a 
 3-4X speedup for both row and column stores.}
 To study the limits of adding multiple aggregates to a single query, we ran \SeeDB
@@ -202,7 +207,7 @@ per query.
 The latency reduction is however not linear in $n_{agg}$ because
 larger $n_{agg}$ values require maintenance of more state and access of more columns in a 
 column store.
-Overall, we get a 4X speedup for row stores and a 3X speed up for column stores.
+Overall, we get a 4X speedup for ROW and a 3X speed up for COL.
 
 \stitle{Parallel Query Execution:} 
 {\em \underline{Summary:} Running view queries in parallel can offer significant
@@ -246,7 +251,7 @@ num\_rows) for SYN*-10 and proportional to $\max(100^p$, num\_rows) for SYN*-100
 The results of the experiment are shown in Figure \ref{fig:multi_gb_same}.
 As the number of group-by attributes increases from 1 to 10, the latency of ROW (blue) decreases initially.
 However, once the space budget (proxied by the number of distinct groups) exceeds 10000, latency increases significantly.
-We see a similar trend for COL, but with a space budget of 100.\footnote{The different space
+We see a similar trend for COL, but with a space budget of 100.\footnote{\scriptsize The different space
 budgets can be explained based on the different internal parameteres and implementations of
 the two systems.}
 This empirically verified relation between memory usage and latency supports the use of 
@@ -335,6 +340,8 @@ memory threshold.
 Since the latency results in this experiment are greatly impacted by how attributes are grouped,
 we randomize the grouping 20 times and report average latency.
 The dotted lines show the latency obtained by performing optimal grouping via bin-packing.
+\agp{Check: In both cases, bin packing offers a significant performance
+advantage than naively grouping queries into batches with a certain number of groups-by attributes---this is because naive batching can often demand excessive resources.}
 We observe a significant, 2.5X improvement in ROW latency due to bin-packing.
 This can be attributed to the fact that ROW's large threshold on space (10000) allows many queries
 to be combined.
@@ -374,9 +381,11 @@ threshold of 100 biases the optimal grouping to contain single attribute groupin
 
 \begin{figure}[h]
 	\centering
+	\vspace*{-10pt}
 	\begin{subfigure}{0.48\linewidth}
 		\centering
 		\includegraphics[width=4.4cm] {Images/row_all_none_by_size.pdf}
+		\vspace{-10pt}
 		\caption{Row store latencies by size}
 		\label{fig:row_all_none_size}
 	\end{subfigure}
@@ -394,7 +403,8 @@ threshold of 100 biases the optimal grouping to contain single attribute groupin
 	% \end{subfigure}
 	\begin{subfigure}{0.48\linewidth}
 		\centering
-		\includegraphics[width=4.4cm] {Images/col_all_none_by_views.pdf}
+		\includegraphics[width=4.4cm] {Images/col_all_none_by_views.pdf}\
+		\vspace{-10pt}
 		\caption{Column store latencies by views}
 		\label{fig:col_all_none_views}
 	\end{subfigure}

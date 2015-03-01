@@ -1,3 +1,6 @@
+%!TEX root=document.tex
+
+
 \subsection{Summary of Findings}
 \label{sec:expt_summary}
 
@@ -5,8 +8,9 @@
 % two suits of optimizations to efficiently process, we developed a basic framework and sets of pruning an sharing optimizations for \SeeDB.
 Figures \ref{fig:all_opt_with_pruning}.a and \ref{fig:all_opt_with_pruning}.b show a summary of \SeeDB performance for the four real datasets from Table \ref{tab:datasets} (BANK, DIAB, AIR and AIR10) when run on a ROW store and COL store respectively.
 For each dataset, we show the latencies obtained by the basic \SeeDB framework (NO\_OPT), by our sharing optimizations (SHARING), and by the combination of our sharing and pruning optimizations (COMB). 
-We also show latencies for early result generation with COMB (COMB\_EARLY), where we return approximate results to the user as soon as the top-$k$ visualizations have been identified, rather than query the entire table to produce accurate answers for these top-k views.
-Results in Figure \ref{fig:all_opt_with_pruning} correspond to CI pruning and $k$=10. We summarize our results below:
+We also show latencies for early result generation with COMB (COMB\_EARLY), where we return approximate visualizations results to the analyst as soon as the top-$k$ visualizations have been identified, rather compute these visualizations on the entire table.
+The results in Figure \ref{fig:all_opt_with_pruning} 
+use the CI pruning scheme and $k$=10. We summarize our results below:
 
 %We note that overall the results on the column store (not shown) are similar, with slightly faster overall performance.  The column store benefits less from the pruning optimizations on small datasets (BANK and DIAB), because it has a higher fixed per-query overhead than Postgres, which causes the additional queries run for each round of the pruning algorithm to introduce some penalty.  However, on these datasets the total runtimes are still only a few seconds or less no matter which optimizations we enable.
 
@@ -71,13 +75,15 @@ Results in Figure \ref{fig:all_opt_with_pruning} correspond to CI pruning and $k
 	\centering
 	\begin{subfigure}{1\linewidth}
 		\centering
-		{\includegraphics[width=9cm] {Images/all_opt_real_data_row.pdf}}
+		{\includegraphics[width=7cm] {Images/all_opt_real_data_row.pdf}}
+		\vspace{-15pt}
 		\caption{Optimization results for ROW}
 		\label{fig:share_prune_row}
 	\end{subfigure}\\
 	\begin{subfigure}{1\linewidth}
 		\centering
-		{\includegraphics[width=9cm] {Images/all_opt_real_data_col.pdf}}
+		{\includegraphics[width=7cm] {Images/all_opt_real_data_col.pdf}}
+		\vspace{-15pt}
 		\caption{Optimization results for COL}
 		\label{fig:share_prune_col}
 	\end{subfigure}
@@ -88,18 +94,18 @@ Results in Figure \ref{fig:all_opt_with_pruning} correspond to CI pruning and $k
 \end{figure}
  
 \begin{denselist} 
-\item The combination of our sharing and pruning optimizations provides a speedup of upto 50X (COMB) -- 150X (COMB\_EARLY) for ROW (Figure \ref{fig:share_prune_row}) and 40X (COMB) -- 80X (COMB\_EARLY) for COL (Figure \ref{fig:share_prune_col}).
-This reduces latencies for small datasets like DIAB from 12s to 300ms, and from >1 hr to <10s for large datasets like AIR10. 
-{\it Our optimizations thus allows us to respond in real-time with exact views for small datasets and approximate views (via COMB\_EARLY) for large datasets}.
-\item The sharing optimizations (Section \ref{sec:sharing_opt}) alone produce performance gains of upto 40X for ROW and 10X for COL. This enables \SeeDB to process small and moderate sized datasets within a few seconds.
+\item $[$\underline{\em 100X speedup overall}$]$ The combination of our sharing and pruning optimizations provides a speedup of up to 50X (COMB) -- 150X (COMB\_EARLY) for ROW (Figure \ref{fig:share_prune_row}) and 40X (COMB) -- 80X (COMB\_EARLY) for COL (Figure \ref{fig:share_prune_col}).
+This reduces latencies for small datasets like DIAB from 12s to 300ms, and from $>$1 hr to $<$10s for large datasets like AIR10. 
+{\it Our optimizations thus allows us to respond in real-time with exact views for small datasets and approximate views (COMB\_EARLY) for large datasets}.
+\item $[$\underline{\em 10--40X speedup from sharing}$]$ The sharing optimizations (Section \ref{sec:sharing_opt}) alone produce performance gains of up to 40X for ROW and 10X for COL. This enables \SeeDB to process moderate sized datasets within a few seconds.
 In fact, for small datasets like BANK and DIAB, per-query overheads, especially in the column store, lead to query time on the entire table being equal to that for table partitions.
 % the time taken by the DBMS to process the entire table to be comparable to the time taken to process each partition of the table. 
 Therefore, pruning merely adds extra computation overhead and actually degrades performance.
-Since the latencies for these datasets are <5s with sharing-based optimizations alone, we do not need to perform additonal optimizations.
-\item Pruning optimizations (Section \ref{sec:in_memory_execution_engine}) provide additional gains of upto 4X. Early result return, in particular, enables real-time response for large datasets. E.g. for AIR, the EARLY strategy allows \SeeDB to return results in under 4s while processing the full dataset takes tens of seconds. We also find that quality of results is not adversely affected by pruning: the utility distance for all pruning strategies is close to 0.
-\item {\it Gains produced by sharing-based and pruning-based optimizations are multiplicative}. Therefore, a gain of 40X from sharing optimizations in the ROW store combines with the 4X gain from pruning to produce an overall gain of 150X (Figure \ref{fig:share_prune_row}).
-\item In general, COL stores are better suited to the \SeeDB workload and outperform ROW stores. The column-oriented data layout of COL enables the selective processing of specific attributes involved in each visualization. 
-\item Finally, while our techniques show performance gains across the board, they are particularly useful for large datasets, e.g. overall gain is much larger for AIR10 (150X) vs. BANK (10X). Our SHARING optimization is best suited for small datasets like BANK and DIAB, while COMB and COMB\_EARLY are well suited for large datasets like AIR and AIR10.
+Since the latencies for these datasets are $<$5s with sharing-based optimizations alone, we do not need to perform additional optimizations.
+\item $[$\underline{\em 4X speedup from pruning without loss of accuracy}$]$ Pruning optimizations (Section \ref{sec:in_memory_execution_engine}) provide additional gains of up to 4X. Early result return, in particular, enables real-time response for large datasets, e.g. for AIR, the EARLY strategy allows \SeeDB to return results in under 4s while processing the full dataset takes tens of seconds. We also find that quality of results is not adversely affected by pruning: the utility distance (defined later) for all pruning strategies is close to 0.
+\item $[$\underline{\em Multiplicative gains}$]$ The {\it gains produced by sharing-based and pruning-based optimizations are multiplicative}. Therefore, a gain of 40X from sharing optimizations in the ROW store combines with the 4X gain from pruning to produce an overall gain of 150X (Figure \ref{fig:share_prune_row}).
+\item $[$\underline{\em Column stores perform better}$]$ In general, COL stores are better suited to the \SeeDB workload and outperform ROW stores. The column-oriented data layout of COL enables the selective processing of specific attributes involved in each visualization. 
+\item $[$\underline{\em Gains improve on larger datasets}$]$ Finally, while our techniques show performance gains across the board, they are particularly useful for large datasets, e.g. overall gain is much larger for AIR10 (150X) vs. BANK (10X). Our SHARING optimization is best suited for small datasets like BANK and DIAB, while COMB and COMB\_EARLY are well suited for large datasets like AIR and AIR10.
 \end{denselist}
 
 

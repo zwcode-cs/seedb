@@ -1,3 +1,5 @@
+%!TEX root=document.tex
+
 \subsection{Pruning Optimizations}
 \label{sec:custom_execution_engine_expts}
 In Section \ref{sec:in_memory_execution_engine}, we developed a set of strategies that enable \SeeDB to eliminate views with low utility early on and identify top-$k$ views rapidly.
@@ -34,7 +36,7 @@ First, the no pruning strategy processes the entire data and does not discard an
 It thus provides an upperbound on latency and accuracy, and lower bound on utility distance.
 The other baseline strategy we evaluate is the random strategy (RANDOM) that returns a random 
 set of $k$ views as the result.
-This strategy gives a lowerbound on accuracy and upperbound bound on utility distance: for any 
+This strategy gives a lowerbound on accuracy and upperbound on utility distance: for any 
 technique to be useful, it must do significantly better than RANDOM.
 Finally, note that latencies of any pruning strategy depend closely on the execution techniques 
 used within phases. 
