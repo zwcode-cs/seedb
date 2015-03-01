@@ -2,7 +2,7 @@
 
 \subsection{Pruning Optimizations}
 \label{sec:custom_execution_engine_expts}
-In Section \ref{sec:in_memory_execution_engine}, we developed a set of strategies that enable \SeeDB to eliminate views with low utility early on and identify top-$k$ views rapidly.
+In Section \ref{sec:in_memory_execution_engine}, we developed a set of strategies that enable \SeeDB to eliminate aggregate views with low utility early on and identify top-$k$ aggregate views rapidly.
 Through the next set of experiments, we evaluate 
 the impact of these optimizations.
 % Specifically, our evaluation studies the impact of
@@ -17,12 +17,12 @@ We evaluate performance of pruning optimizations along two dimensions, {\em late
 quality of results.
 We measure the quality of results in two ways: 
 (1) {\em accuracy}: if $\{\mathcal{V}_T\}$
-is the set of views with the higest utility and $\{\mathcal{V}_S\}$ is the set of views returned by
+is the set of aggregate views with the highest utility and $\{\mathcal{V}_S\}$ is the set of aggregate views returned by
 \SeeDB, the accuracy of \SeeDB is defined as $\frac{1}{\{|\mathcal{V}_T\}|} \times 
 |\{\mathcal{V}_T\} \cap \{\mathcal{V}_S\}|$, i.e. the
-fraction of true positives in the views returned by \SeeDB. (2) {\em utility distance}: since multiple
-views can have similar utility values, we use utility distance as a measure of how {\it far} \SeeDB 
-results are from the true top-$k$ views. 
+fraction of true positives in the aggregate views returned by \SeeDB. (2) {\em utility distance}: since multiple
+aggregate views can have similar utility values, we use utility distance as a measure of how {\it far} \SeeDB 
+results are from the true top-$k$ aggregate views. 
 Formally, using notation from Section \ref{sec:problem_statement}, we define utility distance as the difference between the average utility of $\{\mathcal{V}_T\}$ 
 and the average utility of $\{\mathcal{V}_S\}$, i.e., $\frac{1}{n}(\sum_{i}U(\mathcal{V}_{T,i}) - 
 \sum_{i}U(\mathcal{V}_{S,i}))$.
@@ -35,7 +35,7 @@ we implement two baseline strategies.
 First, the no pruning strategy processes the entire data and does not discard any views (NO\_PRU). 
 It thus provides an upperbound on latency and accuracy, and lower bound on utility distance.
 The other baseline strategy we evaluate is the random strategy (RANDOM) that returns a random 
-set of $k$ views as the result.
+set of $k$ aggregate views as the result.
 This strategy gives a lowerbound on accuracy and upperbound on utility distance: for any 
 technique to be useful, it must do significantly better than RANDOM.
 Finally, note that latencies of any pruning strategy depend closely on the execution techniques 
@@ -123,9 +123,10 @@ in terms of latency, accuracy as well as resource utilitzation (more in Section 
 
 \begin{figure}[h]
 	\centering
+	\vspace*{-10pt}
 	\begin{subfigure}{1\linewidth}
 		\centering
-		\includegraphics[width=7cm]
+		\includegraphics[width=6.5cm]
 		{Images/bank_utility_distribution.pdf}
 		\vspace{-5pt}
 		\caption{Bank dataset: utility distribution}
@@ -134,7 +135,7 @@ in terms of latency, accuracy as well as resource utilitzation (more in Section 
 	
 	\begin{subfigure}{1\linewidth}
 		\centering
-		\includegraphics[width=7cm]
+		\includegraphics[width=6.5cm]
 		{Images/diabetes_utility_distribution.pdf}
 		\vspace{-5pt}
 		\caption{Diabetes dataset: utility distribution}
@@ -147,8 +148,8 @@ in terms of latency, accuracy as well as resource utilitzation (more in Section 
 \vspace{-15pt}
 \end{figure}
 
-In each of our experiments, we vary $k$ -- the number of views to select -- between
-1 and 25 (a realistic upper limit on the number of views displayed to the user)
+In each of our experiments, we vary $k$ --- the number of aggregates views to select --- between
+1 and 25 (a realistic upper limit on the number of aggregates views displayed on a screen)
 and measure the latency, accuracy, and utility distance for each of our
 strategies. 
 Since the accuracy and utility distance of our techniques are influenced by the
@@ -259,15 +260,15 @@ However, in general, smaller $\Delta_k$ values lead to lower accuracy, but this 
 lower utility distance that is a consequence of the smaller $\Delta_k$s. 
 }
 
-\noindent Since our pruning optimizations use utility estimates to prune views, 
+\noindent Since our pruning optimizations use utility estimates to prune aggregate views, 
  the accuracy of pruning depends on how accurately
  our estimates can capture the relative order of utilities.
- Views with utilities that are spread apart can be pruned accurately while
+ Aggregate views with utilities that are spread apart can be pruned accurately while
  those with similar utilities can lead to pruning inaccuracies.
  % have similar utility estimates and can lead to an incorrect ordering of views.
  The difference between utility values is particularly relevant at the top-$k$
  boundary.
- Reusing notation from the MAB technique, if $V_1 \ldots V_n$ is the list of views 
+ Reusing notation from the MAB technique, if $V_1 \ldots V_n$ is the list of aggregate views 
  ordered by decreasing utility, then the accuracy of pruning is inversely proportional to 
  the difference between the $k$-th highest utility and the $k+1$-st utility, 
  i.e., $\Delta_k = U(V_k) - U(V_{k+1})$.
@@ -281,18 +282,18 @@ lower utility distance that is a consequence of the smaller $\Delta_k$s.
 %  }
 
 \noindent {\it \underline {BANK dataset}}:
-The distribution of utilities for all views of the bank dataset is
+The distribution of utilities for all aggregate views of the bank dataset is
 shown in Figure~\ref{fig:bank_utility_distribution}. 
 In this chart, vertical lines denote the cutoffs for utilities of the top-$k$ views
-where $k$=\{1,\ldots,10,15, 20,25\}.
+where $k$=\{1,\ldots,10,15,20,25\}.
 The highest utility for this dataset corresponds to the {\it right-most} line
 in this chart while the 25-th highest utility corresponds to the {\it left-most}
 line. 
 We observe that the highest and second highest utility are spread well apart 
-from the rest of the utilities ($\Delta_k$=0.0125). 
+from the rest of them ($\Delta_k$=0.0125). 
 The top 3rd--9th utilities are similar ($\Delta_k$<0.002) while the 10th highest 
 utility is well separated from neighboring utilities ($\Delta_{10}$=0.0125).
-The remaining views once again have similar utilities ($\Delta_k$<0.001).
+The remaining aggregate views once again have similar utilities ($\Delta_k$<0.001).
 We see the effect of of utility distribution in the performance of our pruning 
 strategies.
 Figure~\ref{fig:bank_accuracy} shows the {\it average} accuracy of our strategies over 20 runs.
@@ -316,10 +317,10 @@ We find that CI and MAB have zero or almost zero utility distance for all $k$, e
 lead to lower accuracy.
 % RANDOM, on the other hand, has very high utility distance ($>$10X) compared to either of 
 % CI and MAB.
-This demonstrates the {\it paradox of pruning}: if views for a given $k$ have very small $\Delta_k$
+This demonstrates the {\it paradox of pruning}: if aggregate views for a given $k$ have very small $\Delta_k$
 values, the accuracy of our pruning techniques is lower; however, as a consequence of the small
 $\Delta_k$ values, utility distance is also guaranteed to be small. 
-Thus, in the worst case that \SeeDB picks a few views inaccurately, those views are guaranteed 
+Thus, in the worst case that \SeeDB picks a few aggregate views inaccurately, those views are guaranteed 
 to have small utility distances.
 % As with accuracy, the utility distance tends to zero with large $k$s.
 % All our strategies produce views with 0 or almost 0 utility distance for most $k$. 
@@ -392,9 +393,9 @@ to have small utility distances.
  
 \noindent {\it \underline{DIAB dataset:}} 
 Next, we briefly review results for the the diabetes dataset.
-The distribution of true utilities for all views in this dataset are shown in
+The distribution of true utilities for all aggregate views in this dataset are shown in
 Figure~\ref{fig:diabetes_utility_distribution}.
-We observe that utilities for the top 10 views are very closely clustered ($\Delta_k<$0.002) while
+We observe that utilities for the top 10 aggregate views are very closely clustered ($\Delta_k<$0.002) while
 they are sparse for larger $k$s.
 Therefore, we expect lower pruning accuracy for $k<10$ but high accuracy for
 large $k$'s.
@@ -446,7 +447,7 @@ First off, we observe that the use of either of CI or MAB produces a 50\% reduct
 throughout.
 In fact, for CI, we obtain almost a 90\% reduction in latency for small $k$. 
 MAB, on the other hand, has a consistent 50\% reduction in latency. 
-As expected, as $k$ increases, latency also increases because we can prune fewer views.
+As expected, as $k$ increases, latency also increases because we can prune fewer aggregate views.
 % These reductions bring latency down from multiple tens of seconds to {\bf single digit latencies}, i.e.,
 % \SeeDB can operate on interactive time scales.
 % Since these latency numbers come from our prototype implementation, a well-tuned system could
@@ -456,7 +457,7 @@ As expected, as $k$ increases, latency also increases because we can prune fewer
 % This latency-accuracy tradeoff is particularly important in a real-time system where we want to quickly 
 % provide recommendations for the analyst to browse.
 We note that MAB has a worse performance compared to CI since MAB can only discard a 
-{\it single} view during each phase; CI in contrast has no upperbound on the number of views that it
+{\it single} view during each phase; CI in contrast has no upperbound on the number of aggregate views that it
 can discard.
 Consequently, MAB must execute a larger number of phases compared to CI, making it less attractive
 when latency is paramount (e.g. when querying large datasets).
@@ -506,7 +507,6 @@ This would enable the DBMS to use existing structures to efficienly scan a datas
 views on the fly. 
 The SQL GROUPING SETS\footnote{} functionality, i.e. multiple independent group-bys in a single query is a first step in this direction.
 However, GROUPING SETS needs to be supplemented with much finer control and scalability to support \SeeDB-like  functionality.}
-\mpv{need to address grouping sets}
 
 % In summary, the performance results of this section indicate that due to the lower latency, high accuracy,
 % and overall lower resource utilization, the custom engine is a superior alternative to a DBMS-backed
