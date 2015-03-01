@@ -11,15 +11,19 @@ all_opt_real2 <- function(filename) {
         scale=subset(tmp,latency<=100000)
     ggplot(tmp, aes(opt, latency)) + 
 		geom_bar(aes(fill=opt), position="dodge", stat="identity") + 
-                    ylab("latency (ms)") +  theme_bw() + xlab("Datasets") + scale_y_log10(labels = trans_format("log10", math_format(10^.x))) +
-                        geom_text(data = scale, aes(opt, label = latency), size=3, vjust=-.1) +
-                        geom_text(data = offscale, aes(y=135000, label = latency), size=2) + 
+                    ylab("latency (ms)") +  theme_bw() + xlab("") + scale_y_log10(labels = trans_format("log10", format_labels)) + #math_format(x/1000))) +
+                        geom_text(data = scale, aes(opt, label = ceiling(latency/1000)), size=3, vjust=-.1) +
+                        geom_text(data = offscale, aes(y=134000, label = ceiling(latency/1000)), size=3) + 
                         facet_grid(. ~ dataset) +
                             theme(axis.text.x = element_blank(), axis.ticks = element_blank()) + theme(legend.position="top") +
                                 theme(legend.title = element_text(size=16)) + theme(legend.text = element_text(size=16)) +
                                     theme(text = element_text(size=20))  + scale_fill_brewer(palette="Paired") + 
                                         geom_hline(yintercept=1000, linetype="dashed") + geom_text(aes(2,1000,label = "1s", vjust = -1)) + coord_cartesian(ylim = c(200, 150000)) ;
 		ggsave(file=paste(outdirname, filename, ".pdf", sep=""),width=7,height=5);
+}
+
+format_labels <- function(x) {
+  paste("", (10^x)/1000, sep="");
 }
 
 all_opt_real <- function(filename) {

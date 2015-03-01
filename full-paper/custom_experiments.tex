@@ -1,6 +1,6 @@
 \subsection{Pruning Optimizations}
 \label{sec:custom_execution_engine_expts}
-In Section \ref{sec:pruning_opt}, we developed a set of strategies that enable \SeeDB to eliminate views with low utility early on and identify top-$k$ views with highest utility.
+In Section \ref{sec:in_memory_execution_engine}, we developed a set of strategies that enable \SeeDB to eliminate views with low utility early on and identify top-$k$ views rapidly.
 Through the next set of experiments, we evaluate 
 the impact of these optimizations.
 % Specifically, our evaluation studies the impact of
@@ -21,7 +21,7 @@ is the set of views with the higest utility and $\{\mathcal{V}_S\}$ is the set o
 fraction of true positives in the views returned by \SeeDB. (2) {\em utility distance}: since multiple
 views can have similar utility values, we use utility distance as a measure of how {\it far} \SeeDB 
 results are from the true top-$k$ views. 
-Formally, using notation from Section \ref{}, we define utility distance as the difference between the average utility of $\{\mathcal{V}_T\}$ 
+Formally, using notation from Section \ref{sec:problem_statement}, we define utility distance as the difference between the average utility of $\{\mathcal{V}_T\}$ 
 and the average utility of $\{\mathcal{V}_S\}$, i.e., $\frac{1}{n}(\sum_{i}U(\mathcal{V}_{T,i}) - 
 \sum_{i}U(\mathcal{V}_{S,i}))$.
 
@@ -36,22 +36,22 @@ The other baseline strategy we evaluate is the random strategy (RANDOM) that ret
 set of $k$ views as the result.
 This strategy gives a lowerbound on accuracy and upperbound bound on utility distance: for any 
 technique to be useful, it must do significantly better than RANDOM.
-Finally, note that latencies of any pruning strategy depend closely on the sharing techniques 
+Finally, note that latencies of any pruning strategy depend closely on the execution techniques 
 used within phases. 
 For instance, using the basic \SeeDB framework (Section \ref{sec:dbms_exec_engine}) within each phase
 will produce much larger latencies than applying all the sharing-based optimizations.
 %In addition, each phase is associated with a fixed amount of overhead that depends on the DBMS.
-Therefore, when we study latency improvements in this section, we will focus only on relative 
-improvements in latency, i.e. what is the percent improvement in latency compared to the latency
+Therefore, in this section, we will focus only on relative 
+improvements in latency, specifically, the percent improvement in latency compared to latency
 achieved without pruning.
-Absolute latency numbers are discussed in Section \ref{sec:sharing_and_pruning}.
+Absolute latency numbers are discussed in Section \ref{sec:expt_summary}.
 
 %we present latencies in this section 
 
 \stitle{Datasets:}
 We evaluate our pruning strategies on the real-world datasets from Table \ref{tab:datasets}. 
 We describe the results for BANK and DIAB in this section while AIR and AIR10 are discussed 
-in Section \ref{sec:sharing_and_pruning}. 
+in Section \ref{sec:expt_summary}. 
 \techreport{
 Specifically, we make use of the BANK and DIAB datasets listed in Table
 \ref{tab:datasets}. 
@@ -120,7 +120,6 @@ in terms of latency, accuracy as well as resource utilitzation (more in Section 
 % obtained by performing pruning and shared scans.
 
 \begin{figure}[h]
-\vspace{-10pt}
 	\centering
 	\begin{subfigure}{1\linewidth}
 		\centering
@@ -237,21 +236,8 @@ metrics over 20 runs.
 	\vspace{-10pt}
 \end{figure*}
 
- \stitle{Utility Distributions and Quality of Results}:
- Since our pruning optimizations use utility estimates to prune views, 
- the accuracy of pruning depends on how accurately
- our estimates can capture the relative order of utilities.
- Views with utilities that are spread apart can be pruned accurately, while
- those with similar utilities have similar utility estimates and can 
- lead to an incorrect ordering of views.
- This difference between utility values is particularly relevant at the top-$k$
- boundary.
- Reusing notation from the MAB technique, we can explain the intuition as follows: 
- suppose $V_1 \ldots V_n$ is the list of views ordered by decreasing 
- utility and we have been asked to identify the top-$k$ views.
- Then the accuracy of pruning will be inversely proportional to the difference between
- the $k$-th highest utility and the $k+1$-st utility, 
- i.e. $\Delta_k = U(V_k) - U(V_{k+1})$.
+ % \stitle{Utility Distributions and Quality of Results}:
+ 
  
  % Specifically, if a large number of views around the (true) top-$k$ boundary have similar utilities,
  % then our pruning strategies may choose views incorrectly at this boundary.
@@ -271,6 +257,19 @@ However, in general, smaller $\Delta_k$ values lead to lower accuracy, but this 
 lower utility distance that is a consequence of the smaller $\Delta_k$s. 
 }
 
+\noindent Since our pruning optimizations use utility estimates to prune views, 
+ the accuracy of pruning depends on how accurately
+ our estimates can capture the relative order of utilities.
+ Views with utilities that are spread apart can be pruned accurately while
+ those with similar utilities can lead to pruning inaccuracies.
+ % have similar utility estimates and can lead to an incorrect ordering of views.
+ The difference between utility values is particularly relevant at the top-$k$
+ boundary.
+ Reusing notation from the MAB technique, if $V_1 \ldots V_n$ is the list of views 
+ ordered by decreasing utility, then the accuracy of pruning is inversely proportional to 
+ the difference between the $k$-th highest utility and the $k+1$-st utility, 
+ i.e., $\Delta_k = U(V_k) - U(V_{k+1})$.
+
 %  \em \underline{Summary:} The MAB strategy dominates the CI
 % strategy when it comes to both accuracy and utility distance,
 % with accuracy $>$75\%  for $k = 1$ and even larger for larger
@@ -287,40 +286,43 @@ where $k$=\{1,\ldots,10,15, 20,25\}.
 The highest utility for this dataset corresponds to the {\it right-most} line
 in this chart while the 25-th highest utility corresponds to the {\it left-most}
 line. 
-We can make the following observations:
-\begin{denselist}
-\item The highest and second highest utility are spread well apart 
-from the rest of the utilities. ($\Delta_k$=0.0125)
-\item The top 3rd--9th utilities are rather similar ($\Delta_k<$0.002). 
-\item The 10th highest utility is again separated from neighboring utilities with $\Delta_{10}$=0.0125.
-\item The 11th--24th highest utilities have $\Delta_k<$0.001.
-\end{denselist}
-The performance of our pruning strategies for the BANK dataset are shown in Figure 
-\ref{fig:bank_perf}.
+We observe that the highest and second highest utility are spread well apart 
+from the rest of the utilities ($\Delta_k$=0.0125). 
+The top 3rd--9th utilities are similar ($\Delta_k$<0.002) while the 10th highest 
+utility is well separated from neighboring utilities ($\Delta_{10}$=0.0125).
+The remaining views once again have similar utilities ($\Delta_k$<0.001).
+We see the effect of of utility distribution in the performance of our pruning 
+strategies.
 Figure~\ref{fig:bank_accuracy} shows the {\it average} accuracy of our strategies over 20 runs.
-We find that MAB consistently produces 75\% or better accuracy throughout.
+We find that MAB consistently produces 75\% or better accuracy.
 CI also produces 85\% or better accuracy for $k$$>$10.
-As expected, the accuracy of results increases with $k$.
-Next, let us examine accuracy for individual $k$s.
-For $k$=1 and 2, the accuracy is ~75\% for both pruning strategies. This is expected due to the large 
-$\Delta_k$ values.
+For $k$=1 and 2, the accuracy is 75\% for both pruning strategies (due to large 
+$\Delta_k$ values).
 Between $k$=3\ldots9, the accuracy for all strategies suffers due to similar utility values 
 ($\Delta_k < 0.002$).
-After $k$=10, the performance of all our strategies improves once again and tends to 1.
-Note that NO\_PRU has perfect accuracy, while RANDOM has extremely poor accuracy (close to 50\%) \mpv{need data}.
-Next, we study the quality of our results in terms of utility distance. 
-Recall that utility distance measures how {\it far} our results are from the true top-$k$.
+After $k$=10, the performance of all our strategies improves once again and tends to 100\% accuracy.
+We note that NO\_PRU necessarily has perfect accuracy, while RANDOM has extremely poor accuracy (<0.25).
 Figure~\ref{fig:bank_utility_dist} shows the utility distance for
-all of our strategies for the bank dataset.
-The NO\_PRU technique necessarily has 0 utility distance since
-it performs no pruning.
-RANDOM, on the other hand, has very high utility distance ($>$10X) compared to either of 
-CI and MAB.
-CI and MAB have zero or almost zero utility distance for all $k$.
+all of our strategies.
+% Next, we study the quality of our results in terms of utility distance. 
+% Recall that utility distance measures how {\it far} our results are from the true top-$k$.
+% Figure~\ref{fig:bank_utility_dist} shows the utility distance for
+% all of our strategies for the bank dataset.
+% The NO\_PRU technique necessarily has 0 utility distance since
+% it performs no pruning.
+We find that CI and MAB have zero or almost zero utility distance for all $k$, even where small $\Delta_k$s
+lead to lower accuracy.
+% RANDOM, on the other hand, has very high utility distance ($>$10X) compared to either of 
+% CI and MAB.
+This demonstrates the {\it paradox of pruning}: if views for a given $k$ have very small $\Delta_k$
+values, the accuracy of our pruning techniques is lower; however, as a consequence of the small
+$\Delta_k$ values, utility distance is also guaranteed to be small. 
+Thus, in the worst case that \SeeDB picks a few views inaccurately, those views are guaranteed 
+to have small utility distances.
 % As with accuracy, the utility distance tends to zero with large $k$s.
 % All our strategies produce views with 0 or almost 0 utility distance for most $k$. 
-Thus, even if \SeeDB picks a few incorrect views, there is effectively no difference in the 
-utilities of these views and the true top-$k$ views.
+% Thus, even if \SeeDB picks a few incorrect views, there is effectively no difference in the 
+% utilities of these views and the true top-$k$ views.
 % So even when a top-$k$ strategy picks a few incorrect views, the selected views
 % have utility very close to the real top-$k$ views, i.e., are views are
 % of high quality.
@@ -387,31 +389,29 @@ utilities of these views and the true top-$k$ views.
 % \end{figure}
  
 \noindent {\it \underline{DIAB dataset:}} 
-Next, we consider the diabetes dataset.
+Next, we briefly review results for the the diabetes dataset.
 The distribution of true utilities for all views in this dataset are shown in
 Figure~\ref{fig:diabetes_utility_distribution}.
-We observe that:
-\begin{denselist}
-\item Utilities for $k$=1 \ldots 10 are very closely clustered ($\Delta_k<$0.002).
-\item View corresponding to $k$=15 is well separated from its neighboring views, $\Delta_{16} >$ 0.025
-\item Views for $k$=20 and 25 are also surrounded by utilities with very 
-similar values ($\Delta_k < $0.001).
-\end{denselist}
-Since $\Delta_k$ for $k<$10 are small, we expect lower pruning accuracy for $k<10$ but high accuracy for
+We observe that utilities for the top 10 views are very closely clustered ($\Delta_k<$0.002) while
+they are sparse for larger $k$s.
+Therefore, we expect lower pruning accuracy for $k<10$ but high accuracy for
 large $k$'s.
 We see this behavior in Figure~\ref{fig:dia_accuracy} where the accuracy of
 pruning is quite low ($<60\%$) for $k$=1 but improves consistently to $k$=10 
 ($>80\%$) and is $>80\%$ for larger $k$s.
-We notice the MAB performs consistently better than CI even when the utility
-values are very similar.
-While NO\_PRU has perfect accuracy, RANDOM performs poorly. \mpv{NEED DATA}
+% \item View corresponding to $k$=15 is well separated from its neighboring views, $\Delta_{16} >$ 0.025
+% \item Views for $k$=20 and 25 are also surrounded by utilities with very 
+% similar values ($\Delta_k < $0.001).
+% \end{denselist}
+% We notice the MAB performs consistently better than CI even when the utility
+% values are very similar.
+% While NO\_PRU has perfect accuracy, RANDOM performs poorly. \mpv{NEED DATA}
 In Figure~\ref{fig:dia_utility_dist} we see that
 utility distance is small for $k<10$ and then reduces to almost 0 for larger
 $k$s.
-We find that CI and MAB produce much smaller utility distances (40X smaller)
-compared to RANDOM.
-Thus, we observe that both our strategies CI and MAB produce high quality results 
-in terms of accuracy as well as utility distance. 
+Both CI and MAB produce 40X smaller utility distances compared to RANDOM.
+% Thus, we observe that both our strategies CI and MAB produce high quality results 
+% in terms of accuracy as well as utility distance. 
 % While the quality depends on the distribution of utilities, particularly on the 
 % $\Delta$s at the top-$k$ boundary.
 For the most commonly used $k$ value, $k$=10, we find that our strategies obtain 
@@ -453,6 +453,11 @@ As expected, as $k$ increases, latency also increases because we can prune fewer
 % experimentally, our strategies consistently provide high utility views with low utility distance.op-$k$.
 % This latency-accuracy tradeoff is particularly important in a real-time system where we want to quickly 
 % provide recommendations for the analyst to browse.
+We note that MAB has a worse performance compared to CI since MAB can only discard a 
+{\it single} view during each phase; CI in contrast has no upperbound on the number of views that it
+can discard.
+Consequently, MAB must execute a larger number of phases compared to CI, making it less attractive
+when latency is paramount (e.g. when querying large datasets).
 
 \techreport{
 \stitle{Resource Utilization:}
@@ -520,32 +525,21 @@ However, GROUPING SETS needs to be supplemented with much finer control and scal
 % This exact trend is not seen in MAB because MAB's view pruning is agnostic
 % to the number of views that must be selected.
 
-\subsection{Combining Sharing \& Pruning}
-\label{sec:sharing_and_pruning}
-As discussed in the previous sections, sharing optimizations can provide performance gains upto 10X for COL and 40X for ROW while pruning optimizations can reduce latency by 2X -- 5X.
-In this section, we evaluate the performance gains that can be obtained by combining both types of optimizations. 
-In the ideal case, we expect the gains to be {\it multiplicative}, i.e., we would expect gains between 20X -- 200X.
+% \subsection{Combining Sharing \& Pruning}
+% \label{sec:sharing_and_pruning}
+% As discussed in the previous sections, sharing optimizations can provide performance gains upto 10X for COL and 40X for ROW while pruning optimizations can reduce latency by 2X -- 5X.
+% In this section, we evaluate the performance gains that can be obtained by combining both types of optimizations. 
+% In the ideal case, we expect the gains to be {\it multiplicative}, i.e., we would expect gains between 20X -- 200X.
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=9cm] {Images/all_opt_real_data_col.pdf}
-	\caption{Performance gains of all optimizations in COL}
-	\label{fig:share_prune_col}
-	\vspace{-15pt}
-\end{figure}
 
-Figure \ref{fig:share_prune_col} shows the relative performance gains that can be obtained by applying various combinations of optimizations in the COL store. 
-As seen in figure, we find that the combination of optimizations can produce performance gains upto 40X (COMB) - 80X (COMB\_EARLY) as compared to the basic \SeeDB framework.
-In particular we find that pruning optimizations provide an additional speedup of upto 4X to that obtained by sharing-based optimizations alone.
-The corresponding data for ROW stores was presented in Figure~\ref{fig:share_prune_row} above.
-We find that the combination of optimizations produce gains of upto 50X (COMB) -- 150X (COMB\_EARLY) for ROW, with pruning-based
-optimizations providing a 4X speedup over the sharing optimizations.
-We find that indeed the two techniques prodive gains that are multiplicative; in general, the application of one set of optimizations does not preclude the use of the other.
-However, we find one exception to this observation: for small datasets such as BANK and DIAB, per-query overheads, especially in the column store, lead to the time taken by the DBMS to process the entire
-table being comparable to the time taken to process a partition of the table. 
-Therefore, pruning merely adds extra computation overhead and actually degrades performance.
-In fact, since the latencies for small datasets are <5s with sharing-based optimizations alone, we do not find it necessary to perform additonal optimizations.
-Thus, we conclude that the COMB and COMB\_EARLY optimizations are best suited for large datasets like AIR and AIR10 while SHARING is suitable for small datasets. 
+
+% Figure \ref{fig:share_prune_col} shows the relative performance gains that can be obtained by applying various combinations of optimizations in the COL store. 
+% As seen in figure, 
+
+% The corresponding data for ROW stores was presented in Figure~\ref{fig:share_prune_row} above.
+% We find that the combination of optimizations produce gains of upto 50X (COMB) -- 150X (COMB\_EARLY) for ROW, with pruning-based
+% optimizations providing a 4X speedup over the sharing optimizations.
+
 
 % We see similar results for ROW where pruning provides a similar 4X speedup.
 % However, we make a few observations. First, pruning doesn't benefit small datasets (e.g. BANK, DIAB). In fact, due to the overhead of multiple phases (and the associated query costs), the combined optimization (COMB) does worse than SHARING alone. Since the SHARING latencies for small datasets are under a few seconds, we do not find the need to perform sharing.
