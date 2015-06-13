@@ -29,7 +29,7 @@ and the average utility of $\{\mathcal{V}_S\}$, i.e., $\frac{1}{n}(\sum_{i}U(\ma
 
 \stitle{Techniques:}
 In the following experiments, we evaluate four techniques for pruning low-utility views.
-In addition to the two pruning strategies from Section~\ref{sec:sharing_opt}, 
+In addition to the two pruning strategies from Section~\ref{sec:pruning_opt}, 
 namely the Hoeffding Confidence Intervals (CI) and the Multi-Armed Bandit (MAB),
 we implement two baseline strategies.
 First, the no pruning strategy processes the entire data and does not discard any views (NO\_PRU). 
@@ -252,6 +252,14 @@ metrics over 20 runs.
  % For each of the test datasets, we first review the utility distributions and then
  % analyze the performance of our pruning strategies given the utility distribution.
 
+\reviewer {
+	If delta K is low the accuracy of the views are not sufficiently high
+specially for the top 5 views it seems that the system cannot suggest the
+views accurately. The authors have mentioned that the latency can be
+lowered dramatically using pruning for the smaller K but at the same time
+pruning will reduce the accuracy for smaller K's dramatically (accuracy of less
+than 60\%)
+}
 \stitle{Accuracy and Utility Distance:}
 {\em \underline{Summary:} The MAB and CI strategy both produce results with 
 accuracy $>$75\% and near-zero utility distance for a variety of $k$ values.
@@ -392,7 +400,7 @@ to have small utility distances.
 % \end{figure}
  
 \noindent {\it \underline{DIAB dataset:}} 
-Next, we briefly review results for the the diabetes dataset.
+Next, we briefly review results for the diabetes dataset.
 The distribution of true utilities for all aggregate views in this dataset are shown in
 Figure~\ref{fig:diabetes_utility_distribution}.
 We observe that utilities for the top 10 aggregate views are very closely clustered ($\Delta_k<$0.002) while

@@ -68,6 +68,11 @@ to the analyst (if approximate visualizations are permissible),
 or we can completely compute the visualizations for those $k$ aggregate views.
 \techreport{Algorithm~\ref{algo:custom_exec_engine} shows the outline of our framework.}
 We now describe two different schemes used by \SeeDB for pruning low-utility views.
+
+\reviewer {
+	D2.5 The horizontal partitioning is never detailed: how is it done? How is the
+number of fragments decided?
+}
 %We evaluate both of these schemes in our experiments.
 
 Note that the two pruning schemes described below have guarantees
@@ -249,6 +254,10 @@ clip=true]{Images/confidence_pruning.pdf}}}}
 \label{fig:conf_interval}
 \vspace{-15pt}
 \end{figure}
+
+\reviewer {
+	V5 is extraneous
+}
 
 To illustrate, suppose a dataset has 4 views $V_1$ to $V_4$ and we want to find the top-$2$ views.
 Further suppose that at the end of phase $p$,
@@ -488,7 +497,7 @@ A recently-studied variation of MAB focuses on finding the arms with the highest
 mean rewards~\cite{BubeckWV13, audibert2010best}.
 This variation is similar to the problem addressed by \SeeDB: each possible view 
 can be thought of as a one-armed bandit and our goal is find the views with the 
-highest reward (i.e. utility).
+highest reward (i.e. utility). \reviewer {something werid here}.
 We therefore adapt the Successive Accepts and Rejects algorithm from \cite{BubeckWV13} 
 to find arms with the highest mean reward. 
 \techreport{Algorithm~\ref{algo:mab_based_pruning} shows the pseudocode for our pruning technique.}
@@ -507,6 +516,11 @@ from the set of views in the running.
 \cite{BubeckWV13} proves that under certain assumptions about reward distributions,
 the above technique identifies the top-$k$ arms with high probability.
 
+\reviewer{
+	For the MultiArmed
+Bandit pruning, it would be good to discuss whether
+the assumptions of reward distributions would necessarily in this context.
+}
 
 % In MAB, each pull of an arm corresponds to a drawing from a sample
 % the underlying probability distribution of that arm.

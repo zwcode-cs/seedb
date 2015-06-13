@@ -37,6 +37,13 @@ i.e., combining view-computation queries as much as possible.
 The second type of optimizations, discussed in Section~\ref{sec:in_memory_execution_engine}, involve {\em pruning}, where some aggregate views are not completely evaluated over the whole data set.
  The second suite of optimizations
 are approximate, in that they, since they use utility estimates, there is a small likelihood that the returned visualizations may not have the highest utility.
+
+\reviewer {
+	D2.4 Regarding the number of queries to be executed: where are the f
+functions to be found? I think there is a (minor) inconsistency: if there are
+a*f*m*2 queries to be executed, why in Section 4.2 do you have (a1 , m1 ,
+f1 ), (a1 , m2, f2) ...(a1, mk, fk)?
+}
 %  in rare occasions may lead
 % to inaccurate results (in that the visualizations
 % displayed need not be the ones with the best utilities).
@@ -164,7 +171,7 @@ END}\\
 % cube, we can adapt efficient materialization techniques to our problem.
 After applying our multiple aggregate optimization, we are left with a number of 
 queries with a group-by on a single aggregate.
-We can of course group these together into a single query, but but each additional 
+We can of course group these together into a single query, but each additional 
 group by attribute will increase the number of groups, and (possibly) lead to slower
 overall performance when the number of groups becomes large.  
 Therefore, \SeeDB\ has to determine the optimal way of executing these multi-attribute
@@ -187,7 +194,7 @@ Formally, our problem becomes:
 \begin{problem}[Optimal Grouping]
 Given a set of dimension attributes $A$ = \{$a_1$\ldots$a_n$\}, divide the
 dimension attributes in $A$ into groups $A_1, \ldots, A_l$ (where $A_i$ is some
-subset of $A$ and $\bigcap A_i$=$A$) such that if a query $Q$ groups the table by $A_i$, 
+subset of $A$ and $\bigcup A_i$=$A$) such that if a query $Q$ groups the table by $A_i$, 
 the total space budget for $Q$ does not exceed $\mathcal{S}$.
 \vspace{-5pt}
 \end{problem}

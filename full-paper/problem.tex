@@ -1,43 +1,136 @@
-%!TEX root=document.tex
-
-
+	%!TEX root=document.tex
 \section{Problem Statement}
 \label{sec:problem_statement}
 
-Given a database $D$, associated metadata $M(D)$, and a user query $Q$, the goal
-of \SeeDB\ is to recommend visualizations of results of $Q$ with high utility. 
-As mentioned in Section~\ref{sec:introduction}, \SeeDB\ focuses on visualizations 
-that show aggregate summaries of data.
-Borrowing from the data cube literature~\cite{olap}, 
-we call these summaries {\it aggregate views}, where an aggregate view
-is the result of applying grouping and aggregation to a dataset.
+\reviewer {D1.2 I wonder what is really specific to visualizations. Indeed, a visualization
+as defined by the authors seems to be a two column table (attribute,
+measure). Is it usual to define visualizations this way?
+}
 
-We let $D$ have a snowflake schema with 
+\mpv{
+	Aggregate summaries visualized as bar charts and column charts are in fact, extremely
+	common visualizations, and hence are the first visualizations tackled by \SeeDB.
+	The techniques we develop here are general and have possible applications 
+	in traditional data mining. It would be interesting to explore these applications
+	further.
+}
+
+Given a database $D$ and the subset of data selected by the analyst (via query $Q$), 
+the goal of \SeeDB is to recommend visualizations of $Q$ that have high utility. 
+\SeeDB (currently) focuses on recommending bar charts showing aggregate views of the 
+data.
+This choice is motivated by the fact that bar plots are the overwhelming
+majority of visualizations created using visualization tools 
+\cite{DBLP:journals/sigmod_record/MortonBGKM14}.
+
+% The most common visualizations in real workloads of Tableau and ManyEyes 
+% are bar charts \cite{DBLP:journals/sigmod_record/MortonBGKM14} showing aggregate views
+% of the data. 
+% Furthermore, the scale of data necessitates the visualization of aggregate summaries of
+% data vs. individual records (e.g. average sales by state vs. sales of each store in the
+% country).
+% Consequently, \SeeDB (currently) focuses on this specific type of visualization.
+
+
+\mpv{In this paper, we largely focus on a specific utility function that was introduced
+in the previous section.
+We discuss in Section \ref{}, how other distance metrics can be fit into our system
+unchanged.}
+
+% Due to the scale of data, most common visualizations show aggregate summaries of data
+% as opposed to individual records (e.g. average sales by state vs. sales of each store 
+% in every state).
+% Moreover, these summaries are visualized as bar charts and column charts in the vast
+% majority of cases~\cite{kristi}.
+% Consequently, our current implementation of \SeeDB focuses on recommending bar and column
+% charts that visualize aggregate summaries.
+% Given a database $D$, associated schema $S$, and a user query $Q$, the goal
+% of \SeeDB\ is to recommend visualizations of results of $Q$ with high utility. 
+% As mentioned in Section~\ref{sec:introduction}, \SeeDB\ focuses on visualizations 
+% that show aggregate summaries of data.
+
+Let $D$ have a snowflake schema with 
 dimension attributes $A$, measure attributes $M$, and potential
 aggregate functions $F$ over the measure attributes. 
 %Similar to cube aggregates, 
-For visualization purposes, we assume we can group $D$ along any of the dimension attributes $A$ 
+For visualization purposes, we assume that we can group $D$ along any of the dimension attributes $A$ 
 and we can aggregate any of the measure attributes $M$.
+Our system currently limits the class of queries $Q$ posed over $D$ to be single-table
+selection (and optionally projection) queries.
+We find that simple selection queries suffice for most visualization tasks.
+For instance, in our illustrative example, $Q$ can select any subset of records from the
+AppMetrics table. 
+Adding projections to $Q$ serves to limit the the dimension and measure 
+attributes used by \SeeDB in constructing visualizations.
+We denote the result of $Q$ as $D_Q$.
+
 % dimension attributes are either nominal, ordinal, or numeric,
 % but typically with a small number of distinct values;
 % these are the attributes along which we can perform a group-by.
 % Measure attributes are numeric attributes which take on a large number 
 % of distinct values; 
 % these are the ones that are typically aggregated.
-We limit the class of queries $Q$ posed over $D$ to be
-those that select one or more rows from the fact table, 
-and denote the results as $D_Q$. 
-For instance, in a product sales table, $Q$ could select
-all tuples corresponding to transactions involving bicycles.
-Given query $Q$, \SeeDB\ considers all aggregate views 
-$V_i$ obtained by performing a grouping and aggregation on $D_Q$. 
-We represent $V_i$ compactly as a triple $(a, m, f)$, where $m \in M, a \in A, f \in F$, 
-i.e., the aggregate view 
-performs a group-by on $a$ and applies the aggregation function $f$ to measure
-attribute $m$. 
-\SeeDB\ techniques can directly be used to recommend views that are
-generated via multi-attribute grouping and aggregation; however,
+% We limit the class of queries $Q$ posed over $D$ to be
+% those that select one or more rows from the fact table, 
+% and denote the results as $D_Q$. 
+% For instance, in a product sales table, $Q$ could select
+% all tuples corresponding to transactions involving bicycles.
+% Given query $Q$, \SeeDB\ considers all aggregate views 
+% $V_i$ obtained by performing a grouping and aggregation on $D_Q$. 
+
+Each visualization considered by \SeeDB can be translated into an aggregate
+and grouping query on the underlying data.
+% Since each visualization represents an aggregate summary of the underlying data,
+% the visualization can be distilled into an aggregate and grouping query.
+% Borrowing from the data cube literature~\cite{olap}, 
+% we call these summaries aggregate {\it views}.
+% where an aggregate view
+% is the result of applying grouping and aggregation to a dataset.
+Consequently, we represent visualization $V_i$ compactly as a triple $(a, m, f)$, 
+where $m \in M, a \in A, f \in F$. 
+The aggregate view performs a group-by on $a$ and applies the aggregation function $f$ 
+to measure attribute $m$. 
+While \SeeDB techniques can be used to recommend visualizations
+generated via multi-attribute grouping and aggregation,
 for simplicity, we focus on views generated by single attribute grouping. 
+
+\reviewer{The range of queries that are supported is not clear. Specially in fig.3, in
+the ``SQL'' tab, it seems that users can only define very simple selection
+queries (where the selection is a simple conjunction of predicates). No
+project, no joins, no difference, no grouping/agg. Is this correct? Why call
+this SQL?}
+
+\mpv{New interface only allows selections}
+
+\reviewer {
+	D2.1 The approach seems limited to simple queries of the form Select * from
+aTable where someSelectionPredicates. It seems to me that it is quite a
+limitation in the sense that the authors implicitly position their work in a data
+warehouse exploration context (as per Section 2). I would like the authors to
+comment that point. For instance, what about when the projection is not
+select * but select aListOfAttributes?
+}
+
+\mpv{Do we need to defend why we support only simple queries? From other studies of
+visualization tools, a significant portion of queries posed in these tools is 
+limited to simple selection and projection tasks ~\cite{}.
+Therefore, we have prioritized support for operations over more complex queries.}
+
+\reviewer {
+	D2.2 In the definition of $U(V_i)$: as $D_Q $contains a selection that D does not
+have, how to ensure that the population of the two distribution is the same?
+}
+
+\mpv{
+	This should only be in the reviewer response: the dataset under study $D_Q$ can be
+	compared to various {\em comparison} datasets; by default, the comparison dataset
+	is set to the full dataset $D$ (to observe overall trends), but can be set to any 
+	other subset of data.
+	Depending on the analytical task, one may want the two populations to be similar 
+	(males and females in a given age group) or different (comparison of young adults to seniors). 
+	Since the system has limited knowedlge about the exact analytical task, we provide 
+	users with flexiblity to choose a comparison dataset.
+}
 
 % Note that all such $V_i$ give rise to two-column results that can 
 % be readily visualized (e.g. Table~\ref{tab:staplerX}). 
@@ -80,27 +173,22 @@ for simplicity, we focus on views generated by single attribute grouping.
 %For instance, if we have average profits per day, we can bin the days into
 %months, into weeks, or into years.
 
-As discussed previously, \SeeDB\ determines the utility of an aggregate view $V_i$ by
-comparing data distribution in the query results to the data distribution of the underlying dataset.
+%  aggregate view $V_i$ by
+% comparing data distribution in the query results to the data distribution of the underlying dataset.
 % taking into consideration a variety of aspects, including
 % user preferences, metadata, query data, background data, and context.
 % For now, and for most of the paper, however, 
-While this utility metric is an example of a simple data-driven recommendation metric,
-it plays an important role in recommendations when 
-there is no prior history --- and therefore no user preferences
-or understanding of context.
-This special case is especially appropriate when the analyst
-is not very familiar with a dataset and is analyzing it for the first time.
-That said, in Section~\ref{sec:discussion}, we describe how our deviation-based
-metric can, in fact, encompass a large number of data-driven utility metrics and
-can be seamlessly extended to support other dimensions such as user preferences.
 % That said, our techniques also seamlessly apply to a more general 
 % class of distance metrics described in .
 
-The utility function we focus on determines the utility of aggregate view $V_i$
-by computing the deviation between the results of applying $V_i$ to the 
-selected data (i.e., $D_Q$ or query data) and to the entire database (i.e., background data).
-The aggregate view $V_i$ applied to the results of $Q$ can be expressed as query $Q_T$. 
+As outlined in Section \ref{sec:introduction}, \SeeDB determines the utility of 
+visualizations via deviation; visualizations that show different trends in the query
+result dataset (i.e. $D_Q$) compared to the full dataset (i.e. $D$) are said to have higher
+utility.
+Specifically, given a view $V_i$, the utility of $V_i$ is
+computed as the deviation between the results of applying $V_i$ to $D_Q$ (the 
+query data) and applying $V_i$ to the entire database (i.e., background data).
+View $V_i$ applied to the results of $Q$ can be expressed as query $Q_T$. 
 We call this the {\em target view}.
 $$ Q_T\ =\ {\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D_Q\  {\tt GROUP \ \ BY} \ a$$ 
 Similarly, view $V_i$ applied to the entire database $V_i (D)$ can be expressed as $Q_C$. 
@@ -122,16 +210,27 @@ target view  ($P[V_i (D_Q)]$) and comparison view ($P[V_i (D)]$), the
 {\em utility} of $V_i$ is defined as the distance between these two probability
 distributions. Formally, if $S$ is a distance function,
 $$ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$$
-The utility of a view is our measure for whether the target view is
-``potentially interesting'' as compared to the comparison view:
-the higher the utility, the more the deviation
-from the comparison view, and the more likely the aggregate view (and its visualization) is to be interesting.
+Higher the distance betwee the two distributions, more likely is the
+visualization to be interesting and therefore higher the utility.
+% The utility of a view is our measure for whether the target view is
+% ``potentially interesting'' as compared to the comparison view:
+% the higher the utility, the more the deviation
+% from the comparison view, and the more likely the associated visualization is to be interesting.
 Computing distance between probability distributions has
 been well studied in the literature, and \SeeDB\ supports a variety of metrics
 to compute utility, including Earth Movers Distance (default), 
 Euclidean Distance, Kullback-Leibler Divergence (K-L
 divergence), and Jenson-Shannon
 Distance. 
+
+\reviewer {
+	D2.3 SeeDB supports a variety of metrics to compute utility, but only one of
+them is tested. What is the impact of the metric used?
+}
+\mpv{
+	We need to show experiments showing this.
+}
+
 We can formally state the \SeeDB problem as follows:
 % Computing distance between probability distributions has
 % been well studied, and \SeeDB\ supports a variety of metrics including
@@ -168,8 +267,8 @@ We can formally state the \SeeDB problem as follows:
 % intuitive nature. 
 \begin{problem}
 \vspace{-5pt}
-Given an analyst-specified query $Q$ on a database $D$, a distance function $S$,
-and a positive integer $k$, find $k$ aggregate views $V \equiv (a, m, f)$ that
+Given a user-specified query $Q$ on a database $D$, a utility function $U$ as defined
+above, and a positive integer $k$, find $k$ aggregate views $V \equiv (a, m, f)$ that
 have the largest values of $U(V)$ among all the views $(a, m, f)$, 
 while minimizing total computation time.
 \vspace{-5pt}
@@ -182,6 +281,7 @@ while minimizing total computation time.
 % database $D$, the \SeeDB\ framework is agnostic to where the comparison
 % dataset is coming from and its contents. So the same formulation works for Use
 % Cases II and III discussed in Section \ref{sec:introduction}. 
+
 
 
 

@@ -1,28 +1,28 @@
 %!TEX root=document.tex
 
 
-Data analysts operating on large volumes of data often rely on visualizations to
-interpret the results of queries.
-However, finding the right visualization given a query of interest is a
-laborious and time-consuming task.
-We propose \SeeDB, a visualization recommendation 
-engine that aims to partially automate this task:
-given a query, \SeeDB\ intelligently explores the space of all possible
-visualizations, evaluates promising visualizations, and automatically recommends
-the most ``interesting'' or ``useful'' visualizations to the analyst.
-We present two types of optimizations for \SeeDB: sharing-based optimizations,
-that try to share as much computation as possible,
-and pruning-based optimizations, that try to avoid as much computation
-on not-so-useful visualizations as possible,
-and show that these optimizations may be applied to implementations of \SeeDB over
-a relational row store database and  a column store database.
-We demonstrate how our optimizations lead to {\em multiple
-orders of magnitude speedup} on \SeeDB on both types of databases,
-while not significantly impacting accuracy.
-We further demonstrate via a user study that \SeeDB returns
-interesting and useful visualizations. 
-Overall, \SeeDB represents significant progress 
- towards the challenging and important task of automated visualization generation.
+% Data analysts operating on large volumes of data often rely on visualizations to
+% interpret the results of queries.
+% However, finding the right visualization given a query of interest is a
+% laborious and time-consuming task.
+% We propose \SeeDB, a visualization recommendation 
+% engine that aims to partially automate this task:
+% given a query, \SeeDB\ intelligently explores the space of all possible
+% visualizations, evaluates promising visualizations, and automatically recommends
+% the most ``interesting'' or ``useful'' visualizations to the analyst.
+% We present two types of optimizations for \SeeDB: sharing-based optimizations,
+% that try to share as much computation as possible,
+% and pruning-based optimizations, that try to avoid as much computation
+% on not-so-useful visualizations as possible,
+% and show that these optimizations may be applied to implementations of \SeeDB over
+% a relational row store database and  a column store database.
+% We demonstrate how our optimizations lead to {\em multiple
+% orders of magnitude speedup} on \SeeDB on both types of databases,
+% while not significantly impacting accuracy.
+% We further demonstrate via a user study that \SeeDB returns
+% interesting and useful visualizations. 
+% Overall, \SeeDB represents significant progress 
+%  towards the challenging and important task of automated visualization generation.
 
 
 % In this paper, we present two implementations of \SeeDB\ which make very
@@ -47,3 +47,34 @@ Overall, \SeeDB represents significant progress
 % Finally, we present the results of a user study that evaluates our method for
 % interesting visualizations, the relative quality of different distance metrics
 % and the \SeeDB\ system.
+
+Data analysts performing a variety of analytical tasks often build visualizations
+as the first step in their analytical workflow.
+However, when working with high-dimensional datasets, identifying visualizations
+that show relevant trends in data is laborious and time-consuming.
+The need to manually specify visualizations hampers rapid analysis and exploration.
+We propose \SeeDB, a visualization recommendation engine to enable fast 
+visual analysis: 
+given a subset of data to be studied, \SeeDB intelligently explores the 
+space of visualizations, evaluates promising visualizations for trends, and 
+recommends those it 
+deems most ``useful'' or ``interesting'' for that data.
+Major obstacles in recommending high-utility visualizations include the large number of possible 
+visualizations, the expensive process of evaluating multiple visualizations, the
+challenge of identifying an appropriate scoring function for visualization utility, and 
+the need to respond to users at interactive time scales.
+To effectively address these challenges, \SeeDB introduces a general-purpose {\em incremental 
+view pruning}
+framework to quickly identify high-utility visualization at run time.
+We supplement our pruning framework with multi-query optimization techniques that maximize 
+sharing of computation across visualizations.
+As a first step in crafting a sophisticated scoring function, we adopt and evaluate a 
+deviation-based scoring function for visualization 
+utility.
+We implement \SeeDB as a middleware layer that can run on top of any SQL-compliant DBMS. 
+Our experiments show that our framework can identify ``interesting'' visualizations with high accuracy. 
+Our optimizations lead to 
+{\em multiple orders of magnitude speedup} on relational row and column stores and provide
+recommendations at interactive time scales.
+Finally, we demonstrate via a user study the effectiveness of our ranking function
+and the value of recommendations in supporting visual analytics. 
