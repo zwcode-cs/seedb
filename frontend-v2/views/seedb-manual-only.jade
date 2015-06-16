@@ -1,0 +1,123 @@
+extends layout
+
+block content
+    div.container
+        div.row.panel
+
+            div.col-md-4
+                div.well
+                    div.row
+                        h5 Data Selector
+
+                    div.row
+                        table.table
+                            tr
+                                td Dataset
+                                td(colspan="3")
+                                    select#datasetSelector
+                
+                    div.row
+                        h5 Query Selector
+                        div.blue
+                            table.table
+                                tr
+                                    td Attribute
+                                    td Operator
+                                    td Value
+                                    td
+
+                                tr.templateAttributeFilter
+                                    td
+                                        select.attributes.attribute(id="attribute1", style="width: 80px")
+                                            option Attribute1
+                                            option Attribute2
+                                    td
+                                        select.operator(id="operator1", style="width: 80px")
+                                            option(value="<=") <=
+                                            option(value="<") <
+                                            option(value="=") =
+                                            option(value="!=") !=
+                                            option(value=">=") >=
+                                            option(value=">") >
+                                    td
+                                        input.value(type="text", id="value1", maxlength="20", placeholder="value", size=4)
+                                        
+                                    td 
+                                        input.btn.removeFilter(data-idx=1, value="X", type="submit")
+                                
+                                tr.dummyRow1
+                                
+                                tr
+                                    td(colspan="4")
+                                        input.btn.addAttributeFilter(data-idx=1, type="submit", value="Add Filter", style="background-color: #3366cc")
+                    div.row
+                        table.table
+                            tr
+                                td(colspan="4")
+                                    span 
+                                        input(type="checkbox", id="addComparison") 
+                                        &nbsp; &nbsp; Add Comparison Query
+
+
+                    div.row.hide2.red#comparisonQuery
+                        table.table
+                            tr.dummyRow2
+                            
+                            tr
+                                td(colspan="4")
+                                    input.btn.addAttributeFilter(data-idx=2, type="submit", value="Add Filter", style="background-color: #dc3912")
+                
+            div.col-md-8
+                div.row.well
+                    h5 Visualization Builder
+
+                    
+                    form.form(method="post", id="manualPlot", action="/manualPlot")
+                        table.table
+                            tr
+                                td X axis
+                                td(colspan="1")
+                                    select.span2.attributes(id="x_axis", style="width: 80px")
+                                        option Attribute1
+                                        option Attribute2
+                            
+                                td Y axis
+                                td(colspan="1")
+                                    select.span2.attributes.measures(id="y_axis", style="width: 80px")
+                                        option Attribute1
+                                        option Attribute2
+                            
+                                td Y aggregate
+                                td(colspan="1")
+                                    select.span2(id="y_aggregate")
+                                        option(value="AVG") AVG
+                                        option(value="COUNT") COUNT
+                                        option(value="SUM") SUM
+                                        option(value="NONE") NONE
+                            
+                                td(colspan="1")
+                                    input.btn(type="submit", value="Plot")
+
+                div.row
+                    div.col-md-11#big_viz
+                    div.col-md-1
+                        input.btn.bookmark(value="Bookmark", type="submit")
+                        br
+                        br
+                        //input.btn.normalize(value="Normalize", type="submit")
+
+
+        hr
+        div.row.outline
+            h5 Bookmarks
+            div.row#bookmarks(data-num=0)
+                div.btn.col-md-3.padded.template_bookmark
+                    div.rec_viz
+                    input.btn.zoom(value="Zoom", type="submit") 
+                    span &nbsp; &nbsp;
+                    input.btn.delete(value="Delete", type="submit")
+        div.row
+            div.dummy3
+            hr
+            input.btn#getLog(value="Get Log", type="submit")
+                
