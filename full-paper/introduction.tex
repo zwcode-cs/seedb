@@ -2,26 +2,29 @@
 
 \section{Introduction}
 \label{sec:introduction}
-Data visualization is often the first step in any analytical workflow. 
+\agp{We need to be careful about the use of: analyst vs. user, utility vs. scoring
+function, ...}
+Data visualization is often the first step in data analysis.
 Given a new dataset or a new question about an existing dataset, an analyst builds
 various visualizations to get a ``feel'' for the data, to find anomalies and outliers, 
 and to identify trends and patterns that might merit further investigation. 
 However, when working with high-dimensional datasets, identifying visualizations that
 show interesting variations and trends in the data is non-trivial:
-the user must manually specify a large number of visualizations, explore behavior of various
-attributes (and combinations), and examine different subsets of data before finally 
-arriving at visualizations that shows something valuable.
+the analyst must manually specify a large number of visualizations, explore behavior of various
+attributes (and combinations thereof), and examine different subsets of data before finally 
+arriving at visualizations that depict something ``interesting'' or ``different''.
 This need to manually specify and examine every visualization hampers rapid analysis 
 and exploration of data.
 
 In this paper, we tackle the problem of automatically identifying and recommending 
-``useful'' or {\em high-utility} visualizations to support fast visual analysis.
+``useful'' or ``interesting'' visualizations to support fast visual analysis (we call these {\em high-utility visualizations}).
 The goal of recommending high-utility visualizations brings up several challenges: first,
 the curse of dimensionality makes the number of possible visualizations very large;
-second, evaluating the utility of many visualizations by running computations over the 
-underlying data is expensive; 
+second, evaluating the utility of many visualizations by repeatedly re-running computations over the 
+same underlying data is expensive; 
 third, recommendations must be made to users in real-time, and at interactive speeds;
 and fourth, identifying an {\em all-encompassing} scoring function for visualization utility is difficult. 
+Our system, \SeeDB, is designed to address all of these challenges.
 
 We begin with an illustrative example that explains the \SeeDB use case and motivates our
 scoring function. 
@@ -205,17 +208,40 @@ scoring function.
 
 %%%%%% VLDB original end %%%%%%%
 
-\stitle{Illustrative Example.}
-Consider a smartphone app analytics team that is tasked with answering why a certain app, BadApp, is showing poor performance and receiving consumer complaints. 
+\reviewer {
+	W2: Using the illustrative example is helpful, but would have been even more
+helpful if it would be based on a real dataset actually used in the evaluations. 
+Using the illustrative example was helpful and quite motivating.
+However, this introduced another dataset not used in the evaluations
+afterwards. To use a dataset, which was actually used in the evaluation would
+make the presentation more coherent. Figure 1 uses the BadApp dataset,
+Figure 3 a donation dataset, then other datasets are introduced for the
+evaluation, and the diabetes dataset for the user studies. Focusing on the
+diabetes dataset in Figure 1 and Figure 3 would leave more room to reuse
+them to discuss some findings for example using Figure 3.
+}
+\mpv{sure, if we have time} \agp{I think this is worth investing 
+the time in--shouldn't take more than half an hour to dig up, right? We can
+also point at these visualizations and say that these were actually
+returned by \SeeDB.}
+\srm{I agree!}
+
+
+\begin{example}
+Consider a smartphone app analytics team that is tasked with answering why a certain app, 
+BadApp, is showing poor performance and receiving consumer complaints. 
 Suppose that the team uses the AppMetrics database containing metrics such as network usage, 
-power consumption, load times etc. to perform the analysis.
-The analyst begins by querying the AppMetrics database for BadApp metrics and uses her 
+power consumption, and load times to perform the analysis.
+The analyst begins by querying the AppMetrics database for BadApp-specific data and uses her 
 favorite visualization software to graph various metrics for BadApp.
 
 For instance, she may visualize average network usage for BadApp, 
 correlation between session times and number of crashes, average load times by carrier, 
-comparison of mobile operating systems running BadApp vs. all apps --- the list goes on.
-Depending on the types of visualizations created, the number of possible visualizations grows exponentially with the number of metrics in the database.
+comparison of mobile operating systems running BadApp vs.~other apps, and so on,
+in order to identify what metrics BadApp may be misbehaving on.
+Depending on the types of visualizations created, the number of possible 
+visualizations grows exponentially with the number of metrics in the database.
+\agp{What do you mean by this?}
 Clearly, beyond a small number of metrics, creating and examining all possible visualizations
 becomes untenable.
 % For example, the visualization for average load times by carrier is generated by running an operation equivalent to the
@@ -230,7 +256,6 @@ becomes untenable.
 % & \tt \hspace{20pt} WHERE\ Name=``BadApp" \ \ GROUP  \ \ BY \ \ carrier
 % \end{align*}
 
-\mpv{remove table and update viz?}
 
 
 \begin{figure}[h]
@@ -272,47 +297,43 @@ becomes untenable.
 	\vspace{-15pt}
 \end{figure}
 
-\reviewer {
-	W2: Using the illustrative example is helpful, but would have been even more
-helpful if it would be based on a real dataset actually used in the evaluations. Using the illustrative example was helpful and quite motivating.
-However, this introduced another dataset not used in the evaluations
-afterwards. To use a dataset, which was actually used in the evaluation would
-make the presentation more coherent. Figure 1 uses the BadApp dataset,
-Figure 3 a donation dataset, then other datasets are introduced for the
-evaluation, and the diabetes dataset for the user studies. Focusing on the
-diabetes dataset in Figure 1 and Figure 3 would leave more room to reuse
-them to discuss some findings for example using Figure 3.
-}
-\mpv{sure, if we have time}
-
 What might make one of these visualizations ``interesting'' or valuable for the 
 task at hand depends on a number of factors.
-Since our goal with \SeeDB is to make visual {\em analytics} faster, we adopt a metric
-that prefers visualizations showing interesting or surpising trends in data.
-Specifically, we are motivated by the following observation:
+For a task like the one described above, we posit that 
+{\em a visualization is 
+potentially ``interesting'' if it shows
+a trend that deviates from the expected trend}.
+In our metric, the expected trend is the trend we observe on the entire data (i.e. metrics for
+all apps), while the real trend is the trend we observe in the data being analyzed (i.e. 
+metrics for BadApp).
+Deviations of the real trend from the expected trend make a visualization interesting.
+\srm{ I don't like the words ``trends'' or ``expected'' here.  Trend suggests some kind of time series.  And how do
+we know what the user expects??? }
+Therefore, the visualization of load times by carrier, as shown in Figure
+\ref{fig:staplerX}, would be interesting if the trend for load times across all
+apps showed the {\it opposite} trend (e.g. Figure \ref{fig:staplerX-a}), and would
+be uninteresting if the overall trend for all apps followed a similar trend 
+(Figure \ref{fig:staplerX-b}).
+\end{example}
 
+
+
+\mpv{acknowledge that this is from the vision paper?}
+\mpv{Say that metric is suited to when there user is unfamiliar with the data, cold
+starts?}
+
+\agp{We need to articulate that our goal is to build \SeeDB that actually makes
+these recommendations.}
+Since our goal with \SeeDB is to make visual analytics faster, we adopt a metric
+that prefers visualizations that show interesting or surprising trends in data.
+Specifically, we are motivated by the following observation:
 \begin{quotation}
 The greatest value of a picture is when it forces us to notice what we never expected to see.
 \end{quotation} 
 \begin{flushright} 
 - John Tukey, Exploratory Data Analysis 1977
 \end{flushright}
-
-In other words, we posit that {\em a visualization is potentially ``interesting'' if it shows
-a trend that deviates from the expected trend}.
-In our metric, the expected trend is the trend we observe on the entire data (i.e. metrics for
-all apps), while the real trend is the trend we observe in the data being analyzed (i.e. 
-metrics for BadApp).
-Deviations of the real trend from the expected trend make a visualization interesting.
-Therefore, the visualization of load times by carrier, as shown in Figure
-\ref{fig:staplerX}, would be interesting if the trend for load times across all
-apps showed the {\it opposite} trend (e.g. Figure \ref{fig:staplerX-a}), and would
-be uninteresting if the overall trend for all apps followed a similar trend 
-(Figure \ref{fig:staplerX-b}).
 We formally define the deviation-based scoring function in the next section. 
-\mpv{acknowledge that this is from the vision paper?}
-\mpv{Say that metric is suited to when there user is unfamiliar with the data, cold
-starts?}
 
 % While this utility metric is an example of a simple recommendation metric,
 % it plays an important role in recommendations when 
@@ -336,7 +357,8 @@ obstetrics department), and user preference (e.g. in the sales dataset, profit i
 the most relevant attribute).
 Exploration of each of these dimensions forms a distinct body of work.
 We leave a detailed investigation of these dimensions for future work, but 
-outline in Section \ref{sec:discussion} some means by which \SeeDB may be extended to support them.
+outline in Section \ref{sec:discussion} 
+our initial attempts at extending \SeeDB to support them.
 
 % functions 
 % that can be used to score the utility of a 
@@ -389,12 +411,17 @@ preferences all important components of viz
 % Specifically, \SeeDB considers visualizations that can be constructed via a combinations of grouping and 
 % aggregation applied to $Q$.
 
-Current visualization systems like Spotfire and Tableau have limited capabilities of 
+No current system is that we are aware of makes use of variation in the underlying
+data to recommend visualizations. \srm{Cite heer's recent work?}
+ Current visualization packages like Spotfire and Tableau have limited capabilities for 
 recommending visualizations.
 Their recommendations only implement rules-of-thumb regarding chart aesthetics such as choice of
 chart type, colors and marks.
-No existing system that we are aware of leverages insights about the underlying data
-into make visualization recommendations. \mpv{does this sound ok?}
+%No existing system that we are aware of leverages insights about the underlying data
+%into make visualization recommendations. \mpv{does this sound ok?} \agp{I would start with
+%the statement that no current system supports the recommending of interesting visualizations
+%where the target dataset shows some discrepancies not found in the underlying data.
+%Then say the first two lines.}
 
 In the following sections, we propose a general-purpose view pruning framework and a set
 of multi-query optimization techniques that make responses possible in real time.
@@ -416,22 +443,22 @@ In summary, the contributions of this paper are:
 % as much unnecessary work as possible, and discarding candidate aggregate views
 % that are of low utility.
 
-\mpv{revisit contributions}
+\mpv{revisit contributions} \agp{The order of this is off.}
 \begin{denselist}
 %  \item We design \SeeDB as a system for data-driven visualization recommendations.
 %  We explore and evaluate two distinct implementations of the system, one as a
 %  wrapper around a database and another a custom solution (Section~\ref{sec:system_architecture}).
   \item We present \SeeDB, a visualization recommendation system that can run
   as a middleware layer on any SQL-compliant DBMS (Section~\ref{sec:system_architecture}).
+  \item We adopt and evaluate a deviation-based scoring function for measuring utility
+  of a visualization (Section~\ref{sec:problem_statement}).
+  \item We propose a set of multi-query optimization techniques which in combination
+  with the pruning framework maximize the sharing of computation between visualization
+  computations (Section~\ref{sec:sharing_opt}).
   \item We propose a general-purpose view pruning framework to quickly identify
   high-utility visualizations by adapting techniques from traditional 
   confidence-interval-based~\cite{hoeffding1963probability} top-$k$ ranking and the
    multi-armed bandit problem~\cite{bandits} (Section~\ref{sec:in_memory_execution_engine}).
-  \item We propose a set of multi-query optimization techniques which in combination
-  with the pruning framework maximize the sharing of computation between visualization
-  computations (Section~\ref{sec:sharing_opt}).
-  \item We adopt and evaluate a deviation-based scoring function for measuring utility
-  of a visualization (Section~\ref{sec:problem_statement}).
   % \item We describe a general deviation-based framework 
   % for evaluating the utility  of a visualization,
   % and present and evaluate a specific metric that identifies 
@@ -460,8 +487,9 @@ In summary, the contributions of this paper are:
   (Section \ref{sec:user_study}).
 \end{denselist}
 
-The vision for \SeeDB\ has been described in a vision paper~\cite{DBLP:conf/vldb/Parameswaran2013} and presented as demonstration~\cite{DBLP:journals/pvldb/VartakMPP14}.
-This work builds upon the \SeeDB vision by proposing a novel, general-purpose view 
+The vision for \SeeDB\ has been described in a vision paper~\cite{DBLP:conf/vldb/Parameswaran2013} and presented as demonstration~\cite{DBLP:journals/pvldb/VartakMPP14}, but neither of these short papers described detailed algorithms or
+presented any form of evaluation.
+Specifically, this work builds upon the \SeeDB vision by proposing a novel, general-purpose view 
 pruning framework, a combination of multi-query optimization techniques, and presenting 
 both a performance study of the system as well as a user study demonstrating the efficacy of our system in aiding analysis.
 \reviewer{
