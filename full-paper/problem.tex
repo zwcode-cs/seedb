@@ -1,82 +1,44 @@
-	%!TEX root=document.tex
+%!TEX root=document.tex
 \section{Problem Statement}
 \label{sec:problem_statement}
 
-\reviewer {D1.2 I wonder what is really specific to visualizations. Indeed, a visualization
-as defined by the authors seems to be a two column table (attribute,
-measure). Is it usual to define visualizations this way?
-}
-
-\mpv{
-	Aggregate summaries visualized as bar charts and column charts are in fact, extremely
-	common visualizations, and hence are the first visualizations tackled by \SeeDB.
-	The techniques we develop here are general and have possible applications 
-	in traditional data mining. It would be interesting to explore these applications
-	further.
-}
-
-Given a database $D$ and the subset of data selected by the analyst (via query $Q$), 
-the goal of \SeeDB is to recommend visualizations of $Q$ that have high utility. 
-\SeeDB (currently) focuses on recommending bar charts showing aggregate views of the 
-data.
-This choice is motivated by the fact that bar plots are the overwhelming
-majority of visualizations created using visualization tools 
-\cite{DBLP:journals/sigmod_record/MortonBGKM14}.
-
-% The most common visualizations in real workloads of Tableau and ManyEyes 
-% are bar charts \cite{DBLP:journals/sigmod_record/MortonBGKM14} showing aggregate views
-% of the data. 
-% Furthermore, the scale of data necessitates the visualization of aggregate summaries of
-% data vs. individual records (e.g. average sales by state vs. sales of each store in the
-% country).
-% Consequently, \SeeDB (currently) focuses on this specific type of visualization.
-
-
-\mpv{In this paper, we largely focus on a specific utility function that was introduced
-in the previous section.
-We discuss in Section \ref{}, how other distance metrics can be fit into our system
-unchanged.}
-
-% Due to the scale of data, most common visualizations show aggregate summaries of data
-% as opposed to individual records (e.g. average sales by state vs. sales of each store 
-% in every state).
-% Moreover, these summaries are visualized as bar charts and column charts in the vast
-% majority of cases~\cite{kristi}.
-% Consequently, our current implementation of \SeeDB focuses on recommending bar and column
-% charts that visualize aggregate summaries.
-% Given a database $D$, associated schema $S$, and a user query $Q$, the goal
-% of \SeeDB\ is to recommend visualizations of results of $Q$ with high utility. 
-% As mentioned in Section~\ref{sec:introduction}, \SeeDB\ focuses on visualizations 
-% that show aggregate summaries of data.
-
-Let $D$ have a snowflake schema with 
+As is standard in OLAP, and in visual analytics tools such as Tableau and Polaris~\cite{tableau,polaris},
+we focus on a database $D$ with a snowflake schema,
 dimension attributes $A$, measure attributes $M$, and potential
 aggregate functions $F$ over the measure attributes. 
-%Similar to cube aggregates, 
 For visualization purposes, we assume that we can group $D$ along any of the dimension attributes $A$ 
 and we can aggregate any of the measure attributes $M$.
-Our system currently limits the class of queries $Q$ posed over $D$ to be single-table
-selection (and optionally projection) queries.
-We find that simple selection queries suffice for most visualization tasks.
+This leads to a two-column table that can be easily visualized
+via standard visualization mechanisms, such as bar charts or trend lines.
+(Recent work has shown that bar charts are the overwhelming majority of visualizations
+created using visual analytics tools~\cite{DBLP:journals/pvldb/MortonBGM14}.) 
+Our techniques also apply to the general Polaris table algebra~\cite{polaris}, where
+we can aggregate across multiple attributes at once, and group-by multiple attributes as well, 
+potentially leading to more than two columns.
+For ease of exposition, we focus on the two-column result visualization in this paper,
+which can be readily visualized using bar charts or trend lines.
+
+In addition to the database $D$, we assume that the analyst has indicated
+a desire to explore a subset of data specified by a query $Q$.
+The goal of \SeeDB is to recommend visualizations of $Q$ that have
+high utility as measured using deviation. 
+The class of queries $Q$ posed over $D$ that we support encompass a general class of queries 
+that select a horizontal fragment of the fact table and one or more dimension tables.
+Conceptually, we can view this as a simple selection query over the result of joining all
+the tables involved in the snowflake schema. 
+That said, we can also support projections---which essentially have the effect
+of dropping certain columns from consideration in the visualization, and
+joins---by specifying a subset of the dimension tables, again having 
+the same effect of dropping certain columns from consideration in the visualization: thus,
+we support a general class of SPJ queries over the snowflake schema.
+But for the purpose of this discussion, we will focus on simple selection
+queries over the result of joining all the tables in the snowflake schema.
+We note that this class of queries 
+suffice for most visualization tasks.
 For instance, in our illustrative example, $Q$ can select any subset of records from the
 AppMetrics table. 
-Adding projections to $Q$ serves to limit the the dimension and measure 
-attributes used by \SeeDB in constructing visualizations.
 We denote the result of $Q$ as $D_Q$.
 
-% dimension attributes are either nominal, ordinal, or numeric,
-% but typically with a small number of distinct values;
-% these are the attributes along which we can perform a group-by.
-% Measure attributes are numeric attributes which take on a large number 
-% of distinct values; 
-% these are the ones that are typically aggregated.
-% We limit the class of queries $Q$ posed over $D$ to be
-% those that select one or more rows from the fact table, 
-% and denote the results as $D_Q$. 
-% For instance, in a product sales table, $Q$ could select
-% all tuples corresponding to transactions involving bicycles.
-% Given query $Q$, \SeeDB\ considers all aggregate views 
-% $V_i$ obtained by performing a grouping and aggregation on $D_Q$. 
 
 Each visualization considered by \SeeDB can be translated into an aggregate
 and grouping query on the underlying data.
@@ -94,6 +56,87 @@ While \SeeDB techniques can be used to recommend visualizations
 generated via multi-attribute grouping and aggregation,
 for simplicity, we focus on views generated by single attribute grouping. 
 
+
+
+
+\reviewer {D1.2 I wonder what is really specific to visualizations. Indeed, a visualization
+as defined by the authors seems to be a two column table (attribute,
+measure). Is it usual to define visualizations this way?
+}
+
+\mpv{
+	Aggregate summaries visualized as bar charts and column charts are in fact, extremely
+	common visualizations, and hence are the first visualizations tackled by \SeeDB.
+	The techniques we develop here are general and have possible applications 
+	in traditional data mining. It would be interesting to explore these applications
+	further.
+}
+\agp{I think we can amend the response to say it is standard (cite polaris table algebra)
+to define visualizations in this manner.}
+
+\if{0}
+Given a database $D$ and the subset of data selected by the analyst (via query $Q$), 
+the goal of \SeeDB is to recommend visualizations of $Q$ that have high utility. 
+\SeeDB (currently) focuses on recommending bar charts showing aggregate views of the 
+data.
+This choice is motivated by the fact that bar plots are the overwhelming
+majority of visualizations created using visualization tools 
+\cite{DBLP:journals/sigmod_record/MortonBGKM14}.
+\fi
+
+% The most common visualizations in real workloads of Tableau and ManyEyes 
+% are bar charts \cite{DBLP:journals/sigmod_record/MortonBGKM14} showing aggregate views
+% of the data. 
+% Furthermore, the scale of data necessitates the visualization of aggregate summaries of
+% data vs. individual records (e.g. average sales by state vs. sales of each store in the
+% country).
+% Consequently, \SeeDB (currently) focuses on this specific type of visualization.
+
+
+
+
+% Due to the scale of data, most common visualizations show aggregate summaries of data
+% as opposed to individual records (e.g. average sales by state vs. sales of each store 
+% in every state).
+% Moreover, these summaries are visualized as bar charts and column charts in the vast
+% majority of cases~\cite{kristi}.
+% Consequently, our current implementation of \SeeDB focuses on recommending bar and column
+% charts that visualize aggregate summaries.
+% Given a database $D$, associated schema $S$, and a user query $Q$, the goal
+% of \SeeDB\ is to recommend visualizations of results of $Q$ with high utility. 
+% As mentioned in Section~\ref{sec:introduction}, \SeeDB\ focuses on visualizations 
+% that show aggregate summaries of data.
+
+\if{0}
+Let $D$ have a snowflake schema with 
+dimension attributes $A$, measure attributes $M$, and potential
+aggregate functions $F$ over the measure attributes. 
+%Similar to cube aggregates, 
+For visualization purposes, we assume that we can group $D$ along any of the dimension attributes $A$ 
+and we can aggregate any of the measure attributes $M$.
+Our system currently limits the class of queries $Q$ posed over $D$ to be single-table
+selection (and optionally projection) queries.
+We find that simple selection queries suffice for most visualization tasks.
+For instance, in our illustrative example, $Q$ can select any subset of records from the
+AppMetrics table. 
+Adding projections to $Q$ serves to limit the the dimension and measure 
+attributes used by \SeeDB in constructing visualizations.
+We denote the result of $Q$ as $D_Q$.
+\fi
+% dimension attributes are either nominal, ordinal, or numeric,
+% but typically with a small number of distinct values;
+% these are the attributes along which we can perform a group-by.
+% Measure attributes are numeric attributes which take on a large number 
+% of distinct values; 
+% these are the ones that are typically aggregated.
+% We limit the class of queries $Q$ posed over $D$ to be
+% those that select one or more rows from the fact table, 
+% and denote the results as $D_Q$. 
+% For instance, in a product sales table, $Q$ could select
+% all tuples corresponding to transactions involving bicycles.
+% Given query $Q$, \SeeDB\ considers all aggregate views 
+% $V_i$ obtained by performing a grouping and aggregation on $D_Q$. 
+
 \reviewer{The range of queries that are supported is not clear. Specially in fig.3, in
 the ``SQL'' tab, it seems that users can only define very simple selection
 queries (where the selection is a simple conjunction of predicates). No
@@ -101,6 +144,8 @@ project, no joins, no difference, no grouping/agg. Is this correct? Why call
 this SQL?}
 
 \mpv{New interface only allows selections}
+\agp{I don't think we should restrict ourselves to selection. We can
+support SPJ queries over the snowflake schema.}
 
 \reviewer {
 	D2.1 The approach seems limited to simple queries of the form Select * from
@@ -115,6 +160,7 @@ select * but select aListOfAttributes?
 visualization tools, a significant portion of queries posed in these tools is 
 limited to simple selection and projection tasks ~\cite{}.
 Therefore, we have prioritized support for operations over more complex queries.}
+\agp{I think we can clarify this in the response, but see what I've said above.}
 
 \reviewer {
 	D2.2 In the definition of $U(V_i)$: as $D_Q $contains a selection that D does not
@@ -181,10 +227,14 @@ have, how to ensure that the population of the two distribution is the same?
 % That said, our techniques also seamlessly apply to a more general 
 % class of distance metrics described in .
 
+
+\agp{We use distance, metric, scoring, utility, all equivalently. We should stick to one..}
 As outlined in Section \ref{sec:introduction}, \SeeDB determines the utility of 
 visualizations via deviation; visualizations that show different trends in the query
 result dataset (i.e. $D_Q$) compared to the full dataset (i.e. $D$) are said to have higher
 utility.
+We discuss in Section~\ref{} how other distance metrics can be incorporated into our system
+without any changes.
 Specifically, given a view $V_i$, the utility of $V_i$ is
 computed as the deviation between the results of applying $V_i$ to $D_Q$ (the 
 query data) and applying $V_i$ to the entire database (i.e., background data).
