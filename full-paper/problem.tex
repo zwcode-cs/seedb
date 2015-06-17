@@ -2,10 +2,15 @@
 \section{Problem Statement}
 \label{sec:problem_statement}
 
+\srm{This rewrite is good, thanks Aditya!}
+
 As is standard in OLAP, and in visual analytics tools such as Tableau and Polaris~\cite{tableau,polaris},
-we focus on a database $D$ with a snowflake schema,
+we focus on a database $D$ with a snowflake schema
 dimension attributes $A$, measure attributes $M$, and potential
-aggregate functions $F$ over the measure attributes. 
+aggregate functions $F$ over the measure attributes.  \srm{We need to define what measure and dimension attributes mean;
+in a snowflake schema a dimension attribute would be anything in a dimension table, and a measure attribute would be a non-foreign
+key column in a fact table. I don't think that's what we mean.  I think these are actually properties of the query, right, i.e., 
+dimension attributes are those appearing in the group by clause?  We should use different names.}
 For visualization purposes, we assume that we can group $D$ along any of the dimension attributes $A$ 
 and we can aggregate any of the measure attributes $M$.
 This leads to a two-column table that can be easily visualized
@@ -21,7 +26,7 @@ which can be readily visualized using bar charts or trend lines.
 In addition to the database $D$, we assume that the analyst has indicated
 a desire to explore a subset of data specified by a query $Q$.
 The goal of \SeeDB is to recommend visualizations of $Q$ that have
-high utility as measured using deviation. 
+high utility (which, in this paper, we measure using deviation, as explained below).
 The class of queries $Q$ posed over $D$ that we support encompass a general class of queries 
 that select a horizontal fragment of the fact table and one or more dimension tables.
 Conceptually, we can view this as a simple selection query over the result of joining all
@@ -30,8 +35,8 @@ That said, we can also support projections---which essentially have the effect
 of dropping certain columns from consideration in the visualization, and
 joins---by specifying a subset of the dimension tables, again having 
 the same effect of dropping certain columns from consideration in the visualization: thus,
-we support a general class of SPJ queries over the snowflake schema.
-But for the purpose of this discussion, we will focus on simple selection
+we support a general class of select-project-join (SPJ) queries over the snowflake schema.
+For the purpose of this discussion, we focus on simple selection
 queries over the result of joining all the tables in the snowflake schema.
 We note that this class of queries 
 suffice for most visualization tasks.
@@ -49,7 +54,8 @@ and grouping query on the underlying data.
 % where an aggregate view
 % is the result of applying grouping and aggregation to a dataset.
 Consequently, we represent visualization $V_i$ compactly as a triple $(a, m, f)$, 
-where $m \in M, a \in A, f \in F$. 
+where $m \in M, a \in A, f \in F$.   \srm{Although this notion is compact, it doesn't seem to capture
+the contents of the WHERE clause.}
 The aggregate view performs a group-by on $a$ and applies the aggregation function $f$ 
 to measure attribute $m$. 
 While \SeeDB techniques can be used to recommend visualizations
