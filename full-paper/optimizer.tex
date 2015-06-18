@@ -1,0 +1,130 @@
+\section{\SeeDB Optimizer}
+\label{sec:optimizer}
+
+Each visualization evaluated by \SeeDB translates into two 
+aggregation queries on the DBMS.
+Moreover, the queries corresponding to each visualization are
+extremely similar; they scan the same underlying data and  
+differ only in the specific attributes used for grouping and aggregation.
+As a result, there are many opportunities to reuse computation 
+by merging and batching queries.
+At the beginning of each phase, the \SeeDB optimizer consumes stubs
+corresponding to views still in running and produces an optimal
+execution plan that maximizes sharing opportunities.
+
+% Each phase of execution in \SeeDB begins with the optimizer. 
+% The \SeeDB optimizer takes as input view stubs $(a, m, f)$, 
+% corresponding to the set of visualizations still in running during 
+% a particular phase.
+% The goal of the optimizer is to generate a plan that executes view
+% queries as efficiently as possible.
+
+\stitle{Baseline Plan:} If no optimization is applied, \SeeDB adopts
+the following simple execution plan.
+Each view $(a, m, f)$ is evaluated sequentially by running queries against the database.
+For each view, individual view queries corresponding to the
+target and comparison view are run independently on the DBMS.
+Results of these queries are then used to compute utility for each
+view.
+Naturally, the baseline plan has many inefficiencies.
+In a table with $a$ dimensions, $m$ measures, and $f$ aggregation functions, 
+$2\times f \times a \times  m$ queries must be executed independently.  
+As we show in Section~\ref{sec:experiments}, executing the baseline plan can take >100s even for
+moderate sized data sets --- latencies that are unacceptable for interactive use.
+Consequently, the goal of the optimizer is choose a plan that
+maximizes sharing opportunities across the entire set of view queries.
+Sharing computation in \SeeDB is a special case of the general problem
+of multi-query optimization~\cite{DBLP:journals/tods/Sellis88}; we discuss the 
+relationship in more detail in Section~\ref{sec:related_work}.
+
+\reviewer {
+	D2.4 Regarding the number of queries to be executed: where are the f
+functions to be found? I think there is a (minor) inconsistency: if there are
+a*f*m*2 queries to be executed, why in Section 4.2 do you have (a1 , m1 ,
+f1 ), (a1 , m2, f2) ...(a1, mk, fk)?
+}
+
+\subsection{Optimization Strategies}
+\mpv{rule-based optimization?}
+
+The \SeeDB optimizer maximizes re-use of computation between
+visualizations by intelligently merging the set of view queries and batching them during execution.
+Specifically, \SeeDB adopts the following optimization strategies.
+% The \SeeDB optimizer adopts the following optimization strategies to minimize the total
+% number of queries over the data and consequently the total scans of the data.
+
+\stitle{Combine Multiple Aggregates}: All aggregate view queries 
+with the same group-by attribute can be 
+rewritten as a single, combined query. So instead of executing
+queries for views $(a_1$, $m_1$, $f_1)$, $(a_1$, $m_2$, $f_2)$ \ldots $(a_1$, $m_k$, $f_k)$
+independently, we combine them into a single view represented by
+$(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$.  
+We have found that there is minimal to no impact on latency 
+to grouping as many aggregates as possible in both row and column stores. 
+
+\stitle{Combine target and comparison view query}:
+Since the target view and comparison views only differ in the subset of data
+that the query is executed on, we rewrite these two view queries as
+one. For instance, the target and comparison view queries $Q1$ and $Q2$
+shown below, can be combined into a single query $Q3$.
+\vspace{-5pt}
+\begin{align*} 
+Q1 = &{\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt WHERE \ \ x\ <\ 10\
+GROUP \ \ BY} \ a \\
+Q2 = &{\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt GROUP \ \ BY} \ a \\
+Q3 = &{\tt SELECT \ } a, f(m), {\tt CASE\ IF\ x\ <\ 10\ THEN\ 1\ ELSE\ 0\
+END}\\ 
+&as\ g1,\ 1\ as\ g2 \ \ {\tt FROM} \ D\ {\tt GROUP \ \ BY} \ a,\ g1,\ g2
+\end{align*}
+
+\stitle {Parallel Query Execution}:
+  We execute multiple view queries in parallel since we expect co-executing queries 
+  to share buffer pool pages and reduce disk accesses times. 
+  However, the precise number of parallel queries needs to be tuned to take into account 
+  buffer pool contention, locking and cache line contention \cite{Postgres_wiki}. 
+
+\stitle {Combine Multiple Group-bys}:
+% Efficient cube materialization is a problem well studied in the OLAP literature.
+% Since the views considered by \SeeDB\ can be thought of as projections of the OLAP
+% cube, we can adapt efficient materialization techniques to our problem.
+After applying our multiple aggregate optimization, we are left with a number of 
+queries with a group-by on a single aggregate.
+We can of course group these together into a single query, but each additional 
+group by attribute will increase the number of groups, and (possibly) lead to slower
+overall performance when the number of groups becomes large.  
+Therefore, \SeeDB\ has to determine the optimal way of executing these multi-attribute
+{\it group-by} queries.
+
+Our specific problem is as follows: given a space budget $\mathcal{S}$,
+and estimates of sizes of views (i.e. number of rows in the result), we need to find the optimal
+way to combine multiple single-attribute group-by queries into multi-attribute group-by queries.
+If we know the number of distinct values for each attribute, we can estimate the
+size of a view containing dimension attributes $a_i$ and $a_j$ as $|a_i|\times |a_j|$.
+Formally, our problem becomes:
+\vspace{-5pt}
+\begin{problem}[Optimal Grouping]
+Given a set of dimension attributes $A$ = \{$a_1$\ldots$a_n$\}, divide the
+dimension attributes in $A$ into groups $A_1, \ldots, A_l$ (where $A_i$ is some
+subset of $A$ and $\bigcup A_i$=$A$) such that if a query $Q$ groups the table by $A_i$, 
+the total space budget for $Q$ does not exceed $\mathcal{S}$.
+\vspace{-5pt}
+\end{problem}
+
+Notice that the above problem is isomorphic to the NP-Hard {\em bin-packing} problem~\cite{garey}.
+If we let each dimension attribute
+$a_i$ correspond to an item in the bin-packing problem with weight $\log (|a_i|)$,
+and set the bin size to be $\log \mathcal{S}$,
+then packing items into bins is identical to finding groups $A_1, \ldots, A_l$,
+such that the estimated size of any query result is below $\mathcal{S}$.
+We use the standard first-fit algorithm~\cite{first-fit} to find the optimal
+grouping of dimension attributes.
+
+\stitle{Other Optimizations}: 
+To further speedup processing, we can pre-compute results for 
+static views (e.g. comparison views on full tables) or operate on
+pre-computed data samples.  Such optimizations are orthogonal to the
+problem of efficiently evaluating a large number of views, which we will have to
+do even in the presence of pre-computation or sampling, so we don't focus on them here.
+
+\mpv{should we put in information of our cost function?}
+
