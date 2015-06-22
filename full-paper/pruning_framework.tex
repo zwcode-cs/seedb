@@ -6,41 +6,50 @@
 % batch and share computations across queries---however,
 % if the number of queries is large, this can still 
 % lead to high execution times.
-Although it is possible to construct 100s of potential (aggregate)
+Although it is possible to construct hundreds of potential (aggregate)
 visualizations for a typical dataset, only a fraction of these visualizations have high utility and are relevant to the user.
 Most visualizations are low-utility and computational resources
 are wasted in computing these visualizations.
 % Moreover, only a fraction of the visualizations evaluated by
 % \SeeDB are of high quality; most models have low utility and
 % computational resources are wasted in computing these visualizations.
-In this section, we describe our view pruning framework used to 
-eliminate certain visualizations without complete evaluation.
+In this section, we describe \SeeDB's view pruning framework used to 
+eliminate many views without completely evaluating them.
 
 \stitle{Basic Pruning Framework.}
 \label{subsec:basic_framework}
-As described in Algorithm \ref{}, once the \SeeDB optimizer 
-generates an execution plan, the plan is executed 
-on the subset of data corresponding to the
-current phase.
-Results of the current phase are then integrated into results
-from previous phases to compute view utility and related statistics
-(e.g. mean, standard deviation).
-The \SeeDB pruner then takes the current set of utilities and applies
-% the \SeeDB pruner kicks in at
-% the end of each phase.
-% Once the partition of data corresponding to the current phase has
-% been processed, the \SeeDB results for each view query are integrated into results from previous phases.
-% The \SeeDB execution engine computes the current view utility and
-% related statistics (e.g. means, standard deviations) that are then fed to the \SeeDB pruner.
-% The pruner in turn takes the current set of utilities and applies
-a set of techniques to discard poorly-performing views and
-optionally accept high-utility views as being in the top-$k$.
-When only $k$ aggregate views remain (or $k$ are accepted), \SeeDB
-can either return the views early (if approximate visualizations are permissible) or evaluate the views to completion.
+Recall that the pruning algorithm executes in phases, with each phase partially evaluating optimized query batches
+on a subset of the data.
+Specifically, after each phase, \SeeDB estimates the utility of each view on data from the current and previous batches, and eliminates
+low-utility views that are very unlikely to be in the top-$k$.  It also can accept certain views as definitely being in the top-$k$.
+If more than $k$ views remain, it iterates over the next batch of data;  otherwise the top-$k$ views are returned to the front end.
+This process is shown in Algorithm~\ref{algo:custom_exec_engine}.
 
-\SeeDB implements different pruning schemes with tradeoffs in
-accuracy and latency.
-Our first pruning scheme applies traditional confidence-interval
+
+\begin{algorithm}[h]
+\caption{Pruning Framework}
+\label{algo:custom_exec_engine}
+\begin{algorithmic}[1]
+\State viewsInRunning $\gets$ \{all views\}
+\State currPhase $\gets$ 0
+\While {currPhase.hasNext()}
+\State processNextPartition()
+%\State updateUtilityEstimates()
+\If {currPhase.End()}
+\State pruneViews(viewsInRunning)
+\State currPhase.Next()
+\EndIf
+% \If {stoppingCondition.True()}
+% \State break
+% \EndIf
+\EndWhile
+\State return viewsInRunning.sort().getTopK()
+\end{algorithmic}
+\end{algorithm}
+
+
+We implemented two different pruning schemes in \SeeDB.
+The first scheme uses  confidence-interval
 techniques to bound utilities of views, while the second uses
 multi-armed bandit allocation strategies to find top utility views.
 
@@ -134,12 +143,12 @@ records seen so far.
 
 \stitle{Multi-Armed Bandit Pruning.}
 \label{sec:multi_armed_bandit}
-The \SeeDB pruning problem seeks to start with a large set of potential
-visualizations and to rapidly narrow them at run-time to the set of 
-visualizations with the highest utility.
-Our second pruning scheme uses Multi-Armed Bandit (MAB)~\cite{bandits, AuerCF02, LaiR85} policies to identify top views.
+%The \SeeDB pruning problem seeks to start with a large set of potential
+%visualizations and to rapidly narrow them at run-time to the set of 
+%visualizations with the highest utility.
+Our second pruning scheme uses an adapative of a Multi-Armed Bandit (MAB)~\cite{bandits, AuerCF02, LaiR85} to identify top views.
 In MAB, an online algorithm chooses from a set of alternatives (arms)
- over a sequence of trials to maximize reward; in our setting, alternatives correspond to various visualizations and reward corresponds
+ over a sequence of trials to maximize reward.  In our setting,the  alternatives correspond to various visualizations and the reward corresponds
  to utility. 
 We note that this is the first time that bandit strategies have been
 applied to the problem of identifying interesting visualizations.
@@ -153,9 +162,9 @@ The goal is to devise a {\it strategy} of which machine to play
 at each turn in order to maximize the reward~\cite{bandits}.}
 A recently-studied variation of MAB focuses on finding the arms with the highest
 mean rewards~\cite{BubeckWV13, audibert2010best}.
-Under certain assumptions, this variation is identical to the problem addressed by \SeeDB: our goal is find the views (arms) with the 
+Under certain \srm{which?} assumptions, this variation is identical to the problem addressed by \SeeDB: our goal is find the views (arms) with the 
 highest utility. \mpv {is it arms or bandits?}.
-We therefore adapt the Successive Accepts and Rejects algorithm from \cite{BubeckWV13} 
+Specifically, we adapt the Successive Accepts and Rejects algorithm from \cite{BubeckWV13} 
 to find arms with the highest mean reward. 
 Algorithm~\ref{algo:mab_based_pruning} shows the pseudocode for our pruning technique.
 % As before, the processing of the input table is divided into phases.
@@ -187,7 +196,10 @@ the assumptions of reward distributions would necessarily in this context.
 	process more records and tends towards the {\em true} reward
 	distribution.
 	We assume that these changes to the distributions are small.
+
 }
+\srm{Are we sure the above paragraph is correct?  Since we have random samples, I don't see 
+why the reward distribution is changing.  Shouldn't it be the same?}
 
 \begin{algorithm}
 \caption{MAB Based Pruning}
@@ -219,12 +231,12 @@ In fact, these techniques apply to any consistent estimator.
 	Aditya: can you take a stab at this part?
 }
 
-Note that the two pruning schemes described below have guarantees
-in other settings that do not directly carry over to our setting.
-In our evaluation, we show that in spite of this limitation, the pruning schemes
-work rather well in practice. 
-We can, however, show that as we sample more and more, the estimated utility
-$\hat{U}$ can be made to be arbitrarily close to $U$ for all aggregate views.
+%Note that the two pruning schemes described above have guarantees
+%in other settings that do not directly carry over to our setting.
+In our evaluation, we show that the above  pruning schemes
+work  well in practice. 
+We can also prove, however,  that as we sample more and more, the estimated utility
+$\hat{U}$ (\srm{for both pruning techniques?}) will coverge towards to $U$ for all aggregate views.
 We can state our claim formally in the following lemma. 
 \papertext{The proof based on 
 Hoeffding's inequality can be found in the extended
@@ -241,5 +253,5 @@ both have $m$ groups.
 Let $\hat{U}$ denote our estimate of $U$ based on a uniformly random sample 
 across all $m$ groups. 
 Then, as the number of samples tends to $\infty$, $\hat{U} \rightarrow U$
-with probability $1-\delta$, for as small $\delta$ as needed.
+with probability $1-\delta$, for any desired $\delta$.
 \end{lemma}
