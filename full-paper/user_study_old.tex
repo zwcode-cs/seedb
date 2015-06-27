@@ -1,0 +1,268 @@
+%!TEX root=document.tex
+
+\section{User Study}
+\label{sec:user_study}
+
+We conducted a user study to assess the ability of \SeeDB recommendations
+to support visual analysis.
+Through the user study we seeked to answer the following questions:
+\begin{itemize}
+\item Does \SeeDB enable users to find more interesting visualizations?
+\item Does \SeeDB enable users to find interesting visualizations quickly?
+\item How does our deviation-based metric compare against other possible
+utility metrics?
+\end{itemize}
+
+We conducted a two-part study to answer the above questions. 
+The first part compared a manual chart construction tool to \SeeDB and 
+evaluated the effect of adding recommendations to the a manual 
+chart construction tool.
+The second part of the study compared our deviation-based metric to a 
+simple but powerful alternative utility metric.
+We obtained ground-truth on quality of recommendations and used this data
+to evaluate performance of the deviation-based metric.
+
+Both parts of the study used a 2 (visualization tool) X 2 (dataset) 
+within-subjects design.
+We used a within-subjects design to account for difference in data anlysis
+expertise within subjects.
+In each study, we used counterbalancing to remove any effects related to
+order and the test dataset.
+
+ \stitle{Participants}. We recruited 15 participants (5 female, 10
+ male) all graduate students with prior data analysis experience.
+ All subjects had previous experience with visualization tools (e.g.
+ R, ggplot, Excel).
+ None of the participants had previously worked with any of the study datasets.
+ The study lasted an hour and participants were compensated with a \$15
+ gift card.
+
+ \stitle{Datasets}. We used four datasets during our study, two for the
+ first part and two for the second.
+ The four datasets  were: (1) {\em Housing}: Dataset of housing prices in
+ the Boston area comprising crime rate, racial diversity, housing prices and
+ income indicators; 
+ (2) {\em Movies}: Dataset about movies containing information about gross
+ sales, genres, and ratings;
+ (3) {\em Census}: Dataset containing information about US adults including
+ age, occupation, and capital-loss and gain;
+ (4) {\em Sales}: Dataset containing sales data for various stores across
+ different product categories and regions.
+ These datasets were chosen because they were easy to understand and 
+ concerned topics that would be familiar to participants. 
+ The two datasets used in each experiment had comparable sizes in terms of
+ rows and number of potential visualizations.
+
+ \stitle{Study Protocol}.
+ Our study was divided into three phases: the first
+ phase provided a tutorial on the tools used 
+ in the study. 
+ We used a dataset different from the study datasets during the tutorial.
+ The participants also filled out a brief study about their data analysis 
+ expertise.
+ Next, we administered Part I and Part II of the study.
+ Each part consisted of two visual analysis tasks.
+ For each task, we briefly introduced the participants to the test dataset
+ and task using a written prompt.
+ Each task consisted of the participants using the test tool to find visualizations 
+ supporting or disproving a specific hypothesis.
+ Participants were asked to bookmark any visualizations they deemed relevant for the
+ particular task.
+ Participants were also encouraged to think aloud and explain their thought process
+ while performing the task.
+ We gave participants 10 minutes for each analysis task.
+ After each task, participants filled out a short survey about their experience
+ performing the task.
+ For both experiments, we counterbalanced the order of tools as well as datasets.
+
+ All studies were conducted in a lab setting using Google Chrome on a 15-inch 
+ Macbook Pro.
+ Over the couse of each study session, we collected data in three ways: (i) logs 
+ from each tool recording interactions and results, (ii) study staff notes, and (iii) responses from surveys.
+
+
+
+\subsection{Part I: \SeeDB vs. Manual Chart Construction Tool}
+Our study followed a 2 (visualization tool) X 2 (dataset) within-subjects
+design.
+The two tools were: (a) \SeeDB and (b) \SeeDB without the recommendations
+bar (called {\em MANUAL}).
+Using the same underlying tool in both conditions allowed us to control for
+tool factors related to functionality and user interface.
+\SeeDB was set up to show 15 recommendated visualizations in sets of 5.
+We use the bookmarking facility in both tools as a means to measure user 
+interest in specific visualizations.
+To measure the quality of visualizations obtained from either tool, we use
+various metrics related to bookmarking behavior.
+These include (i) number of bookmarks ($num\_bookmarks$), (ii) total number of visualizations
+viewed ($total\_viz$), (iii) bookmarking rate ($bookmark\_rate$) defined as the ratio
+of $num\_bookmarks$ and $total\_viz$, and (iv) the absolute time between consecutive
+bookmarks $bookmark\_time$.
+We hypothesize that if a visualization is high-quality, it is more likely to be bookmarked.
+This implies that high-quality recommendations can lead to a larger number of bookmarks and
+an increase in the bookmarking rate.
+Table \ref{tab:bookmarks} shows the average number of bookmarks obtained in each tool.
+
+\begin{table}[htb]
+  \centering \scriptsize
+  \begin{tabular}{|c|c|c|c|c|} \hline
+  Tool & num\_bookmarks & total\_viz & bookmark\_rate & bookmark\_time (ms)\\ \hline
+  MANUAL & 3.3 & 14.1 & 0.24 & 1540.5 \\ \hline
+  \SeeDB & 3.5 & 12.1 & 0.36 & 999.5 \\ \hline
+  \end{tabular}
+  \vspace{-10pt}
+  \caption{Bookmarking behavior in MANUAL vs. \SeeDB}
+  \label{tab:bookmarks} 
+  \vspace{-10pt}
+\end{table}
+
+We find that in general, the number of visualizations bookmarked with \SeeDB is greater
+than the number of visualizations bookmarked in MANUAL.
+We also find that the number of total visualizations examined in higher for MANUAL 
+compared to \SeeDB.
+As a consequence of these two opposing forces, we find that the bookmark rate is 1.5X 
+higher for \SeeDB compared to MANUAL and $bookmark_time$ is correspondingly smaller.
+This implies that \SeeDB visualizations are on average 1.5X more likely to be interesting.
+While these differences highlight a trend, the differences are not statistically significant.
+When we dig deeper into the visualizations produced in both conditions, however, we find an
+interesting trend.
+In addition to aggregate visualizations, in both conditions, participants build scatterplots. 
+In particular, participants prefer building scatterplots to visualize certain attributes (e.g. crime
+rate in housing dataset).
+Since \SeeDB does not support scatterplots, however, their presence in the visualizations skews data
+for bookmarking behavior.
+On repeating the above analyses, this time focusing only on aggregate visualizations,
+we find that {\em both} $num\_bookmarks$ and $bookmark\_rate$, in fact, show significant differences
+between the two tools.
+We claim that $bookmark_rate$ (as opposed to $num\_bookmarks$) is an unbiased metric since the absolute 
+number of bookmarks is susceptible to variances in the number of scatterplots vs. aggregate charts 
+(e.g. for crime rate, hypothetically, all constructed visualizations may be scatterplots).
+We find that the aggregate chart $bookmark_rate$ for \SeeDB (0.42) is 3X more than the rate for MANUAL (0.14).
+This increases is larger than the one for all charts (1.5X) and is statistically significant within subjects 
+as well as across subjects (Paired t-test, t = -2.5599, df = 8, p-value = 0.03365).
+The difference in $bookmark_rate$ implies that a visualization recommended by \SeeDB is 3 times more
+likely to be interesting than a similar visualization built manually.
+ANOVA analysis of $bookmark_rate$ concurs that the visualization tool has a significant impact on bookmark
+rate (df = 1, sum sq = 0.3681, mean sq = 0.3681, F value = 10.034, p = 0.00685). 
+We find that choice of dataset does not affect $bookmark_rate$; there are no interaction effects either.
+To verify that counterbalancing worked, we tested for order effects and found none.
+Thus, we find that 
+
+\subsection{Part II: Evaluation of Deviation-based Metric}
+
+ The second part of the experiment compared recommendations 
+ generated by our deviation-based metric (called {\em DEV}) to those generated by a 
+ baseline algorithm (called {\em BASELINE}).
+ BASELINE works by choosing $k$ visualizations at random from the entire set of 
+ possible recommendations.
+ While simple, we find that this algorithm is, in fact, a valuable baseline 
+ since it can capture other utility dimensions such as diversity (of attributes) 
+ that \SeeDB cannot. 
+ \mpv{15 recommendations in each set}
+ The same \SeeDB interface is used in the second experiment; 
+ the only difference is the algorithm powering the recommendations.
+
+\subsection{Limitations, Discussion and Trends}
+ 
+
+ 
+
+ \subsection{Analysis and Results}
+ We now present results for the two experiments as obtained from interaction data
+ with the tool as well as participant-reported surveys and qualitative feedback.
+ For analyzing results from each experiment, we used the mixed-effects model\cite{}.
+ We modeled visualization tool and order as {\em fixed effects} and user and dataset as {\em random effects}.
+ We compute statistical significance using the likelihood ratio test that compares
+ the full model to a model without the specific fixed effect under consideration.
+
+ Of the various metrics tracked by the tool, we use bookmarking as the primary means to 
+ measure interestingness of visualizations.
+ In particular, we examine the total number of visualizations bookmarked in each tool
+ as well as the {\em rate} at which visualizations are bookmarked.
+ We define bookmark rate as the ratio of the number of bookmarked visualizations  
+ to the number of visualizations that the participant examined.
+ For the manual charting tool, the number of visualizations examined is equal to the number of
+ visualizations constructed by the participant.
+ For \SeeDB, the number of visualizations examined is the sum of the number of recommendations
+ examined (as inferred by whether the participant {\em zoomed} into a recommendation) and the
+ number of visualizations created manually.
+
+ Of the 15 participants, 1 participant neglected to bookmark visualizations and 2 completely
+ neglected recommendations. 
+ We report results for the remaining 12 participants.
+
+ \stitle{Recommendation-aided Analysis Finds Interesting Visualizations Faster}.
+ Our goal with the first experiment was to examine whether participants could find interesting 
+ visualizations faster when using a recommendation-supported tool as compared to a manual charting tool.
+ Since we posit that recommendations can help analysts arrive at insights faster,
+ we expect to see a higher bookmark rate with \SeeDB.
+ \mpv{what about more combinations of attributes?}
+ 
+ We find that the average number of bookmarks is 3.16 (sd = 1.80)
+ for MANUAL and 4 (sd = 1.54) for \SeeDB.
+ This difference is not statistically significant ({\em $\chi^2$(1, N=24) = 0.9774,
+ p = 0.3228}).
+ However, we find a significant effect of tool on the bookmark rate ({\em $\chi^2$(1, N=24) = 4.0759,
+ p = 0.0435}).
+ On average, bookmark rate for MANUAL is 0.24 (sd = 0.12), while that for \SeeDB is 0.366 (sd = 0.21).
+ This can be explained by the fact that participants need to construct more charts in the manual tool
+ before they arrive at interesting ones; in \SeeDB, participants need to construct 66\% fewer charts.
+
+ \stitle{Deviation-based Recommendations Find more Interesting Visualizations}.
+ The goal of the second experiment was to evaluate whether deviation-based recommendations find more
+ interesting visualizations compared to baseline recommendations.
+ Similar to above, we performed an analysis of the number of bookmarks and bookmark rate across
+ the two settings.
+ We find that unlike before, we see a statistically significant difference in the number of bookmarks
+ across the tools ({\em $\chi^2$(1, N=24) = XXX, p = XXX}).
+ Similarly, we see a statistically significant difference in the total number of bookmarks examined 
+ across the two algorithms ().
+ However, we do not find a significant difference in the bookmarking rate ().
+ This can be explained by the fact that bookmarking rate is the ratio of number of bookmarks and number
+ of visualizations examined.
+ Although the numerator and denominator are respectively larger for \SeeDB than baseline, their ratio
+ doesn't change.
+ Participants examined more visualization in \SeeDB and also found more of them interesting compared to the 
+ baseline recommendations. 
+ Since users examine a visualization by zooming on it only if they find its thumbnail interesting,
+ the smaller number of examined visualizations is also another indicator that baseline visualizations
+ were not as interesting compared to \SeeDB.
+ \mpv{add data about utility distribution?}
+
+ For both experiments, we found that order did not have a significant effect on bookmarking.
+
+\stitle{User Survey results}. 
+Our surveys after each analysis task asked participants to provide feedback on their experience
+performing the specific task.
+All questions were answered on a 5-point Likert scale.
+The most important result of our survey was that 100\% of all users preferred using a tool with 
+recommendations vs. a manual charting tool.
+85\% indicated that the recommendations sped up their analysis.
+When asked to rate the recommendations provided by \SeeDB, 78\% participants indicated that the
+recommendations were either ``Helpful'' or ``Very Helpful''. 
+We also found that 90\% of participants found the comparative visualizations shown by \SeeDB 
+helpful in their analysis.
+66\% of participants indicated that the recommendations needed improvement, in particular,
+participants were interested in seeing different types of charts (e.g. geographical, time series)
+and obtaining measures of statistical significance.
+
+\stitle{Qualitative Feedback}. In their qualitative feedback, participants highlighted the importance of 
+a tool like \SeeDB at the initial stages of analysis. 
+One partitipant said, {\em ``It's a great tool for proposing a set of initial queries for a dataset I have never seen. 
+And from these visualizationns, I can figure out which related patterns to dig into more.''}
+Others thought that the strength of the tool was in quickly finding relevant trends, {\em ``It's a good tool that helps 
+in quickly deciding what correlations are relevant and gives a quick peek''}. 
+Overall, participants indicated that \SeeDB was particularly suited for exploratory analysis of new datasets, 
+{\em ``I thought SeeDB was very helpful in helping me get more familiar with a new dataset quickly.''}.
+
+An interesting trend we noted, particularly with the more expert analysts, was that they did not want
+to rely too heavily on the recommendations.
+One participant noted, {\em ``The only potential downside may be that it made me lazy so I didn't bother thinking 
+as much about what I really could study or be interested in''}.
+For future development this trend suggests that there is a high bar on quality for recommendations, and that
+it would be worth exploring interface designs that help build confidence in recommendations.
+
+
+
+
+

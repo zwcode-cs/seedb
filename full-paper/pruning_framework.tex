@@ -63,7 +63,9 @@ in other contexts as described in ~\cite{DBLP:conf/pods/FaginLN01,
 DBLP:conf/vldb/IlyasAE04, DBLP:conf/ICDE/ReDS07}.
 
 Pruning works as follows: at every point during execution, \SeeDB
-maintains a running estimate of the mean utility $u_i$ for every view $V_i$ and a confidence interval around that mean, $u_i \pm c_i$.	
+maintains a running estimate of the mean utility $u_i$ for every view 
+$V_i$ and a confidence interval around that mean, $u_i \pm c_i$.	
+
 At the end of a phase, we use the estimates $u_i \pm c_i$ to prune low-utility views according to the following rule:
 {\em If the upper bound of the utility of view $V_i$ is lesser
 than the lower bound of the utility of $k$ or more views, then $V_i$ is discarded.}
