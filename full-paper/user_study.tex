@@ -3,18 +3,145 @@
 \section{Evaluation}
 \label{sec:user_study}
 
-we tested two things: the deviation metric
-and the system
+The previous section evaluated \SeeDB and our optimizations in terms of 
+performance.
+In this section, we assess the value of \SeeDB for real data analysis 
+scenarios.
+We perform this assessment in two stages. 
+First, we perform a study to validate our deviation-based distance metric.
+We claim that although simple and limited in its scope, our deviation-based
+metric can capture significant information about interesting-ness
+of a visualization.
+In the second stage, we evaluate the value of \SeeDB vs. a manual chart
+construction tool.
+We seek to demonstrate that \SeeDB can, in fact, lead users to interesting
+visualizations faster than a manual chart exploration tool.
 
-\subsection{Validating Deviation-based Distance Metric}
+\subsection{Validating Deviation-based Utility}
 \label{sec:validating_metric}
+In recommendation systems literature, the gold standard for evaluating
+a ``recommend good items'' \cite{} system is to obtain ground truth 
+about user preferences and examine how well system recommendations line
+up with ground truth \cite{}.
+We adopt the same evaluation strategy.
 
-- we got ground truth from people; exhaustively label data
-- see how well we can reproduce it
+\stitle{Obtaining Ground Truth}.
+To obtain ground truth, we recuited 5 participants with (3 female, 2
+male) all graduate students with prior data analysis experience.
+We presented them with the Census dataset (from introduction) and the analytical
+task from the introduction \mpv{MAKE SURE.}
+Participant were presented with the entire set of aggregate visualizations 
+for this dataset and were asked to examine each visualization to identify 
+visualizations that were interesting {\it in the context of the task}.
+Participants were also asked to indicate why they chose a visualization
+as interesting.
+There was no upper limit on the number of visualizations a participant could
+choose.
+We capped the study at 10 minutes.
 
-User preferences
+\begin{figure}[t]
+	\centering
+	\begin{subfigure}{0.45\linewidth}
+		{\includegraphics[width=4cm, trim=0 0 3cm 0, clip=true] {Images/HUHI_work_avg_cap_gain.pdf}}
+		\caption{Popular Visualization}
+		\label{fig:popular}  
+	\end{subfigure}
+	\begin{subfigure}{0.54\linewidth}
+		{\includegraphics[width=4.5cm] {Images/LULI_race_avg_age.pdf}}
+		\caption{Unpopular visualization}
+		\label{fig:not_popular}
+	\end{subfigure}
+	\vspace{-10pt}
+	\caption{Baseline performance and Effect of Combining Aggregates }
+	\vspace{-10pt}
+	\label{fig:gt_examples}
+\end{figure} 
 
-New utility metrics
+Each participant identified between 5 - 10 visualizations as being interesting
+in the context of the task.
+Figure \ref{ig:intro} in Section \ref{sec:introduction} showed an example of one of the most interesting
+visualizations found by our participants () as well as one of the least interesting
+(). \mpv{maybe review explanation}
+Figure \ref{fig:gt_examples} shows two other examples of visualizations for this
+dataset: Figure \ref{fig:popular} 
+shows a visualization that was chosen as interesting by 4 of 5 participants.
+According to the participants this visualization was relevant because ``\ldots it
+showed a big difference in earning for self-inc'' and indicated a trend to 
+be examined further.
+Figure \ref{fig:not_popular} in contrast shows a visualization that participants
+did not select as relevant the distributions showed little difference. 
+Figure \ref{} shows a visualization that in fact has high deviation but was not 
+found to be relevant. \mpv{should this go here?}
+The reason participants did not select the visualization was either because ``\ldots
+did not really understand it'' or ``\ldots did not think it was relevant.''
+These charts together show that in addition to deviation, participants had other
+heuristics for interestingness.
+
+In all, participants selected 23 unique visualizations as being interesting.
+To obtain a consensus on ground truth, use used a simple voting system.
+Any visualization that was chosen by majority of participants (3 or more)
+was considered to the interesting; the rest were not.
+
+\stitle{Efficacy of Deviation-based Metric}.
+Once we obtained ground truth, we evaluated whether \SeeDB could recover
+the interesting visualizations.
+We ran \SeeDB over the same dataset and for the same analytical task.
+Figure \ref{fig:gt_dist} shows a heatmap of the number of times each
+visualization in the census dataset was selected as being interesting 
+({\em yellow} = popular, {\em blue} = not popular).
+First, notice that participants had a high level of agreement on the 
+visualizations they found interesting.
+Of the 23 unique visualizations, majority of participants agreed on 
+6 visualizations as being interesting; this suggests that while
+there are individual preferences, we can distill general preferences
+for visualizations.
+next, notice that the utilities in \ref{fig:gt_dist} are sorted in descending order 
+from top to bottom.
+As we can see from the heatmap, the most {\em popular} visualizations are
+the ones with high utility.
+We evaluated this trend computationally via an ROC (``receiver operating curve'')
+analysis \cite{}.
+To construct the ROC curve, we varied the number of visualizations recommended by 
+\SeeDB ($k$) and for each $k$ calculated the 
+number of true positives (ground truth visualizations recommended by \SeeDB),
+false positives (non-ground truth visualizations recommended by \SeeDB), 
+true negatives(non-ground truth visualizations not recommended by \SeeDB) and 
+false negatives (ground truth visualizations not recommended by \SeeDB).
+Figure \ref{fig:roc} shows the ROC curve for \SeeDB and absolute baseline (AUROC = 0.5).
+AUROC for \SeeDB is 0.903. 
+In general, AUROC values above 0.8 are indicative of high quality recommendations\cite{};
+AUROC of 0.9 indicates that \SeeDB (and our deviation metric) performs extremely well in 
+recommending visualizations for this task.
+We acknowledge however that the ROC (and AUROC)
+would vary with difference datasets and anlytical tasks. 
+\mpv{IDEALLY GET DATA FOR OTHER DATASETS OR OTHER TASKS ON THE SAME DATASET}
+
+Thus we find that our deviation-based metric does, in fact, identify visualizations that
+users find interesting for an analytical task.
+In the next section, we examine the effect of providing recommendations during visual 
+analysis.
+
+\begin{figure}[t]
+	\centering
+	\begin{subfigure}{0.3\linewidth}
+		{\includegraphics[trim={0 1.3cm 0 0}, clip, width=3cm]{Images/census_gt_distribution.pdf}}
+		\caption{Distribution ground truth utilities}
+		\label{fig:gt_dist}
+	\end{subfigure}
+	\begin{subfigure}{0.68\linewidth}
+		\centering 
+		{\includegraphics[width=5cm] {Images/seedb_roc.pdf}} 
+		\caption{ROC of SeeDB (AUROC = 0.903)}
+		\label{fig:roc}
+	\end{subfigure}
+	\vspace{-10pt}
+	\caption{Performance of Deviation metric for Census data}
+	\vspace{-10pt}
+	\label{fig:census_gt}
+\end{figure}
+
+\mpv{user preference?}
+\mpv{Something about the new metric}.
 
 \subsection{\SeeDB vs. Manual Chart Construction Tool}
 \label{sec:seedb_vs_manual}
