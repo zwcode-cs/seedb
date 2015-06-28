@@ -7,119 +7,112 @@ The previous section evaluated \SeeDB and our optimizations in terms of
 performance.
 In this section, we assess the value of \SeeDB for real data analysis 
 scenarios.
-We perform this assessment in two stages. 
 First, we perform a study to validate our deviation-based distance metric.
-We claim that although simple and limited in its scope, our deviation-based
+We show that although simple and limited in its scope, our deviation-based
 metric can capture significant information about interesting-ness
 of a visualization.
-In the second stage, we evaluate the value of \SeeDB vs. a manual chart
-construction tool.
-We seek to demonstrate that \SeeDB can, in fact, lead users to interesting
-visualizations faster than a manual chart exploration tool.
+Next, we compare \SeeDB to a manual chart construction tool for performing
+visual analysis.
+We demonstrate that \SeeDB can enable users to find interesting visualizations
+faster and can surface unexpected trends.
+We also find that users overwhelmingly prefer \SeeDB over a manual charting 
+tool.
 
 \subsection{Validating Deviation-based Utility}
 \label{sec:validating_metric}
-In recommendation systems literature, the gold standard for evaluating
-a ``recommend good items'' \cite{} system is to obtain ground truth 
-about user preferences and examine how well system recommendations line
-up with ground truth \cite{}.
+The gold standard for evaluating a recommendation system is to obtain ground 
+truth about user preferences about
+various (ideally all) items and examine whether the system's recommendations 
+can correctly classify each item\cite{??}.
 We adopt the same evaluation strategy.
+For the census dataset and associated analytical task (discussed in Section 
+\ref{sec:introduction}), we obtain ground truth about the interesting-ness of 
+each potential visualizations of the dataset.
+We then evaluate whether \SeeDB can correctly classify visualizations as
+interesting or not interesting.
 
 \stitle{Obtaining Ground Truth}.
-To obtain ground truth, we recuited 5 participants with (3 female, 2
-male) all graduate students with prior data analysis experience.
-We presented them with the Census dataset (from introduction) and the analytical
-task from the introduction \mpv{MAKE SURE.}
-Participant were presented with the entire set of aggregate visualizations 
-for this dataset and were asked to examine each visualization to identify 
-visualizations that were interesting {\it in the context of the task}.
-Participants were also asked to indicate why they chose a visualization
-as interesting.
-There was no upper limit on the number of visualizations a participant could
-choose.
+To obtain ground truth, we recruited 5 participants with significant data analysis 
+experience (3 female, 2 male).
+We presented each participant with the Census dataset and the task of finding visualizations
+that showed interesting trends related to marital status (Section \ref{sec:introduction}).
+Participants were presented with the entire set of aggregate visualizations \mpv{how many}
+for this dataset and asked to classify visualizations as being interesting or 
+not-interesting for the task.
+Participants were also asked to explain verbally why they thought a visualization
+was interesting.
 We capped the study at 10 minutes.
 
 \begin{figure}[t]
 	\centering
 	\begin{subfigure}{0.45\linewidth}
 		{\includegraphics[width=4cm, trim=0 0 3cm 0, clip=true] {Images/HUHI_work_avg_cap_gain.pdf}}
-		\caption{Popular Visualization}
-		\label{fig:popular}  
+		\caption{High deviation, interesting visualization}
+		\label{fig:huhi}  
 	\end{subfigure}
 	\begin{subfigure}{0.54\linewidth}
 		{\includegraphics[width=4.5cm] {Images/LULI_race_avg_age.pdf}}
-		\caption{Unpopular visualization}
-		\label{fig:not_popular}
+		\caption{Low deviation, not interesting visualization}
+		\label{fig:luli}
+	\end{subfigure}
+	\begin{subfigure}{0.45\linewidth}
+		{\includegraphics[width=4cm, trim=0 0 3cm 0, clip=true] {Images/HULI_work_avg_cap_loss.pdf}}
+		\caption{High deviation, not interesting visualization}
+		\label{fig:huli}  
+	\end{subfigure}
+	\begin{subfigure}{0.54\linewidth}
+		{\includegraphics[width=4.5cm] {Images/LUHI_inc_avg_hours.pdf}}
+		\caption{Low deviation, interesting visualization}
+		\label{fig:luhi}
 	\end{subfigure}
 	\vspace{-10pt}
-	\caption{Baseline performance and Effect of Combining Aggregates }
+	\caption{Examples of ground truth for visualizations}
 	\vspace{-10pt}
 	\label{fig:gt_examples}
 \end{figure} 
 
-Each participant identified between 5 - 10 visualizations as being interesting
-in the context of the task.
-Figure \ref{ig:intro} in Section \ref{sec:introduction} showed an example of one of the most interesting
-visualizations found by our participants () as well as one of the least interesting
-(). \mpv{maybe review explanation}
-Figure \ref{fig:gt_examples} shows two other examples of visualizations for this
-dataset: Figure \ref{fig:popular} 
-shows a visualization that was chosen as interesting by 4 of 5 participants.
-According to the participants this visualization was relevant because ``\ldots it
-showed a big difference in earning for self-inc'' and indicated a trend to 
+Of the XXX visualizations, each participant identified between 5 - 10 visualizations 
+as being interesting in the context of the task.
+This strict filter indicates that of the entire set of potential visualizations, only 5\% - 10\%
+show compelling trends for a given task.
+Figure \ref{fig:interesting_viz} in Section \ref{sec:introduction} (showing variation in
+average capital gain across sex for the single and married adults) was a visualization 
+classified as interesting by 4 or 5 participants. 
+In contrast, Figure \ref{fig:uninteresting_viz} was a visualization unanimously classified
+as uninteresting.
+Figure \ref{fig:gt_examples} shows ground truth for four other visualizations: 
+Figure \ref{fig:huhi} shows another visualization that was chosen as interesting by 4 of 5 
+participants.
+According to participants, this visualization was interesting because ``\ldots it
+showed a big difference in earning for self-inc adults'' and indicated a trend to 
 be examined further.
-Figure \ref{fig:not_popular} in contrast shows a visualization that participants
-did not select as relevant the distributions showed little difference. 
-Figure \ref{} shows a visualization that in fact has high deviation but was not 
-found to be relevant. \mpv{should this go here?}
-The reason participants did not select the visualization was either because ``\ldots
-did not really understand it'' or ``\ldots did not think it was relevant.''
-These charts together show that in addition to deviation, participants had other
-heuristics for interestingness.
-
-In all, participants selected 23 unique visualizations as being interesting.
-To obtain a consensus on ground truth, use used a simple voting system.
-Any visualization that was chosen by majority of participants (3 or more)
-was considered to the interesting; the rest were not.
+Figure \ref{fig:luli} in contrast shows a visualization that participants
+did not select as relevant.
+Notice that the two distributions in this chart do not show significant difference. 
+However, this is not to say that deviation was the only factor relevant for interestingness.
+Figure \ref{fig:huli}, for example, shows a visualization that in fact has high deviation, but was 
+not classified as interesting by any participants.
+Similarly, Figure \ref{fig:luhi} shows a visualization that shows less deviation but was 
+classified as interesting by 2 participants because the ``\ldots hours-per-week
+seemed like an interesting measure''.
 
 \stitle{Efficacy of Deviation-based Metric}.
-Once we obtained ground truth, we evaluated whether \SeeDB could recover
-the interesting visualizations.
-We ran \SeeDB over the same dataset and for the same analytical task.
+Once we obtained ground truth, we evaluated whether \SeeDB could correctly
+classify visualizations with respect to ground truth.
+In all, participants selected 23 unique visualizations as being interesting.
+To obtain a consensus on ground truth, we used a simple voting system.
+Any visualization that was chosen by majority of participants (3 or more)
+was considered to be interesting; the rest were not.
+Of the 23 unique visualizations classified as interesting, majority of participants 
+agreed on 6 visualizations as being interesting.
+Observe that while there are subjective differences in the criteria for interesting-ness,
+it is possible to distill general criteria for interesting-ness of visualizations.
 Figure \ref{fig:gt_dist} shows a heatmap of the number of times each
-visualization in the census dataset was selected as being interesting 
-({\em yellow} = popular, {\em blue} = not popular).
-First, notice that participants had a high level of agreement on the 
-visualizations they found interesting.
-Of the 23 unique visualizations, majority of participants agreed on 
-6 visualizations as being interesting; this suggests that while
-there are individual preferences, we can distill general preferences
-for visualizations.
-next, notice that the utilities in \ref{fig:gt_dist} are sorted in descending order 
-from top to bottom.
-As we can see from the heatmap, the most {\em popular} visualizations are
-the ones with high utility.
-We evaluated this trend computationally via an ROC (``receiver operating curve'')
-analysis \cite{}.
-To construct the ROC curve, we varied the number of visualizations recommended by 
-\SeeDB ($k$) and for each $k$ calculated the 
-number of true positives (ground truth visualizations recommended by \SeeDB),
-false positives (non-ground truth visualizations recommended by \SeeDB), 
-true negatives(non-ground truth visualizations not recommended by \SeeDB) and 
-false negatives (ground truth visualizations not recommended by \SeeDB).
-Figure \ref{fig:roc} shows the ROC curve for \SeeDB and absolute baseline (AUROC = 0.5).
-AUROC for \SeeDB is 0.903. 
-In general, AUROC values above 0.8 are indicative of high quality recommendations\cite{};
-AUROC of 0.9 indicates that \SeeDB (and our deviation metric) performs extremely well in 
-recommending visualizations for this task.
-We acknowledge however that the ROC (and AUROC)
-would vary with difference datasets and anlytical tasks. 
-\mpv{IDEALLY GET DATA FOR OTHER DATASETS OR OTHER TASKS ON THE SAME DATASET}
-
-Thus we find that our deviation-based metric does, in fact, identify visualizations that
-users find interesting for an analytical task.
-In the next section, we examine the effect of providing recommendations during visual 
-analysis.
+visualization was classified as being interesting 
+({\em yellow} = popular, {\em blue} = not popular), sorted
+in {\em decending order} of utility. 
+We notice that the majority of the yellow bands fall at the top of the
+heatmap, i.e., qualitatively, popular visualizations have higher utility.
 
 \begin{figure}[t]
 	\centering
@@ -140,10 +133,46 @@ analysis.
 	\label{fig:census_gt}
 \end{figure}
 
-\mpv{user preference?}
-\mpv{Something about the new metric}.
+To evaluate the accuracy of \SeeDB recommendations with respect to ground truth, 
+we ran \SeeDB over the census data with query $Q$ set as adults who are unmarried, 
+and the reference dataset as the rest of the population.
+We varied the number of visualizations $k$ recommended by \SeeDB between 0 and
+max \mpv{fill in max}.
+For each value of $k$ we computed the number of true positives (\SeeDB recommended
+visualizations that were classified as ``interesting'' by majority), false
+positives, true negatives and false negatives.
+The true positive rate (recall) and false positive rate for \SeeDB are shown 
+in the `receiver operating curve'' (ROC)\cite{} in Figure \ref{fig:roc}.
+As expected, we observe that as $k$ increases, the true positive rate (TPR)
+increases (or stays constant), but false positive rate (FPR) also increases as 
+more visualizations are incorrectly classified as interesting.
+Clearly, \SeeDB performs significantly better than the baseline algorithm which 
+classifies every visualization as interesting with 50\% probability.
+For example, for $k$ = 3, TPR = 0.5 and FPR = 0;
+i.e., for $k$ = 3, all 3 visualizations recommended by \SeeDB are in fact interesting.
+However, \SeeDB recovers only 3 of the 6 visualizations.
+Likewise, for $k$ = 5, 4 of 5 of the recommended visualizations are interesting, giving
+TPR = 0.667 and FPR = 0.05.
+Finally, for $k$=14, \SeeDB recommends all 6 interesting visualizations, giving a 
+TPR of 1 but having an FPR of 0.421.
+The standard metric for computing quality of a recommender is to
+compute AUROC or area under the ROC curve.
+AUROC for \SeeDB in \ref{fig:roc} is 0.903.
+AUROC values above 0.8 are indicative of
+high quality of recommendations \cite{}, demonstrating that \SeeDB performs very well in
+making recommendations.
 
-\subsection{\SeeDB vs. Manual Chart Construction Tool}
+While ROC curves for \SeeDB will vary with dataset and query, the above analysis, both
+qualitatively and via ROC, indicates that our deviation-based metric can in fact identify
+interesting visualizations with high accuracy.
+Although there are many other factors that determine interesting-ness, deviation seems
+to capture a significant part of the metric. 
+
+Now that we have validated our deviation-based metric, we examine how \SeeDB, a visualization tool
+with deviation-based recommendations, compares to a manual chart construction tool in performing
+visual analysis.
+
+\subsection{\SeeDB vs. Manual Chart Construction}
 \label{sec:seedb_vs_manual}
 
 To assess the efficacy of \SeeDB in enabling faster visual analysis,
@@ -171,16 +200,17 @@ construction tool.
  (2) {\em Movies} - Dataset about movies containing information about gross
  sales, genres, and ratings;
  These two datasets were chosen because they were easy to understand and 
- their topics that would be familiar to participants. 
+ their topics would be familiar to participants. 
  In addition, the datasets were comparable in terms of number of rows and 
  potential visualizations.
 
 \stitle{Study Protocol}.
 Our user study used a 2 (visualization tool) X 2 (dataset) 
 within-subjects design.
-The tools used were \SeeDB and {\em MANUAL}-{\em only} version of \SeeDB.
-MANUAL was the same as \SeeDB except that the recommendations bar was 
-removed (Figure \ref{}).
+The visualizations tools used were \SeeDB and {\em MANUAL}-only 
+version of \SeeDB.
+The MANUAL tool was identical to \SeeDB except that the recommendations bar was 
+removed (``D'' in Figure \ref{fig:frontend}).
 Using the same underlying tool in both conditions allowed us to control for
 tool-related factors such as functionality and user interface.
 We used a within-subjects design to compensate for difference in data analysis
@@ -196,31 +226,32 @@ In each condition, we introduced participants to the test dataset
 and described the analytical prompt using written instructions.
 Each analytical task asked participants to use the specific tool to find 
 visualizations supporting or disproving a specific hypothesis.
-Participants were asked to use the bookmark button (XXX in Figure \ref{}) to 
-flag any visualizations they deemed relevant for the particular task.
+Participants were asked to use the bookmark button (in component ``C'' in Figure 
+\ref{fig:frontend}) to flag any visualizations they deemed relevant for the particular task.
 Participants were also encouraged to think aloud and explain their thought process
 while performing the task.
 Since the analytical tasks were open-ended, we capped each task at 8 minutes.
 After each task, participants filled out a short survey about their experience
-using the particular tool.
-Most questions were answered on a 5-point Likert scale.
+using the particular tool and completed an exit interview at the end of the study.
+Most survey questions were answered on a 5-point Likert scale.
 All studies were conducted in a lab setting using Google Chrome on a 15-inch 
 Macbook Pro.
 
 \stitle{Methods and Metrics}.
 Over the couse of each study session, we collected data by three means: interaction logs 
-from each tool, study staff notes, and responses to surveys.
+from each tool, responses to surveys, and exit interviews notes.
 Since users were asked to bookmark visualizations they found to be relevant to the task,
-bookmarking behavior, recovered from tool interaction logs, provides the richest source
+bookmarking behavior from tool interaction logs provides a rich source
 of information about the analytical process.
 Specifically, we study a number of metrics including: (i) number of bookmarks ($num\_bookmarks$), 
 (ii) total number of visualizations viewed ($total\_viz$), 
 (iii) bookmarking rate ($bookmark\_rate$) defined as $num\_bookmarks$/$total\_viz$, and 
-(iv) the time to bookmark ($bookmark\_time$).
+(iv) the time between consecutive bookmarks ($bookmark\_time$).
 \SeeDB and MANUAL support construction of two kinds of charts: aggregate visualizations and 
 scatterplots (to replicate real visual analysis).
-Since \SeeDB can only recommend aggregate visualizations, we also examine the corresponding
+Since \SeeDB can only recommend aggregate visualizations, we also analyze the above
 metrics for aggregate visualization only.
+We supplement bookmark analysis with qualitative data from surveys and study notes.
 We evaluate statistical signifance of our results using paired t-tests and ANOVAs.
 
 % We hypothesize that if a visualization is high-quality, it is more likely to be bookmarked.
@@ -234,14 +265,16 @@ The overall bookmark rate was 0.26.
 We next describe our key findings and observations.
 
 \stitle{1. \SeeDB enables fast visual analysis}.
-Table \ref{tab:bookmarks} shows an overview of the bookmarking behavior divided by tool.
+Table \ref{tab:bookmarks} shows an overview of the bookmarking behavior for each tool.
 We find that, in general, participants bookmarked slightly more visualizations with \SeeDB than 
 with MANUAL.
 On the other hand, we find that participants interacted with fewer visualizations in \SeeDB than
 in MANUAL.
 As a consequence of these two opposing forces, we find that participants using \SeeDB view fewer
-visualizations but bookmark more, i.e., the visualizations they interact with are high quality.
-In fact, the $bookmark\_rate$ for \SeeDB is 1.5X higher than that for MANUAL.
+visualizations but bookmark more, i.e., the visualizations they interact with are, on average, 
+higher quality.
+This trend id reflected in the $bookmark\_rate$ for \SeeDB; the $bookmark\_rate$ for \SeeDB is 1.5X 
+higher than that for MANUAL.
 We also find that, on average, the $bookmark\_time$ for \SeeDB (92.91 $\pm$ 49.26) is twelve seconds 
 shorter than that for MANUAL (105.02 $\pm$ 58.24). 
 While these differences are not statistically significant, they point towards a trend: {\it \SeeDB
@@ -260,71 +293,134 @@ enables participants to arrive at interesting visualizations faster than MANUAL}
   \vspace{-10pt}
 \end{table}
 
+\begin{table}[htb]
+  \centering \scriptsize
+  \begin{tabular}{|c|c|c|c|c|} \hline
+   & num\_bookmarks & total\_viz & bookmark\_rate \\ \hline
+  MANUAL & 1.1 $\pm$ 1.45 & 6.3 $\pm$ 3.8 & 0.14 $\pm$ 0.16 \\ \hline
+  \SeeDB & 3.5 $\pm$ 1.35 & 10.8 $\pm$ 4.41 & 0.43 $\pm$ 0.23 \\ \hline
+  \end{tabular}
+  \vspace{-10pt}
+  \caption{Aggregate Visualizations: Bookmarking behavior Overview}
+  \label{tab:agg_bookmarks} 
+  \vspace{-10pt}
+\end{table}
+
+
+
 Recall that \SeeDB (currently) only supports recommendations for aggregate visualizations.
-Therefore views of all visualizations do not necessarily capture the behavior with respect to
-aggregate visualizations.
-When we examine the same metrics with respect to aggregate visualizations, we find a clear
-signal.
-The rate of bookmarking aggregate ($agg\_bookmark\_rate$) visualizations in \SeeDB (0.42) is 3X that
-in MANUAL (0.14).
-The 3X increase is larger than that seen in all visualizations (1.5X) and is statistically significant 
-within subjects as well as across subjects ({\em Paired t-test, t = -2.5599, df = 8, p-value = 0.03365}).
-We note that there is significant difference also between the number of aggregate bookmarks in the
-two conditions.
-However, the absolute number of aggregate visualizations and therefore aggregate bookmarks is closely
-tied to the relative proportion of scatterplots and aggregate visualizations.
-As a result, the absolute numbers can be biased and we ignore them in spite of their statistical
-significance.
-Finally, we note that a 2-way ANOVA also concurs that the tool has a significant impact on aggregate 
-bookmark rate ({\em df = 1, sum sq = 0.3681, mean sq = 0.3681, F value = 10.034, p = 0.00685}). 
+The above results include data for both scatterplots as well as aggregate visualization, and
+therefore do not entirely reflect bookmark behavior for aggregate visualizations.
+Table \ref{tab:agg_bookmarks} shows the same bookmarking metrics as in Table \ref{tab:bookmarks}
+for aggregate visualizations.
+As before, we see that $num\_bookmarks$ is higher in \SeeDB than in MANUAL; in fact, this difference
+is statistically significant ({\em t = 3.417, df = 9, p-value = 0.007665}).
+However, unlike in Table \ref{tab:bookmarks}, we observe that number of aggregate visualizations 
+is higher for \SeeDB compared to MANUAL suggesting that the larger number of bookmarks in \SeeDB 
+might be a consequence of a larger number of aggregate visualizations with \SeeDB (possibly because
+\SeeDB only recommends aggregate visualizations)\footnote{Although \SeeDB only recommends aggregate
+visualizations, users have the ability to plot or modify a recommendation to construct a scatterplot}.
+As a result, we find $bookmark\_rate$, which is the proportion of aggregate visualizations bookmarked
+to the number of aggregate visualizations viewed, to be an unbiased metric.
+We find that $bookmark\_rate$ for \SeeDB (0.42) is in fact 3X larger than the $bookmark\_rate$ for 
+MANUAL (0.14).
+This implies that \stitle{a \SeeDB recommended aggregate visualization is 3 times more likely to be
+interesting compared to a manually constructed aggregate visualization}.
+We find this difference in $bookmark\_rate$ to be statistically significant within subjects as well 
+as across subjects ({\em Paired t-test, t = -2.5599, df = 8, p-value = 0.03365}).
+A 3X higher $bookmark\_rate$ implies that users are 3X more likely to find interesting insights with 
+recommended visualizations vs. if they create visualizations manually; i.e., \SeeDB can enable users 
+to find interesting insights faster.
+These statistical results are supported by anecdotal and survey data from study participants.
+87\% of participants indicated that \SeeDB recommendations sped up their visual analysis. 
+Many participants also alluded to the ability of \SeeDB to let them analyze data quickly, e.g. 
+``\ldots quickly deciding what correlations are relevant'', ``[analyze]...a new dataset quickly''.
+
+Finally, we note that results of a 2-way ANOVA also indicate that \SeeDB has a significant impact on 
+aggregate bookmark rate ({\em df = 1, sum sq = 0.3681, mean sq = 0.3681, F value = 10.034, p = 0.00685}). 
 We find that choice of dataset does not affect bookmark rate, and there are no interaction or order effects.
 
-User survey data also supports the claim that \SeeDB enables fast analysis.
-87\% of participants indicated that \SeeDB recommendations sped up their visual analysis.
+\begin{figure}
+	\centering
+	{\includegraphics[trim={0 0 0 0}, clip, width=9cm]{Images/traces.pdf}}
+	\caption{Interaction trace examples: (R) = Recommendation, (M) = Manual, (B) = Bookmark}
+	\vspace{-10pt}
+	\label{fig:traces}
+\end{figure}
 
-\stitle{2. \SeeDB found interesting and unexpected visualizations}.
-One of the goals of \SeeDB is to find interesting visualizations that the user may not generate, i.e.,
-we want to surface unexpected visualizations.
-We find evidence for this in the study.
-Figure \ref{} shows an example of visualizations that were not generated by participants using MANUAL
-but was in fact recommended by \SeeDB and bookmarked as being interesting.
-78\% of participants also indicated that \SeeDB recommended visualizations they might not explored, e.g.
-``\ldots interesting aspects of data to compare. I don't think I would have checked those by myself.''.
-
-
-\stitle{3. \SeeDB provides starting point for analyses}. 
+\stitle{2. \SeeDB provides starting point for analyses}. 
 To our knowledge, \SeeDB is the first tool to provide recommendations for supporting visual
 analysis.
 As a result, we were interested in how recommendations could fit into the analytical workflow.
-While a participant's exact workflow was unique, we repeatedly found the pattern {\em recommendation 
-$\rightarrow$ manual\_modify $rightarrow$ manual\_modify $rightarrow$ \ldots bookmark}.
-Specifically, participants would often start from one of the recommendations and explore other
-visualizations that were variations of it (e.g. different aggregation or measure attribute) 
-until they found an interesting visualization.
-\mpv{can I put any data here?}
-Thus, even if recommendations weren't bookmarked directly, their variations were often bookmarked.
-This pattern was highlighted in user comments as well. 
-8 users highlighted the use of \SeeDB in {\em seeding} their analysis: e.g.,
+While a participant's exact workflow was unique, we repeatedly found specific patterns in the
+interaction traces of \SeeDB.
+Figure \ref{fig:traces} shows examples of three such traces.
+Interaction traces show that participants often started with a recommended visualization, 
+examined it, modified it one or more times (e.g. by changing to a different aggregate function 
+or measure attribute) and bookmarked the resulting visualization.
+%  {\em recommendation 
+% $\rightarrow$ manual\_modify $rightarrow$ manual\_modify $rightarrow$ \ldots bookmark}.
+% Specifically, participants would often start from one of the recommendations and explore other
+% visualizations that were variations of it (e.g. different aggregation or measure attribute) 
+% until they found an interesting visualization.
+% \mpv{can I put any data here?}
+Thus, even if participants did not bookmark recommendations directly, their often created
+small variations of the visualization and bookmarked them.
+In other words, along with providing recommendations that were interesting by themselves, \SeeDB
+helped direct participants to other interesting visualizations by {\em seeding} their analysis.
+This pattern was highlighted in user comments as well; e.g.,
 ``\ldots would be incredibly useful in the initial analysis of the data'', 
-``Exploratory analysis \ldots'',
-``\ldots great tool for proposing a set of initial queries for a dataset'',
-``\ldots quickly deciding what correlations are relevant and gives a quick peek''.
-On the other hand, we found participants are much less satisfied with recommendations when they 
-are unable to interact with or modify them.
-These observations reinforce the design choice of \SeeDB as a complement to a traditional
-visualization system; the mixed-initiative nature of the system is essential for the system to be
-userful in analysis.
+``\ldots quickly deciding what correlations are relevant and gives a quick peek'',
+``\ldots great tool for proposing a set of initial queries for a dataset''.
+In addition to understand the role recommendations played in analysis, these observations 
+also serve to reinforce the design choice of \SeeDB as a complement to a traditional
+visualization system vs. a standalong system; the mixed-initiative nature of the tool 
+is essential for it to be functional in visual analysis.
 
-\stitle{4. All participants preferred \SeeDB to MANUAL}. 
+\stitle{3. All participants preferred \SeeDB to MANUAL}. 
 The most important result of our survey was that 100\% of all users preferred \SeeDB to MANUAL for
-visual analysis, i.e., all users preferred to have recommendations while carrying out visual analysis.
+visual analysis, i.e., all users preferred to have recommendation support during their visual analysis.
 As discussed previously, 78\% of participants found the recommendations helpful and thought that they
 showed interesting trends.
-An interesting observation from two participants was that they did not want to rely too heavily
-on the recommendations; one participant noted {\em ``The only potential downside may be that it made 
+In addition, majority of users found \SeeDB as a powerful means to get an overview of interesting trends
+in the data and to obtain starting points for further analysis.
+77\% of participants also indicated that \SeeDB recommended visualizations they might not explored, e.g.
+``\ldots interesting aspects of data to compare. I don't think I would have checked those by myself.''.
+To illustrate, Figure \ref{} shows two visualizations that were not generated by participants using MANUAL,
+but were in fact recommended by \SeeDB and bookmarked as being interesting.
+
+An intriguing observation from two participants was that while they wanted recommendations to support them
+in analysis, they did not want to rely too heavily on recommendations and ignore their creativity.
+One participant noted {\em ``The only potential downside may be that it made 
 me lazy so I didn't bother thinking as much about what I really could study or be interested in''}.
-This observation suggests that there is a high bar on quality for recommendations, and an interesting
-line of future work could be to explore means to build confidence in recommendations.
+This observation suggests lines for future work that can find the right balance between automatically 
+recommending insights and allowing the user to leverage their intuition and creativity.
+
+\subsection{Limitations}
+Given that both studies described above were conducted in the lab, the studies had limitations.
+First, due to constraints on time and resources, the sample sizes for both studies were small.
+A larger set of participants and spread of datasets could be used to further demonstrate the
+efficacy of our system.
+Second, our user studies were conducted with graduate students participants who, on one hand, 
+likely have higher data analysis skills than typical users, while on the other hand, are 
+not experts in the dataset being analyzed.
+Consequently, our results represent results the perspective of capable data analysts who 
+have limited familiarity with the data.
+We find that \SeeDB is particularly well suited for this particular setting of initial data 
+analysis when the user is not very familiar with the data (\~ coldstart).
+It would be instructive to evaluate \SeeDB on datasets about which users have expert knowledge.
+Finally, we note that being a research prototype, limited functionality of \SeeDB (e.g. in types of
+charts) and potential issues with learnability and interactivity may have also had an impact on
+our study.
+
+\mpv{Also: The datasets we evaluated had a relatively small (< 100) number of potential visualizations;
+it would be valuable to evaluate the performance of \SeeDB on datasets with thousands of potential
+visualizations.
+It is also possible that some datasets were easier to interpret than others.
+}
+
+
+
 
 % 86\% of participants indicated that the recommendations sped up their analysis.
 

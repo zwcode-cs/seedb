@@ -16,32 +16,40 @@ arriving at visualizations that they find interesting or insightful.
 This need to manually specify and examine every visualization hampers rapid analysis 
 and exploration of data.
 
-\agp{Rewrote this to tone down.}
-
+\resolved{\agp{Rewrote this to tone down.}}
 In this paper, we tackle the problem of automatically 
 identifying and recommending 
 visualizations.  
-One of the core challenges is that it is entirely subjective as to
-whether a visualization is interesting or not.  
-In this paper, we adopt a simple criterion for judging interestingness, 
-that a visualization 
-may be interesting if it displays 
+One of the core challenges in recommending visualizations is that 
+whether a visualization is interesting or not
+depends on a host of factors.
+We refer to the function determining {\em interesting}-ness of a visualization
+as the {\em utility metric}.
+In this paper, we adopt a simple criterion for judging interestingness: 
+a visualization is likely to be interesting if it displays 
 {\em large deviations from some
-reference} (we define this notion more formally below.)
-We demonstrate the efficacy of this criterion in this paper via 
-user studies. 
-Of course, there many other elements that may make a visualization interesting.
+reference} (e.g. another dataset, historical data etc.)
+While simple, we find in user studies (Section \ref{sec:user_study}) 
+that deviation can account for a significant portion of users' interest in a visualization.
+Of course, there other elements that may make a visualization interesting.
 Examples include aesthetics (that 
 we borrow from prior work~\cite{polaris,Mackinlay:1986:ADG:22949.22950}), 
 the particular attributes of the data being presented 
 (our interactive tool allows analysts to choose attributes of interest) 
 or other kinds of trends in
 data (for example, in some cases, a {\it lack} of deviation may be interesting.)  
-Thus, while our focus is on visualizations with large deviation, 
+Therefore, while our focus is on visualizations with large deviation, 
+we develop a system and underlying techniques that are largely agnostic to the
+particular definition of the utility metric.
+\mpv{Depending on how we write the extensions section:
 we also design a generalized utility metric for evaluating visualization 
 quality (in Section 8), and describe how our system is capable of handling
 this generalized utility metric for recommending visualizations.
+Or: In Section \ref{sec:discussion}, we outline some techniques to extend our
+utility metric to incorporate other dimensions of quality and the corresponding...
+}
 
+%it is entirely subjective \mpv{depends on a host of factors}.  
 % However, our hypothesis, which we demonstrate
 % empirically through user studies, is that many interesting visualizations 
 % demonstrate large deviations from some reference data set (we define this notion formally below.)
@@ -53,22 +61,22 @@ this generalized utility metric for recommending visualizations.
 % utility metric for evaluating visualization quality, and develop several
 % techniques for recommending {\it high utility} visualizations.
 
-\agp{Rewrote this to make stronger.}
-
+\resolved{\agp{Rewrote this to make stronger.}}
 Given a utility metric (based on deviation or otherwise),
 the goal of recommending visualizations based on this metric 
 raises several challenges:
 First, even for a modest dataset with a small number
 of attributes, the number of  
 visualizations that need to be considered is often in the hundreds or thousands.
-Even simply generating each of these visualizations can take many hours 
-(as we will see in this paper).
+Even simply generating each of these visualizations can take multiple hours 
+(as we will see in this paper \mpv{is this accurate?}).
 Second, evaluating these visualizations for utility requires repeated
-computations on the same underlying data, requiring even more time.
-Third, recommendations need to made to analysts at interactive speeds,
+computations on the same underlying data, wasting time and computational resources.
+Third, recommendations need to be made to analysts at interactive speeds,
 making it necessary to avoid some computation altogether at the cost
-of returning visualizations with slightly lower utilities. 
-Dealing with these challenges and trade-offs in designing our system, \SeeDB, is the primary focus of this paper. 
+of returning visualizations with slightly lower accuracy. 
+Dealing with these challenges and trade-offs in designing our system, \SeeDB, 
+is the primary focus of this paper. 
 
 % first, the curse of dimensionality makes the number of possible visualizations very large;
 % second, evaluating the utility of each visualization may require re-running computations over the 
@@ -87,7 +95,7 @@ Dealing with these challenges and trade-offs in designing our system, \SeeDB, is
 % Our system, \SeeDB, is designed to address all of these challenges.
 
 We begin with an illustrative example that explains the \SeeDB use case and motivates our deviation-based
-scoring function. 
+utility metric. 
 
 % In this work, we combine an {\em incremental view pruning} framework with multi-
 % query processing techniques to make recommendations in real time.
@@ -268,13 +276,12 @@ scoring function.
 
 %%%%%% VLDB original end %%%%%%%
 
-\reviewer {
+\resolved{\reviewer {
 Focusing on the
 diabetes dataset in Figure 1 and Figure 3 would leave more room to reuse
 them to discuss some findings for example using Figure 3.
 }
-\mpv{in reviewer response mention that we use a more accessible dataset}
-
+\mpv{in reviewer response mention that we use a more accessible dataset}}
 \begin{example}
 Consider a journalist performing research for a news article about millenials.
 Prior research shows that millenials are getting married at an older age than 
@@ -288,7 +295,7 @@ As is common in many analytical workflows, the journalist begins by using her fa
 visualization software to graph various indicators in the data.
 
 For instance, she may visualize average income as a function of marital status,
-marital status as a function of education, the correlation between race and gender,
+marital status as a function of education, the correlation with race and gender,
 impact on hours worked every week---the list goes on.
 Depending on the types of visualizations created, the number of possible 
 visualizations grows exponentially with the number of indicators in the dataset,
@@ -306,7 +313,7 @@ becomes untenable.
 		Male   & True  &  1657 \\ \hline
 		Male   & False &  356 \\ \hline
 	  \end{tabular}
-		  \caption{Data: Average Age based on Sex} \label{tab:staplerX}
+		  \caption{Data: Average Age based on Sex} \label{tab:interesting_viz}
 	\end{subfigure}
 	\begin{subfigure}{0.49\linewidth}
 	   \begin{tabular}{ccc} \hline
@@ -316,14 +323,14 @@ becomes untenable.
 		Male   & True  &  43 \\ \hline
 		Male   & False &  28 \\ \hline
 	  \end{tabular}
-	  \caption{Data: Average Capital Gain based on Sex} \label{tab:staplerX}
+	  \caption{Data: Average Capital Gain based on Sex} \label{tab:uninteresting_viz}
 	\end{subfigure}
 	
 	\centering
 	\begin{subfigure}{0.49\linewidth}
 		{\includegraphics[width=4cm] {Images/HUHI_sex_avg_cap_gain.pdf}}
 		\caption{Interesting Visualization}
-		\label{fig:interesting_viz}
+		\label{fig:interesting_viz} 
 	\end{subfigure}
 	\begin{subfigure}{0.49\linewidth}
 		\centering
@@ -339,25 +346,27 @@ becomes untenable.
 
 %What might make one of these visualizations ``interesting'' or valuable for the 
 %task at hand depends on a number of factors.
+\resolved{
 \srm{I suggested below that our user studies show that users like our metric. Do we believe this?}
-\agp{rewrote to remove preference}
-
-In this example, the reference dataset might be the whole population or the subset of
-the population that has been married at least once (as in example).
-We have identified that in many analyses, visualizations that show trends in the specific 
-data that differ from trends in the reference dataset are interesting.
-For example, from our user study in Section \ref{sec:user_study}, we know that
+\agp{rewrote to remove preference}	
+}
+Of the entire set of possible visualizations, only a small number of visualizations
+show trends and information important for the specific task.
+We have identified that in many analyses, visualizations that show trends in the test 
+data (here single individuals) that differ from trends in the reference dataset (rest of the population)
+are interesting.
+For example, from our user study (Section \ref{sec:user_study}), we know that
 analysts find the visualization in Figure \ref{fig:interesting_viz} interesting since it shows 
-a trend in single individuals that is different from the trend in the married individuals.
-Specifically, the chart shows that capital gain for female, married adults is only
-half that for male, married adults; however, capital gain in single adults is roughly the same 
-for both sexes.
-Thus, the chart in Figure \ref{fig:interesting_viz} shows a trend that is relevant for the 
-task at hand and worth exploring further.
-Figure \ref{fig:uninteresting_viz} on the other hand is a visualization that analysts do not 
-find interesting. 
-This is because the trend in average age is identical for males and females irrespective of
-their marital status.
+a trend in data about single individuals that is different from the trend in the married individuals.
+Specifically, the chart shows that average capital gain for female, married adults is only
+half the average capital gain for male, married adults.
+However, for single adults, there is essentially no difference in average capital gain.
+Thus, the chart in Figure \ref{fig:interesting_viz} higlights a trend that is interesting in the context 
+of the specific analytical task.
+The same user study also shows that Figure \ref{fig:uninteresting_viz} is a visualization that analysts 
+do not find interesting. 
+This is because average age shows no difference between single and married individuals of both sexes \mpv{reword}.
+
 % In the case of app analytics, this underlying distribution might be metrics for
 % all apps, versus the distribution of particular metrics specifically in BadApp.
 % As an example, our user studies suggest that users will find the visualization of load times by carrier (Figure
@@ -366,10 +375,8 @@ their marital status.
 % (Figure \ref{fig:staplerX-b}).  
 \end{example}
 
-\mpv{Say that metric is suited to when there user is unfamiliar with the data, cold
+\mpv{Move to discussion: Say that metric is suited to when there user is unfamiliar with the data, cold
 starts?}
-\agp{We need to articulate that our goal is to build \SeeDB that actually makes
-these recommendations.}
 %Since our goal with \SeeDB is to make visual analytics faster, we adopt a metric
 %that prefers visualizations that show interesting or surprising trends in data.
 %Specifically, we are motivated by the following observation:
@@ -389,16 +396,6 @@ these recommendations.}
 % That said, in Section~\ref{sec:discussion}, we describe how our deviation-based
 % metric can, in fact, encompass a large number of data-driven utility metrics and
 % can be seamlessly extended to support other dimensions such as user preferences.
-
-\srm{the following is substantially edited / cut back.}
-We formally define the deviation-based scoring function in the next
-section.  As noted above, in addition to our deviation-based metric,
-there are of course many other dimensions (aesthetics, user
-preferences, etc.) that can influence the perceived utility of a
-visualization a few of which we discuss in Section
-\ref{sec:discussion}, leaving a detailed investigation of such metrics
-for future work.
-
 
 %These include other functions based on data distribution (e.g. scoring based on 
 %statistical summaries) and functions that measure utility along {\em 
@@ -446,7 +443,6 @@ for future work.
 	The method does not consider the context, semantics, and any user
 preferences all important components of viz	
 }
-\mpv{Yeah I say that above. Any additions?}
 
 
 
@@ -460,9 +456,8 @@ preferences all important components of viz
 % show the highest deviation between trends in $Q$ and trends in $D$. 
 % Specifically, \SeeDB considers visualizations that can be constructed via a combinations of grouping and 
 % aggregation applied to $Q$.
-
-\agp{rewrote to bring up refs.}
-
+Our goal in the current paper is to build a system that uses deviation (from a reference) as a means to identify
+the most interesting visualizations from a large set of potential visualizations.
 No existing system that we are aware of makes use of variation in the underlying
 data to recommend visualizations.  
 Current visualization packages like Spotfire~\cite{Ahlberg:1996:SIE:245882.245893} and Tableau~\cite{tableau,polaris} have limited capabilities for 
@@ -471,6 +466,13 @@ Their recommendations only implement rules-of-thumb
 regarding chart aesthetics such as choice of
 chart type, colors and marks, borrowed from
 classical work by Mackinlay~\cite{Mackinlay:1986:ADG:22949.22950} and Cleveland and Gill~\cite{cleveland1984graphical}.
+\mpv{Depnding on discussion flow: As noted previously, in addition to our deviation-based metric,
+there are of course many other dimensions (aesthetics, user
+preferences, etc.) that can influence the perceived utility of a
+visualization, a few of which we discuss in Section
+\ref{sec:discussion}, leaving a detailed investigation of such metrics
+for future work.}
+
 %No existing system that we are aware of leverages insights about the underlying data
 %into make visualization recommendations. \mpv{does this sound ok?} \agp{I would start with
 %the statement that no current system supports the recommending of interesting visualizations
@@ -504,7 +506,6 @@ Lastly, we develop a general {\em phase-based execution framework}
 that allows us to leverage the benefits of these two techniques
 in tandem, reducing the time for execution by over ?X,
 making recommendations feasible in real-time. \agp{fill in}
-
 We present the experimental evaluation of \SeeDB 
 via both a performance study and a user study.
 In summary, the contributions of this paper are:
@@ -524,22 +525,22 @@ In summary, the contributions of this paper are:
 % as much unnecessary work as possible, and discarding candidate aggregate views
 % that are of low utility.
 
-\mpv{revisit contributions} \agp{The order of this is off.}
+\mpv{revisit contributions}
 \begin{denselist}
 %  \item We design \SeeDB as a system for data-driven visualization recommendations.
 %  We explore and evaluate two distinct implementations of the system, one as a
 %  wrapper around a database and another a custom solution (Section~\ref{sec:system_architecture}).
-  \item We present \SeeDB, a visualization recommendation system that can run
-  as a middleware layer on any SQL-compliant DBMS (Section~\ref{sec:system_architecture}).
-  \item We adopt and evaluate a deviation-based scoring function for measuring utility
-  of a visualization (Section~\ref{sec:problem_statement}).
-  \item We propose a set of multi-query optimization techniques which in combination
-  with the pruning framework maximize the sharing of computation between visualization
-  computations (Section~\ref{sec:sharing_opt}).
-  \item We propose a general-purpose view pruning framework to quickly identify
-  high-utility visualizations by adapting techniques from traditional 
-  confidence-interval-based~\cite{hoeffding1963probability} top-$k$ ranking and the
-   multi-armed bandit problem~\cite{bandits} (Section~\ref{sec:in_memory_execution_engine}).
+  \item We build a system that uses deviation from reference as a criterion for finding the
+  top-$k$ most interesting visualizations for a analytical task (Section~\ref{sec:problem_statement}).
+
+  \item We present the design of \SeeDB as a middleware layer that can run on any SQL-compliant DBMS 
+  (Section~\ref{sec:system_architecture}).
+  
+  \item We propose a set of multi-query optimization techniques to maximize the sharing of 
+  computation between visualizations (Section~\ref{sec:sharing_opt}).
+
+  \item We propose a general phase-based pruning framework to quickly identify
+  high-utility visualizations (Section~\ref{sec:in_memory_execution_engine}).
   % \item We describe a general deviation-based framework 
   % for evaluating the utility  of a visualization,
   % and present and evaluate a specific metric that identifies 
@@ -560,12 +561,10 @@ In summary, the contributions of this paper are:
   % to prune visualizations even before they are evaluated by the \SeeDB\ system 
   % (Section~\ref{sec:pruning}).
   \item We evaluate the performance of our pruning framework and demonstrate that \SeeDB
-  can identify high-utility visualizations with high accuracy. We also demonstrate that 
-  our optimizations provide a 40-100X speedup on both relational row and column stores
+  can identify high-utility visualizations with high accuracy and at interactive time scales.
   (Section~\ref{sec:experiments}). 
-  \item We present the results of a user study evaluating the role of visualization 
-  recommendations in visual analysis and the quality of \SeeDB recommendations in particular
-  (Section \ref{sec:user_study}), showing that our deviation-based metric is able to yield visualizations that users find interesting.
+  \item We present the results of a user study that validates our deviation-based utility metric, and
+  evaluates \SeeDB against a manual chart construction tool (Section \ref{sec:user_study}).
 \end{denselist}
 
 \noindent Finally we note that the vision for \SeeDB\ was described in a vision paper~\cite{DBLP:conf/vldb/Parameswaran2013} and presented as demonstration~\cite{DBLP:journals/pvldb/VartakMPP14}, but neither of these short papers described detailed algorithms or
