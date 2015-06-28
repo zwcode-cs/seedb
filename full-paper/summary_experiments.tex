@@ -18,10 +18,6 @@ have a large deviation from average and thus it is not clear if the
 recommended visualizations can be useful)
 }
 
-\reviewer {
-	The claims for sharing in the summary section(1040X) do not matching
-the numbers in section (5.3)
-}
 %We note that overall the results on the column store (not shown) are similar, with slightly faster overall performance.  The column store benefits less from the pruning optimizations on small datasets (BANK and DIAB), because it has a higher fixed per-query overhead than Postgres, which causes the additional queries run for each round of the pruning algorithm to introduce some penalty.  However, on these datasets the total runtimes are still only a few seconds or less no matter which optimizations we enable.
 
 % (This figure shows results for ROW. Results for COL are discussed further in Section \ref{sec:sharing_and_pruning}).
@@ -109,6 +105,10 @@ This reduces latencies for small datasets like DIAB from 12s to 300ms, and from 
 {\it Our optimizations thus allows us to respond in real-time with exact views for small datasets and approximate views (COMB\_EARLY) for large datasets}.
 \item $[$\underline{\em 10--40X speedup from sharing}$]$ The sharing optimizations (Section \ref{sec:sharing_opt}) alone produce performance gains of up to 40X for ROW and 10X for COL. This enables \SeeDB to process moderate sized datasets within a few seconds.
 In fact, for small datasets like BANK and DIAB, per-query overheads, especially in the column store, lead to query time on the entire table being equal to that for table partitions.
+\reviewer {
+	The claims for sharing in the summary section(10--40X) do not matching
+the numbers in section (5.3)
+}
 % the time taken by the DBMS to process the entire table to be comparable to the time taken to process each partition of the table. 
 Therefore, pruning merely adds extra computation overhead and actually degrades performance.
 Since the latencies for these datasets are $<$5s with sharing-based optimizations alone, we do not need to perform additional optimizations.
