@@ -1,29 +1,111 @@
 %!TEX root=document.tex
+\techreport{
+\section{Convergence of Utility Metrics}
+\label{sec:convergence}
+
+\stitle{Convergence of Sampling Algorithms.}
+We now demonstrate how,
+when applied to the utility function $U$ as described
+in Section~\ref{sec:problem_statement},
+sampling algorithms 
+converge to the correct value of $U$ beyond a certain number of samples.
+
+For now, we focus on the case where the visualization $V_i$
+corresponds to the AVG aggregate. 
+Similar results can be shown for the SUM and STD
+aggregates. 
+Unfortunately, MAX and MIN are not amenable to sampling-based
+optimizations, as is traditionally well-known in the approximate
+query processing literature~\cite{wavelets,dbo}.
+
+Additionally, we focus on the case when $S$ is defined to be
+$\ell_2$, i.e., the Euclidean distance metric. 
+Once again, similar results can be shown for other distance metrics,
+such as the $\ell_1$, the Earth Movers Distance metric, or
+the Jenson-Shannon metric.
+
+We reproduce the utility equation here:
+$ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$.
+Here, $P$ refers to the probability distribution
+of either the target visualization
+or the comparison visualization.
+$P$ is represented as a normalized vector
+whose entries sum up to $1$.
+We have the following: 
+\papertext{(The proof can be found in the extended technical report~\cite{seedb-tr}.)}
+\begin{lemma}
+Let the target and comparison visualizations
+both have $m$ groups.
+Let $\hat{U}$ denote our estimate of $U$ based on a uniformly random sample 
+across all $m$ groups. 
+Then, as the number of samples tends to $\infty$, $\hat{U} \rightarrow U$
+with probability $1-\delta$, for as small $\delta$ as needed.
+\end{lemma}
+\papertext{At a high level, the proof
+involves repeated applications of Hoeffding's inequality to
+upper and lower-bound $\hat{U}$ within $U$ along with terms 
+that tend to $0$ as the number of samples increases.}
+}
+\techreport{
+\begin{proof} (Sketch)
+Let us say the estimated average for the target visualization
+for each of the groups is $\hat{t}_i$,
+and the estimated averages for the comparison visualization
+for each of the groups is $\hat{c}_i$.
+We further define $\hat{t}$ (respectively $\hat{c}$) to be the estimated sum of
+averages for the target visualization (respectively comparison visualization).
+We let the true values for each of these quantities be the same variables without
+the hats.
+Then, it can be shown that that $U$ evaluates to:
+$$\hat{U} = \frac{\sum{\hc_i^2}}{\hc^2} +  \frac{\sum{\htt_i^2}}{\htt^2} - 2 \frac{\sum{\htt_i \hc_i}}{\hc\htt}$$
+
+
+Now we informally describe the steps of our proof:
+say we sample enough to get $\hc$ within $\epsilon$ of $c$, with a high enough probability,
+and we sample enough to get $\htt$ within $\epsilon$ of $t$, with a high enough probability.
+Then, we have 
+\begin{align*}
+\hat{U} & \geq \frac{\sum{\hc_i^2}}{(c + \epsilon)^2} +  \frac{\sum{\htt_i^2}}{(t + \epsilon)^2} - 2 \frac{\sum{\htt_i \hc_i}}{(c - \epsilon) (t - \epsilon)} \\
+& \geq \frac{\sum{\hc_i^2}}{c^2} (1 - \epsilon ) +  \frac{\sum{\htt_i^2}}{t ^2} (1-\epsilon) - 2 \frac{\sum{\htt_i \hc_i}}{(c - \epsilon) (t - \epsilon)} \\
+& \geq \frac{\sum{\hc_i^2}}{c^2} (1 - \epsilon ) +  \frac{\sum{\htt_i^2}}{t ^2} (1-\epsilon) - 2 \frac{\sum{\htt_i \hc_i}}{ct}(1 + \epsilon^2 + \epsilon) 
+\end{align*}
+Similarly, if we have sampled enough to get the $\hc_i$ and the $\htt_i$ within $\gamma$ close 
+of their actual values, we will have:
+\begin{align*}
+\hat{U} \geq &  \frac{\sum{c_i^2}}{c^2} (1 + f(\gamma)) (1 - \epsilon ) +   \frac{\sum{t_i^2}}{t ^2}  (1 + f(\gamma)) (1-\epsilon) \\ & - 2 \frac{\sum{t_i c_i}}{ct}(1 + h(\gamma))(1 + \epsilon^2 + \epsilon) 
+\end{align*}
+where $f(.)$ and $h(.)$ are small polynomial functions.
+Thus,
+we will have sandwiched $\hat{U}$ from the bottom by $U-\rho$,
+and similarly by $U + \rho'$ from the top.
+$\rho, \rho'$ will be polynomials that depend on $\epsilon$ and $\gamma$.
+Now, we will use the Hoeffding's inequality for the last step of the proof.
+Hoeffding's inequality, when
+applied to a collection of $n$ i.i.d. random variables,
+whose sum is represented by $X$, gives us:
+\begin{equation}
+Pr (|X - E[X]| \geq t) \leq 2 e^{-\frac{2 n t^2}{c^2}}
+\end{equation}
+where $c$ is a bound on the range. 
+If we set the right hand side to some $\delta$, and set $t = \epsilon$,
+we have
+$$ \epsilon = \sqrt{\frac{1}{2 n} \ln \frac{2}{\delta}}$$
+and therefore, as $n$ tends to $\infty$, $\epsilon$ tends to $0$,
+for fixed values of $\delta$.
+The same holds true for $t = \gamma$.
+Thus, $\hat{U}$ will tend to $U$ as the number of samples
+increases to infinity.
+\end{proof}
+
+It is in fact also possible to explicitly derive a number of samples 
+such that $\hat{U}$ is close to $U$ within a certain error bound
+and with a certain probability. 
+}
+
+
+
 \section{Extensions}
 \label{sec:discussion}
-
-\subsection{Comparison of Difference Distance Functions for Deviation}
-\label{sec:diff_dist_funcs}
-By default, \SeeDB uses Earth Movers Distance (EMD) to compute distance between
-the target and reference probability distributions.
-However, as mentioned in Section \ref{sec:problem_statement}, other distance functions 
-such as Euclidean distance, K-L divergence and J-S divergence may also be used in place
-of EMD. 
-We applied each of these metrics to our test datasets and compared
-the resulting orders of visualization based on utility. 
-We found that for the top-$5$ visualizations, all distance functions
-agreed on 3 out of 5 visualizations, whereas three of four distance functions 
-agreed on 4 out of 5 visualizations.
-Similarly, for $k$=10, all functions agreed on 6 out of 10 visualizations, and three of four functions
-agreed on 9 out of 10 top visualizations.
-Thus, we find a high degree of agreement on the top visualizations according to multiple distance functions.
-We see similar results for the lowest utility visualizations as well. 
-For the bottom-$5$ visualizations, all functions agreed on 3 out of 5 visualizations, and three of the
-four functions agreed on 4 out of 5 visualizations.
-For the bottom-$10$, all functions agreed on 8 of the 10 lowest utility visualizations.
-
-These results indicate that the choice of specific distance function measuring deviation is not
-critical; the above functions produce similar orderings of visualizations.
 
 \subsection{Extension to other Utility Metrics}
 \label{sec:other_utility_metrics}
