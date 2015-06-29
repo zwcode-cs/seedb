@@ -60,11 +60,11 @@ latency increases linearly in the size of the dataset and  number
 of views. 
 Column stores are superior to row stores,
 with $\frac{1}{5}$th the latency.}
-Without any optimizations, the basic \SeeDB execution engine
-serially executes individual aggregate 
-view queries, two for each possible view.
-Figure \ref{fig:baseline_size} shows latency of \SeeDB\ vs. the number of rows (100K rows--1M rows) in the dataset while  
-Figure \ref{fig:baseline_views} shows latency as a function 
+Without any optimizations, the basic \SeeDB
+serially executes two SQL queries for each
+possible view.
+Figure \ref{fig:baseline_size} shows latency of \SeeDB\ vs. the number of rows (100K rows--1M rows) 
+in the dataset, while Figure \ref{fig:baseline_views} shows latency as a function 
 of the number of views (50--250).
 These charts show results for the SYN dataset obtained by varying the size of the
 table and number of attributes (SYN is comparable to the AIR dataset).
@@ -73,13 +73,13 @@ table and number of attributes (SYN is comparable to the AIR dataset).
 First, notice that the basic framework with no optimizations has very 
 poor performance: latency for ROW is between 50-500s, 
 while it is between 10-100s for COL. 
-This is because both ROW and COL run 50 to 250 SQL queries for each \SeeDB query.
-These time scales are not practical for interactive applications. 
+This is because, depending on the dataset, both ROW and COL run between 50 to 250 SQL queries 
+for each \SeeDB invocation.
+Clearly, latencies associated with the basic \SeeDB framework are not practical for interactive 
+applications. 
 Second, COL runs about 5X faster than ROW. 
-This is expected because individual view queries only select one dimension
-attribute and one measure attribute at a time.  
-COL can just read these two
-columns, whereas ROW must read all columns.
+This is expected because individual view queries only select a single dimension and measure
+attribute allowing COL to selectively read only two columns whereas ROW must read in the entire table.
 Third, as expected, the latency of the
 basic framework is proportional to the number of rows as well as the 
 number of views in the table.
@@ -105,9 +105,6 @@ The following experiments report results on the synthetic datasets SYN and SYN*
 (Table~\ref{tab:datasets}).
 We chose to test these optimizations on synthetic data since we can control all parameters of the data including size, number of attributes, and data distribution.
 (Results on real datasets are shown in Figure \ref{fig:share_prune_row} and \ref{fig:share_prune_col}).
-We find that our sharing optimizations can provide up to a 40X speedup for ROW and 10X speedup for COL allowing small and moderate sized datasets to be processed at interactive time scales ($<$5s) and reduce latency on large datasets from 
-500 seconds (ROW) and 100 seconds (COL) to $<$10s for COL, and $<$20s for ROW.
-
 
 % \stitle{Result Highlights:}
 % \begin{denselist}
@@ -185,12 +182,12 @@ We find that our sharing optimizations can provide up to a 40X speedup for ROW a
 % \end{figure}
 
 \stitle{Combining Multiple Aggregates:} 
-{\em \underline{Summary:} Combining aggregate 
+{\em \underline{Summary:} Combining 
 view queries with the same group-by attribute
 but different aggregates gives a 
 3-4X speedup for both row and column stores.}
-To study the limits of adding multiple aggregates to a single query, we ran \SeeDB
-by varying the limit on the number of aggregates in any generated SQL query 
+To study the limits of adding multiple aggregates to a single view query, we
+varied the maximum number of aggregates in any \SeeDB-generated SQL query 
 ($n_{agg}$) between 1 and 20.
 % We combine multiple view queries that have the same group-by (dimension) 
 % attribute, but different aggregation (measure) attributes into one query.
@@ -210,13 +207,13 @@ Overall, we get a 4X speedup for ROW and a 3X speed up for COL.
 
 \stitle{Parallel Query Execution:} 
 {\em \underline{Summary:} Running view queries in parallel can offer significant
-performance gains; however, there is an optimal number of parallel queries
+performance gains; however, there is an optimal number of queries
 beyond which performance degrades significantly.}
 Executing \SeeDB-generated SQL queries in parallel can provide significant performance gains
 because queries can share buffer pool pages.
 However, a high degree of parallelism can degrade performance for a variety of reasons \cite{Postgres_wiki}. 
-Figure \ref{fig:parallelism} illustrates this issue: we varied the maximum number of parallel queries
-issued by \SeeDB and measured the resulting latency.
+Figure \ref{fig:parallelism} illustrates this issue: we varied the maximum number of parallel SQL queries
+issued by \SeeDB and measured the resulting latency of the system.
 As expected, low levels of parallelism produced sizable performance gains but
 high levels led to degraded performance.
 For both row and column stores in our system, the optimal number of queries to 
@@ -235,26 +232,30 @@ is a reasonable rule of thumb.
 % \end{figure} 
 
 \stitle{Combining Multiple Group-bys:} 
-{\em \underline{Summary:} Combining multiple view queries with a single group-by attribute into a single query will multiple
-grouping improves performance by 2.5X in row stores.}
-We now study the effect of combining multiple queries each with a single group-by into one query.
+{\em \underline{Summary:} Combining multiple view queries each with a single group-by attribute into 
+a single query with multiple grouping improves performance by 2.5X in row stores.}
+We now study the effect of combining multiple queries each with a single group-by into one query
+with multiple grouping.
 Unlike the multiple aggregates optimization, the impact of combining group-bys
-is unclear due to larger memory requirements as well as post-processing cost.
-To verify our hypothesis that the ideal grouping must be one that keeps memory utilization
-under a threshold, we ran an experiment with datasets SYN*-10 and SYN*-100 where
-we varied the number of group-by attributes in \SeeDB-generated SQL queries ($n_{gb}$) 
-between 1 and 10.
+is unclear due to the significantly larger memory requirement as well as post-processing cost.
+We claim in Section \ref{} that grouping can benefit performance so long as 
+the total memory utilization stays under a threshold.
+To verify our claim, we ran an experiment with datasets SYN*-10 and SYN*-100.
+For each dataset, we varied the number of group-by attributes in \SeeDB-generated SQL 
+queries ($n_{gb}$) between 1 and 10.
 Since each attribute in SYN*-10 has 10 distinct values and that in SYN*-100
-has 100, a query with $n_{gb}=p$ would require memory proportional to $\max(10^p$,
+has 100, a query with $n_{gb}=p$ will require memory proportional to $\max(10^p$,
 num\_rows) for SYN*-10 and proportional to $\max(100^p$, num\_rows) for SYN*-100.
 The results of the experiment are shown in Figure \ref{fig:multi_gb_same}.
-As the number of group-by attributes increases from 1 to 10, the latency of ROW (blue) decreases initially.
-However, once the space budget (proxied by the number of distinct groups) exceeds 10000, latency increases significantly.
-We see a similar trend for COL, but with a space budget of 100.\footnote{\scriptsize The different space
+We see that as the number of group-by attributes increases from 1 to 10, 
+the latency of ROW (blue) decreases initially.
+However, once the space budget $\mathcal{S}_{ROW}$ (proxied by the number of distinct groups) exceeds 10000, 
+latency increases significantly.
+We see a similar trend for COL, but with a space budget $\mathcal{S}_{COL}$ of 100.\footnote{\scriptsize The different space
 budgets can be explained based on the different internal parameteres and implementations of
 the two systems.}
-This empirically verified relation between memory usage and latency supports the use of 
-our bin-packing optimization.
+Thus, we find empirically that memory usage from grouping is in fact related to latency and that 
+optimal groupings must keep memory usage under a threshold.
 
 % We see that for the row-store, latency does improve (and then gets worse) as the
 % number of group by attributes increases.  
@@ -323,29 +324,50 @@ our bin-packing optimization.
 % From Figure \ref{fig:multi_gb_same}, we see that this limit is approximately
 % $10^4$ for the row-store and $10^2$ for the column store.
 
-Next, we use the space constraint derived in the previous experiment
-to perform optimal grouping via bin-packing (Section \ref{sec:sharing_opt}).
+To evaluate the gains offered by our bin-packing optimization, we evaluate two methods to
+perform grouping, MAX\_GB and BP.
+MAX\_GB simply sets a limit on the number of group-bys in each query ($n_{gb}$) where as BP applies
+our bin-packing strategy using the respective space budgets.
+Figure \ref{fig:multi_gb_bp} shows a comparison of the two methods.
+To evaluate MAX\_GB, we varied $n_{gb}$ was varied between 1 and 20 (solid lines). 
+Since SYN contains attributes with between 1 -- 1000 distinct values, memory utilization for a given
+$n_{gb}$ can be variable.
+For example, $n_{gb}$ = 3 can have anywhere between 1 and $10^9$ distinct groupings, thus breaking the
+space budget for some groupings. 
+Because groupings with MAX\_GB depends on order, results in Figure \ref{fig:multi_gb_bp} are averages
+over 20 runs.
+The dotted lines show the latency obtained by performing optimal grouping via bin-packing.
+Unlike MAX\_GB, BP consistently keeps memory utilization under the space budget.
+Consequently, we observe that BP improves performance for both ROW and COL. 
+We observe a significant, 2.5X improvement in ROW because the large space budget $\mathcal{S}_{ROW}$
+allows many queries to be combined.
+COL, in contrast, shows a much less pronounced speedup since its smaller space budget ($\mathcal{S}_{COL}$= 100) 
+biases optimal grouping to contain single attribute groups.
+
+% Next, we use the space constraint derived in the previous experiment
+% to perform optimal grouping via bin-packing (Section \ref{sec:sharing_opt}).
 % With knowledge of this upper limit on the number of distinct groups, we can now
 % apply our grouping technique based on bin packing (Section \ref{subsec:mult_gb}) to optimally
 % group the dimension attributes.
 % Bin-packing ensures that the number of distinct groups produced by any query is
 % less than $10^4$ (for rows) or $10^2$ (for columns).
-Figure \ref{fig:multi_gb_bp} shows the results of multi-attribute group-bys on SYN where
-$n_{gb}$ was varied between 1 and 20 (solid lines).
-Note that SYN contains attributes with variable number of distinct values (between 1 and 1000). 
-Therefore, a query with
-$n_{gb}$=3 can have memory utilization anywhere from 1 unit to $10^9$ units, thus breaking the
-memory threshold.
-Since the latency results in this experiment are greatly impacted by how attributes are grouped,
-we randomize the grouping 20 times and report average latency.
-The dotted lines show the latency obtained by performing optimal grouping via bin-packing.
-In both cases, bin packing offers a significant performance
-advantage than naively grouping queries into batches with a certain number of groups-by attributes---this is because naive batching can often demand excessive resources.
-We observe a significant, 2.5X improvement in ROW latency due to bin-packing.
-This can be attributed to the fact that ROW's large threshold on space (10000) allows many queries
-to be combined.
-COL, in constrast, shows a much less pronounced speedup. This is expected since its memory
-threshold of 100 biases the optimal grouping to contain single attribute groupings.
+% Figure \ref{fig:multi_gb_bp} shows the results of multi-attribute group-bys on SYN where
+% $n_{gb}$ was varied between 1 and 20 (solid lines).
+% Note that SYN contains attributes with variable number of distinct values (between 1 and 1000). 
+% Therefore, a query with
+% $n_{gb}$=3 can have memory utilization anywhere from 1 unit to $10^9$ units, thus breaking the
+% memory threshold.
+% Since the latency results in this experiment are greatly impacted by how attributes are grouped,
+% we randomize the grouping 20 times and report average latency.
+
+% The dotted lines show the latency obtained by performing optimal grouping via bin-packing.
+% In both cases, bin packing offers a significant performance
+% advantage than naively grouping queries into batches with a certain number of groups-by attributes---this is because naive batching can often demand excessive resources.
+% We observe a significant, 2.5X improvement in ROW latency due to bin-packing.
+% This can be attributed to the fact that ROW's large threshold on space (10000) allows many queries
+% to be combined.
+% COL, in constrast, shows a much less pronounced speedup. This is expected since its memory
+% threshold of 100 biases the optimal grouping to contain single attribute groupings.
 % To obtain these metrics, we randomly grouped attributes into groups of size $n_{gb}$ and ran
 % the experiment 20 times to get average latency.
 % We also show the performance of \SeeDB\ when we use bin-packing to optimally group the dimension
@@ -417,25 +439,27 @@ threshold of 100 biases the optimal grouping to contain single attribute groupin
 \stitle{All Sharing Optimizations:} 
 {\em \underline{Summary:} Applying all of our sharing optimizations
 leads to a speedup of up to 20X for row stores, and 8X for column stores;
-column stores are still much faster than row stores.}
+column stores are still faster than row stores.}
 Based on the optimal parameters identified from the previous experiments, we combined 
 our optimizations to obtain the best performance. 
 % Now that we have explored the proposed optimizations in detail, we pick the optimal
 % parameters discovered above and combine our optimizations to get the maximum
 % performance gain. 
-For the row store, we applied all the above optimizations with $n_{agg}$ set to
-the total number of measure attributes, maximum number of group-bys set to $10^4$ and
-parallelism set to $16$.
-For the column store, we set $n_{agg}$ and number of parallel queries similarly
-but did not apply the group-by optimization. 
+For ROW, we applied all the above optimizations with $n_{agg}$ set to
+the total number of measure attributes in the table, memory threshold $\mathcal{S}_{ROW}$ 
+= $10^4$ and parallelism set to $16$.
+For COL, we set $n_{agg}$ and number of parallel queries similarly
+but did not apply the group-by optimization because of low performance gains. 
 Figure~\ref{fig:all_opt} shows the latency of \SeeDB\ on SYN when all
 optimizations have been applied.
-We see that our optimizations lead to a speed up of 20X for ROW 
-(Figures~\ref{fig:all_opt}a) and a speedup of 10X in COL (Figures~\ref{fig:all_opt}b).
-Furthermore, we notice that our optimizations are most effective for datasets with 
-large sizes and many views. This is particularly true for ROW where each scan
-of a large table is expensive, and hence reduction in number of queries 
-has larger benefits.
+We see that our sharing optimizations lead to a speed up of 20X for ROW 
+(Figures~\ref{fig:all_opt}a) and a speedup of 10X in COL (Figures~\ref{fig:all_opt}b). 
+Our optimizations are most effective for datasets with 
+large sizes and many views, particularly for ROW where reduction in table scans has 
+large benefits.
+In summary, sharing allows small and moderate sized datasets to be processed at
+interactive time scales (few seconds) and reduces latency on large datasets from 
+500 seconds (ROW) and 100 seconds (COL) to $<$10s for COL, and $<$20s for ROW.
 % , with proportionally larger speedups as these numbers grow.
 
 \techreport{

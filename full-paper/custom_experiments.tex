@@ -13,19 +13,69 @@ the impact of these optimizations.
 % we evaluate whether the views chosen by \SeeDB actually have the highest utilities.
 
 \stitle{Metrics:}
-We evaluate performance of pruning optimizations along two dimensions, {\em latency} and
+We evaluate performance of pruning optimizations along two dimensions, {\em latency}, as before, and
 quality of results.
-We measure the quality of results in two ways: 
+We measure the quality of results with two metrics: 
 (1) {\em accuracy}: if $\{\mathcal{V}_T\}$
-is the set of aggregate views with the highest utility and $\{\mathcal{V}_S\}$ is the set of aggregate views returned by
+is the set of aggregate views with the highest utility and $\{\mathcal{V}_S\}$ is the set of 
+aggregate views returned by
 \SeeDB, the accuracy of \SeeDB is defined as $\frac{1}{\{|\mathcal{V}_T\}|} \times 
 |\{\mathcal{V}_T\} \cap \{\mathcal{V}_S\}|$, i.e. the
-fraction of true positives in the aggregate views returned by \SeeDB. (2) {\em utility distance}: since multiple
+fraction of true positives in the aggregate views returned by \SeeDB. 
+(2) {\em utility distance}: since multiple
 aggregate views can have similar utility values, we use utility distance as a measure of how {\it far} \SeeDB 
 results are from the true top-$k$ aggregate views. 
-Formally, using notation from Section \ref{sec:problem_statement}, we define utility distance as the difference between the average utility of $\{\mathcal{V}_T\}$ 
+We define utility distance as the difference between the average utility of $\{\mathcal{V}_T\}$ 
 and the average utility of $\{\mathcal{V}_S\}$, i.e., $\frac{1}{n}(\sum_{i}U(\mathcal{V}_{T,i}) - 
 \sum_{i}U(\mathcal{V}_{S,i}))$.
+
+\noindent{\underline{Accuracy vs. Utility Distance.}} 
+Since our pruning optimizations rely on utility estimates, the accuracy of pruning
+depends on the differences between utilities of consecutive views.
+Specifically, if $V_1 \ldots V_n$ is the list of aggregate views ordered by decreasing 
+utility, then the accuracy of pruning is inversely proportional to 
+the difference between the $k$-th highest utility and the $k+1$-st utility, 
+i.e., $\Delta_k = U(V_k) - U(V_{k+1})$.
+Views with large $\Delta_k$ values can be pruned accurately while whose with
+small $\Delta_k$s can lead to lower absolute accuracy.
+While this is true, notice that small $\Delta_k$s are, in fact, the result of views at 
+the top-$k$ boundary having similar utility (and interesting-ness).
+For instance, the utilities at the top-$5$ boundary for the DIAB dataset are 
+$U(V_5)$ = 0.257, $U(V_6)$ = 0.254, and $U(V_7)$ = 0.252.
+The small $\Delta_k$s lead to lower accuracy for $k$ = 5, but the 
+very similar utility values indicate that $V_6$ and $V_7$ are (almost) equally interesting.
+Therefore, even if $V_6$ or $V_7$ are incorrectly chosen to be in the top-$k$, 
+the quality of results is essentially as high as when $V_5$ would have been chosen.
+Our {\em utility distance} metric correctly captures this overall quality of results.
+Utility distance indicates that, in the worst case, even when both $V_6$ or $V_7$ are 
+incorrectly chosen, the overall utility of the top-$5$ differs only by 0.013 (~5\% error) 
+units compared to the true top-$5$.
+As a result, we jointly consider accuracy as well as utility distance when evaluating 
+result quality.
+
+% Therefore, when small $\Delta_k$ leads to lower accuracy, the same $\Delta_k$ guarantees that 
+% the underlying small difference between utilities ensures that the views returned are {\it 
+% just as interesting} as the true top-$k$.
+% We refer to this as the {\it paradox of pruning}.
+
+% Views with utilities that are spread apart can be pruned accurately while
+% those with similar utilities can lead to pruning inaccuracies.
+% The difference between utility values is particularly relevant at the top-$k$
+% boundary.
+ % to prune aggregate views, 
+ % the accuracy of pruning depends on how accurately
+ % our estimates can capture the relative order of utilities.
+ % Aggregate views with utilities that are spread apart can be pruned accurately while
+ % those with similar utilities can lead to pruning inaccuracies.
+ % The difference between utility values is particularly relevant at the top-$k$
+ % boundary.
+ % Reusing notation from the MAB technique, if $V_1 \ldots V_n$ is the list of aggregate views 
+ % ordered by decreasing utility, then the accuracy of pruning is inversely proportional to 
+ % the difference between the $k$-th highest utility and the $k+1$-st utility, 
+ % i.e., $\Delta_k = U(V_k) - U(V_{k+1})$.
+ % If $\Delta_k$ is very small, the accuracy of our techniques is lower; however, the small 
+ % $\Delta_k$ also implies that views around $k$ have almost equal utility.
+ % For instance ...
 
 \stitle{Techniques:}
 In the following experiments, we evaluate four techniques for pruning low-utility views.
@@ -38,22 +88,18 @@ The other baseline strategy we evaluate is the random strategy (RANDOM) that ret
 set of $k$ aggregate views as the result.
 This strategy gives a lowerbound on accuracy and upperbound on utility distance: for any 
 technique to be useful, it must do significantly better than RANDOM.
-Finally, note that latencies of any pruning strategy depend closely on the execution techniques 
-used within phases. 
-For instance, using the basic \SeeDB framework (Section \ref{sec:dbms_exec_engine}) within each phase
-will produce much larger latencies than applying all the sharing-based optimizations.
-%In addition, each phase is associated with a fixed amount of overhead that depends on the DBMS.
-Therefore, in this section, we will focus only on relative 
-improvements in latency, specifically, the percent improvement in latency compared to latency
-achieved without pruning.
-Absolute latency numbers are discussed in Section \ref{sec:expt_summary}.
+Since absolute latencies of any pruning strategy depend closely on the exact DBMS execution techniques, 
+in this section, we report relative improvements in latency, specifically, the percent improvement 
+in latency with pruning compared to latency without pruning.
+Absolute latency numbers for real datasets are discussed in Section \ref{sec:expt_summary}.
 
 %we present latencies in this section 
 
 \stitle{Datasets:}
-We evaluate our pruning strategies on the real-world datasets from Table \ref{tab:datasets}. 
-We describe the results for BANK and DIAB in this section while AIR and AIR10 are discussed 
-in Section \ref{sec:expt_summary}. 
+Because pruning quality depends closely on the underlying data distribution, we evaluate
+our pruning optimizations on the real-world datasets from Table \ref{tab:datasets}. 
+In this section, we analyze the results for BANK and DIAB in detail; results for AIR and AIR10 are 
+discussed in Section \ref{sec:expt_summary}. 
 % \techreport{
 % Specifically, we make use of the BANK and DIAB datasets listed in Table
 % \ref{tab:datasets}. 
@@ -123,7 +169,6 @@ in Section \ref{sec:expt_summary}.
 
 \begin{figure}[h]
 	\centering
-	\vspace*{-10pt}
 	\begin{subfigure}{1\linewidth}
 		\centering
 		\includegraphics[width=6.5cm]
@@ -148,10 +193,11 @@ in Section \ref{sec:expt_summary}.
 \vspace{-15pt}
 \end{figure}
 
-In each of our experiments, we vary $k$ --- the number of aggregates views to select --- between
+In each of our experiments, we vary $k$ --- the number of visualizations to recommend --- between
 1 and 25 (a realistic upper limit on the number of aggregates views displayed on a screen)
 and measure the latency, accuracy, and utility distance for each of our
 strategies. 
+We pay special attentio to $k$ = 5 and 10 because empirically these $k$ values are used most commonly.
 Since the accuracy and utility distance of our techniques are influenced by the
 ordering of data, we repeat each experiment 20
 times and randomize data between runs. We report average
@@ -252,34 +298,13 @@ metrics over 20 runs.
  % For each of the test datasets, we first review the utility distributions and then
  % analyze the performance of our pruning strategies given the utility distribution.
 
-\reviewer {
-	If delta K is low the accuracy of the views are not sufficiently high
-specially for the top 5 views it seems that the system cannot suggest the
-views accurately. The authors have mentioned that the latency can be
-lowered dramatically using pruning for the smaller K but at the same time
-pruning will reduce the accuracy for smaller K's dramatically (accuracy of less
-than 60\%)
-}
 \stitle{Accuracy and Utility Distance:}
 {\em \underline{Summary:} The MAB and CI strategy both produce results with 
 accuracy $>$75\% and near-zero utility distance for a variety of $k$ values.
 MAB does slightly better than CI when utlity values are closely spaced.
-However, in general, smaller $\Delta_k$ values lead to lower accuracy, but this is offset by
+In general, smaller $\Delta_k$ values lead to lower accuracy, but this is offset by
 lower utility distance that is a consequence of the smaller $\Delta_k$s. 
 }
-
-\noindent Since our pruning optimizations use utility estimates to prune aggregate views, 
- the accuracy of pruning depends on how accurately
- our estimates can capture the relative order of utilities.
- Aggregate views with utilities that are spread apart can be pruned accurately while
- those with similar utilities can lead to pruning inaccuracies.
- % have similar utility estimates and can lead to an incorrect ordering of views.
- The difference between utility values is particularly relevant at the top-$k$
- boundary.
- Reusing notation from the MAB technique, if $V_1 \ldots V_n$ is the list of aggregate views 
- ordered by decreasing utility, then the accuracy of pruning is inversely proportional to 
- the difference between the $k$-th highest utility and the $k+1$-st utility, 
- i.e., $\Delta_k = U(V_k) - U(V_{k+1})$.
 
 %  \em \underline{Summary:} The MAB strategy dominates the CI
 % strategy when it comes to both accuracy and utility distance,
@@ -298,38 +323,27 @@ The highest utility for this dataset corresponds to the {\it right-most} line
 in this chart while the 25-th highest utility corresponds to the {\it left-most}
 line. 
 We observe that the highest and second highest utility are spread well apart 
-from the rest of them ($\Delta_k$=0.0125). 
+from the rest ($\Delta_k$=0.0125). 
 The top 3rd--9th utilities are similar ($\Delta_k$<0.002) while the 10th highest 
 utility is well separated from neighboring utilities ($\Delta_{10}$=0.0125).
 The remaining aggregate views once again have similar utilities ($\Delta_k$<0.001).
-We see the effect of of utility distribution in the performance of our pruning 
+We see the effect of utility distribution in the performance of our pruning 
 strategies.
-Figure~\ref{fig:bank_accuracy} shows the {\it average} accuracy of our strategies over 20 runs.
-We find that MAB consistently produces 75\% or better accuracy.
-CI also produces 85\% or better accuracy for $k$$>$10.
+Figure~\ref{fig:bank_accuracy} and Figure~\ref{fig:bank_utility_dist} respectively show
+the {\em average} accuracy and utility distance of our strategies over 20 runs.
+We find that MAB consistently produces 75\% or better accuracy for all values of $k$ and
+CI produces 85\% or better accuracy for $k$$>$10.
 For $k$=1 and 2, the accuracy is 75\% for both pruning strategies (due to large 
 $\Delta_k$ values).
-Between $k$=3\ldots9, the accuracy for all strategies suffers due to similar utility values 
-($\Delta_k < 0.002$).
-After $k$=10, the performance of all our strategies improves once again and tends to 100\% accuracy.
-We note that NO\_PRU necessarily has perfect accuracy, while RANDOM has extremely poor accuracy (<0.25).
-Figure~\ref{fig:bank_utility_dist} shows the utility distance for
-all of our strategies.
-% Next, we study the quality of our results in terms of utility distance. 
-% Recall that utility distance measures how {\it far} our results are from the true top-$k$.
-% Figure~\ref{fig:bank_utility_dist} shows the utility distance for
-% all of our strategies for the bank dataset.
-% The NO\_PRU technique necessarily has 0 utility distance since
-% it performs no pruning.
-We find that CI and MAB have zero or almost zero utility distance for all $k$, even where small $\Delta_k$s
-lead to lower accuracy.
-% RANDOM, on the other hand, has very high utility distance ($>$10X) compared to either of 
-% CI and MAB.
-This demonstrates the {\it paradox of pruning}: if aggregate views for a given $k$ have very small $\Delta_k$
-values, the accuracy of our pruning techniques is lower; however, as a consequence of the small
-$\Delta_k$ values, utility distance is also guaranteed to be small. 
-Thus, in the worst case that \SeeDB picks a few aggregate views inaccurately, those views are guaranteed 
-to have small utility distances.
+The corresponding utility distance is almost zero for MAB and about 0.015 for CI (note that these
+are averages).
+Between $k$=3\ldots9, the accuracy for all strategies suffers due to small $\Delta_k$s ($< 0.002$).
+In spite of lower accuracies, note that utility distance is consistently small ($<$ 0.02).
+After $k$=10, the performance of all our strategies improves once again and tends to 100\% accuracy and
+0 utility distance.
+We note that NO\_PRU necessarily has perfect performance, while RANDOM has extremely poor accuracy (<0.25) 
+and utility distance ($>$5X that of CI and MAB). 
+
 % As with accuracy, the utility distance tends to zero with large $k$s.
 % All our strategies produce views with 0 or almost 0 utility distance for most $k$. 
 % Thus, even if \SeeDB picks a few incorrect views, there is effectively no difference in the 
@@ -408,25 +422,12 @@ they are sparse for larger $k$s.
 Therefore, we expect lower pruning accuracy for $k<10$ but high accuracy for
 large $k$'s.
 We see this behavior in Figure~\ref{fig:dia_accuracy} where the accuracy of
-pruning is quite low ($<60\%$) for $k$=1 but improves consistently to $k$=10 
-($>80\%$) and is $>80\%$ for larger $k$s.
-% \item View corresponding to $k$=15 is well separated from its neighboring views, $\Delta_{16} >$ 0.025
-% \item Views for $k$=20 and 25 are also surrounded by utilities with very 
-% similar values ($\Delta_k < $0.001).
-% \end{denselist}
-% We notice the MAB performs consistently better than CI even when the utility
-% values are very similar.
-% While NO\_PRU has perfect accuracy, RANDOM performs poorly. \mpv{NEED DATA}
-In Figure~\ref{fig:dia_utility_dist} we see that
-utility distance is small for $k<10$ and then reduces to almost 0 for larger
-$k$s.
+pruning is quite low ($<60\%$) for $k$=1 but improves consistently to 68\% (CI) 
+and 86\% (MAB) for $k$=5 and is $>$80\% for $k$$\geq$10.
+In the companion figure, Figure \ref{fig:dia_utility_dist}, we see that although
+accuracy is relatively low $k$$<$5, utility distance is small (0.013 for CI, 0.002
+for MAB) indicating that the results are high quality.
 Both CI and MAB produce 40X smaller utility distances compared to RANDOM.
-% Thus, we observe that both our strategies CI and MAB produce high quality results 
-% in terms of accuracy as well as utility distance. 
-% While the quality depends on the distribution of utilities, particularly on the 
-% $\Delta$s at the top-$k$ boundary.
-For the most commonly used $k$ value, $k$=10, we find that our strategies obtain 
-90\% or more accuracy.
 
 % We also observe an important property of our strategies: the accuracy of both
 % of our pruning strategies, MAB and CI, is comparable; MAB appears to
@@ -446,7 +447,7 @@ For the most commonly used $k$ value, $k$=10, we find that our strategies obtain
 % All our strategies however seem to have low accuracy for $k<10$. 
 
 \stitle{Latency:}
-{\em \underline{Summary:} All strategies provide a reduction in latency of 50\% or more
+{\em \underline{Summary:} Both pruning strategies provide a reduction in latency of 50\% or more
 relative to NO\_PRU. For smaller $k$, reductions can be even higher, closer to 90\%; this can be
 especially useful when we want to identify and quickly display the first one or two top views.}
 Figures~\ref{fig:bank_latency} and \ref{fig:diabetes_latency} show the latency
@@ -454,7 +455,9 @@ of our strategies for the banking and diabetes dataset.
 First off, we observe that the use of either of CI or MAB produces a 50\% reduction in latency
 throughout.
 In fact, for CI, we obtain almost a 90\% reduction in latency for small $k$. 
-MAB, on the other hand, has a consistent 50\% reduction in latency. 
+For $k$=5, MAB produces betwen 50 - 60\% reducation while CI produces a reduction of 60 - 80\%.
+Early stopping, i.e. returning approximate results once the top-$k$ views have been identified, 
+can produce even better latency reduction (results in Section \ref{??}).
 As expected, as $k$ increases, latency also increases because we can prune fewer aggregate views.
 % These reductions bring latency down from multiple tens of seconds to {\bf single digit latencies}, i.e.,
 % \SeeDB can operate on interactive time scales.
@@ -464,11 +467,17 @@ As expected, as $k$ increases, latency also increases because we can prune fewer
 % experimentally, our strategies consistently provide high utility views with low utility distance.op-$k$.
 % This latency-accuracy tradeoff is particularly important in a real-time system where we want to quickly 
 % provide recommendations for the analyst to browse.
-We note that MAB has a worse performance compared to CI since MAB can only discard a 
-{\it single} view during each phase; CI in contrast has no upperbound on the number of aggregate views that it
-can discard.
-Consequently, MAB must execute a larger number of phases compared to CI, making it less attractive
-when latency is paramount (e.g. when querying large datasets).
+
+\stitle{CI vs. MAB}.
+In our evaluation, we compared two competing pruning strategies, CI and MAB. 
+From Figures \ref{fig:bank_perf} and \ref{fig:diabetes_perf}, we observe that MAB, 
+on average, has higher accuracy and lower utility distance compared to
+CI, i.e., overall, it produces higher quality results.
+However, we find that CI performs much better than MAB on latency.
+Since CI can prune views more aggressively than MAB (MAB only discards one view at a time),
+it can rapidly prune the space of views, but this comes at the cost of result quality.
+Depending on the tradeoff between latency and quality of results, we can choose the best
+pruning strategy from CI and MAB.
 
 % \techreport{
 % \stitle{Resource Utilization:}

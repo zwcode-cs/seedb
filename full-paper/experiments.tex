@@ -1,33 +1,86 @@
 %!TEX root=document.tex
-
-\section{Experimental Evaluation}
-\label{sec:experiments}
+\section{Evaluation Overview}
+\label{sec:experiments_overview}
  
-In this section, we present our evaluation of \SeeDB in terms of its performance 
-in select the top-$k$ visualizations. 
-Results of our user study are presented in the following section.
-The following set of experiments evaluate the basic framework of \SeeDB, our sharing optimizations 
-(Section \ref{sec:sharing_opt}), our pruning optimizations (Section \ref{sec:in_memory_execution_engine}), 
-and the combination of both sets of optimizations.
-In each experiment, our primary metric for evaluation is latency, 
-i.e. how long does it take \SeeDB to return the top-$k$ results. 
-For experiments involving our pruning strategies, we also measure quality of results 
-through {\it accuracy} and {\it utility distance} (discussed further in Section \ref{sec:custom_execution_engine_expts}).
+In the next two sections, we present a thorough evaluation of \SeeDB both in terms
+of performance in returning top-$k$ visualizations and in terms of user 
+studies.
+Our goal with performance experiments is to evaluate how well our sharing and pruning
+optimizations perform for identifying top visualizations accurately and at interactive
+latencies.
+Our goal with the user studies (Section \ref{sec:user_study}), in contrast, is to validate 
+our utility metric by comparing \SeeDB recommendations to ground truth, and to compare 
+\SeeDB to a manual chart construction tool for visual analysis.
+
+We report results for \SeeDB on a variety of real and synthetic datasets listed in Table 
+\ref{tab:datasets}.
+% Our performance studies focus on the synthetic and larger real-world datasets that
+% exercise the optimization capabilities of \SeeDB.
+% Our user studies, on the other hand, use smaller real-world datasets that are easy to
+% understand and where \SeeDB latency 
+
+\begin{table}[htb]
+  \centering \scriptsize
+  \begin{tabular}{|c|c|c|c|c|c|c|} \hline
+  Name & Description & Size & |A| & |M| & Views & Size \\ 
+   &  &  &  &  &  & (MB) \\ \hline
+  \multicolumn{7}{|c|} {Synthethic Datasets} \\ \hline
+  % SYN1 & Synthetic data & 1M & 50 & 5 & 250 \\
+  % & Randomly distributed, & & & & \\ 
+  % & varying \# distinct values & & & & \\ \hline
+  SYN & Synthetic data & 1M & 50 & 20 & 1000 & 411 \\
+  & Randomly distributed, & & & & & \\ 
+  & varying \# distinct values & & & & & \\ \hline
+  SYN*-10 & Synthetic data & 1M & 20 & 1 & 20 & 21\\
+  & Randomly distributed, & & & & & \\ 
+  & 10 distinct values/dim & & & & & \\ \hline
+  SYN*-100 & Synthetic data & 1M & 20 & 1 & 20 & 21\\
+  & Randomly distributed, & & & & & \\ 
+  & 100 distinct values/dim & & & & & \\ \hline
+  \multicolumn{7}{|c|} {Real Datasets} \\ \hline
+  BANK  & Customer Loan dataset & 40K & 11 & 7 & 77 & 6.7\\ \hline
+  DIAB  & Hospital data & 100K & 11 & 8 & 88 & 23 \\
+  & about diabetic patients & & & & & \\ \hline
+  AIR & Airline delays dataset & 6M & 12 & 9 & 108 & 974\\ \hline
+  AIR10 & Airline dataset & 60M & 12 & 9 & 108 & 9737\\ 
+  & scaled 10X & & & & & \\ \hline
+  \multicolumn{7}{|c|} {Real Datasets - User Study} \\ \hline
+  CENSUS  & Census data & 21K & 10 & 4 & 40 & 2.7\\ \hline
+  HOUSING  & Housing prices & 0.5K & 4 & 10 & 40 & $<$1\\ \hline
+  MOVIES  & Movie sales & 1K & 8 & 8 & 64 & 1.2\\ \hline
+  \end{tabular}
+  \vspace{-10pt}
+  \caption{Datasets used for testing}
+  \label{tab:datasets} 
+  \vspace{-10pt}
+\end{table}
+
+\section{Performance Studies}
+\label{sec:experiments}
+
+In this section, we present our evaluation of the basic \SeeDB framework, sharing optimizations 
+(Section \ref{sec:sharing_opt}), pruning optimizations (Section \ref{sec:in_memory_execution_engine}), 
+and phased-execution framework that combines both sets of optimizations.
+In each experiment, our primary evaluation metric is latency, i.e., 
+how long does it take \SeeDB to return the top-$k$ visualizations. 
+For experiments involving our pruning strategies, we measure quality of results through two additional
+metrics, namely {\it accuracy} and {\it utility distance} (discussed further in Section 
+\ref{sec:custom_execution_engine_expts}).
 Since we expect data layout to impact the efficacy of our optimizations, we 
-evaluate our techniques on both, a row-oriented database (denoted ROW) and a
-column-oriented database (denoted COL).
-We run experiments on four real-world and three synthetic datasets shown in Table 
-\ref{tab:datasets} using {\it earth mover distance (EMD)} as our utility function.
-% In our first set of experiments, we investigate 
-% how well a DBMS-backed engine
-% can support a \SeeDB-style workload.
+evaluate our techniques on Postgres, a row-oriented database (denoted ROW) as well as Vertica, 
+a column-oriented database (denoted COL).
+
+The following experiments use {\it earth mover distance (EMD)} as our distance function for
+computing deviation (Section \ref{sec:problem_statement}).
+In Section \ref{blah}, we briefly discuss results of using different distance functions to
+compute deviation.
 All experiments were run on a single machine with 8 GB RAM and a 16 core Intel 
 Xeon E5530 processor. 
 Unless described otherwise, experiments were repeated 3 times and the measurements 
 were averaged.
 
-We begin by presenting a summary of our experimental findings and then dive into performance results for 
-individual optimizations.
+We begin by presenting a summary of our experimental findings and then dive into performance results 
+for individual optimizations.
 
 %  present the overall results of our applying all our optimizations and then dive into
 % performance results for each of our optimizations.
@@ -39,43 +92,6 @@ individual optimizations.
 % We test our 
 % techniques on a variety of syntheic as well as real datasets to evaluate 
 % their performance and accuracy.
-
-
-\begin{table}[htb]
-  \centering \scriptsize
-  \begin{tabular}{|c|c|c|c|c|c|} \hline
-  Name & Description & Size & Dims & Measures & Views \\ \hline
-  % SYN1 & Synthetic data & 1M & 50 & 5 & 250 \\
-  % & Randomly distributed, & & & & \\ 
-  % & varying \# distinct values & & & & \\ \hline
-  SYN & Synthetic data & 1M & 50 & 20 & 1000 \\
-  & Randomly distributed, & & & & \\ 
-  & varying \# distinct values & & & & \\ \hline
-  SYN*-10 & Synthetic data & 1M & 20 & 1 & 20 \\
-  & Randomly distributed, & & & & \\ 
-  & 10 distinct values/dim & & & & \\ \hline
-  SYN*-100 & Synthetic data & 1M & 20 & 1 & 20 \\
-  & Randomly distributed, & & & & \\ 
-  & 100 distinct values/dim & & & & \\ \hline
-  BANK  & Customer Loan dataset & 40K & 11 & 7 & 77 \\ \hline
-  DIAB  & Hospital data & 100K & 11 & 8 & 88 \\
-  & about diabetic patients & & & & \\ \hline
-  AIR & Airline delays dataset & 6M & 12 & 9 & 108 \\ \hline
-  AIR10 & Airline dataset & 60M & 12 & 9 & 108 \\ 
-  & scaled 10X & & & & \\ \hline
-  \end{tabular}
-  \vspace{-10pt}
-  \caption{Datasets used for testing}
-  \label{tab:datasets} 
-  \vspace{-10pt}
-\end{table}
-
-\reviewer {
-  D3.1 What RDBMSs are used, and especially, what type of engine? How does
-the sizes of the datasets compare with the size of the RAM (in Table 1, what
-is the size of each datasets in Mb)?
-}
-
 
 \input{summary_experiments.tex}
 \input{dbms_experiments.tex}
