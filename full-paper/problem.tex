@@ -1,26 +1,24 @@
 %!TEX root=document.tex
 \section{Problem Statement}
 \label{sec:problem_statement}
-
+\resolved{
 \srm{This rewrite is good, thanks Aditya!}
-
 \srm{We need to define what measure and dimension attributes mean;
 in a snowflake schema a dimension attribute would be anything in a dimension table, and a measure attribute would be a non-foreign
 key column in a fact table. I don't think that's what we mean.  I think these are actually properties of the query, right, i.e., 
 dimension attributes are those appearing in the group by clause?  We should use different names.}\agp{I've addressed this somewhat.}
-
+}
 As is standard in OLAP, and in visual analytics
 tools such as Tableau and Polaris~\cite{tableau,polaris},
 we focus on a database $D$ with a snowflake schema.
-We abuse notation somewhat to denote the attributes
+In a slight abuse of notation, we denote the attributes
 that we would like to group-by in our visualizations 
 as {\em dimension attributes}, $A$, and 
 the attributes that we would like to 
 aggregate in our visualizations
-as {\em measure attributes}, $M$\footnote{\agp{we can add a
-footnote if we want to clarify}}.
-Further, we denote the set of potential
-aggregate functions $F$ over the measure attributes.  
+as {\em measure attributes}, $M$.
+Further, we denote by $F$ the set of potential
+aggregate functions over the measure attributes (e.g. COUNT, SUM, AVG).  
 For visualization purposes, we assume that we can group $D$ along any of the dimension attributes $A$ 
 and we can aggregate any of the measure attributes $M$.
 This leads to a two-column table that can be easily visualized
@@ -28,9 +26,9 @@ via standard visualization mechanisms, such as bar charts or trend lines.
 (Recent work has shown that bar charts are the overwhelming majority of visualizations
 created using visual analytics tools~\cite{DBLP:journals/pvldb/MortonBGM14}.) 
 Our techniques also apply to the general Polaris table algebra~\cite{polaris}, where
-we can aggregate across multiple attributes at once, and group-by multiple attributes as well, 
+we can aggregate across multiple attributes at once, and group-by multiple attributes, 
 potentially leading to more than two columns.
-For ease of exposition, we focus on the two-column result visualization in this paper,
+For ease of exposition, we focus on two-column result visualizations in this paper,
 which can be readily visualized using bar charts or trend lines.
 
 In addition to the database $D$, we assume that the analyst has indicated
@@ -41,23 +39,21 @@ The class of queries $Q$ posed over $D$ that we support encompass a general clas
 that select a horizontal fragment of the fact table and one or more dimension tables.
 Conceptually, we can view this as a simple selection query over the result of joining all
 the tables involved in the snowflake schema. 
-That said, we can also support projections---which essentially have the effect
-of dropping certain columns from consideration in the visualization, and
-joins---by specifying a subset of the dimension tables, again having 
-the same effect of dropping certain columns from consideration in the visualization: thus,
-we support a general class of select-project-join (SPJ) queries over the snowflake schema.
+That said, we can also support projections and joins which essentially have the effect
+of respectively dropping certain columns or tables from consideration in the visualizations.
+Thus, we support a general class of select-project-join (SPJ) queries over the snowflake schema.
 For the purpose of this discussion, we focus on simple selection
 queries over the result of joining all the tables in the snowflake schema.
 We note that this class of queries 
 suffice for most visualization tasks.
 For instance, in our illustrative example, $Q$ can select any subset of records from the
-AppMetrics table. 
+Census table. 
 We denote the result of $Q$ as $D_Q$.
-
-
+\resolved{
 \srm{Although this notion is compact, it doesn't seem to capture
 the contents of the WHERE clause.}\agp{rewritten to make clear that
 it is a function.}
+}
 
 Each visualization considered by \SeeDB can be translated into an aggregate
 and grouping query on the underlying data.
@@ -68,26 +64,23 @@ and grouping query on the underlying data.
 % where an aggregate view
 % is the result of applying grouping and aggregation to a dataset.
 Consequently, we represent the visualization $V_i$ 
-compactly as a function triple $(a, m, f)$, 
+compactly as a triple $(a, m, f)$, 
 where $m \in M, a \in A, f \in F$.   
+We call this an {\em aggregate view} or simply a {\em view}.
 The aggregate view performs a group-by on $a$ and applies the aggregation function $f$ 
 to measure attribute $m$. 
-As an example, $V_i(D)$ represents the results of grouping by 
-the data in $D$ using $a$, and then aggregating the $m$ values using $f$;
+As an example, $V_i(D)$ represents the results of grouping
+the data in $D$ by $a$, and then aggregating the $m$ values using $f$;
 $V_i(D_Q)$ represents a similar visualization applied to
 the data in $D_Q$.
-While \SeeDB techniques can be used to recommend visualizations
-generated via multi-attribute grouping and aggregation,
-for simplicity, we focus on views generated by single attribute grouping. 
-
-
-
-
+% While \SeeDB techniques can be used to recommend visualizations
+% generated via multi-attribute grouping and aggregation,
+% for simplicity, we focus on views generated by single attribute grouping. 
+\resolved{
 \reviewer {D1.2 I wonder what is really specific to visualizations. Indeed, a visualization
 as defined by the authors seems to be a two column table (attribute,
 measure). Is it usual to define visualizations this way?
 }
-
 \mpv{
 	Aggregate summaries visualized as bar charts and column charts are in fact, extremely
 	common visualizations, and hence are the first visualizations tackled by \SeeDB.
@@ -97,7 +90,7 @@ measure). Is it usual to define visualizations this way?
 }
 \agp{I think we can amend the response to say it is standard (cite polaris table algebra)
 to define visualizations in this manner.}
-
+}
 \if{0}
 Given a database $D$ and the subset of data selected by the analyst (via query $Q$), 
 the goal of \SeeDB is to recommend visualizations of $Q$ that have high utility. 
@@ -107,7 +100,6 @@ This choice is motivated by the fact that bar plots are the overwhelming
 majority of visualizations created using visualization tools 
 \cite{DBLP:journals/sigmod_record/MortonBGKM14}.
 \fi
-
 % The most common visualizations in real workloads of Tableau and ManyEyes 
 % are bar charts \cite{DBLP:journals/sigmod_record/MortonBGKM14} showing aggregate views
 % of the data. 
@@ -115,10 +107,6 @@ majority of visualizations created using visualization tools
 % data vs. individual records (e.g. average sales by state vs. sales of each store in the
 % country).
 % Consequently, \SeeDB (currently) focuses on this specific type of visualization.
-
-
-
-
 % Due to the scale of data, most common visualizations show aggregate summaries of data
 % as opposed to individual records (e.g. average sales by state vs. sales of each store 
 % in every state).
@@ -130,7 +118,6 @@ majority of visualizations created using visualization tools
 % of \SeeDB\ is to recommend visualizations of results of $Q$ with high utility. 
 % As mentioned in Section~\ref{sec:introduction}, \SeeDB\ focuses on visualizations 
 % that show aggregate summaries of data.
-
 \if{0}
 Let $D$ have a snowflake schema with 
 dimension attributes $A$, measure attributes $M$, and potential
@@ -160,17 +147,17 @@ We denote the result of $Q$ as $D_Q$.
 % all tuples corresponding to transactions involving bicycles.
 % Given query $Q$, \SeeDB\ considers all aggregate views 
 % $V_i$ obtained by performing a grouping and aggregation on $D_Q$. 
-
+\resolved{
 \reviewer{The range of queries that are supported is not clear. Specially in fig.3, in
 the ``SQL'' tab, it seems that users can only define very simple selection
 queries (where the selection is a simple conjunction of predicates). No
 project, no joins, no difference, no grouping/agg. Is this correct? Why call
 this SQL?}
-
 \mpv{New interface only allows selections}
 \agp{I don't think we should restrict ourselves to selection. We can
 support SPJ queries over the snowflake schema.}
-
+}
+\resolved{
 \reviewer {
 	D2.1 The approach seems limited to simple queries of the form Select * from
 aTable where someSelectionPredicates. It seems to me that it is quite a
@@ -179,18 +166,17 @@ warehouse exploration context (as per Section 2). I would like the authors to
 comment that point. For instance, what about when the projection is not
 select * but select aListOfAttributes?
 }
-
 \mpv{Do we need to defend why we support only simple queries? From other studies of
 visualization tools, a significant portion of queries posed in these tools is 
 limited to simple selection and projection tasks ~\cite{}.
 Therefore, we have prioritized support for operations over more complex queries.}
 \agp{I think we can clarify this in the response, but see what I've said above.}
-
+}
+\resolved{
 \reviewer {
 	D2.2 In the definition of $U(V_i)$: as $D_Q $contains a selection that D does not
 have, how to ensure that the population of the two distribution is the same?
 }
-
 \mpv{
 	This should only be in the reviewer response: the dataset under study $D_Q$ can be
 	compared to various {\em comparison} datasets; by default, the comparison dataset
@@ -201,10 +187,9 @@ have, how to ensure that the population of the two distribution is the same?
 	Since the system has limited knowedlge about the exact analytical task, we provide 
 	users with flexiblity to choose a comparison dataset.
 }
-
+}
 % Note that all such $V_i$ give rise to two-column results that can 
 % be readily visualized (e.g. Table~\ref{tab:staplerX}). 
-
 % Consider a database $D$, and associated metadata $M(D)$, with a snowflake schema,
 % with dimension attributes $A$, measure attributes $M$, and potential
 % aggregate functions $F$ over the measure attributes.
@@ -234,15 +219,11 @@ have, how to ensure that the population of the two distribution is the same?
 % large number of distinct values. 
 % We consider views where the dimension attributes are
 % aggregated with respect to these measure attributes.
-
-
-
 %Lastly, for simplicity, 
 %we ignore {\em binning}: that is, given a view to be visualized,
 %there are many ways of binning values to give the view. 
 %For instance, if we have average profits per day, we can bin the days into
 %months, into weeks, or into years.
-
 %  aggregate view $V_i$ by
 % comparing data distribution in the query results to the data distribution of the underlying dataset.
 % taking into consideration a variety of aspects, including
@@ -250,59 +231,69 @@ have, how to ensure that the population of the two distribution is the same?
 % For now, and for most of the paper, however, 
 % That said, our techniques also seamlessly apply to a more general 
 % class of distance metrics described in .
-
-
-\agp{We use distance, metric, scoring, utility, all equivalently. We should stick to one..}
 As outlined in Section \ref{sec:introduction}, \SeeDB determines the utility of 
 visualizations via deviation; visualizations that show different trends in the query
-result dataset (i.e. $D_Q$) compared to the full dataset (i.e. $D$) are said to have higher
+dataset (i.e. $D_Q$) compared to a reference dataset (called $D_R$) are said to have higher
 utility.
-We discuss in Section~\ref{} how other distance metrics can be incorporated into our system
-without any changes.
-Specifically, given a view $V_i$, the utility of $V_i$ is
-computed as the deviation between the results of applying $V_i$ to $D_Q$ (the 
-query data) and applying $V_i$ to the entire database (i.e., background data).
-View $V_i$ applied to the results of $Q$ can be expressed as query $Q_T$. 
+The reference dataset $D_R$ may be defined as the entire underlying dataset ($D$),
+the complement of $D_Q$ ($D$ - $D_Q$) or data selected by any arbitrary query $Q'$ ($D_{Q'}$).
+We discuss in Section~\ref{sec:other_utility_metrics} how other distance metrics can be 
+incorporated into our system without any changes.
+Given a view $V_i$, the deviation-based utility of $V_i$ is
+computed as the deviation between the results of applying $V_i$ to the query data, $D_Q$,
+and applying $V_i$ to the reference data, $D_R$.
+View $V_i$ applied to the results of $Q$ can be expressed as query $Q_T$ below. 
 We call this the {\em target view}.
 $$ Q_T\ =\ {\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D_Q\  {\tt GROUP \ \ BY} \ a$$ 
-Similarly, view $V_i$ applied to the entire database $V_i (D)$ can be expressed as $Q_C$. 
-We call this the {\em comparison view}. 
-$$ Q_C\ =\ {\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt GROUP \ \ BY} \ a$$
+Similarly, view $V_i$ applied to the reference data $V_i (D_R)$ can be expressed as $Q_R$. 
+We call this the {\em reference view}. 
+$$ Q_R\ =\ {\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D_R\  {\tt GROUP \ \ BY} \ a$$
 The results of both the above aggregate views are summaries with two columns, namely $a$ and
 $f(m)$. 
 To ensure that all aggregate summaries have the same scale, we normalize each 
 summary into a probability distribution (i.e. the values of $f(m)$ sum to $1$).
 % over the various values of $a$ and the tables can be normalized into
 %probability distributions for comparison. To convert each result table 
-For our example in Table~\ref{tab:staplerX}, the probability distribution of
-$V_i(D_Q)$, denoted as $P[V_i (D_Q)]$, is: (AT\&T: 180.55/538.18, Verizon:
-145.50/538.18, T-Mobile: 122.00/538.18,  Sprint: 90.13/538.18). 
-A similar probability distribution can be derived for $P[V_i (D)]$.
+For our example visualization of {\em Average Capital Gain vs. Sex} (Figure \ref{fig:intro}),
+the probability distribution for the target view $V_i(D_Q)$ ({\em unmarried} adults), 
+denoted as $P[V_i (D_Q)]$ is: 
+(F: 0.52, M: 0.48) while that for the reference view $V_i(D_R)$ ({\em married} adults), 
+denoted as $P[V_i (D_R)]$ is:
+(F: 0.31, M: 0.69). 
+In contrast, distributions for the visualization {\em Average Age
+vs. Sex} are (F: 0.5, M: 0.5) and (F: 0.51, M: 0.49) 
+for the target and reference view respectively.
+Qualitatively, we see that the distributions show a large deviation for
+the former visualization and hardly any deviation for the latter.
 
 Given an aggregate view $V_i$ and probability distributions for the
-target view  ($P[V_i (D_Q)]$) and comparison view ($P[V_i (D)]$), the
-{\em utility} of $V_i$ is defined as the distance between these two probability
-distributions. Formally, if $S$ is a distance function,
-$$ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$$
-Higher the distance betwee the two distributions, more likely is the
+target view  ($P[V_i (D_Q)]$) and reference view ($P[V_i (D_R)]$), we
+define {\em utility} of $V_i$ as the distance between these two probability
+distributions. Higher the distance betwee the two distributions, more likely is the
 visualization to be interesting and therefore higher the utility.
+Formally, if $S$ is a distance function,
+$$ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D_R)] )$$
 % The utility of a view is our measure for whether the target view is
 % ``potentially interesting'' as compared to the comparison view:
 % the higher the utility, the more the deviation
 % from the comparison view, and the more likely the associated visualization is to be interesting.
 Computing distance between probability distributions has
 been well studied in the literature, and \SeeDB\ supports a variety of metrics
-to compute utility, including Earth Movers Distance (default), 
+to compute utility, including Earth Movers Distance, 
 Euclidean Distance, Kullback-Leibler Divergence (K-L
 divergence), and Jenson-Shannon
 Distance. 
-
+Our experiments choose Earth Movers Distance as the default distance function,
+but in Section \ref{sec:other_utility_metrics} we show how the specific distance
+function affects our utility metric. 
+\resolved{
 \reviewer {
 	D2.3 SeeDB supports a variety of metrics to compute utility, but only one of
 them is tested. What is the impact of the metric used?
 }
 \mpv{
 	We need to show experiments showing this.
+}
 }
 
 We can formally state the \SeeDB problem as follows:
