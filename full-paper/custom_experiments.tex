@@ -233,57 +233,85 @@ metrics over 20 runs.
 % \item Random (RANDOM): this strategy returns randomly selected $k$ views (to study the impact of pruning on accuracy).
 % \end{compactenum}
 
-\begin{figure*}[t]
+% \begin{figure*}[t]
+% 	\centering
+% 	\begin{subfigure}{0.33\linewidth}
+% 		\centering
+% 		{\includegraphics[width=6cm] {Images/in_memory_bank_accuracy.pdf}}
+% 		\caption{Accuracy}
+% 		\label{fig:bank_accuracy}
+% 	\end{subfigure}
+% 	\begin{subfigure}{0.33\linewidth}
+% 		\centering
+% 		{\includegraphics[width=6cm] {Images/in_memory_bank_utility_dist.pdf}}
+% 		\caption{Utility Distance}
+% 		\label{fig:bank_utility_dist}
+% 	\end{subfigure}
+% 	\begin{subfigure}{0.33\linewidth}
+% 		\centering
+% 		{\includegraphics[width=6cm] {Images/in_memory_bank_latency.pdf}}
+% 		\caption{Latency}
+% 		\label{fig:bank_latency}
+% 	\end{subfigure}
+% 	\vspace{-10pt}
+% 	\caption{Performance of strategies for Bank dataset}
+% 	\label{fig:bank_perf}
+% 	\vspace{-10pt}
+% \end{figure*}
+
+
+
+\begin{figure}[h]
 	\centering
-	\begin{subfigure}{0.33\linewidth}
+	\vspace*{-10pt}
+	\begin{subfigure}{0.48\linewidth}
 		\centering
-		{\includegraphics[width=6cm] {Images/in_memory_bank_accuracy.pdf}}
-		\caption{Accuracy}
+		\includegraphics[width=4.4cm] {Images/in_memory_bank_accuracy.pdf}
+		\vspace{-15pt}
+		\caption{Bank Dataset Accuracy}
 		\label{fig:bank_accuracy}
 	\end{subfigure}
-	\begin{subfigure}{0.33\linewidth}
+	\begin{subfigure}{0.48\linewidth}
 		\centering
-		{\includegraphics[width=6cm] {Images/in_memory_bank_utility_dist.pdf}}
-		\caption{Utility Distance}
-		\label{fig:bank_utility_dist}
-	\end{subfigure}
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		{\includegraphics[width=6cm] {Images/in_memory_bank_latency.pdf}}
-		\caption{Latency}
-		\label{fig:bank_latency}
-	\end{subfigure}
-	\vspace{-10pt}
-	\caption{Performance of strategies for Bank dataset}
-	\label{fig:bank_perf}
-	\vspace{-10pt}
-\end{figure*}
-
-\begin{figure*}[t]
-	\centering
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		{\includegraphics[width=6cm] {Images/in_memory_dia_accuracy.pdf}}
-		\caption{Accuracy}
+		\includegraphics[width=4.4cm] {Images/in_memory_dia_accuracy.pdf}\
+		\vspace{-15pt}
+		\caption{Diabetes Dataset Accuracy}
 		\label{fig:dia_accuracy}
 	\end{subfigure}
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		{\includegraphics[width=6cm] {Images/in_memory_dia_utility_dist.pdf}}
-		\caption{Utility Distance}
-		\label{fig:dia_utility_dist}
-	\end{subfigure}
-	\begin{subfigure}{0.33\linewidth}
-		\centering
-		{\includegraphics[width=6cm] {Images/in_memory_dia_latency.pdf}}
-		\caption{Latency}
-		\label{fig:diabetes_latency}
-	\end{subfigure}
 	\vspace{-10pt}
-	\caption{Performance of strategies for Diabetes dataset}
-	\label{fig:diabetes_perf}
+	\caption{Accuracies Across Datasets}
 	\vspace{-10pt}
-\end{figure*}
+\end{figure}
+
+
+
+
+
+% \begin{figure*}[t]
+% 	\centering
+% 	\begin{subfigure}{0.33\linewidth}
+% 		\centering
+% 		{\includegraphics[width=6cm] {Images/in_memory_dia_accuracy.pdf}}
+% 		\caption{Accuracy}
+% 		\label{fig:dia_accuracy}
+% 	\end{subfigure}
+% 	\begin{subfigure}{0.33\linewidth}
+% 		\centering
+% 		{\includegraphics[width=6cm] {Images/in_memory_dia_utility_dist.pdf}}
+% 		\caption{Utility Distance}
+% 		\label{fig:dia_utility_dist}
+% 	\end{subfigure}
+% 	\begin{subfigure}{0.33\linewidth}
+% 		\centering
+% 		{\includegraphics[width=6cm] {Images/in_memory_dia_latency.pdf}}
+% 		\caption{Latency}
+% 		\label{fig:diabetes_latency}
+% 	\end{subfigure}
+% 	\vspace{-10pt}
+% 	\caption{Performance of strategies for Diabetes dataset}
+% 	\label{fig:diabetes_perf}
+% 	\vspace{-10pt}
+% \end{figure*}
 
  % \stitle{Utility Distributions and Quality of Results}:
  
@@ -343,6 +371,31 @@ After $k$=10, the performance of all our strategies improves once again and tend
 0 utility distance.
 We note that NO\_PRU necessarily has perfect performance, while RANDOM has extremely poor accuracy (<0.25) 
 and utility distance ($>$5X that of CI and MAB). 
+
+\begin{figure}[h]
+	\centering
+	\vspace*{-10pt}
+	\begin{subfigure}{0.48\linewidth}
+		\centering
+		\includegraphics[width=4.4cm] {Images/in_memory_bank_utility_dist.pdf}
+		\vspace{-15pt}
+		\caption{Bank Dataset Utility Distance}
+		\label{fig:bank_utility_dist}
+	\end{subfigure}
+	\begin{subfigure}{0.48\linewidth}
+		\centering
+		\includegraphics[width=4.4cm] {Images/in_memory_dia_utility_dist.pdf}\
+		\vspace{-15pt}
+		\caption{Diabetes Dataset Utility Dist.}
+		\label{fig:dia_utility_dist}
+	\end{subfigure}
+	\vspace{-10pt}
+	\caption{Utility Distances Across Datasets}
+	\vspace{-10pt}
+\end{figure}
+
+
+
 
 % As with accuracy, the utility distance tends to zero with large $k$s.
 % All our strategies produce views with 0 or almost 0 utility distance for most $k$. 
@@ -467,6 +520,28 @@ As expected, as $k$ increases, latency also increases because we can prune fewer
 % experimentally, our strategies consistently provide high utility views with low utility distance.op-$k$.
 % This latency-accuracy tradeoff is particularly important in a real-time system where we want to quickly 
 % provide recommendations for the analyst to browse.
+
+\begin{figure}[h]
+	\centering
+	\vspace*{-10pt}
+	\begin{subfigure}{0.48\linewidth}
+		\centering
+		\includegraphics[width=4.4cm] {Images/in_memory_bank_latency.pdf}
+		\vspace{-15pt}
+		\caption{Bank Dataset Latency}
+		\label{fig:bank_latency}
+	\end{subfigure}
+	\begin{subfigure}{0.48\linewidth}
+		\centering
+		\includegraphics[width=4.4cm] {Images/in_memory_dia_latency.pdf}\
+		\vspace{-15pt}
+		\caption{Diabetes Dataset Latency}
+		\label{fig:dia_latency}
+	\end{subfigure}
+	\vspace{-10pt}
+	\caption{Latency Across Datasets}
+	\vspace{-10pt}
+\end{figure}
 
 \stitle{CI vs. MAB}.
 In our evaluation, we compared two competing pruning strategies, CI and MAB. 

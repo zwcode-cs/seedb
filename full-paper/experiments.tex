@@ -1,6 +1,6 @@
 %!TEX root=document.tex
-\section{Evaluation Overview}
-\label{sec:experiments_overview}
+\section{Performance Evaluation}
+\label{sec:experiments}
  
 In the next two sections, we present a thorough evaluation of \SeeDB both in terms
 of performance in returning top-$k$ visualizations and in terms of user 
@@ -13,7 +13,7 @@ our utility metric by comparing \SeeDB recommendations to ground truth, and to c
 \SeeDB to a manual chart construction tool for visual analysis.
 
 We report results for \SeeDB on a variety of real and synthetic datasets listed in Table 
-\ref{tab:datasets}.
+\ref{tab:datasets}, across this section and the next (on the user study).
 % Our performance studies focus on the synthetic and larger real-world datasets that
 % exercise the optimization capabilities of \SeeDB.
 % Our user studies, on the other hand, use smaller real-world datasets that are easy to
@@ -55,12 +55,7 @@ We report results for \SeeDB on a variety of real and synthetic datasets listed 
   \vspace{-10pt}
 \end{table}
 
-\section{Performance Studies}
-\label{sec:experiments}
 
-In this section, we present our evaluation of the basic \SeeDB framework, sharing optimizations 
-(Section \ref{sec:sharing_opt}), pruning optimizations (Section \ref{sec:in_memory_execution_engine}), 
-and phased-execution framework that combines both sets of optimizations.
 In each experiment, our primary evaluation metric is latency, i.e., 
 how long does it take \SeeDB to return the top-$k$ visualizations. 
 For experiments involving our pruning strategies, we measure quality of results through two additional

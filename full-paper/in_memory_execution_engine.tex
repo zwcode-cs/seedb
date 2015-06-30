@@ -64,20 +64,6 @@ clip=true]{Images/confidence_pruning.pdf}}}}
 \end{figure}
 
 
-
-% Views $V_1$ and $V_2$ have the highest estimates for utility so far.
-% Consider view $V_3$; we see that its confidence interval overlaps with the
-% confidence intervals of the current top views, making it possible
-% that $V_3$ will be in the final top-$24$ views. On the other hand, the confidence
-% interval for $V_4$ lies entirely below the lowerbounds of $V_1$ and $V_2$.
-% Since we can claim with high probability
-% that the utility of $V_4$ lies within its confidence interval, it follows that
-% with high probability, $V_4$'s utility will be lower than that of both $V_1$ and
-% $V_2$, and it will not appear in the top-$2$ views.
-% \papertext{Pseudocode for our pruning scheme can be found in our technical report~\cite{seedb-tr}.}
-% \techreport{We state the algorithm formally in
-% Algorithm~\ref{algo:ci_based_pruning}.}
-
 \techreport{
 \begin{algorithm}
 \caption{Confidence Interval Based Pruning}
@@ -104,12 +90,6 @@ of the $m$ values such that the actual mean of the $N$
 is always within this confidence interval with a probability of $1 - \delta$:
 \begin{theorem}
 \label{thm:hs}
-% Let $\calY = y_1,$ $\ldots,$ $y_N$ be a set of $N$ 
-% values in $[0,1]$ with average value
-% $\frac1N \sum_{i=1}^N y_i = \mu$.
-% Let $Y_1,\ldots,Y_N$ be a 
-% sequence of random variables drawn from $\calY$ without
-% replacement.
 Fix any $\delta > 0$. For $1 \le m \le N-1$, define
 {\small $$
 \varepsilon_m = \sqrt{\frac{(1-\frac{m-1}N)(2\log \log (m) + \log(\pi^2/3\delta))}{2m}}.
