@@ -3,16 +3,15 @@
 \section{User Study}
 \label{sec:user_study}
 
-The previous section evaluated \SeeDB and our optimizations in terms of 
-performance.
-In this section, we assess the value of \SeeDB for real data analysis 
-scenarios.
+The previous section evaluated \SeeDB 
+and our optimizations in terms of performance.
+In this section, we assess the utility of \SeeDB's recommendations 
+for real data analysis scenarios.
 First, we perform a study to validate our deviation-based distance metric.
-We show that although simple and limited in its scope, our deviation-based
-metric can capture significant information about interesting-ness
-of a visualization.
-Next, we compare \SeeDB to a manual chart construction tool for performing
-visual analysis.
+We show that although simple, our deviation-based
+metric can capture significant information about interestingness of visualizations.
+Second, we compare \SeeDB
+to a manual charting tool without visualization recommendations.
 We demonstrate that \SeeDB can enable users to find interesting visualizations
 faster and can surface unexpected trends.
 We also find that users overwhelmingly prefer \SeeDB over a manual charting 
@@ -23,6 +22,8 @@ tool.
 
 \SeeDB uses deviation between the target and reference dataset as a measure
 of interestingness of a visualization.
+
+\stitle{Ground Truth.}
 To validate deviation as a utility metric, we obtained ground truth data about
 interestingness of visualizations and evaluated \SeeDB against it.
 To obtain ground truth, we presented 5 data analysis experts with the Census 
@@ -33,22 +34,22 @@ and asked them to classify each visualization as interesting or
 not interesting {\em in the context of the task}.
 Of the 48 visualizations, on average, experts classified 4.5 visualizations
 (sd = 2.3) as being interesting for the task.
-This strict filter indicates that of the entire set of potential visualizations, 
-only a small fraction (\textasciitilde5\%) show compelling trends.
-To obtain consensus on grounth truth, we used a simple voting system where
+The small number indicates that of the entire set of potential visualizations, 
+only a small fraction (\textasciitilde10\%) show interesting trends.
+To obtain consensus on ground truth, we used a simple voting system where
 any visualization chosen by a majority of participants was labeled as 
 interesting; the rest were not. 
-This process identified 6 interesting and 48 not interesting visualizations.
-In addition to Figures \ref{fig:interesting_viz} (interesting) and Figure 
-\ref{fig:uninteresting_viz} (not interesting), Figure \ref{fig:huhi} is 
-a visualization labeled as interesting (``\ldots it
-showed a big difference in earning for self-inc adults'') while 
-Figure \ref{fig:luli} is not interesting (notice the lack of deviation).
-While some classifications are correlated to deviation, some are not: 
-Figure \ref{fig:huli} shows high deviation but is uninteresting, 
+This process identified 6 interesting and 42 not interesting visualizations.
+In addition to Figures~\ref{fig:interesting_viz} (interesting) and Figure 
+\ref{fig:uninteresting_viz} (not interesting), Figure~\ref{fig:huhi} 
+was labeled as interesting (``\ldots it
+shows a big difference in earning for self-inc adults'') while 
+Figure~\ref{fig:luli} was labeled as not interesting (notice the lack of deviation).
+While some classifications can be explained using deviation, some cannot: 
+Figure \ref{fig:huli} shows high deviation but was deemed to be uninteresting, 
 while Figure \ref{fig:luhi} shows small 
-deviation but is interesting (``\ldots hours-per-week seems like a 
-measure worth exploring''). \mpv{check tense}
+deviation but was deemed to be interesting (``\ldots hours-per-week seems like a 
+measure worth exploring''). 
 
 % Figure \ref{fig:gt_examples} shows ground truth for four other visualizations: 
 % Figure \ref{fig:huhi} shows another visualization that was chosen as interesting by 4 of 5 
@@ -92,22 +93,22 @@ measure worth exploring''). \mpv{check tense}
 	\centering
 	\begin{subfigure}{0.45\linewidth}
 		{\includegraphics[width=4cm, trim=0 0 3cm 0, clip=true] {Images/HUHI_work_avg_cap_gain.pdf}}
-		\caption{High deviation, interesting visualization}
+		\caption{High deviation, interesting}
 		\label{fig:huhi}  
 	\end{subfigure}
 	\begin{subfigure}{0.54\linewidth}
 		{\includegraphics[width=4.5cm] {Images/LULI_race_avg_age.pdf}}
-		\caption{Low deviation, not interesting visualization}
+		\caption{Low deviation, not interesting}
 		\label{fig:luli}
 	\end{subfigure}
 	\begin{subfigure}{0.45\linewidth}
 		{\includegraphics[width=4cm, trim=0 0 3cm 0, clip=true] {Images/HULI_work_avg_cap_loss.pdf}}
-		\caption{High deviation, not interesting visualization}
+		\caption{High deviation, not interesting}
 		\label{fig:huli}  
 	\end{subfigure}
 	\begin{subfigure}{0.54\linewidth}
 		{\includegraphics[width=4.5cm] {Images/LUHI_inc_avg_hours.pdf}}
-		\caption{Low deviation, interesting visualization}
+		\caption{Low deviation, interesting}
 		\label{fig:luhi}
 	\end{subfigure}
 	\vspace{-10pt}
@@ -147,6 +148,7 @@ measure worth exploring''). \mpv{check tense}
 		\caption{ROC of SeeDB (AUROC = 0.903)}
 		\label{fig:roc}
 	\end{subfigure}
+	\vspace{-10pt}
 	\caption{Performance of Deviation metric for Census data}
 	\vspace{-20pt}
 	\label{fig:census_gt}
@@ -156,42 +158,44 @@ measure worth exploring''). \mpv{check tense}
 Figure \ref{fig:gt_dist} shows a heatmap of the number of times a
 visualization was classified as interesting 
 ({\em yellow} = popular, {\em blue} = not popular), sorted
-in {\em decending order} of utility. 
+in {\em descending order} of utility. 
 We notice that the majority of yellow bands fall at the top of the
 heatmap, indicating, qualitatively, that popular visualizations have higher utility.
-To evaluate the accuracy of \SeeDB over the Census data, 
+To evaluate the accuracy of \SeeDB's recommendations over the Census data, 
 we ran \SeeDB for the study task, varying $k$ between 0 \ldots 48, and measured
 the agreement between \SeeDB recommendations and ground truth.
-As is common in recommender systems evaluations~\cite{rec_sys}, 
-we computed the ``receiver operating curve'' or ROC curve for \SeeDB 
-(Figure \ref{fig:roc}).
-This curve shows the relation between the true positive rate (TPR) on the 
-x-axis and false positive rate (FPR) on the y for different values of a
-parameter ($k$ in this case).
+As is common in data mining, 
+we computed the ``receiver operating curve'' or ROC curve for \SeeDB, 
+Figure \ref{fig:roc}, depicting 
+the relationship between the true positive rate (TPR) on the 
+x-axis and false positive rate (FPR) on the y-axis for different values of a
+parameter ($k$ in this case). 
+TPR is the number of interesting visualizations returned as a fraction of the 
+total number of interesting visualizations, 
+while FPR is the fraction of recommendations
+that were incorrectly returned as interesting, as a fraction of the number
+of interesting visualizations returned. 
 ROC curves for highly accurate classifiers are skewed towards the upper left
-corner of the graph, while the red line indicates the baseline (every example
+corner of the graph. The red line indicates the random baseline (every example
 is classified randomly).
-Notice that \SeeDB performs wildly better than the baseline.
-For example, for $k$=3, all 3 visualizations recommended by \SeeDB are interesting
-giving TPR = 0.5 and FPR = 0.
-Likewise, for $k$=5, four our of the 5 recommended visualizations are interesting, 
-giving TPR = 0.667 and FPR = 0.05.
-Finally, for $k$=14, \SeeDB recommends all 6 interesting visualizations, giving a 
-TPR of 1 but (as expected) taking a hit in FPR.
-The area under ROC (AUROC) for \SeeDB --- the typical measure of recommender quality ---
-is 0.903.
-This indicates that the accuracy of \SeeDB recommendations is very high.
-\footnote{AUROC's above 0.8 are considered very good while those above 0.9 are
+As can be seen in the figure, \SeeDB performs significantly better than the baseline.
+For example, for $k$=3, all 3 visualizations recommended by \SeeDB are interesting,
+giving TPR = 0.5 and FPR = 0; for $k$=5, 
+four of the 5 recommended visualizations are interesting, 
+giving TPR = 4/6 = 0.667 and FPR = 0.05. 
+The area under ROC (AUROC) for \SeeDB---the typical measure of 
+classifier quality---is 0.903.
+This indicates that the accuracy of \SeeDB recommendations is very high.\footnote{\small AUROC's 
+above 0.8 are considered very good, while those above 0.9 are
 excellent}
-\mpv{add points on chart for k=3, 5, 14}
+\mpv{add points on chart for k=3, 5}
 
 While we expect ROC curves corresponding to different datasets and tasks to vary,
-this example makes the case that \SeeDB recommendations are high quality.
-And although many factors besides deviation determine interestingness, deviation 
-captures a large part of the metric.
-
-Next, we describe results of our user study comparing \SeeDB to a manual
-chart construction tool.
+this user study makes the case that \SeeDB recommendations have high quality
+and coverage,
+despite focusing on a simple deviation-based utility metric.
+We expect that taking into account other aspects (apart from deviation),
+would improve \SeeDB's recommendations even more.
 
 % We varied the number of visualizations $k$ recommended by \SeeDB between 0 and
 % max \mpv{fill in max}.
@@ -229,7 +233,7 @@ chart construction tool.
 % with deviation-based recommendations, compares to a manual chart construction tool in performing
 % visual analysis.
 
-\subsection{\SeeDB vs. Manual Visualization Tool}
+\subsection{{\large \SeeDB} vs. Manual Visualization Tool}
 \label{sec:seedb_vs_manual}
 
 The motivation behind \SeeDB is to build a tool that can support fast
