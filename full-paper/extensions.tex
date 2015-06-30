@@ -1,39 +1,245 @@
 %!TEX root=document.tex
 
-\techreport{
-\section{Extensions}
+\section{Utility Metrics: Discussion}
 \label{sec:discussion}
+We now discuss and evaluate various aspects of utility metrics,
+including 
 
-\subsection{Comparison of Difference Distance Functions for Deviation}
+\noindent {\it (a) Distance Functions.} We evaluate the final results on
+using different distance functions for measuring deviation.
+
+\noindent {\it (b) General Utilities.} We describe how our 
+techniques can be used to capture a variety of other important aspects
+for visualization recommendation beyond deviation. 
+
+\noindent {\it (c) \SeeDB's Capabilities.} We study how
+effective \SeeDB is at capturing
+different distance functions and general utility metrics. We compare two
+metrics to EMD and study impact on:
+{\it (i)} performance; 
+{\it (ii)} accuracy when pruning optimizations are employed.
+
+
+We summarize our findings below.
+\papertext{Details can be found in the technical report~\cite{seedb-tr}.}
+\begin{denselist}
+\item {\em (a)} The choice of distance function between J-S, Euclidean, K-L divergence
+and EMD is not critical: the former three distance functions lead
+to results that largely
+agree with EMD in the visualization ordering. For instance, the
+former three distance functions output 3 out of EMD's top-5 visualizations 
+in their top-5, and
+two out of three distance functions output 4 out of EMD's top-5 visualizations in their top-5.
+\item {\em (b)} We developed a generalized utility metric
+that captures   deviation from the baseline ({\it deviation}),
+historical data ({\em history}),
+variation in and distribution of the data itself ({\it data distribution}),
+types and properties of the different attributes in the dataset ({\it metadata}), 
+visual qualities of the visualization ({\it aesthetics}),  
+past history of interactions with this user and other users ({\it user preferences}), and,
+to a limited extent,
+meaning and relative importance of attributes in the data ({\it semantics}).
+We have extended \SeeDB to support this generalized utility metric. 
+\item {\em (c)} We evaluated EMD, the Euclidean distance, and MAX\_DIFF
+(a general utility metric that captures the difference between the largest
+and second largest aggregate group) within \SeeDB and found that
+all three utility measures perform similarly in terms of performance 
+(i.e., they lead to similar gains via our optimizations),
+while not sacrificing accuracy. 
+\end{denselist}
+
+\techreport{
+\subsection{Distance Functions}
 \label{sec:diff_dist_funcs}
-By default, \SeeDB uses Earth Movers Distance (EMD) to compute distance between
+By default, \SeeDB uses Earth Movers Distance (EMD) 
+to compute distance between
 the target and reference probability distributions.
-However, as mentioned in Section \ref{sec:problem_statement}, other distance functions 
-such as Euclidean distance, K-L divergence and J-S divergence may also be used in place
-of EMD. 
-We applied each of these metrics to our test datasets and compared
-the resulting orders of visualization based on utility. 
-We found that for the top-$5$ visualizations, all distance functions
-agreed on 3 out of 5 visualizations, whereas three of four distance functions 
-agreed on 4 out of 5 visualizations.
-Similarly, for $k$=10, all functions agreed on 6 out of 10 visualizations, and three of four functions
-agreed on 9 out of 10 top visualizations.
-Thus, we find a high degree of agreement on the top visualizations according to multiple distance functions.
+However, as mentioned in Section \ref{sec:problem_statement}, 
+other distance functions 
+such as Euclidean distance, K-L divergence and J-S divergence 
+may also be used in place of EMD. 
+Note that these are all {\em consistent distance functions},
+like we described in Section~\ref{sec:pruning_opt}.
+
+We applied each of these distance functions---Euclidean,
+K-L divergence, and J-S divergence---to 
+our test datasets (\agp{which?}) and compared
+the resulting recommendations orders to that of EMD. 
+We found that for the top-$5$ visualizations
+output by EMD, 
+all three distance functions
+output 3 out of 5 visualizations in their top-5, 
+whereas two of three distance functions 
+output 4 out of 5 visualizations in their top-5.
+Similarly, for $k$=10, 
+all three distance functions output 6 out of the top-10 visualizations
+output by EMD in their top-10, while two of three distance functions
+output 9 out of the top-10 visualizations output by
+EMD in their top-10.
+
+Thus, we find a high degree of agreement on the 
+top visualizations according to multiple distance functions.
 We see similar results for the lowest utility visualizations as well. 
-For the bottom-$5$ visualizations, all functions agreed on 3 out of 5 visualizations, and three of the
-four functions agreed on 4 out of 5 visualizations.
-For the bottom-$10$, all functions agreed on 8 of the 10 lowest utility visualizations.
+For the bottom-$5$ visualizations output by EMD, 
+all three distance functions output 3 out of 5 in their top-5, 
+and two of three distance functions output 4 out of 5 in their top-5.
+These results indicate that the choice of specific distance 
+function measuring deviation is not
+critical; the above functions produce similar 
+orderings of visualizations.
 
-These results indicate that the choice of specific distance function measuring deviation is not
-critical; the above functions produce similar orderings of visualizations.
+\subsection{General Utility Metrics}\label{sec:gen_util}
 
-\subsection{Extension to other Utility Metrics}
-\label{sec:other_utility_metrics}
-In Section \ref{sec:pruning_opt}, we described the two pruning strategies used by \SeeDB
+% In this section we prove that our sampling 
+% algorithms converge, and then describe our generalized
+% distance metric.
+
+In addition to deviation, there are several other aspects
+or {\em dimensions} that need to be taken into account
+in order to make data-driven recommendations even more powerful.
+Here, we list these dimensions, and then describe how 
+we augment \SeeDB to incorporate these dimensions.
+A full exploration of these dimensions
+and their relative importance is left as future work.
+  
+The dimensions that determine the quality of a visualization recommendation
+include:
+  \begin{inparaenum}
+  \item deviation from the baseline ({\it deviation}),
+  \item historical data ({\em history}),
+  \item variation in and distribution of the data itself ({\it data distribution}),
+  \item types and properties of the different attributes in the dataset ({\it metadata}), 
+\item visual qualities of the visualization ({\it aesthetics}),  
+\item past history of interactions with this user and other users ({\it user preferences}), and 
+\item meaning and relative importance of attributes in the data ({\it semantics}). 
+\end{inparaenum}
+We now describe how \SeeDB can be augmented to support these dimensions
+within the utility metric.
+
+First, consider an extension of the utility metric  
+$U (V_i)$ denoted as $f_D (V_i)\ =\ w_d \times S_d + w_h \times S_h + w_l  \times S_l$.
+Here, the first component corresponds to the utility  
+from Section~\ref{sec:problem_statement}
+so that $S_d = S ( P[V_i (D_Q)],$ $P[V_i (D_R)] )$ 
+takes into account the {\em deviation} between the target data and the reference (item 1 above).
+We can use the same distance function $S$ to also capture utility based on historical context. 
+For instance, let $S_h = S ( P[V_i (D_Q)], $ $P[V_i (D_C)] )$ where
+$P[V_i (D_C)]$ refers to the typical value of the distribution 
+$P[V_i (D_Q)]$, given historical data.
+For instance, when $V_i$ refers to sales of a particular chair in 
+Boston, $V_i(D_C)$ could be sales of that chair in Boston for the past 10 years.
+This measure would then allow us to identify whether the value for particular sales is 
+deviating significantly from past patterns and is therefore interesting (item 2 above).
+Finally, we can also use the distance function to capture local trends.
+For instance, let $S_l = S ( P[V_i (D_Q)], P'[V_i (D_Q)] )$ where
+$P'[V_i (D_Q)]$ refers to the distribution $P$, but shifted slightly.
+For instance, if the sensor readings in the last five minutes differ greatly
+for current readings, the utility of $V_i$ would be high.
+This component can capture
+the amount of rapid local changes that have happened
+within the distribution corresponding to $P[V_i (D_Q)]$ (item 3 above).
+
+
+Next, we turn to the question of incorporating other recommendation dimensions into our utility 
+metric, beyond items 1--3 above that are all distribution-based.
+Consider the following form of a generalized utility metric:
+$$ U (V_i) = f_{MA}(V_i) \times f_P (V_i) \times f_D (V_i)$$
+Let $f_D (V_i)$ be the utility function measuring distribution-based utility of $V_i$ (items 1---3).
+We can then augment $f_D (V_i)$ with $f_{MA}(V_i)$ and $f_P (V_i)$ capturing metadata  and aesthetics (item 4 and 5), and user preferences (item 6) respectively.
+For instance, $f_{MA}(V_i)$ can capture best-practices about 
+visualization and output a  value accordingly.
+Similarly, let $f_P (V_i)$ be a function that models the users' preference towards seeing visualization $V_i$.
+This function can take into account past user history at both the individual and global levels.
+For instance, if the analyst typically looks at sales over time, $f_P (V_i)$ for sales over time
+may be high.
+Similarly, if sales is a popular attribute across all data analysts, $f_P (V_i)$ could be large for
+a $V_i$ that depicts sales.
+We can also think of $f_P (V_i)$ as capturing in a limited way semantics 
+that can be mined from previous user interactions.
+We note however that semantics (item 7 above) is one dimension that an automated 
+recommendation system will not be able to capture fully.
+
+In terms of the visualization recommendations, 
+we find that $f_{MA}(V_i)$ and $P (V_i)$ are independent
+of the data distribution.
+Once a user poses a query, we can merely reuse previously 
+computed values for these functions while
+making the recommendation.
+For \SeeDB, these functions amount merely to constants 
+in the utility function $U (V_i)$ that would assign weights to each view.
+Thus, in this form, \SeeDB has been extended to 
+incorporate other recommendation dimensions into
+the utility metric without any changes to the \SeeDB framework.
+
+
+
+\begin{figure}[h]
+	\centering
+	\vspace*{-10pt}
+	\begin{subfigure}{0.48\linewidth}
+		\centering
+		\includegraphics[width=4.4cm] {Images/in_memory_diff_metrics_latency.pdf}
+		\vspace{-15pt}
+		\caption{Latency}
+		\label{fig:dist_latency}
+	\end{subfigure}
+	\begin{subfigure}{0.48\linewidth}
+		\centering
+		\includegraphics[width=4.4cm] {Images/in_memory_diff_metrics_accuracy.pdf}
+		\vspace{-15pt}
+		\caption{Accuracy}
+		\label{fig:dist_accuracy}
+	\end{subfigure}
+	\vspace{-10pt}
+\caption{Latency and Accuracy for different Distance Functions}	
+		\vspace{-10pt}
+\end{figure}
+
+
+\subsection{Performance and Accuracy of {\large \SeeDB}}
+In Section \ref{sec:pruning_opt}, we described the 
+two pruning strategies used by \SeeDB
 to rapidly discard low-utility views.
-As seen in Section \ref{sec:experiments}, our strategies work well for deviation-based utility
-and, in particular, deviation as measured by EMD.
-We now discuss the generality of our pruning techniques for other distance functions, and even other
+As seen in Section \ref{sec:experiments}, 
+our strategies work well for the EMD-based 
+utility metric.
+
+Now, given that \SeeDB can support other
+distance functions (Section~\ref{sec:diff_dist_funcs})
+or general utility metrics (Section~\ref{sec:gen_util}),
+we now focus on evaluating whether \SeeDB's optimizations
+translate to gains on these other utility metrics.
+We consider two other utility metrics
+(a) Euclidean distance (L2): like EMD,
+this is a deviation-based utility metric.
+(b) Max deviation (MAX\_DIFF): this metric
+measures the maximum deviation between
+the highest aggregate, and the second highest
+aggregate. This metric would, for example, score
+visualization Figure~\ref{fig:huhi} very highly.
+
+
+In Figure~\ref{fig:dist_latency}, we plot the reduction 
+in latency for these metrics,
+and in Figure~\ref{fig:dist_accuracy}, we plot the
+accuracy, both as a function of $k$.
+The results indicate that in all cases,
+the reduction of latency is significant,
+and is similar between EMD, L2 and MAX\_DIFF.
+At the same time, the accuracy variation between 
+EMD, L2, and MAX\_DIFF is also similar
+(slight variations can be attributed to random noise).
+
+These results indicate that \SeeDB is capable of
+providing similar performance improvements on other
+utility measures. 
+
+\agp{This isn't very flattering...}
+}%techreport
+
+\if{0}
+We now discuss the generality of our pruning techniques 
+for other distance functions, and even other
 utility metrics that uses the underlying data distribution in some way (not based on deviation).
 
 % We define the set of utility metrics for which our pruning strategies work and provide intuition
@@ -85,71 +291,10 @@ estimator.
 Figure \ref{} shows the results of our experiments. 
 We find that both our pruning strategies perform well for EUC and MAX\_DEV whereas they perform
 poorly for NC.
-
-\subsection{Metrics other than deviation}
-
-% In this section we prove that our sampling 
-% algorithms converge, and then describe our generalized
-% distance metric.
-
-In Section \ref{sec:introduction}, we introduced a set of {\it dimensions} that determine the quality of a visualization.
-In subsequent sections, we developed a system that used metadata, data distributions, and the input query
-to recommend visualizations based on deviation.
-In this section, we discuss how our deviation metric can encompass a variety of distribution-based metrics and how we can augment our system to take other quality dimensions into account.
-
-First, consider an extension of the utility function $U (V_i)$ denoted as $f_D (V_i)\ =\ w_d \times S_d + w_h \times S_h + w_l  \times S_l$.
-Here, the first component corresponds to the utility definition from Section~\ref{sec:problem_statement}
-so that $S_d = S ( P[V_i (D_Q)],$ $P[V_i (D)] )$ takes into account the deviation between the data selected by the query and the comparison data.
-We can use the same distance metric $S$ to also capture utility based on historical context. 
-For instance, let $S_h = S ( P[V_i (D_Q)], $ $P[V_i (D_C)] )$ where
-$P[V_i (D_C)]$ refers to the typical value of the distribution 
-$P[V_i (D_Q)]$, given historical data.
-For instance, when $V_i$ refers to sales of a particular chair in 
-Boston, $V_i(D_C)$ could be sales of that chair in Boston for the past 10 years.
-% This measure would then allow us to identify whether the value for particular sales is 
-% deviating significantly from past patterns and is therefore interesting.
-Finally, we can also use the deviation-based metric to capture local trends.
-For instance, let $S_l = S ( P[V_i (D_Q)], P'[V_i (D_Q)] )$ where
-$P'[V_i (D_Q)]$ refers to the distribution $P$, but shifted slightly.
-For instance, if the sensor readings in the last five minutes differ greatly
-for current readings, the utility of $V_i$ would be high.
-This component can capture
-the amount of rapid local changes that have happened
-within the distribution corresponding to $P[V_i (D_Q)]$.
-A combination of the above deviation-based metrics provides a rich model to capture a large
-portion of distribution-based utility.
-
-Next, we turn to the question of incorporating other recommendation dimensions into our utility 
-metric.
-Recall from Section \ref{sec:introduction} that along with metadata, query and distribution (the
-dimensions supported by our metric), other recommendation dimensions include aesthetics, user
-preferences and semantics.
-Consider the following form of a generalized utility function:
-$$ U (V_i) = f_{MA}(V_i) \times f_P (V_i) \times f_D (V_i)$$
-
-Let $f_D (V_i)$ be the utility function measuring distribution-based utility of $V_i$.
-We can then augment $f_D (V_i)$ with $f_{MA}(V_i)$ and $f_P (V_i)$ capturing metadata and semantics, and user preferences respectively.
-For instance, $f_{MA}(V_i)$ can capture best-practices about visualization and output a utility value accordingly.
-Similarly, let $f_P (V_i)$ be a function that models the users' preference towards seeing visualization $V_i$. 
-This function can take into account past user history at both the individual and global levels.
-For instance, if the analyst typically looks at sales over time, $f_P (V_i)$ for sales over time
-may be high.
-Similarly, if sales is a popular attribute across all data analysts, $f_P (V_i)$ could be large for
-a $V_i$ that depicts sales.
-We can also think of $f_P (V_i)$ as capturing in a limited way semantics that can be mined from previous user interactions.
-We note however that semantics is one dimension that an automated recommendation system will not be able to capture fully.
-
-In terms of the visualization recommendations, we find that $f_{MA}(V_i)$ and $P (V_i)$ are independent
-of the data distribution.
-Once a user poses a query, we can merely reuse previously computed values for these functions while
-making the recommendation.
-For \SeeDB, these functions amount merely to constants in the utility function $U (V_i)$ that would assign weights to each view.
-Thus, in this form, we find that \SeeDB can easily incorporate other recommendation dimensions into
-the utility metric without any changes to the \SeeDB framework.
+\fi
 
 
 
-}% techreport
 
 
 

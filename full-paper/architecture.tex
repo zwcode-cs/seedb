@@ -149,7 +149,6 @@ can be found in the extended technical report~\cite{seedb-tr}.}
 We next describe the \SeeDB optimizations,
 specifically, the sharing based optimizations in Section~\ref{sec:sharing_opt} and 
 the pruning based optimizations in Section~\ref{sec:pruning_opt}.
-
 \techreport{
 \begin{algorithm}[h]
 \caption{Pruning Framework}
@@ -173,33 +172,12 @@ the pruning based optimizations in Section~\ref{sec:pruning_opt}.
 \end{algorithm}
 \agp{I've pasted this as is but needs to be updated.}
 }
+% \reviewer {
+% 	D2.5 The horizontal partitioning is never detailed: how is it done? How is the
+% number of fragments decided?
+% }
+% \mpv{something about how partitions are defined}
 
-
-
-\resolved{\agp{Only for historical record, can be deleted if not useful:
-The engine executes
-queries using the underlying DBMS, but applies two types of
-optimization in this process.  The first set of optimizations involve
-{\it batching}, where DBMS queries are combined to reduce the number
-of distinct SQL statements and scans of data that must be sent
-executied by the DBMS (Section \ref{}).  The second set of
-optimizations involves discarding low-utility views using pruning
-(Section \ref{}).  Rather than trying to estimate the quality of a
-particular view without looking at the data, the pruner runs in a {\it
-  phased} manner, evaluating batched queries on a small subset of the
-data, using results on that subset to estimate the quality of each
-view, and discarding views with low estimated utility.  The retained
-views are then run on another subset of the data in the next phase of 
-execution.}}
-\reviewer {
-	D2.5 The horizontal partitioning is never detailed: how is it done? How is the
-number of fragments decided?
-}
-\mpv{something about how partitions are defined}
-
-
-\mpv{I would like to keep the pseudocode and cut other stuff}
-\agp{Not essential -- move to TR.}
 
 
 
