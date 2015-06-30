@@ -1,6 +1,6 @@
 %!TEX root=document.tex
 
-\section{{\large \SeeDB\ } Architecture}
+\section{{\large \SeeDB} Front-End \& Architecture}
 \label{sec:system_architecture}
 
 %In this section, we present an overview of the \SeeDB\ architecture.
@@ -9,34 +9,42 @@
 % \SeeDB recommends visualizations that the analyst would find most valuable,
 % taking into account aspects such as the background, user preferences,
 % and context (as discussed in Section~\ref{sec:general-metric}).
-\agp{First two sentences seem disconnected. Might be good to talk about two separate aspects in two paragraphs: front-end and user experience, and backend arch.}
-\SeeDB is implemented as a middleware layer that can run on
-top of any SQL-compliant database system. 
+
+We now describe \SeeDB's front-end user experience, and then
+describe the architecture in more detail.
+
+\stitle{Front-end Experience.} 
 We packaged \SeeDB as a recommendation plugin that can
 be incorporated into a visualization tool such as Tableau or Spotfire. 
-% As such, \SeeDB\ would ideally be used as a plug-in for existing 
-% visualization software.
 For evaluating our system, we have combined \SeeDB with a simple visualization
 builder interface inspired by Polaris~\cite{polaris}.
-Figure \ref{fig:frontend} shows the web frontend for \SeeDB which is composed
-of four parts:
-(A) dataset selector used to
-connect to a database and query a specific table; (B) query builder used to
-formulate queries using a form-based interface; (C) visualization builder
-used to manually specify visualizations; and (D) \SeeDB recommendations plugin
+Figure~\ref{fig:frontend1} shows the web front-end for \SeeDB 
+comprising four parts 
+(A) dataset selector used to connect to a database and query a specific table \agp{collection of tables?}; 
+(B) query builder used to
+formulate queries using a form-based interface; 
+(C) visualization builder used to manually specify visualizations; and 
+(D) \SeeDB recommendations plugin 
 that displays recommended visualizations.
-Recommendations provided by \SeeDB change in response to changes in the query (B)
+Recommendations provided by \SeeDB change in 
+response to changes in the query (B)
 issued against the database.
-\srm{This is the first mention of ``human in the loop'' philiosophy.  I think it might be good
+\resolved{\srm{This is the first mention of ``human in the loop'' philiosophy.  I think it might be good
 to promote this to an earlier part of the paper, but only if we feel like we have something interesting
-to say about it.}
+to say about it.}}
+We note that supporting basic visualization specification 
+capabilities a la Polaris, coupled with automated data-driven recommendations enabling
+the reduction of tedious manual effort,
+implies that \SeeDB will form part of a
+{\em mixed initiative} \agp{cite?} data exploration tool.
+
+\agp{delete rest, too detailed:
 We note that the {\em mixed-initiative} design of \SeeDB incorporating both manual
 visualization specification and automated recommendations, reflects the
 human-in-the-loop philosophy underlying \SeeDB.
 We seek to speed up the analytics process not by completely automating the task, but
 by providing the analyst real-time support while letting him or her drive the process.
-% We seek to support the analytics process while letting the analyst be in the 
-% driver's seat. \mpv{Fix sentence.}
+}
 
 \begin{figure}[htb]
 \vspace{-10pt}
@@ -50,16 +58,70 @@ clip=true]{Images/seedb-architecture.pdf}}}}
 \end{figure} 
 \mpv{Update arch diagram}
 
+
+\stitle{Architectural Overview.} 
+\SeeDB is implemented as a middleware layer that can run on
+top of any SQL-compliant database system. 
 Figure \ref{fig:sys-arch} depicts the overall architecture of our
 system.  The \SeeDB client is a web-based front-end that captures user
 input and renders visualizations produced by the \SeeDB server.  The
-\SeeDB server is composed of four main components.  The first
+\SeeDB server is composed of \agp{XXX} main components.  The first
 component, the {\it view generator}, is responsible for parsing the
 input query, querying system metadata and generating the list of
 visualization queries that must be evaluated.  
+The goal of the {\em execution engine} is to evaluate the collection of queries
+using the underlying DBMS.
+The selected aggregate views (with high deviation) 
+will be sent to the \SeeDB client 
+and are displayed as visualization recommendations to the user, 
+who can then interact with these
+visualizations. \agp{I wasn't sure what view processor does... }
+
+\stitle{Execution Engine.} In evaluating the collection of aggregate views, 
+the execution engine  
+applies two kinds of optimizations:
+{\em sharing}, where aggregate view queries are combined to share computation
+as much as possible, and {\em pruning}, where aggregate view queries
+corresponding to low utility visualizations are dropped from consideration.
+These optimizations are largely orthogonal to each other.
+To derive benefits from both these kinds of optimizations,
+we develop a {\em phase-based execution framework}, 
+that proceeds in {\em phases},
+each phase operating on a subset of the dataset.
+For instance, phase $i$ of $n$ examines the $i$th fraction of the dataset
+if divided into $n$ parts. (We will describe how to select $n$ later on.) \agp{Manasi -- if we do this, we need to add a fwd pointer.}
+The execution engine begins 
+with the entire set of aggregate views under consideration.
+\begin{denselist}
+\item During phase $i$, the execution engine updates the partial results
+for the set of aggregate views
+still under consideration using the $i$th fraction of the dataset.
+The execution engine applies {\em sharing-based optimizations}
+to minimize scans of the $i$th fraction of the dataset by combining
+DBMS queries and executing them in tandem.
+\item At the end of phase $i$, the execution engine uses 
+{\em pruning-based optimizations} to determine which aggregate views to discard.
+The partial results of each aggregate view on the fraction from $1$ through $i$ are used to 
+estimate the quality of each view, and the views with low utility are discarded. 
+\end{denselist}
+The retained aggregate views are then processed on the $i+1$th fraction of the dataset,
+and the process continues. 
+In this manner, the set of views under consideration
+decreases across these phases, with all aggregate views at the start 
+of the first phase, and only the $k$ views left
+at the end of the $n$th phase.
+Further, in this manner, the sharing and pruning based optimizations do
+not interfere with each other---one is applied during the phase,
+and one is applied at the end of the phase.
+\papertext{The pseudocode for the phase based execution framework
+can be found in the extended technical report~\cite{seedb-tr}.}
+
+We next describe the \SeeDB optimizations,
+specifically, the sharing based optimizations in Section~\ref{sec:sharing_opt} and the pruning based optimizations in Section~\ref{sec:in_memory_execution_engine}.
 
 
-\agp{Previous:}
+
+\agp{Only for historical record, can be deleted if not useful:
 The engine executes
 queries using the underlying DBMS, but applies two types of
 optimization in this process.  The first set of optimizations involve
@@ -73,45 +135,7 @@ particular view without looking at the data, the pruner runs in a {\it
 data, using results on that subset to estimate the quality of each
 view, and discarding views with low estimated utility.  The retained
 views are then run on another subset of the data in the next phase of 
-execution.
-
-
-\agp{Intended:
-The goal of the engine is to evaluate a collection of queries
-using the underlying DBMS, applying two kinds of optimizations:
-{\em sharing}, where aggregate view queries are combined to share computation
-as much as possible, and {\em pruning}, where aggregate view queries
-corresponding to low utility visualizations are dropped from consideration.
-These optimizations are largely orthogonal to each other.
-}
-
-\agp{
-To derive benefits from both these kinds of optimizations,
-we develop a {\em phase-based execution framework}, that proceeds in {\em phases},
-each phase operating on a small subset of data.
-For instance, phase $i$ of $n$ examines the $i$th fraction of the dataset
-if divided into $n$ parts.
-We start with the entire set of views under consideration.
-\begin{denselist}
-\item Within each phase, we only apply {\em sharing-based optimizations}
-to share computation as much as possible with each other among the set
-of views still under consideration.
-\item At the end of each phase, we only apply {\em pruning-based optimizations}
-to determine which views to discard.
-\end{denselist}
-In this manner, the set of views under consideration
-decreases across these phases, with all views at the start 
-of the first phase, and only the $k$ views left
-at the end of the $n$ th phase.
-Further, in this manner, the sharing and pruning based optimizations do
-not interfere with each other -- one is applied during the phase,
-and one is applied at the end of the phase.
-}
-
-\agp{
-	In the next section, we describe the \SeeDB optimizer,
-	specifically, the sharing based optimizations in Section 4.1 (Section~\ref{sec:sharing_opt}) and the pruning based optimizations in Section 4.2 (Section~\ref{sec:in_memory_execution_engine}). --- Manasi -- I left the numbers in there because the refs should correspond to those two -- I've used those refs in the intro.
-}
+execution.}
 
 \reviewer {
 	D2.5 The horizontal partitioning is never detailed: how is it done? How is the
@@ -119,10 +143,10 @@ number of fragments decided?
 }
 \mpv{something about how partitions are defined}
 
-Once \SeeDB has identified the top views, the results are returned to the frontend 
- \SeeDB which generates and displays the recommended visualizations.
 
 \mpv{I would like to keep the pseudocode and cut other stuff}
+\agp{Not essential -- move to TR.}
+
 
 % The optimizer applies multi-query
 % optimization 
@@ -187,8 +211,6 @@ Once \SeeDB has identified the top views, the results are returned to the fronte
 % Figure \ref{fig:frontend1} shows the \SeeDB client in action; including the supported mechanisms to specify an input query 
 % and the visualizations generated by a sample query. 
 
-We begin with a discussion of the optimizer and the set of multi-query optimization 
-techniques used by \SeeDB.
 
 
 % In this paper, we build the execution engine in three stages. 
