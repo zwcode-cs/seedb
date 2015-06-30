@@ -56,9 +56,9 @@ Algorithm~\ref{algo:ci_based_pruning}.}
 \begin{figure}[h]
 \vspace{-10pt}
 \centerline{
-\hbox{\resizebox{8cm}{!}{\includegraphics[trim=0mm 112mm 0mm 40mm, 
+\hbox{\resizebox{4cm}{!}{\includegraphics[trim=0mm 0mm 0mm 0mm, 
 clip=true]{Images/confidence_pruning.pdf}}}}
-%\vspace{-90pt}
+\vspace{-10pt}
 \caption{Confidence Interval based Pruning}
 \label{fig:conf_interval}
 \vspace{-10pt}
@@ -417,7 +417,6 @@ on distance metrics that are consistent.
 
 
 \techreport{
-
 For the purpose of the proof
 of the lemma above, we focus on the case where the visualization $V_i$
 corresponds to the AVG aggregate. 
@@ -494,24 +493,5 @@ It is in fact also possible to explicitly derive a number of samples
 such that $\hat{U}$ is close to $U$ within a certain error bound
 and with a certain probability. 
 }%techreport
-
-\resolved{
-\reviewer{
-	For the MultiArmed
-Bandit pruning, it would be good to discuss whether
-the assumptions of reward distributions would necessarily in this context.
-}
-\mpv{
-	The MAB setting assumes that each trial samples from the same 
-	underlying reward distribution, which is the reward distribution
-	computed after processing all records. In our setting, however, 
-	the underlying reward distribution changes gradually as we
-	process more records and tends towards the {\em true} reward
-	distribution.
-	We assume that these changes to the distributions are small.
-}
-\srm{Are we sure the above paragraph is correct?  Since we have random samples, I don't see 
-why the reward distribution is changing.  Shouldn't it be the same?}
-}
 
 
