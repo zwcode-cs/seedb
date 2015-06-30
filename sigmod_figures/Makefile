@@ -8,4 +8,5 @@ plots:
 	R -f create_utility_distribution_chart.R
 	R -f create_param_plot.R
 	R -f create_intro_plot.R
+	R -f create_roc.R
 
