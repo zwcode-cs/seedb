@@ -9,6 +9,7 @@
 % \SeeDB recommends visualizations that the analyst would find most valuable,
 % taking into account aspects such as the background, user preferences,
 % and context (as discussed in Section~\ref{sec:general-metric}).
+\agp{First two sentences seem disconnected. Might be good to talk about two separate aspects in two paragraphs: front-end and user experience, and backend arch.}
 \SeeDB is implemented as a middleware layer that can run on
 top of any SQL-compliant database system. 
 We packaged \SeeDB as a recommendation plugin that can
@@ -55,7 +56,11 @@ input and renders visualizations produced by the \SeeDB server.  The
 \SeeDB server is composed of four main components.  The first
 component, the {\it view generator}, is responsible for parsing the
 input query, querying system metadata and generating the list of
-visualization queries that must be evaluated.  The engine executes
+visualization queries that must be evaluated.  
+
+
+\agp{Previous:}
+The engine executes
 queries using the underlying DBMS, but applies two types of
 optimization in this process.  The first set of optimizations involve
 {\it batching}, where DBMS queries are combined to reduce the number
@@ -70,6 +75,43 @@ view, and discarding views with low estimated utility.  The retained
 views are then run on another subset of the data in the next phase of 
 execution.
 
+
+\agp{Intended:
+The goal of the engine is to evaluate a collection of queries
+using the underlying DBMS, applying two kinds of optimizations:
+{\em sharing}, where aggregate view queries are combined to share computation
+as much as possible, and {\em pruning}, where aggregate view queries
+corresponding to low utility visualizations are dropped from consideration.
+These optimizations are largely orthogonal to each other.
+}
+
+\agp{
+To derive benefits from both these kinds of optimizations,
+we develop a {\em phase-based execution framework}, that proceeds in {\em phases},
+each phase operating on a small subset of data.
+For instance, phase $i$ of $n$ examines the $i$th fraction of the dataset
+if divided into $n$ parts.
+We start with the entire set of views under consideration.
+\begin{denselist}
+\item Within each phase, we only apply {\em sharing-based optimizations}
+to share computation as much as possible with each other among the set
+of views still under consideration.
+\item At the end of each phase, we only apply {\em pruning-based optimizations}
+to determine which views to discard.
+\end{denselist}
+In this manner, the set of views under consideration
+decreases across these phases, with all views at the start 
+of the first phase, and only the $k$ views left
+at the end of the $n$ th phase.
+Further, in this manner, the sharing and pruning based optimizations do
+not interfere with each other -- one is applied during the phase,
+and one is applied at the end of the phase.
+}
+
+\agp{
+	In the next section, we describe the \SeeDB optimizer,
+	specifically, the sharing based optimizations in Section 4.1 (Section~\ref{sec:sharing_opt}) and the pruning based optimizations in Section 4.2 (Section~\ref{sec:in_memory_execution_engine}). --- Manasi -- I left the numbers in there because the refs should correspond to those two -- I've used those refs in the intro.
+}
 
 \reviewer {
 	D2.5 The horizontal partitioning is never detailed: how is it done? How is the
