@@ -2,10 +2,30 @@
 
 \subsection{Sharing-based Optimizations}
 \label{sec:sharing_opt}
-In this section, we focus on minimizing total execution time
-by reducing the
-total number of queries issued to the database
-and by reducing the total number of scans of the underlying table.
+% In this section, we focus on minimizing total execution time
+% by reducing the
+% total number of queries issued to the database
+% and by reducing the total number of scans of the underlying table.
+% Sharing computation in our setting is a special case of the general problem
+% of multi-query optimization~\cite{DBLP:journals/tods/Sellis88}; we discuss the 
+% relationship in more detail in Section~\ref{sec:related_work}.
+
+% Each visualization evaluated by \SeeDB translates into two 
+% aggregation queries on the DBMS, one for the target view and one for the comparison view.
+% The queries corresponding to each visualization are
+%  similar; they scan the same underlying data,  
+% differing only in the  attributes used for grouping and aggregation.
+% As a result, there are opportunities to reduce the number of queries and passes over the data 
+% by merging and batching queries.
+
+In the naive implementation, each visualization is translated into view
+queries that get executed independently on the DBMS.
+However, view queries across the set of visualization evaluated by \SeeDB
+are very similar: they scan the same underlying data and differ only in the 
+attributes used for grouping and aggregation.
+This presents opportunities to intelligently merge and batch queries, reducing 
+the number of queries issued to the database and, in turn, minimizing the number 
+of scans of the underlying data.
 Sharing computation in our setting is a special case of the general problem
 of multi-query optimization~\cite{DBLP:journals/tods/Sellis88}; we discuss the 
 relationship in more detail in Section~\ref{sec:related_work}.
@@ -14,18 +34,19 @@ Specifically, we apply the following optimizations:
 \stitle{Combine Multiple Aggregates}: Aggregate view queries 
 with the same group-by attribute can be 
 rewritten as a single query with multiple aggregations. 
-So instead of executing
-(queries for) views $(a_1$, $m_1$, $f_1)$, $(a_1$, $m_2$, $f_2)$ \ldots $(a_1$, $m_k$, $f_k)$
-independently, \SeeDB combines them into a single view represented by
-$(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$.  
+Therefore, instead of executing
+(two queries each for) views $(a_1$, $m_1$, $f_1)$, $(a_1$, $m_2$, $f_2)$ 
+\ldots $(a_1$, $m_k$, $f_k)$, \SeeDB combines them into a single view 
+$(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$ which can be executed through
+two queries.  
 We have found that there is minimal to no impact on latency 
 for combining aggregates in both row and column stores. 
 
 \stitle{Combine target and reference view query}:
-Since the target view and reference views differ only in the subset of data
+Since the target and reference views differ only in the subset of data
 the query is executed on, \SeeDB rewrites these two view queries as
-one. For instance, the target and reference view queries $Q1$ and $Q2$
-shown below can be combined into a single query $Q3$.
+one. For instance, if the target and reference view queries are $Q1$ and $Q2$
+respectively, they can be combined into a single query $Q3$.
 \vspace{-5pt}
 \begin{align*} 
 Q1 = &{\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt WHERE \ \ x\ <\ 10\
@@ -43,29 +64,27 @@ END}\\
   buffer pool contention, locking, and cache line contention, among others factors~\cite{Postgres_wiki}.  
 
 \stitle {Combine Multiple GROUP BYs}:
-\mpv{Review again.} After applying our multiple aggregates optimization, \SeeDB is left with a number of 
-queries with multi-attribute aggregations but only single-attribute groupings.
+After applying our multiple aggregates optimization, \SeeDB is left with a number of 
+queries with multiple aggregations but only single-attribute groupings.
 These queries can be further combined to take advantage of multi-attribute grouping.
 However, unlike combining multiple aggregates, the addition of a grouping attribute can 
-significantly increase the number of groups that must be maintained and (possibly)
+dramatically increase the number of groups that must be maintained and (possibly)
 lead to slower overall performance for large number of groups.
+
 We claim (and verify in Section \ref{sec:experiments}) that grouping can benefit 
 performance so long as memory utilization for grouping stays under a threshold. 
-% Therefore, \SeeDB has to determine the optimal way of combining multiple GROUP BY queries.
-% Consequently, our specific problem is as follows: 
-Given a memory budget $\mathcal{S}$,
-and estimates of the number of distinct values for each attribute, we must determine the 
-optimal grouping of single-attribute GROUP BY queries into multi-attribute GROUP BYs.
-Note that knowledge of the number of distinct values for each attribute lets us estimate the
-size of any view; for instance, the size of a view containing dimension attributes $a_i$ and $a_j$ 
-can be estimated simply as $|a_i|\times |a_j|$.
-Formally, our problem becomes:
+Memory utilization is, in turn, proportional to the number of distinct groups 
+present in a query.
+If a set of attributes $a_1$\ldots$a_m$ are used for grouping, the upperbound on the 
+number of distinct groups is given by $\prod_{i=1}^m |a_i|$. 
+Given a memory budget $\mathcal{S}$, the challenge is now to determine the optimal grouping
+of attributes that each respect the memory budget. Formally, the problem is:
 \vspace{-5pt}
 \begin{problem}[Optimal Grouping]
-Given a set of dimension attributes $A$ = \{$a_1$\ldots$a_n$\}, divide the
-dimension attributes in $A$ into groups $A_1, \ldots, A_l$ (where $A_i$ is some
-subset of $A$ and $\bigcup A_i$=$A$) such that if a query $Q$ groups the table by $A_i$, 
-the total space budget for $Q$ does not exceed $\mathcal{S}$.
+Given memory budget $\mathcal{S}$ and a set of dimension attributes $A$ = \{$a_1$\ldots$a_n$\}, 
+divide the dimension attributes in $A$ into groups $A_1, \ldots, A_l$ (where $A_i$ $\subseteq$ $A$ 
+and $\bigcup A_i$=$A$) such that if a query $Q$ groups the table by any $A_i$, 
+the memory utilization for $Q$ does not exceed $\mathcal{S}$.
 \vspace{-5pt}
 \end{problem}
 

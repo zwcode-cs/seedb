@@ -3,120 +3,27 @@
 
 \subsection{Pruning-Based Optimizations}
 \label{sec:pruning_opt}
-Although it is possible to construct hundreds of potential (aggregate)
+Although it is possible to construct hundreds of potential aggregate
 visualizations for a typical dataset, only a fraction of these visualizations 
-have high utility and are relevant to the user.
+are relevant to the user.
 Most visualizations are low-utility and computational resources
-are wasted in computing these visualizations.
-In this section, we describe \SeeDB's pruning optimizations used to 
-eliminate many views without completely evaluating them.
+are wasted in their computation.
+Therefore, as described in the architecture overview, at the end of every phase, 
+the execution engine uses pruning optimizations to determine which 
+aggregate views to discard.
+Partial results for each view based on the data processed
+so far are used to estimate utility and views with low utility are discarded.
 
-% The previous section described techniques to
-% batch and share computations across queries---however,
-% if the number of queries is large, this could still 
-% lead to high execution times, especially
-% because a lot of resources
-% are wasted on computing low-utility views. 
-% In this section, we describe mechanisms to prune away
-% some aggregate views without complete evaluation. 
-% Naturally, pruning schemes are {\em approximate},
-% in that they sometimes incorrectly prune away some
-% high utility visualizations. 
-% That said, the visualizations that are displayed
-% may still be close to high utility 
-% (which may be good enough for analysts) 
-% and will certainly be
-% correct; thus there is still merit to considering approximate schemes.
-% The DBMS-backed execution engine from the previous section provides reasonable performance for small datasets.
-% However, we find that for medium and large size datasets, the optimized engine take tens to hundreds of produce the top visualizations.
-% There are a few reasons for this. (a) Since our engine runs a large number (50-200) queries for each \SeeDB invocation, a large number of scans of the data are performed needlessly; (b) Far too many resources are wasted on low-utility views; and (3) Results of \SeeDB are not available until the entire dataset has been processed.
-
-% To mitigate these drawbacks, we explored a set of pruning strategies to identify and then discard low utility views.
-% Pruning low-utility views can allow \SeeDB to reduce the number of queries run on the database, reduce resources spent on eventually-discarded views, and give \SeeDB the ability to return as soon as it has identified the top views.
-% In order to evaluate various pruning strategies, we built a simple framework to process records sequentially and perform pruning on the fly.
-% We now decribe our test framework and two specific pruning strategies adopted in \SeeDB.
-
-\stitle{Basic Pruning Framework.}
-\label{sec:basic_framework}
-Recall that the pruning algorithm executes in phases, with each phase partially 
-evaluating optimized query batches
-on a subset of the data.
-Specifically, after each phase, \SeeDB estimates the utility of each view on 
-data from the current and previous batches, and eliminates
-low-utility views that are very unlikely to be in the top-$k$.  
-It also can accept certain views as definitely being in the top-$k$.
-If more than $k$ views remain, it iterates over the next batch of data;  
-otherwise the top-$k$ views are returned to the front end.
-\mpv{do we want psuedocode?}
-
-We implemented two different pruning schemes in \SeeDB.
-The first scheme uses  confidence-interval
-techniques to bound utilities of views, while the second uses
+The \SeeDB execution engine supports two pruning schemes. The first uses 
+confidence-interval techniques to bound utilities of views, while the second uses
 multi-armed bandit allocation strategies to find top utility views.
-
-% \SeeDB employs two kinds of optimizations to eliminate low-utility views
-% and redundant views respectively.
-% The pruning of low-utility views is performed {\em online}, i.e., after the
-% query is provided,
-% while the pruning of redundant views is performed {\em offline},
-% before any queries have been provided.
-% Our primary focus in this section is the online view pruning;
-% we will only briefly describe offline view pruning.
-% Our online view pruning approach involves querying the underlying tables in
-% multiple {\em phases};
-% at the end of each phase, we evaluate each aggregate view,
-% and optionally prune a number of views, and then keep the rest.
-% This evaluation and pruning is certainly easy to implement if we were to push these
-% decisions ``within'' the database layer; however, since
-% our goal is to operate outside the database, 
-% we need some pre-processing
-% of the underlying tables.
-% Specifically, we partition our table horizontally into a number of partitions
-% such that processing each partition corresponds to one of our phases. 
-% Since we have a collection of these partitions, we can 
-% choose to operate on them in any order; if further randomness
-% is needed, we can preprocess each partition such that the records are internally
-% in random order.
-% After each partition is processed, we update our candidate and target
-% views for each aggregate view, 
-% compute the resulting utility, and then 
-% prune (i.e., discard) or accept (i.e., select to be in those to be displayed) some aggregate views.
-% When only $k$ aggregate views remain (or $k$ are accepted), we can choose to display them
-% to the analyst (if approximate visualizations are permissible),
-% or we can completely compute the visualizations for those $k$ aggregate views.
-% \techreport{Algorithm~\ref{algo:custom_exec_engine} shows the outline of our framework.}
-% We now describe two different schemes used by \SeeDB for pruning low-utility views.
 
 \reviewer {
 	D2.5 The horizontal partitioning is never detailed: how is it done? How is the
 number of fragments decided?
 }
+\mpv{needs to say in architecture}
 %We evaluate both of these schemes in our experiments.
-
-Note that the two pruning schemes described below have guarantees
-in other settings that do not directly carry over to our setting.
-In our evaluation, we show that in spite of this limitation, the pruning schemes
-work rather well in practice. 
-We can, however, show that as we sample more and more, the estimated utility
-$\hat{U}$ can be made to be arbitrarily close to $U$ for all aggregate views.
-We can state our claim formally in the following lemma. 
-\papertext{The proof based on 
-Hoeffding's inequality can be found in the extended
-technical report ~\cite{seedb-tr}.}
-\techreport{The proof of this lemma is presented in Section \ref{sec:convergence}.}
-% At a high level, the proof
-% involves repeated applications of Hoeffding's inequality to
-% upper and lower-bound $\hat{U}$ within $U$ along with terms 
-% that tend to $0$ as the number of samples increases.
-
-\begin{lemma}
-Let the target and comparison visualizations
-both have $m$ groups.
-Let $\hat{U}$ denote our estimate of $U$ based on a uniformly random sample 
-across all $m$ groups. 
-Then, as the number of samples tends to $\infty$, $\hat{U} \rightarrow U$
-with probability $1-\delta$, for as small $\delta$ as needed.
-\end{lemma}
 
 \techreport{
 \begin{algorithm}[h]
@@ -141,122 +48,19 @@ with probability $1-\delta$, for as small $\delta$ as needed.
 \end{algorithm}
 }
 
-% Note that we have two alternatives for computing the visualizations for the top-$k$
-% views, once $k$ views have been accepted: 
-% we can either compute the top-$k$ views to completion (i.e.,
-% on the remaining unprocessed records),
-% or we can display approximate visualizations for each view, as soon as we ``accept'' them
-% as being in the top-$k$. 
-% We use the former option as the default, 
-% and the latter as an additional optimization that may be employed.
-% If at the end of a given phase, \SeeDB\ finds that the views in running satisfy
-% the given stopping criteria, e.g., that \SeeDB\ has already identified the
-% top-$k$ views, the \SeeDB\ engine can stop processing early.
 
-% \begin{algorithm}
-% \caption {ComputeAggregate(Query
-% {\it currQuery}, int $d$)}
-% %\small 
-% \begin{algorithmic}[1] 
-% \State int[$d+1$] $currCard$\ \ //All arrays are
-% indexed from 1 
-% \STATE $currCard[1]$ = ExecuteCellQuery({\it currQuery})  
-% \FOR {$i=2$ to $d+1$} 
-% \STATE {\it prevQuery} $\leftarrow$ GetPreviousNeighbour($i$-1)\ \ //decrement
-% the $(i-1)^{th}$ dimension of {\it currQuery} by stepsize 
-% \STATE int[] $prevCard$ = GetAllAggregates({\it prevQuery})
-% \STATE $currCard[i]$ = $currCard[i-1]$ + $prevCard[i]$ 
-% \ENDFOR 
-% \STATE StoreAllAggregates({\it currQuery}, $currCard$) 
-% \STATE {\bf return} $currCard[d+1]$
-% \end{algorithmic}
-% \label{algo:aggregatecomputation}
-% % \end {algorithm}
-% \mpv{should we remove this?}
-% \stitle{Pruning Techniques}: The pruning techniques we discuss next enable \SeeDB\ to discard low-utility views
-% early, thus saving computational resources and potentially allowing \SeeDB\ recommend
-% views even before all records have been processed.
-% To understand the intuition behind the pruning techniques, recall that we define utility of
-% view $V_j$ as $ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$ where $S$ is a distance function measuring
-% the distance between the target and comparison distributions, $P[V_i (D_Q)]$ and $P[V_i (D)]$.
-% Let the total number of records in the input be denoted by $R$ and the total records
-% read by phase $j$ as $R_j$. 
-% Once $R_j$ records have been read in, we can estimate target and comparison 
-% distributions, $\widetilde{P}^j[V_i (D_Q)]$ and $\widetilde{P}^j[V_i (D)]$.
-% As \SeeDB\ processes larger portions of the file, these estimates become more accurate. 
-% As one might expect:
-
-% $$\lim_{R_j \rightarrow R}\widetilde{P}^j[V_i (D_Q)] \rightarrow P[V_i (D_Q)] \cap 
-% \widetilde{P}^j[V_i (D)] \rightarrow P[V_i (D)] $$
-
-% metric discussed in Section \ref{} are of the form $\mathcal{F}:
-% (\mathcal{R}^p, \mathcal{R}^p) \rightarrow \mathcal{R}$, i.e. they are functions
-% measuring the distance between the target and comparison distributions of a view.
-% For view $V_j$ let $\mathcal{P}^j_T$ and $\mathcal{P}^j_C$ respectively denote the 
-% target and comparison view of $V_j$.
-
-% Therefore, as we process records in every phase $j$, we can keep running estimates of the
-% view distributions as well as view utilities, $\widetilde{U}^j(V_i)$.
-% Moreover, {\it we can use these estimates to perform the pruning of low utility views}.
-% In this paper, we propose and evaluate two different strategies
-% to perform the pruning of views based on utility estimates. 
-% The first strategy is based on top-$k$ algorithms that use confidence intervals 
-% and the second is based on an adaptation of the Multi-Armed Bandit problem.
-
-% of the view distributions $\widetilde{\mathcal{P}}^{i,j}_T$ and $\widetilde{\mathcal{P}}^{i,j}_C$
-% and estimates of the utility $\mathcal{F}(\widetilde{\mathcal{P}}^{i,j}_T, 
-% \widetilde{\mathcal{P}}^{i,j}_C)$.
-
-% The general idea is to keep running estimates of utility for each view, and
-% perform pruning of low utility views based on these estimates.
-% To implement a pruning strategy, we merely specify two things: (1)
-% statistics to track for each view, and 
-% (2) the rule used to prune views at the end of a phase.
-% An important side effect of our implementation is that
-% as we scan more data from the file, our estimates of utilities become more
-% accurate.
-
-% 
-% \begin{itemize}
-% \item The first two strategies are based on confidence interval-based top-$k$ algorithms.
-% That is, at the end of each phase, confidence intervals are updated for all
-% the views still in the running and we prune views based on overlap
-% with the top-$k$ confidence intervals.
-% % and if the upper-bound for any of them
-% % is lower than the lower-bound for confidence intervals of $k$ or more other views,
-% % then those views are discarded.
-% \begin{denselist}
-% \item The first uses worst-case confidence intervals based on the
-% Hoeff\-ding-Serfling inequality~\cite{serfling1974probability}, 
-% which is a generalization of Hoeffding's inequality~\cite{hoeffding1963probability}
-% when a number of samples are randomly chosen without replacement
-% from the same set.
-% These confidence intervals are necessarily more conservative.
-% \item The second assumes that the underlying probability distribution is
-% Gaussian and uses 95\% confidence intervals~\cite{all-of-statistics}.
-% These confidence intervals are more ``aggressive'' compared to those derived
-% from the Hoeffding inequality.
-% (For experiments evaluating this assumption, see Section~\ref{sec:evaluating_normal}.) 
-% \end{denselist}
-% \item The last strategy is based on an adaptation of Multi-Armed Bandit (MAB)
-% algorithms for top-$k$ arm identification~\cite{}. 
-% Multi-Armed Bandit algorithms are well-studied in the field of stochastic
-% control; in our scenario, the arms are the views, and pulling an arm corresponds
-% to updating a view's utility.
-% \end{itemize}
-
-
-\stitle{Confidence Interval-Based Online Pruning.}
+\stitle{Confidence Interval-Based Pruning.}
 \label{sec:confidence_interval}
-Our first pruning scheme uses worst-case statistical confidence intervals.
+Our first pruning scheme uses worst-case statistical confidence intervals to
+bound view utilities.
 This technique is similar to top-k based pruning algorithms developed 
-in other contexts as described in ~\cite{DBLP:conf/pods/FaginLN01, 
+in other contexts ~\cite{DBLP:conf/pods/FaginLN01, 
 DBLP:conf/vldb/IlyasAE04, DBLP:conf/ICDE/ReDS07}.
-Our scheme works as follows: during processing each partition,
+Our scheme works as follows: during each phase,
 we keep an estimate of the mean utility for every aggregate view $V_i$ and a
 confidence interval around that mean.
-That is, for every view $V_i$ we track its mean utility $u_i$, and a
-confidence interval around the mean, $u_i \pm c_i$. 
+% That is, for every view $V_i$ we track its mean utility $u_i$, and a
+% confidence interval around the mean, $u_i \pm c_i$. 
 At the end of a phase, we use the following rule to prune low-utility
 views:
 {\em If the upper bound of the utility of view $V_i$ is lesser
@@ -265,33 +69,45 @@ than the lower bound of the utility of $k$ or more views, then $V_i$ is discarde
 \begin{figure}[h]
 \vspace{-10pt}
 \centerline{
-\hbox{\resizebox{8cm}{!}{\includegraphics[trim=10mm 100mm 55mm 35mm, 
+\hbox{\resizebox{5cm}{!}{\includegraphics[trim=0mm 0mm 0mm 0mm, 
 clip=true]{Images/confidence_pruning.pdf}}}}
-\vspace{-20pt}
+\vspace{-10pt}
 \caption{Confidence Interval based Pruning}
 \label{fig:conf_interval}
 \vspace{-15pt}
 \end{figure}
 
-\reviewer {
-	V5 is extraneous
-}
-
-To illustrate, suppose a dataset has 4 views $V_1$ to $V_4$ and we want to find the top-$2$ views.
-Further suppose that at the end of phase $p$,
+To illustrate, suppose a dataset has 4 views $V_1$ \ldots $V_4$ and we want to 
+identify the top-$2$ views.
+Further suppose that at the end of phase $i$,
 $V_1$-$V_4$ have confidence intervals as shown in Figure \ref{fig:conf_interval}.
-Views $V_1$ and $V_2$ have the highest estimates for utility so far.
-Consider view $V_3$; we see that its confidence interval overlaps with the
-confidence intervals of the current top views, making it possible
-that $V_3$ will be in the final top views. On the other hand, the confidence
-interval for $V_4$ lies entirely below the lowerbounds of $V_1$ and $V_2$.
+Views $V_1$ and $V_2$ have the highest utility estimates so far and are
+likely to be in the top-$2$ views.
+View $V_3$ is currently not the the top-$2$, but its confidence interval overlaps
+with that of the top-$2$, making it possible that $V_3$ could replace $V_1$ or $V_2$.
+The confidence interval for $V_4$, on the other hand, lies entirely below the confidence
+intervals of $V_1$ and $V_2$.
 Since we can claim with high probability
-that the utility of $V_4$ lies within its confidence interval, it follows that
+that the utility of $V_4$ lies within its confidence interval, it follows that,
 with high probability, $V_4$'s utility will be lower than that of both $V_1$ and
 $V_2$, and it will not appear in the top-$2$ views.
 \papertext{Pseudocode for our pruning scheme can be found in our technical report~\cite{seedb-tr}.}
 \techreport{We state the algorithm formally in
 Algorithm~\ref{algo:ci_based_pruning}.}
+
+
+% Views $V_1$ and $V_2$ have the highest estimates for utility so far.
+% Consider view $V_3$; we see that its confidence interval overlaps with the
+% confidence intervals of the current top views, making it possible
+% that $V_3$ will be in the final top-$24$ views. On the other hand, the confidence
+% interval for $V_4$ lies entirely below the lowerbounds of $V_1$ and $V_2$.
+% Since we can claim with high probability
+% that the utility of $V_4$ lies within its confidence interval, it follows that
+% with high probability, $V_4$'s utility will be lower than that of both $V_1$ and
+% $V_2$, and it will not appear in the top-$2$ views.
+% \papertext{Pseudocode for our pruning scheme can be found in our technical report~\cite{seedb-tr}.}
+% \techreport{We state the algorithm formally in
+% Algorithm~\ref{algo:ci_based_pruning}.}
 
 \techreport{
 \begin{algorithm}
@@ -501,46 +317,27 @@ records seen so far.
 
 
 
-\stitle{Multi-Armed Bandit Online Pruning.}
+\stitle{Multi-Armed Bandit Pruning.}
 \label{sec:multi_armed_bandit}
-
-Our second pruning scheme uses an adapative of a Multi-Armed Bandit (MAB)~\cite{bandits, AuerCF02, LaiR85} 
-to identify top views.
-In MAB, an online algorithm chooses from a set of alternatives (arms)
+Our second pruning scheme adopts the Multi-Armed Bandit (MAB)~\cite{bandits, AuerCF02, LaiR85} 
+setting to identify top views.
+In MAB, an online algorithm repeatedly chooses from a set of alternatives (arms)
 over a sequence of trials to maximize reward. 
-In our setting, the alternatives correspond to various visualizations and the reward corresponds
-to utility. 
+In our setting, the arms correspond to our set of potential visualizations and the reward corresponds
+to visualization utility. 
 We note that this is the first time that bandit strategies have been
 applied to the problem of identifying interesting visualizations.
 
 A recently-studied variation of MAB focuses on finding the arms with the highest
 mean rewards~\cite{BubeckWV13, audibert2010best}.
-Under certain \srm{which?} assumptions, 
-this variation is identical to the problem addressed by \SeeDB: our goal is find the views (arms) with the 
-highest utility. \mpv {is it arms or bandits?}.
+This variation is identical to the problem addressed by \SeeDB: our goal is 
+find the visualizations (arms) with the  highest utility (reward).
 Specifically, we adapt the Successive Accepts and Rejects algorithm from \cite{BubeckWV13} 
-to find arms with the highest mean reward. 
-Algorithm~\ref{algo:mab_based_pruning} shows the pseudocode for our pruning technique.
-
-\techreport{The setting of MAB is as follows: a gambler is faced with several slot
-machines (``one-armed bandit''s), each of which has an underlying 
-(unknown) reward distribution. 
-Every play results in a reward from the corresponding machine's
-reward distribution.
-The goal is to devise a {\it strategy} of which machine to play
-at each turn in order to maximize the reward~\cite{bandits}.}
-OLD: A recently-studied variation of MAB focuses on finding the arms with the highest
-mean rewards~\cite{BubeckWV13, audibert2010best}.
-This variation is similar to the problem addressed by \SeeDB: each possible view 
-can be thought of as a one-armed bandit and our goal is find the views with the 
-highest reward (i.e. utility). \reviewer {something werid here}.
-We therefore adapt the Successive Accepts and Rejects algorithm from \cite{BubeckWV13} 
-to find arms with the highest mean reward. END-OLD
-\techreport{Algorithm~\ref{algo:mab_based_pruning} shows the pseudocode for our pruning technique.}
-% As before, the processing of the input table is divided into phases.
-% In every phase, \SeeDB\ reads in new records and updates the distributions and utilities
-% for every view in the running.
-At the end of every phase, all active views are ranked in order of their utility means. 
+to find arms with the highest mean reward (Algorithm~\ref{algo:mab_based_pruning}). 
+\mpv{some reviewer comment here?}
+At the end of every phase (Section \ref{sec:system_architecture}), 
+views that are still under consideration 
+are ranked in order of their utility means. 
 We then compute two special differences between the utility means: $\Delta_1$
 is the difference between the highest mean and the $k+1$st highest mean, and
 $\Delta_n$ is the difference between the lowest mean and the $k$th highest mean.
@@ -551,24 +348,7 @@ On the other hand, if $\Delta_n$ is higher, the view with the lowest mean is dis
 from the set of views in the running.
 \cite{BubeckWV13} proves that under certain assumptions about reward distributions,
 the above technique identifies the top-$k$ arms with high probability.
-\mpv{put guarantee?}
-
-\reviewer{
-	For the MultiArmed
-Bandit pruning, it would be good to discuss whether
-the assumptions of reward distributions would necessarily in this context.
-}
-\mpv{
-	The MAB setting assumes that each trial samples from the same 
-	underlying reward distribution, which is the reward distribution
-	computed after processing all records. In our setting, however, 
-	the underlying reward distribution changes gradually as we
-	process more records and tends towards the {\em true} reward
-	distribution.
-	We assume that these changes to the distributions are small.
-}
-\srm{Are we sure the above paragraph is correct?  Since we have random samples, I don't see 
-why the reward distribution is changing.  Shouldn't it be the same?}
+\mpv{put guarantee from this paper?}
 
 \begin{algorithm}
 \caption{MAB Based Pruning}
@@ -585,8 +365,6 @@ why the reward distribution is changing.  Shouldn't it be the same?}
 \EndIf
 \end{algorithmic}
 \end{algorithm}
-
-\mpv{Guarantees from this technique?}
 
 % In MAB, each pull of an arm corresponds to a drawing from a sample
 % the underlying probability distribution of that arm.
@@ -619,11 +397,12 @@ why the reward distribution is changing.  Shouldn't it be the same?}
 \end{algorithm}
 }
 
-\mpv{Note about extensions to other utility metrics.}
-In our evaluation, we show that the above pruning schemes
-work  well in practice. 
-We can also prove, however, that as we sample more and more, the estimated utility
-$\hat{U}$ (\srm{for both pruning techniques?}) will coverge towards to $U$ for all aggregate views.
+\stitle{Guarantees.} Note that the two pruning schemes described above have guarantees
+in other settings that do not directly carry over to our setting.
+In our evaluation, we show that in spite of this limitation, the pruning schemes
+work rather well in practice. 
+We can, however, show that as we sample more and more, the estimated utility
+$\hat{U}$ can be made to be arbitrarily close to $U$ for all aggregate views (\srm{for both pruning techniques?}).
 We can state our claim formally in the following lemma. 
 \papertext{The proof based on 
 Hoeffding's inequality can be found in the extended
@@ -640,8 +419,25 @@ both have $m$ groups.
 Let $\hat{U}$ denote our estimate of $U$ based on a uniformly random sample 
 across all $m$ groups. 
 Then, as the number of samples tends to $\infty$, $\hat{U} \rightarrow U$
-with probability $1-\delta$, for any desired $\delta$.
+with probability $1-\delta$, for as small $\delta$ as needed.
 \end{lemma}
+
+\reviewer{
+	For the MultiArmed
+Bandit pruning, it would be good to discuss whether
+the assumptions of reward distributions would necessarily in this context.
+}
+\mpv{
+	The MAB setting assumes that each trial samples from the same 
+	underlying reward distribution, which is the reward distribution
+	computed after processing all records. In our setting, however, 
+	the underlying reward distribution changes gradually as we
+	process more records and tends towards the {\em true} reward
+	distribution.
+	We assume that these changes to the distributions are small.
+}
+\srm{Are we sure the above paragraph is correct?  Since we have random samples, I don't see 
+why the reward distribution is changing.  Shouldn't it be the same?}
 
 
 
