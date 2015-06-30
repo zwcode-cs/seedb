@@ -11,7 +11,7 @@
 % and context (as discussed in Section~\ref{sec:general-metric}).
 
 We now describe \SeeDB's front-end user experience, and then
-describe the architecture in more detail.
+describe the architecture and the execution engine in more detail.
 
 \stitle{Front-end Experience.} 
 We packaged \SeeDB as a recommendation plugin that can
@@ -20,20 +20,20 @@ For evaluating our system, we have combined \SeeDB with a simple visualization
 builder interface inspired by Polaris~\cite{polaris}.
 Figure~\ref{fig:frontend1} shows the web front-end for \SeeDB 
 comprising four parts 
-(A) dataset selector used to connect to a database and query a specific table \agp{collection of tables?}; 
+(A) dataset selector used to connect to a database and query a specific collection of tables; 
 (B) query builder used to
 formulate queries using a form-based interface; 
 (C) visualization builder used to manually specify visualizations; and 
 (D) \SeeDB recommendations plugin 
 that displays recommended visualizations.
-Recommendations provided by \SeeDB change in 
+The recommendations provided by \SeeDB change in 
 response to changes in the query (B)
 issued against the database.
-\resolved{\srm{This is the first mention of ``human in the loop'' philiosophy.  I think it might be good
+\resolved{\srm{This is the first mention of ``human in the loop'' philosophy.  I think it might be good
 to promote this to an earlier part of the paper, but only if we feel like we have something interesting
 to say about it.}}
-We note that supporting basic visualization specification 
-capabilities a la Polaris, coupled with automated data-driven recommendations enabling
+Note that supporting basic visualization specification 
+capabilities a la Polaris, coupled with automated recommendations enabling
 the reduction of tedious manual effort,
 implies that \SeeDB will form part of a
 {\em mixed initiative}~\cite{mixed_initiative} data exploration tool.
@@ -65,25 +65,44 @@ top of any SQL-compliant database system.
 Figure \ref{fig:sys-arch} depicts the overall architecture of our
 system.  The \SeeDB client is a web-based front-end that captures user
 input and renders visualizations produced by the \SeeDB server.  The
-\SeeDB server is composed of two main components. \mpv{view processor
-is not important, cut out} The first
+\SeeDB server is composed of two main components. The first
 component, the {\it view generator}, is responsible for parsing the
 input query, querying system metadata and generating the list of
 visualization queries that must be evaluated.  
 The goal of the {\em execution engine} is to evaluate the collection of queries
-using the underlying DBMS.\mpv{a couple of words about optimizations -- something
-like -- ... evaluate the collection of queries using our suite of optimization and
-the underlying DBMS}
+ using our suite of optimization and
+the underlying DBMS.
 The selected aggregate views (with high deviation) 
 are sent to the \SeeDB client 
 and are displayed as visualization recommendations to the user, 
 who can then interact with these
 visualizations.
 
-\stitle{Execution Engine.} 
-\mpv{Add something about why we need two types of optimizations -- lots of queries,
-interactivity etc.}
-In evaluating the collection of aggregate views, 
+\stitle{Basic Execution Engine.} 
+To motivate the need for optimizations, we now describe 
+how our execution engine would look like if we had no optimizations. 
+To identify and return the $k$ best aggregate views,
+\SeeDB needs to do the following:
+For each aggregate view, \SeeDB generates
+a SQL query corresponding to the target
+and reference view, and issues
+the two queries, one at a time, to the underlying DBMS.
+It repeats this process for each aggregate view.
+As the results are received, \SeeDB can compute the
+distance between the target and reference view
+distributions, and identify the $k$ visualizations
+with highest utility. 
+
+Naturally, this basic implementation has many inefficiencies.
+In a table with $a$ dimensions, $m$ measures, and $f$ aggregation functions, 
+$2\times f \times a \times  m$ queries must be executed independently.  
+As we show in Section~\ref{sec:experiments}, this can take >100s for
+large data sets (with hundreds of attributes and millions of rows).
+These latencies are unacceptable for interactive use.
+
+\stitle{Execution Engine with Optimizations.} 
+To deal with the huge latency in 
+evaluating the collection of aggregate views, 
 the execution engine  
 applies two kinds of optimizations:
 {\em sharing}, where aggregate view queries are combined to share computation
@@ -94,13 +113,12 @@ To derive benefits from both these kinds of optimizations,
 we develop a {\em phase-based execution framework}, 
 that proceeds in {\em phases},
 each phase operating on a subset of the dataset.
-For instance, phase $i$ of $n$ examines the $i$th fraction of the dataset
-if divided into $n$ parts. (We will describe how to select $n$ later on.) 
-\agp{Manasi -- if we do this, we need to add a fwd pointer.}
-\mpv{we don't have this data, we can just say that empirically 
-we found that $n$=10 works well.}
-\mpv{We need a line about how phases are defined: something like first 
-100/n\% of the data.}
+Thus, phase $i$ of $n$ examines the $i$th fraction of the dataset
+if divided into $n$ parts. (Empirically, we have found $n=10$ to
+work well, though our results are not very sensitive to the value
+of $n$.) 
+For instance, if we have $100,000$ records and $10$ parts,
+the $i = 4$th phase processes records $30,001$ to $40,000$.
 The execution engine begins 
 with the entire set of aggregate views under consideration.
 \begin{denselist}
@@ -133,7 +151,7 @@ the pruning based optimizations in Section~\ref{sec:pruning_opt}.
 
 
 
-\agp{Only for historical record, can be deleted if not useful:
+\resolved{\agp{Only for historical record, can be deleted if not useful:
 The engine executes
 queries using the underlying DBMS, but applies two types of
 optimization in this process.  The first set of optimizations involve
@@ -147,8 +165,7 @@ particular view without looking at the data, the pruner runs in a {\it
 data, using results on that subset to estimate the quality of each
 view, and discarding views with low estimated utility.  The retained
 views are then run on another subset of the data in the next phase of 
-execution.}
-
+execution.}}
 \reviewer {
 	D2.5 The horizontal partitioning is never detailed: how is it done? How is the
 number of fragments decided?
@@ -158,6 +175,18 @@ number of fragments decided?
 
 \mpv{I would like to keep the pseudocode and cut other stuff}
 \agp{Not essential -- move to TR.}
+
+
+
+ 
+\begin{figure}[htb]
+\centerline{
+\hbox{\resizebox{9cm}{!}{\includegraphics[trim=0mm 0mm 0mm 0mm,
+clip=true]{Images/seedb_frontend.pdf}}}}
+\caption{\SeeDB Frontend}
+\vspace{-20pt}
+\label{fig:frontend1}
+\end{figure} 
 
 
 % The optimizer applies multi-query

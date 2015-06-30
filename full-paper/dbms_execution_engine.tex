@@ -42,27 +42,6 @@ two queries.
 We have found that there is minimal to no impact on latency 
 for combining aggregates in both row and column stores. 
 
-\stitle{Combine target and reference view query}:
-Since the target and reference views differ only in the subset of data
-the query is executed on, \SeeDB rewrites these two view queries as
-one. For instance, if the target and reference view queries are $Q1$ and $Q2$
-respectively, they can be combined into a single query $Q3$.
-\vspace{-5pt}
-\begin{align*} 
-Q1 = &{\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt WHERE \ \ x\ <\ 10\
-GROUP \ \ BY} \ a \\
-Q2 = &{\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt GROUP \ \ BY} \ a \\
-Q3 = &{\tt SELECT \ } a, f(m), {\tt CASE\ IF\ x\ <\ 10\ THEN\ 1\ ELSE\ 0\
-END}\\ 
-&as\ g1,\ 1\ as\ g2 \ \ {\tt FROM} \ D\ {\tt GROUP \ \ BY} \ a,\ g1,\ g2
-\end{align*}
-
-\stitle {Parallel Query Execution}:
-  \SeeDB executes multiple view queries in parallel since co-executing queries can often
- share buffer pool pages and reduce disk accesses times. 
-  However, the precise number of parallel queries needs to be tuned to take into account 
-  buffer pool contention, locking, and cache line contention, among others factors~\cite{Postgres_wiki}.  
-
 \stitle {Combine Multiple GROUP BYs}:
 After applying our multiple aggregates optimization, \SeeDB is left with a number of 
 queries with multiple aggregations but only single-attribute groupings.
@@ -97,9 +76,35 @@ such that the estimated size of any query result is below $\mathcal{S}$.
 We use the standard first-fit algorithm~\cite{first-fit} to find the optimal
 grouping of dimension attributes.
 
+
+\stitle{Combine target and reference view query}:
+Since the target and reference views differ only in the subset of data
+the query is executed on, \SeeDB rewrites these two view queries as
+one. For instance, if the target and reference view queries are $Q1$ and $Q2$
+respectively, they can be combined into a single query $Q3$.
+\vspace{-5pt}
+\begin{align*} 
+Q1 = &{\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt WHERE \ \ x\ <\ 10\
+GROUP \ \ BY} \ a \\
+Q2 = &{\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt GROUP \ \ BY} \ a \\
+Q3 = &{\tt SELECT \ } a, f(m), {\tt CASE\ IF\ x\ <\ 10\ THEN\ 1\ ELSE\ 0\
+END}\\ 
+&as\ g1,\ 1\ as\ g2 \ \ {\tt FROM} \ D\ {\tt GROUP \ \ BY} \ a,\ g1,\ g2
+\end{align*}
+
+
+
+\stitle {Parallel Query Execution}:
+  \SeeDB executes multiple view queries in parallel since co-executing queries can often
+ share buffer pool pages and reduce disk accesses times. 
+  However, the precise number of parallel queries needs to be tuned to take into account 
+  buffer pool contention, locking, and cache line contention, among others factors~\cite{Postgres_wiki}.  
+
+\techreport{
 \stitle{Other Optimizations}: 
 To further speedup processing, \SeeDB can also pre-compute results for 
 static views (e.g. reference views on full tables) or operate on
 pre-computed data samples.  Such optimizations are orthogonal to the
 problem of efficiently evaluating a large number of views, which we must address
 even in the presence of pre-computation or sampling.
+}
