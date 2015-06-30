@@ -23,8 +23,7 @@ multi-armed bandit allocation strategies to find top utility views.
 Our first pruning scheme uses worst-case statistical confidence intervals to
 bound view utilities.
 This technique is similar to top-k based pruning algorithms developed 
-in other contexts~\cite{DBLP:conf/pods/FaginLN01, 
-DBLP:conf/vldb/IlyasAE04, DBLP:conf/ICDE/ReDS07}.
+in other contexts~\cite{DBLP:conf/vldb/IlyasAE04, DBLP:conf/ICDE/ReDS07}.
 Our scheme works as follows: during each phase,
 we keep an estimate of the mean utility for every aggregate view $V_i$ and a
 confidence interval around that mean.
@@ -349,24 +348,25 @@ the above technique identifies the top-$k$ arms with high probability.
 \end{algorithm}
 }
 
-\stitle{Guarantees on Consistent Distance Metrics.} 
+\stitle{Consistent Distance Metrics.} 
 Note that the two pruning schemes described above have guarantees
 in other settings that do not directly carry over to our setting---for example,
 the MAB setting assumes that each trial samples from a fixed underlying distribution,
 while in fact, our trials correspond to random values across $m$ distributions (groups),
-which are aggregated together to form a utility estimate for a given view. \agp{check prev sentence.}
-%Furthermore, they assume that data is randomly sampled, which we do not. 
+which are aggregated together to form a utility estimate for a given view. 
 In our evaluation, we show that in spite of this limitation, the pruning schemes
 work rather well in practice. 
 We can, however, show that as we sample more and more, the estimated utility
 $\hat{U}$ can be made to be arbitrarily close to $U$ for all aggregate views.
+Essentially, this means that any pruning algorithm that uses a sufficiently
+large sample will prune away low utility views with very high probability.
 We can state our claim formally in the following lemma. 
 \papertext{The proof based on 
 Hoeffding's inequality can be found in the extended
 technical report~\cite{seedb-tr}.
 While we show this for $\ell_2$, similar 
 results hold for other distance metrics,
-such as $\ell_1$, EMD, and  Jenson-Shannon metric.}
+such as $\ell_1$, EMD, Kullback-Leibler, and Jenson-Shannon metrics.}
 % At a high level, the proof
 % involves repeated applications of Hoeffding's inequality to
 % upper and lower-bound $\hat{U}$ within $U$ along with terms 
@@ -386,12 +386,13 @@ We call distance metric that has this property a {\em
 consistent distance metric}.
 Consistent distance metrics allow pruning schemes
 to gather increasingly better estimates of utility values
-over time. 
-In Section~\ref{sec:discussion}, we show that
-both the Confidence Interval and MAB-based pruning schemes work
-well (i.e., have high accuracy while reducing
-effort) 
-on distance metrics that are consistent.
+over time (as long as the samples are large enough). 
+Specifically, we show in Section~\ref{sec:custom_execution_engine_expts}
+that the Confidence and MAB-based pruning schemes 
+work well (i.e., have high accuracy while reducing
+effort) for EMD, and then
+in Section~\ref{sec:discussion}, we show that 
+these schemes work well for other consistent distance metrics.
 
 
 
