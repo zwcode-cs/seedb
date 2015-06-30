@@ -27,14 +27,62 @@ critical; the above functions produce similar orderings of visualizations.
 
 \subsection{Extension to other Utility Metrics}
 \label{sec:other_utility_metrics}
-Something like none of our
-algorithms depend on the specific properties of EMD.
-In fact, these techniques apply to any consistent estimator.
+In Section \ref{sec:pruning_opt}, we described the two pruning strategies used by \SeeDB
+to rapidly discard low-utility views.
+As seen in Section \ref{sec:experiments}, our strategies work well for deviation-based utility
+and, in particular, deviation as measured by EMD.
+We now discuss the generality of our pruning techniques for other distance functions, and even other
+utility metrics that uses the underlying data distribution in some way (not based on deviation).
 
+% We define the set of utility metrics for which our pruning strategies work and provide intuition
+% for why the strategies hold.
 
-\subsection{Comparison of Different distance Metrics for Deviation}
-\label{sec:diff_dist_metrics}
-\mpv{something goes here}
+At the highest level, the goal of \SeeDB is to {\em estimate} for each visualization $V_i$, 
+the value of its utility $U(V_i)$, however that utility may be defined.
+In statistical terms, $U(V_i)$ is the {\em parameter} and the quantity we use to estimate the
+utility is our {\em estimator}.
+In our deviation-based metric (say using EMD), the parameter is the value of EMD on the full
+dataset and our estimator is the mean value of EMD obtained from a sample of the data.
+A {\em consistent estimator}~\cite{consistent_estimator} is an estimator having the property 
+that as the size of the sample increases, estimates from the estimator tend towards the value 
+of the parameter. \mpv{maybe a formula for consistent estimators}
+
+With these definitions, we can define the set of utility metrics handled by CI and MAB as follows:
+\begin{lemma}
+Let $\mathcal{U}$ be any data-distribution based utility metric defined on a set of visualizations $\{
+V_1 \ldots V_n\}$. Then the pruning strategies CI or MAB can correctly identify (upto some $\delta$) the 
+$k$ visualizations with the highest values of $\mathcal{U}$ if and only if $\mathcal{U}$ has a consistent 
+estimator $\mathcal{E}_C$ and $\mathcal{E}_C$ is used to compute utility estimates for CI or MAB.
+\end{lemma}
+
+The intuition behind this lemma is that {\em so long as the utility metric (and estimator) are such that
+the estimates improve with increasing sample sizes}, the pruning performed by CI and MAB will have low
+error rate.
+At each phase, our pruning strategies can be thought of as operating on samples of increasingly larger
+sizes, their estimates tending towards the value of the true utility.
+As a consequence, the views that are pruned have (almost) as high accuracy as if the sample was used to
+return the top-$k$ results.
+Moreover, our strategies become increasingly accurate in subsequent phases.
+\mpv{we perform strictly better than an algorithm than takes a sample of size = size of first phase1 and
+returns top-$k$ from it.}
+
+A rigorous proof of error bounds is outside the scope of this work.
+We expect that a majority of potential data-driven utility metrics are, in fact, well-behaved with respect to 
+our techniques.
+Prior work has shown that sample means (utility mean for CI and MAB) is in fact a consistent estimator for
+population mean (true utility)\cite{mean_is_consistent}.
+Other metrics that fit our criterion include deviation-based techniques that use distance functions other than 
+EMD to measure distance between distributions, utility based on maximum difference in distribution, 
+and metrics that measure whether there is an outlier in the visualization.
+There are of course (unrealistic) edge cases, e.g. utility is equal to a specific value in the last tuple scanned, that
+do not have consistent estimators and cannot be handled by our pruning technique.
+
+We empirically validate our lemma by testing our pruning strategy on other utility metrics. 
+These metrics were: (1) Deviation using Euclidean distance; (2) Max deviation; (3) a Non-consistent
+estimator.
+Figure \ref{} shows the results of our experiments. 
+We find that both our pruning strategies perform well for EUC and MAX\_DEV whereas they perform
+poorly for NC.
 
 \subsection{Metrics other than deviation}
 
