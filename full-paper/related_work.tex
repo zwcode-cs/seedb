@@ -13,13 +13,13 @@ independent of queries. In [31] a user query (or more precisely, knowing
 what part of the cube has already been explored) is needed
 }
 
-\reviewer {
+\resolved{\reviewer {
 	4.2 As the SeeDB approach is basically to suggest queries based on the
 current user's query, it would be interesting to position (and compare) SeeDB
 among the approaches of query recommendation in databases, especially one
 of the authors' previous works (QueRIE: Collaborative Database Exploration.
 TKDE 26(7): 17781790 (2014))
-}
+}}
 
 \stitle{Visualization Tools}:
 The visualization 
@@ -167,21 +167,23 @@ query is provided~\cite{DBLP:conf/VLDB/AgarwalADG96,DBLP:conf/SIGMOD/Harinarayan
 %In our setting, since the number of attributes can be rather large,
 %and since any ad-hoc data exploration queries can be provided on-the-fly, materialization
 %is not an option except for the most common or popular attributes.
+Hence, the optimization techniques underlying cube materialization 
+are similar in spirit to our batching optimizations in Section~\ref{sec:sharing_opt},
+however, they focus on offline computation of views to minimize storage rather than efficient online
+optimization.
 
-The optimization techniques underlying cube materialization 
-are similar in spirit to our batching optimizations in Section~\ref{sec:sharing_opt}
-(but not similar to our pruning optimizations).
-However, the underlying techniques are different from ours in two ways:
-(1) Cube materialization computes
- these aggregates offline, as opposed to online: the bottleneck
-is not computation, but storage.
-(2) We must compute the results for
-all possible views, cube materialization only seeks 
-to compute a few (good) sub-cubes. Our algorithms focus on
-grouping views into batches,
-each of which fit within our resource constraints. 
-In cube materialization there is a single ``batch'' of aggregates
-that is computed offline (rather than multiple batches) and then stored.
+% (but not similar to our pruning optimizations).
+% However, the underlying techniques are different from ours in two ways:
+% (1) Cube materialization computes
+%  these aggregates offline, as opposed to online: the bottleneck
+% is not computation, but storage.
+% (2) We must compute the results for
+% all possible views, cube materialization only seeks 
+% to compute a few (good) sub-cubes. Our algorithms focus on
+% grouping views into batches,
+% each of which fit within our resource constraints. 
+% In cube materialization there is a single ``batch'' of aggregates
+% that is computed offline (rather than multiple batches) and then stored.
 
 
 \stitle{Browsing Data Cubes:}
@@ -209,14 +211,16 @@ for our view), thus focusing on trends in values rather than individual values:
 unlike individual cube values, trends can be more easily displayed
 and examined on visual interfaces.
 
-Another work by Sarawagi in this space (\cite{DBLP:conf/vldb/Sarawagi99}) 
+
+In \cite{DBLP:conf/vldb/Sarawagi99}, Sarawagi
 proposes techniques to explain an
 increase or decrease in a specific aggregate by drilling down into that aggregate.
-While related, 
-this work addresses a different question; \SeeDB\ seeks to find interesting
-differences between two datasets that have not yet been aggregated along any dimensions,
- rather than explaining the cause of variations observed in several already aggregated
-quantities by drilling down.  Wu et al~\cite{scorpion} tackle a similar problem in Scorpion,
+In constrast, \SeeDB\ seeks to find interesting
+differences between two datasets that have not yet been aggregated along any dimensions.
+%,
+% rather than explaining the cause of variations observed in already aggregated
+%quantities.  
+Wu et al~\cite{scorpion} tackle a similar problem in Scorpion,
 and differ for similar reasons.
 %\agp{The prev paragraph is quite weak. I'll need to look into the paper to identify the 
 %differences.}
@@ -229,7 +233,8 @@ and differ for similar reasons.
 
 
 \stitle{Multi-Query Optimization:} Our batching optimizations
-presented in Section~\ref{sec:sharing_opt} make use draw on
+%presented in Section~\ref{sec:sharing_opt} 
+draw on
 related techniques from literature on shared
 scans~\cite{Fernandez:1994:RBW:191843.191947} and multi-query
 optimization
@@ -253,7 +258,18 @@ techniques allow us to stop evaluating some visualizations if we find
 that their utility is low---other multi-query schemes do not have the
 luxury of not performing particular computations.
 
-
+\stitle{Query Recommendation Systems}: Finally, there is some related work in
+the space of general query recommendation in databases (see
+~\cite{marcel2011survey} for an overview.)  These systems are
+generally designed to help users pose users relevant
+queries over of a database, typically by consulting historical query
+workloads and using statistical similarity or recommender algorithms
+to refine user inputs.  These techniques, to the best of our
+knowledge, focus on recommending SQL queries instead of visualizations
+(and hence don't focus on visually relevant distance metrics.)  However, we
+believe they could be integrated into a generalized utility metric
+inside SeeDB, although a full user-study comparing their effectiveness
+is outside the scope of this work.
 
 
 
