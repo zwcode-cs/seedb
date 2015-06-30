@@ -308,7 +308,7 @@ We now study the effect of combining multiple queries each with a single group-b
 with multiple grouping.
 Unlike the multiple aggregates optimization, the impact of combining group-bys
 is unclear due to the significantly larger memory requirement as well as post-processing cost.
-We claim in Section \ref{} that grouping can benefit performance so long as 
+We claim in Section \ref{sec:sharing_opt} that grouping can benefit performance so long as 
 the total memory utilization stays under a threshold.
 To verify our claim, we ran an experiment with datasets SYN*-10 and SYN*-100.
 For each dataset, we varied the number of group-by attributes in \SeeDB-generated SQL 
