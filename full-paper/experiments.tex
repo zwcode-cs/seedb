@@ -3,17 +3,16 @@
 \label{sec:experiments}
  
 In the next two sections, we present a thorough evaluation of \SeeDB both in terms
-of performance in returning top-$k$ visualizations and in terms of user 
+of performance when returning top-$k$ visualizations and in terms of user 
 studies.
-Our goal with performance experiments is to evaluate how well our sharing and pruning
-optimizations perform for identifying top visualizations accurately and at interactive
-latencies.
-Our goal with the user studies (Section \ref{sec:user_study}), in contrast, is to validate 
-our utility metric by comparing \SeeDB recommendations to ground truth, and to compare 
-\SeeDB to a manual chart construction tool for visual analysis.
+In this section, we focus on performance studies, where our goal is to evaluate how well our sharing and pruning
+optimizations improve latency, and how our pruning optimizations affect accuracy.
+%Our goal with the user studies (Section \ref{sec:user_study}), in contrast, is to validate 
+%our utility metric by comparing \SeeDB recommendations to ground truth, and to compare 
+%\SeeDB to a manual chart construction tool for visual analysis.
 
-We report results for \SeeDB on a variety of real and synthetic datasets listed in Table 
-\ref{tab:datasets}, across this section and the next (on the user study).
+In both sections, we report results for \SeeDB on a variety of real and synthetic datasets listed in Table 
+\ref{tab:datasets}.
 % Our performance studies focus on the synthetic and larger real-world datasets that
 % exercise the optimization capabilities of \SeeDB.
 % Our user studies, on the other hand, use smaller real-world datasets that are easy to

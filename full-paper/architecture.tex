@@ -32,11 +32,12 @@ issued against the database.
 \resolved{\srm{This is the first mention of ``human in the loop'' philosophy.  I think it might be good
 to promote this to an earlier part of the paper, but only if we feel like we have something interesting
 to say about it.}}
-Note that supporting basic visualization specification 
-capabilities a la Polaris, coupled with automated recommendations enabling
-the reduction of tedious manual effort,
-implies that \SeeDB will form part of a
-{\em mixed initiative}~\cite{mixed_initiative} data exploration tool.
+%SRM cut this -- we already said it and it doesn't really matter to VLDB reviewers
+%Note that supporting basic visualization specification 
+%capabilities a la Polaris, coupled with automated recommendations enabling
+%the reduction of tedious manual effort,
+%implies that \SeeDB will form part of a
+%{\em mixed initiative}~\cite{mixed_initiative} data exploration tool.
 
 \resolved{delete rest, too detailed:
 We note that the {\em mixed-initiative} design of \SeeDB incorporating both manual
@@ -70,9 +71,9 @@ component, the {\it view generator}, is responsible for parsing the
 input query, querying system metadata and generating the list of
 visualization queries that must be evaluated.  
 The goal of the {\em execution engine} is to evaluate the collection of queries
- using our suite of optimization and
+ using our optimizations on top of
 the underlying DBMS.
-The selected aggregate views (with high deviation) 
+The selected aggregate views (i.e., those with high deviation) 
 are sent to the \SeeDB client 
 and are displayed as visualization recommendations to the user, 
 who can then interact with these
@@ -80,17 +81,17 @@ visualizations.
 
 \stitle{Basic Execution Engine.} 
 To motivate the need for optimizations, we now describe 
-how our execution engine would look like if we had no optimizations. 
-To identify and return the $k$ best aggregate views,
+how our execution engine would work if we had no optimizations. 
+To identify the $k$ best aggregate views,
 \SeeDB needs to do the following:
-For each aggregate view, \SeeDB generates
+For each aggregate view, it generates
 a SQL query corresponding to the target
 and reference view, and issues
 the two queries, one at a time, to the underlying DBMS.
 It repeats this process for each aggregate view.
-As the results are received, \SeeDB can compute the
+As the results are received, \SeeDB computes the
 distance between the target and reference view
-distributions, and identify the $k$ visualizations
+distributions, and identifies the $k$ visualizations
 with highest utility. 
 
 Naturally, this basic implementation has many inefficiencies.
@@ -101,23 +102,23 @@ large data sets (with hundreds of attributes and millions of rows).
 These latencies are unacceptable for interactive use.
 
 \stitle{Execution Engine with Optimizations.} 
-To deal with the huge latency in 
+To reduce latency in 
 evaluating the collection of aggregate views, 
 the execution engine  
 applies two kinds of optimizations:
 {\em sharing}, where aggregate view queries are combined to share computation
 as much as possible, and {\em pruning}, where aggregate view queries
-corresponding to low utility visualizations are dropped from consideration.
+corresponding to low utility visualizations are dropped from consideration without scanning the whole
+dataset.
 These optimizations are largely orthogonal to each other.
 To derive benefits from both these kinds of optimizations,
-we develop a {\em phase-based execution framework}, 
-that proceeds in {\em phases},
-each phase operating on a subset of the dataset.
-Thus, phase $i$ of $n$ examines the $i$th fraction of the dataset
-if divided into $n$ parts. (Empirically, we have found $n=10$ to
+we develop a {\em phased execution framework}.
+Each phase operates on a subset of the dataset.
+Phase $i$ of $n$ operates on the $i$th of $n$ equally-sized partitions of the dataset. 
+(Empirically, we have found $n=10$ to
 work well, though our results are not very sensitive to the value
 of $n$.) 
-For instance, if we have $100,000$ records and $10$ parts,
+For instance, if we have $100,000$ records and $10$ phases,
 the $i = 4$th phase processes records $30,001$ to $40,000$.
 The execution engine begins 
 with the entire set of aggregate views under consideration.
@@ -133,15 +134,15 @@ DBMS queries and executing them in tandem.
 The partial results of each aggregate view on the fraction from $1$ through $i$ are used to 
 estimate the quality of each view, and the views with low utility are discarded. 
 \end{denselist}
-The retained aggregate views are then processed on the $i+1$th fraction of the dataset,
+The retained aggregate views are then processed on the $i+1$th round,
 and the process continues. 
 In this manner, the set of views under consideration
 decreases across these phases, with all aggregate views at the start 
 of the first phase, and only the $k$ views left
 at the end of the $n$th phase.
-Further, in this manner, the sharing and pruning based optimizations do
-not interfere with each other---one is applied during the phase,
-and one is applied at the end of the phase.
+%Further, in this manner, the sharing and pruning based optimizations do
+%not interfere with each other---one is applied during the phase,
+%and one is applied at the end of the phase.
 \papertext{The pseudocode for the phase based execution framework
 can be found in the extended technical report~\cite{seedb-tr}.}
 

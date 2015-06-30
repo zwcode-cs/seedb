@@ -332,7 +332,7 @@ This trend id reflected in the $bookmark\_rate$ for \SeeDB; the $bookmark\_rate$
 higher than that for MANUAL.
 We also find that, on average, the $bookmark\_time$ for \SeeDB (92.91 $\pm$ 49.26) is twelve seconds 
 shorter than that for MANUAL (105.02 $\pm$ 58.24). 
-While these differences are not statistically significant, they point towards a trend: {\it \SeeDB
+While these differences are not statistically significant \srm{according to what statistical test}, they point towards a trend: {\it \SeeDB
 enables participants to arrive at interesting visualizations faster than MANUAL}.
 
 \begin{table}[htb]
@@ -363,29 +363,31 @@ enables participants to arrive at interesting visualizations faster than MANUAL}
 
 
 
-Recall that \SeeDB (currently) only supports recommendations for aggregate visualizations.
-The above results include data for both scatterplots as well as aggregate visualization, and
-therefore do not entirely reflect bookmark behavior for aggregate visualizations.
-Table \ref{tab:agg_bookmarks} shows the same bookmarking metrics as in Table \ref{tab:bookmarks}
-for aggregate visualizations.
+Recall that \SeeDB (currently) only  recommends aggregate visualizations.
+The above results include the number of bookmarked scatterplots as well as aggregate visualizations, but 
+the scatterplot visualizations most likely were not generated from a \SeeDB recommendation.
+\srm{Why did we choose to allow users to make scatter plots if SeeDB can't recommend them!!!!!!!}
+\footnote{Although \SeeDB only recommends aggregate
+visualizations, users have the ability to plot or modify a recommendation to construct a scatterplot.}
+To correct this issue, Table \ref{tab:agg_bookmarks} shows the same bookmarking metrics as in Table \ref{tab:bookmarks},
+but where we only consider bookmarks of aggregate visualizations (which are those that could have been produced by \SeeDB). 
 As before, we see that $num\_bookmarks$ is higher in \SeeDB than in MANUAL; in fact, this difference
 is statistically significant ({\em t = 3.417, df = 9, p-value = 0.007665}).
 However, unlike in Table \ref{tab:bookmarks}, we observe that number of aggregate visualizations 
-is higher for \SeeDB compared to MANUAL suggesting that the larger number of bookmarks in \SeeDB 
-might be a consequence of a larger number of aggregate visualizations with \SeeDB (possibly because
-\SeeDB only recommends aggregate visualizations)\footnote{Although \SeeDB only recommends aggregate
-visualizations, users have the ability to plot or modify a recommendation to construct a scatterplot}.
-As a result, we find $bookmark\_rate$, which is the proportion of aggregate visualizations bookmarked
-to the number of aggregate visualizations viewed, to be an unbiased metric.
-We find that $bookmark\_rate$ for \SeeDB (0.42) is in fact 3X larger than the $bookmark\_rate$ for 
+is higher for \SeeDB compared to MANUAL suggesting that the larger number of bookmarks with \SeeDB 
+might simply be a consequence of a larger number of aggregate visualizations with \SeeDB (possibly because
+\SeeDB only recommends aggregate visualizations).
+Note, however, that $bookmark\_rate$, which is the proportion of aggregate visualizations bookmarked
+over the number of aggregate visualizations viewed, is unbiased by this difference.
+ $bookmark\_rate$ for \SeeDB (0.42) is in fact 3X larger than the $bookmark\_rate$ for 
 MANUAL (0.14).
-This implies that \stitle{a \SeeDB recommended aggregate visualization is 3 times more likely to be
-interesting compared to a manually constructed aggregate visualization}.
+This implies that a \SeeDB recommended aggregate visualization is 3 times more likely to be
+interesting compared to a manually constructed aggregate visualization.
 We find this difference in $bookmark\_rate$ to be statistically significant within subjects as well 
 as across subjects ({\em Paired t-test, t = -2.5599, df = 8, p-value = 0.03365}).
-A 3X higher $bookmark\_rate$ implies that users are 3X more likely to find interesting insights with 
-recommended visualizations vs. if they create visualizations manually; i.e., \SeeDB can enable users 
-to find interesting insights faster.
+%A 3X higher $bookmark\_rate$ implies that users are 3X more likely to find interesting insights with 
+%recommended visualizations vs. if they create visualizations manually; i.e., \SeeDB can enable users 
+%to find interesting insights faster.
 These statistical results are supported by anecdotal and survey data from study participants.
 87\% of participants indicated that \SeeDB recommendations sped up their visual analysis. 
 Many participants also alluded to the ability of \SeeDB to let them analyze data quickly, e.g. 

@@ -11,7 +11,7 @@ dimension attributes are those appearing in the group by clause?  We should use 
 As is standard in OLAP, and in visual analytics
 tools such as Tableau and Polaris~\cite{tableau,polaris},
 we focus on a database $D$ with a snowflake schema.
-In a slight abuse of notation, we denote the attributes
+We denote the attributes
 that we would like to group-by in our visualizations 
 as {\em dimension attributes}, $A$, and 
 the attributes that we would like to 
@@ -45,7 +45,7 @@ Thus, we support a general class of select-project-join (SPJ) queries over the s
 For the purpose of this discussion, we focus on simple selection
 queries over the result of joining all the tables in the snowflake schema.
 We note that this class of queries 
-suffice for most visualization tasks.
+suffices for most visualization tasks.
 For instance, in our illustrative example, $Q$ can select any subset of records from the
 Census table. 
 We denote the result of $Q$ as $D_Q$.
@@ -91,6 +91,7 @@ measure). Is it usual to define visualizations this way?
 \agp{I think we can amend the response to say it is standard (cite polaris table algebra)
 to define visualizations in this manner.}
 }
+
 \if{0}
 Given a database $D$ and the subset of data selected by the analyst (via query $Q$), 
 the goal of \SeeDB is to recommend visualizations of $Q$ that have high utility. 

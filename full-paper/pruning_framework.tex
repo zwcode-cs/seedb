@@ -220,6 +220,11 @@ why the reward distribution is changing.  Shouldn't it be the same?}
 
 \mpv{Guarantees from this technique?}
 
+\stitle{Early Stopping.}
+Both of these techniques can frequently estimate the top-$k$ views before the entire dataset has been scanned.
+At this point, we can either continue to scan the entire data set to generate a completely accurate
+picture of these $k$ views, or we can emit an approximation of these $k$ views immediately.  We show 
+in our experiments that this {\it early stopping} can significantly improve the runtime of our pruning algorithms.
 
 \subsection{Extension to Other Utility Metrics}
 

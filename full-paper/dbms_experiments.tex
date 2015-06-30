@@ -252,8 +252,8 @@ We chose to test these optimizations on synthetic data since we can control all 
 % \end{figure}
 
 \stitle{Combining Multiple Aggregates:} 
-{\em \underline{Summary:} Combining 
-view queries with the same group-by attribute
+{\em \underline{Summary:} Com\-bining 
+view quer\-ies with the same group-by attribute
 but different aggregates gives a 
 3-4X speedup for both row and column stores.}
 To study the limits of adding multiple aggregates to a single view query, we
@@ -270,10 +270,10 @@ varied the maximum number of aggregates in any \SeeDB-generated SQL query
 The resulting latencies on the SYN dataset are shown in Figure \ref{fig:multi_agg} (log scale on the y-axis).
 As we can see, latency reduces consistently with the number of aggregations performed 
 per query.
-The latency reduction is however not linear in $n_{agg}$ because
-larger $n_{agg}$ values require maintenance of more state and access of more columns in a 
+However, the latency reduction is not linear in $n_{agg}$ because
+larger $n_{agg}$ values require maintenance of more state and access more columns in a 
 column store.
-Overall, we get a 4X speedup for ROW and a 3X speed up for COL.
+Overall, this optimization provides a 4X speedup for ROW and a 3X speed up for COL.
 
 \stitle{Parallel Query Execution:} 
 {\em \underline{Summary:} Running view queries in parallel can offer significant
@@ -527,9 +527,9 @@ We see that our sharing optimizations lead to a speed up of 20X for ROW
 Our optimizations are most effective for datasets with 
 large sizes and many views, particularly for ROW where reduction in table scans has 
 large benefits.
-In summary, sharing allows small and moderate sized datasets to be processed at
-interactive time scales (few seconds) and reduces latency on large datasets from 
-500 seconds (ROW) and 100 seconds (COL) to $<$10s for COL, and $<$20s for ROW.
+%In summary, sharing allows small and moderate sized datasets to be processed at
+%interactive time scales (few seconds) and reduces latency on large datasets from 
+%500 seconds (ROW) and 100 seconds (COL) to $<$10s for COL, and $<$20s for ROW.
 % , with proportionally larger speedups as these numbers grow.
 
 \techreport{

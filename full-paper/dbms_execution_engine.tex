@@ -20,7 +20,7 @@
 
 In the naive implementation, each visualization is translated into view
 queries that get executed independently on the DBMS.
-However, view queries across the set of visualization evaluated by \SeeDB
+However, for a particular user input, the queries evaluated by \SeeDB
 are very similar: they scan the same underlying data and differ only in the 
 attributes used for grouping and aggregation.
 This presents opportunities to intelligently merge and batch queries, reducing 
@@ -37,7 +37,7 @@ rewritten as a single query with multiple aggregations.
 Therefore, instead of executing
 (two queries each for) views $(a_1$, $m_1$, $f_1)$, $(a_1$, $m_2$, $f_2)$ 
 \ldots $(a_1$, $m_k$, $f_k)$, \SeeDB combines them into a single view 
-$(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$ which can be executed through
+$(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$ which can be executed via just
 two queries.  
 We have found that there is minimal to no impact on latency 
 for combining aggregates in both row and column stores. 
