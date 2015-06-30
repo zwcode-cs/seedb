@@ -3,6 +3,7 @@
 % \section{View Pruning}
 % \label{sec:pruning}
 
+\techreport{
 \subsection{Offline Pruning.}
 Even before any queries are issued to \SeeDB, we
 have the ability to identify clusters of attributes
@@ -21,15 +22,13 @@ average delay by airport code would lead
 to identical visualizations. 
 Consequently, it would suffice to compute and recommend
 only one of these visualizations.
-\papertext{To prune redundant views, we
+To prune redundant views, we
 cluster (comparison) views by degree of correlation,
 perform clique detection and choose a representative
 view from every clique.
 Details of our offline pruning procedure are described in
-the extended technical report. }
-\techreport{
-%\agp{this needs fixing but probably more immediate things
-%need fixing as well.}
+the extended technical report. 
+
 We adopt the following steps to prune redundant views: 
 (1) For each table, the we first use the metadata about
 attributes to determine the entire space of aggregate views. 
@@ -44,7 +43,6 @@ At run time, the view generator accesses previously generated view stubs, remove
 the input query (e.g. views grouping by state when the query only selects records
 with \'state=``MA''\') and passes the remaining stubs to the execution engine.
 %\agp{Also, would be good to have some experimental figures or more details on this}
-} 
 % since the rest would contain redundant information.
 % \papertext{We describe how we perform
 % offline pruning, and describe the experimental
@@ -54,10 +52,10 @@ with \'state=``MA''\') and passes the remaining stubs to the execution engine.
 % and eliminate redundant aggregate views.}
 Offline pruning allows us to significantly 
 reduce the number of views (and execution time) in real
-datasets; for the DIAB dataset described in Section \ref{sec:experiments},
+datasets; for the DIAB dataset described in Section~\ref{sec:experiments},
 we reduce the number of possible views from 72 to 41 (45\% reduction), and from
 70 to 54 (25\% reduction) for the BANK dataset. 
-
+}
 
 % Intuitively, this pruning is important because fewer views equates to better
 % performance.

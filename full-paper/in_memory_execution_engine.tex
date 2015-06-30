@@ -370,31 +370,132 @@ the above technique identifies the top-$k$ arms with high probability.
 \end{algorithm}
 }
 
-\stitle{Guarantees.} Note that the two pruning schemes described above have guarantees
-in other settings that do not directly carry over to our setting.
+\stitle{Guarantees on Consistent Distance Metrics.} 
+Note that the two pruning schemes described above have guarantees
+in other settings that do not directly carry over to our setting---for example,
+the MAB setting assumes that each trial samples from a fixed underlying distribution,
+while in fact, our trials correspond to random values across $m$ distributions (groups),
+which are aggregated together to form a utility estimate for a given view. \agp{check prev sentence.}
+Furthermore, they assume that data is randomly sampled, which we do not. 
 In our evaluation, we show that in spite of this limitation, the pruning schemes
 work rather well in practice. 
 We can, however, show that as we sample more and more, the estimated utility
-$\hat{U}$ can be made to be arbitrarily close to $U$ for all aggregate views (\srm{for both pruning techniques?}).
+$\hat{U}$ can be made to be arbitrarily close to $U$ for all aggregate views.
 We can state our claim formally in the following lemma. 
 \papertext{The proof based on 
 Hoeffding's inequality can be found in the extended
-technical report ~\cite{seedb-tr}.}
-\techreport{The proof of this lemma is presented in Section \ref{sec:convergence}.}
+technical report~\cite{seedb-tr}.
+While we show this for $\ell_2$, similar 
+results hold for other distance metrics,
+such as $\ell_1$, EMD, and  Jenson-Shannon metric.}
 % At a high level, the proof
 % involves repeated applications of Hoeffding's inequality to
 % upper and lower-bound $\hat{U}$ within $U$ along with terms 
 % that tend to $0$ as the number of samples increases.
-
-\begin{lemma}
+\vspace{-5pt}
+\begin{lemma} [Consistency]
 Let the target and comparison visualizations
 both have $m$ groups.
-Let $\hat{U}$ denote our estimate of $U$ based on a uniformly random sample 
+Let $\hat{U}$ denote our estimate of the utility $U$ 
+based on a uniformly random sample 
 across all $m$ groups. 
 Then, as the number of samples tends to $\infty$, $\hat{U} \rightarrow U$
 with probability $1-\delta$, for as small $\delta$ as needed.
 \end{lemma}
+\vspace{-5pt}
+We call distance metric that has this property a {\em
+consistent distance metric}.
+Consistent distance metrics allow pruning schemes
+to gather increasingly better estimates of utility values
+over time. 
+In Section~\ref{sec:discussion}, we show that
+both the Confidence Interval and MAB-based pruning schemes work
+well (i.e., have high accuracy while reducing
+effort) 
+on distance metrics that are consistent.
 
+
+
+\techreport{
+
+For the purpose of the proof
+of the lemma above, we focus on the case where the visualization $V_i$
+corresponds to the AVG aggregate. 
+Similar results can be shown for the SUM and STD
+aggregates. 
+Unfortunately, MAX and MIN are not amenable to sampling-based
+optimizations, as is traditionally well-known in the approximate
+query processing literature~\cite{wavelets,dbo}.
+
+Additionally, we focus on the case when $S$ is defined to be
+$\ell_2$, i.e., the Euclidean distance metric. 
+Once again, similar results can be shown for other distance metrics,
+such as the $\ell_1$, the Earth Movers Distance metric, or
+the Jenson-Shannon metric.
+
+We reproduce the utility equation here:
+$ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D)] )$.
+Here, $P$ refers to the probability distribution
+of either the target visualization
+or the comparison visualization.
+$P$ is represented as a normalized vector
+whose entries sum up to $1$.
+\begin{proof} (Sketch)
+Let us say the estimated average for the target visualization
+for each of the groups is $\hat{t}_i$,
+and the estimated averages for the comparison visualization
+for each of the groups is $\hat{c}_i$.
+We further define $\hat{t}$ (respectively $\hat{c}$) to be the estimated sum of
+averages for the target visualization (respectively comparison visualization).
+We let the true values for each of these quantities be the same variables without
+the hats.
+Then, it can be shown that that $U$ evaluates to:
+$$\hat{U} = \frac{\sum{\hc_i^2}}{\hc^2} +  \frac{\sum{\htt_i^2}}{\htt^2} - 2 \frac{\sum{\htt_i \hc_i}}{\hc\htt}$$
+
+
+Now we informally describe the steps of our proof:
+say we sample enough to get $\hc$ within $\epsilon$ of $c$, with a high enough probability,
+and we sample enough to get $\htt$ within $\epsilon$ of $t$, with a high enough probability.
+Then, we have 
+\begin{align*}
+\hat{U} & \geq \frac{\sum{\hc_i^2}}{(c + \epsilon)^2} +  \frac{\sum{\htt_i^2}}{(t + \epsilon)^2} - 2 \frac{\sum{\htt_i \hc_i}}{(c - \epsilon) (t - \epsilon)} \\
+& \geq \frac{\sum{\hc_i^2}}{c^2} (1 - \epsilon ) +  \frac{\sum{\htt_i^2}}{t ^2} (1-\epsilon) - 2 \frac{\sum{\htt_i \hc_i}}{(c - \epsilon) (t - \epsilon)} \\
+& \geq \frac{\sum{\hc_i^2}}{c^2} (1 - \epsilon ) +  \frac{\sum{\htt_i^2}}{t ^2} (1-\epsilon) - 2 \frac{\sum{\htt_i \hc_i}}{ct}(1 + \epsilon^2 + \epsilon) 
+\end{align*}
+Similarly, if we have sampled enough to get the $\hc_i$ and the $\htt_i$ within $\gamma$ close 
+of their actual values, we will have:
+\begin{align*}
+\hat{U} \geq &  \frac{\sum{c_i^2}}{c^2} (1 + f(\gamma)) (1 - \epsilon ) +   \frac{\sum{t_i^2}}{t ^2}  (1 + f(\gamma)) (1-\epsilon) \\ & - 2 \frac{\sum{t_i c_i}}{ct}(1 + h(\gamma))(1 + \epsilon^2 + \epsilon) 
+\end{align*}
+where $f(.)$ and $h(.)$ are small polynomial functions.
+Thus,
+we will have sandwiched $\hat{U}$ from the bottom by $U-\rho$,
+and similarly by $U + \rho'$ from the top.
+$\rho, \rho'$ will be polynomials that depend on $\epsilon$ and $\gamma$.
+Now, we will use the Hoeffding's inequality for the last step of the proof.
+Hoeffding's inequality, when
+applied to a collection of $n$ i.i.d. random variables,
+whose sum is represented by $X$, gives us:
+\begin{equation}
+Pr (|X - E[X]| \geq t) \leq 2 e^{-\frac{2 n t^2}{c^2}}
+\end{equation}
+where $c$ is a bound on the range. 
+If we set the right hand side to some $\delta$, and set $t = \epsilon$,
+we have
+$$ \epsilon = \sqrt{\frac{1}{2 n} \ln \frac{2}{\delta}}$$
+and therefore, as $n$ tends to $\infty$, $\epsilon$ tends to $0$,
+for fixed values of $\delta$.
+The same holds true for $t = \gamma$.
+Thus, $\hat{U}$ will tend to $U$ as the number of samples
+increases to infinity.
+\end{proof}
+
+It is in fact also possible to explicitly derive a number of samples 
+such that $\hat{U}$ is close to $U$ within a certain error bound
+and with a certain probability. 
+}%techreport
+
+\resolved{
 \reviewer{
 	For the MultiArmed
 Bandit pruning, it would be good to discuss whether
@@ -411,12 +512,6 @@ the assumptions of reward distributions would necessarily in this context.
 }
 \srm{Are we sure the above paragraph is correct?  Since we have random samples, I don't see 
 why the reward distribution is changing.  Shouldn't it be the same?}
+}
 
 
-
-% \techreport{\cite{BubeckWV13} provides bounds on the optimality of this heuristic for the
-% MAB setting.
-% Since our problem setup isn't exactly the same, the optimality bounds don't
-% transfer directly.
-% However, as we show in the experimental section, the MAB heuristic performs well
-% on real datasets.}
