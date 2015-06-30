@@ -231,13 +231,13 @@ have, how to ensure that the population of the two distribution is the same?
 % For now, and for most of the paper, however, 
 % That said, our techniques also seamlessly apply to a more general 
 % class of distance metrics described in .
-As outlined in Section \ref{sec:introduction}, \SeeDB determines the utility of 
+\SeeDB determines the utility of 
 visualizations via deviation; visualizations that show different trends in the query
 dataset (i.e. $D_Q$) compared to a reference dataset (called $D_R$) are said to have higher
 utility.
 The reference dataset $D_R$ may be defined as the entire underlying dataset ($D$),
 the complement of $D_Q$ ($D$ - $D_Q$) or data selected by any arbitrary query $Q'$ ($D_{Q'}$).
-The analyst has the option of specifying $D_R$; we use $D$ as the default if the analyst does not specify a reference. 
+The analyst has the option of specifying $D_R$; we use $D_R = D$ as the default if the analyst does not specify a reference. 
 % We discuss in Section~\ref{sec:other_utility_metrics} how other distance metrics can be 
 % incorporated into our system without any changes. 
 Given a view $V_i$, the deviation-based utility of $V_i$ is
