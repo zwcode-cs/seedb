@@ -503,25 +503,7 @@ records seen so far.
 
 \stitle{Multi-Armed Bandit Online Pruning.}
 \label{sec:multi_armed_bandit}
-
-Our second pruning scheme uses an adapative of a Multi-Armed Bandit (MAB)~\cite{bandits, AuerCF02, LaiR85} 
-to identify top views.
-In MAB, an online algorithm chooses from a set of alternatives (arms)
-over a sequence of trials to maximize reward. 
-In our setting, the alternatives correspond to various visualizations and the reward corresponds
-to utility. 
-We note that this is the first time that bandit strategies have been
-applied to the problem of identifying interesting visualizations.
-
-A recently-studied variation of MAB focuses on finding the arms with the highest
-mean rewards~\cite{BubeckWV13, audibert2010best}.
-Under certain \srm{which?} assumptions, 
-this variation is identical to the problem addressed by \SeeDB: our goal is find the views (arms) with the 
-highest utility. \mpv {is it arms or bandits?}.
-Specifically, we adapt the Successive Accepts and Rejects algorithm from \cite{BubeckWV13} 
-to find arms with the highest mean reward. 
-Algorithm~\ref{algo:mab_based_pruning} shows the pseudocode for our pruning technique.
-
+Our second pruning scheme uses Multi-Armed Bandit (MAB)~\cite{bandits, AuerCF02, LaiR85} policies.
 \techreport{The setting of MAB is as follows: a gambler is faced with several slot
 machines (``one-armed bandit''s), each of which has an underlying 
 (unknown) reward distribution. 
@@ -529,13 +511,13 @@ Every play results in a reward from the corresponding machine's
 reward distribution.
 The goal is to devise a {\it strategy} of which machine to play
 at each turn in order to maximize the reward~\cite{bandits}.}
-OLD: A recently-studied variation of MAB focuses on finding the arms with the highest
+A recently-studied variation of MAB focuses on finding the arms with the highest
 mean rewards~\cite{BubeckWV13, audibert2010best}.
 This variation is similar to the problem addressed by \SeeDB: each possible view 
 can be thought of as a one-armed bandit and our goal is find the views with the 
 highest reward (i.e. utility). \reviewer {something werid here}.
 We therefore adapt the Successive Accepts and Rejects algorithm from \cite{BubeckWV13} 
-to find arms with the highest mean reward. END-OLD
+to find arms with the highest mean reward. 
 \techreport{Algorithm~\ref{algo:mab_based_pruning} shows the pseudocode for our pruning technique.}
 % As before, the processing of the input table is divided into phases.
 % In every phase, \SeeDB\ reads in new records and updates the distributions and utilities
@@ -551,42 +533,12 @@ On the other hand, if $\Delta_n$ is higher, the view with the lowest mean is dis
 from the set of views in the running.
 \cite{BubeckWV13} proves that under certain assumptions about reward distributions,
 the above technique identifies the top-$k$ arms with high probability.
-\mpv{put guarantee?}
 
 \reviewer{
 	For the MultiArmed
 Bandit pruning, it would be good to discuss whether
 the assumptions of reward distributions would necessarily in this context.
 }
-\mpv{
-	The MAB setting assumes that each trial samples from the same 
-	underlying reward distribution, which is the reward distribution
-	computed after processing all records. In our setting, however, 
-	the underlying reward distribution changes gradually as we
-	process more records and tends towards the {\em true} reward
-	distribution.
-	We assume that these changes to the distributions are small.
-}
-\srm{Are we sure the above paragraph is correct?  Since we have random samples, I don't see 
-why the reward distribution is changing.  Shouldn't it be the same?}
-
-\begin{algorithm}
-\caption{MAB Based Pruning}
-\label{algo:mab_based_pruning}
-\begin{algorithmic}[1]
-\State viewsInRunning.sortByUtilityMean()
-\State \{$\bar{u}_{i}$\} $\gets$ sorted utility means
-\State $\Delta_1$ $\gets$ $\bar{u}_{1}$ - $\bar{u}_{k+1}$
-\State $\Delta_n$ $\gets$ $\bar{u}_{k}$ - $\bar{u}_{n}$
-\If {$\Delta_1$ < $\Delta_n$}
-\State viewsInRunning.acceptTop()
-\Else
-\State viewsInRunning.discardBottom()
-\EndIf
-\end{algorithmic}
-\end{algorithm}
-
-\mpv{Guarantees from this technique?}
 
 % In MAB, each pull of an arm corresponds to a drawing from a sample
 % the underlying probability distribution of that arm.
@@ -619,29 +571,7 @@ why the reward distribution is changing.  Shouldn't it be the same?}
 \end{algorithm}
 }
 
-\mpv{Note about extensions to other utility metrics.}
-In our evaluation, we show that the above pruning schemes
-work  well in practice. 
-We can also prove, however, that as we sample more and more, the estimated utility
-$\hat{U}$ (\srm{for both pruning techniques?}) will coverge towards to $U$ for all aggregate views.
-We can state our claim formally in the following lemma. 
-\papertext{The proof based on 
-Hoeffding's inequality can be found in the extended
-technical report ~\cite{seedb-tr}.}
-\techreport{The proof of this lemma is presented in Section \ref{sec:convergence}.}
-% At a high level, the proof
-% involves repeated applications of Hoeffding's inequality to
-% upper and lower-bound $\hat{U}$ within $U$ along with terms 
-% that tend to $0$ as the number of samples increases.
 
-\begin{lemma}
-Let the target and comparison visualizations
-both have $m$ groups.
-Let $\hat{U}$ denote our estimate of $U$ based on a uniformly random sample 
-across all $m$ groups. 
-Then, as the number of samples tends to $\infty$, $\hat{U} \rightarrow U$
-with probability $1-\delta$, for any desired $\delta$.
-\end{lemma}
 
 
 

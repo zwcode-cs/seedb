@@ -110,7 +110,7 @@ previous generations, raising questions about how this change affects
 wider society.
 Consequently, the journalist is examining how marital-status
 impacts socio-economic indicators like education and income, among others.
-She uses the Census data~\cite{census}\agp{add citation} 
+She uses the Census data~\cite{census}
 to conduct her analysis comparing {\em unmarried} US adults
 to {\em married} US adults.
 
@@ -206,7 +206,6 @@ and married adults.
 % apps shows the {\it opposite} trend (e.g. Figure \ref{fig:staplerX-a}), and less interesting if the overall trend for all apps followed a similar trend.
 % (Figure \ref{fig:staplerX-b}).  
 \end{example}
-\agp{If we don't refer to the table, we should get rid of it.}
 
 %Since our goal with \SeeDB is to make visual analytics faster, we adopt a metric
 %that prefers visualizations that show interesting or surprising trends in data.
@@ -295,20 +294,27 @@ Their recommendations only implement rules-of-thumb
 regarding chart aesthetics such as choice of
 chart type, colors and marks, borrowed from
 classical work by Mackinlay~\cite{Mackinlay:1986:ADG:22949.22950} and Cleveland and Gill~\cite{cleveland1984graphical}.
-\mpv{Depending on discussion flow: As noted previously, in addition to our deviation-based metric,
+Depending on discussion flow: As noted previously, in addition to our deviation-based metric,
 there are of course many other dimensions (aesthetics, user
 preferences, etc.) that can influence the perceived utility of a
 visualization, a few of which we discuss in Section
 \ref{sec:discussion}, leaving a detailed investigation of such metrics
-for future work.}
-\agp{I think important to keep sentence.}
-
+for future work.
 %No existing system that we are aware of leverages insights about the underlying data
 %into make visualization recommendations. \mpv{does this sound ok?} \agp{I would start with
 %the statement that no current system supports the recommending of interesting visualizations
 %where the target dataset shows some discrepancies not found in the underlying data.
 %Then say the first two lines.}
 
+% In this paper, we present \SeeDB, an end-to-end visualization platform 
+% where analysts can both generate their own visualizations (like Tableau or Spotfire), 
+% or get data-driven recommendations on demand.
+\mpv{This doesn't quite fit here}.
+We design \SeeDB as an end-to-end visualization platform where analysts can both generate 
+their own visualizations (like Tableau or Spotfire), or get data-driven recommendations on demand.
+We chose to support both modes of visualizations (automated and manual) in \SeeDB because we 
+believe that a {\em mixed-initiative interface}~\cite{mixed_initiative} is essential for keeping 
+analysts in the loop and allowing them to drive the analysis process.
 Our system, \SeeDB, is built as a middleware layer that can run on any 
 relational database system (row or column store), 
 seamlessly benefiting from optimizations to 

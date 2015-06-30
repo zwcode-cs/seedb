@@ -1,89 +1,7 @@
 %!TEX root=document.tex
-\section{{\large \SeeDB\ } Execution Engine}
-The goals of the \SeeDB execution engine are to efficiently
-compute the utility of a large number of aggregate views
-and to then find and display the $k$ visualizations with the highest utility.
 
-\subsection{Basic Implementation} \label{sec:dbms_exec_engine}
-
-As discussed in Section \ref{sec:system_architecture},
-\SeeDB is designed to run on top of a SQL-based relational 
-engine.  Recall that the \SeeDB execution engine takes as input a set of 
-aggregate view stubs, i.e., triples of the form
-$(a, m, f)$, where $a$ is the dimension attribute, $m$ is the measure,
-and $f$ is the aggregation function.
-In the basic implementation, for each aggregate view stub, \SeeDB generates
-a SQL query corresponding to the target
-and comparison view, and issues
-the two queries, one at a time, to the database.
-It repeats this process for each aggregate view stub.
-As the results are received, \SeeDB can compute the
-distance between the target and comparison view
-distributions, and identify the $k$ visualizations
-with highest utility. These visualizations are then displayed
-to the analyst.
-
-
-Naturally, this basic implementation has many inefficiencies.
-In a table with $a$ dimensions, $m$ measures, and $f$ aggregation functions, 
-$2\times f \times a \times  m$ queries must be executed independently.  
-As we show in Section~\ref{sec:experiments}, this can >100s for
-large data sets (with hundreds of attributes and millions of rows).
-These latencies are unacceptable for interactive use.
-In this paper, we propose two different suites of optimizations to deal with these
-inefficiencies.
-The first type of optimizations, discussed in Section~\ref{sec:sharing_opt}, involve work {\em sharing},
-i.e., combining view-computation queries as much as possible.
-The second type of optimizations, discussed in Section~\ref{sec:in_memory_execution_engine}, involve {\em pruning}, where some aggregate views are not completely evaluated over the whole data set.
- The second suite of optimizations
-are approximate, in that they, since they use utility estimates, there is a small likelihood that the returned visualizations may not have the highest utility.
-
-\reviewer {
-	D2.4 Regarding the number of queries to be executed: where are the f
-functions to be found? I think there is a (minor) inconsistency: if there are
-a*f*m*2 queries to be executed, why in Section 4.2 do you have (a1 , m1 ,
-f1 ), (a1 , m2, f2) ...(a1, mk, fk)?
-}
-%  in rare occasions may lead
-% to inaccurate results (in that the visualizations
-% displayed need not be the ones with the best utilities).
-
-% Our first instantiation of the \SeeDB\ engine uses SQL queries in a
-% traditional database system to evaluate the utility of each view.
-% %We explore this design because it enables \SeeDB\ to be easily integrated 
-% %with visualization systems that use DBMSs for data storage (e.g. Tableau, 
-% %Spotfire etc).
-% The advantage of this design is that it benefits
-% from all the features of a standard relational engine and can be easily integrated into systems
-% that use DBMSs for data storage.
-% However, the efficiency of this approach is somewhat limit because
-% the only way to interact with data is via SQL queries.
-% %On the downside, this design limits \SeeDB\ to using the API
-% %exposed by the DBMS; essentially, 
-% %\SeeDB\ can only open/close connections to the
-% %database and execute one or more SQL queries. 
-% %Since we have no control over how queries are executed or access to intermediate
-% %results, 
-
-% Given a set of view stubs provided to the execution engine, conceptually,
-% the basic approach proceeds as follows:
-% (1) for each view, we generate SQL queries for the target and
-% comparison view---recall that these are aggregate queries, where
-% the target view is the aggregate query corresponding 
-% to the visualization being considered, and the comparison
-% view is the aggregate query that is being compared against,
-% for the purpose of utility computation;
-% see Section \ref{sec:problem_statement}, 
-% (2) we execute each view query independently on the DBMS, 
-% (3) the results of each query (i.e. the aggregated values) are processed and
-% normalized to compute the target and comparison distributions, 
-% (4) we compute utility for each view 
-% and select the top-$k$ views with the largest utility,
-% which are then sent to the frontend.
-% This strawman approach is clearly inefficient since it examines every possible view and 
-% executes each view query independently.
-
-\subsection{Sharing-Based Optimizations}\label{sec:sharing_opt}
+\subsection{Sharing-based Optimizations}
+\label{sec:sharing_opt}
 In this section, we focus on minimizing total execution time
 by reducing the
 total number of queries issued to the database
@@ -93,20 +11,21 @@ of multi-query optimization~\cite{DBLP:journals/tods/Sellis88}; we discuss the
 relationship in more detail in Section~\ref{sec:related_work}.
 Specifically, we apply the following optimizations:
 
-\stitle{Combine Multiple Aggregates}: All aggregate view queries 
+\stitle{Combine Multiple Aggregates}: Aggregate view queries 
 with the same group-by attribute can be 
-rewritten as a single, combined query. So instead of executing
-queries for views $(a_1$, $m_1$, $f_1)$, $(a_1$, $m_2$, $f_2)$ \ldots $(a_1$, $m_k$, $f_k)$
-independently, we combine them into a single view represented by
+rewritten as a single query with multiple aggregations. 
+So instead of executing
+(queries for) views $(a_1$, $m_1$, $f_1)$, $(a_1$, $m_2$, $f_2)$ \ldots $(a_1$, $m_k$, $f_k)$
+independently, \SeeDB combines them into a single view represented by
 $(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$.  
 We have found that there is minimal to no impact on latency 
-to grouping as many aggregates as possible in both row and column stores. 
+for combining aggregates in both row and column stores. 
 
-\stitle{Combine target and comparison view query}:
-Since the target view and comparison views only differ in the subset of data
-that the query is executed on, we rewrite these two view queries as
-one. For instance, the target and comparison view queries $Q1$ and $Q2$
-shown below, can be combined into a single query $Q3$.
+\stitle{Combine target and reference view query}:
+Since the target view and reference views differ only in the subset of data
+the query is executed on, \SeeDB rewrites these two view queries as
+one. For instance, the target and reference view queries $Q1$ and $Q2$
+shown below can be combined into a single query $Q3$.
 \vspace{-5pt}
 \begin{align*} 
 Q1 = &{\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt WHERE \ \ x\ <\ 10\
@@ -118,77 +37,28 @@ END}\\
 \end{align*}
 
 \stitle {Parallel Query Execution}:
-  We execute multiple view queries in parallel since we expect co-executing queries 
-  to share buffer pool pages and reduce disk accesses times. 
+  \SeeDB executes multiple view queries in parallel since co-executing queries can often
+ share buffer pool pages and reduce disk accesses times. 
   However, the precise number of parallel queries needs to be tuned to take into account 
-  buffer pool contention, locking and cache line contention \cite{Postgres_wiki}. 
-  %As a result, we must identify the optimal number of parallel queries for our workload.
+  buffer pool contention, locking, and cache line contention, among others factors~\cite{Postgres_wiki}.  
 
-% We can do much better if we can use a single scan to evaluate multiple views simultaneously.
-
-% In fact, our ideal operator $\mathcal{O}$ would perform a single scan of the
-% data and compute all query results in one pass to return the top-$k$ views.
-% Current database systems do not support this functionality.
-% A handful of systems have recently introduced the SQL GROUPING
-% SETS\footnote{GROUPING SETS allow the simultaneous grouping of query results by
-% multiple sets of attributes.} functionality that could be used to support this
-% operation. However, the grouping sets operator will not scale to tables with 
-% a large number of attributes due to the large size of intermediate results.
-% size of the eventual result maintained in memory will be $2 \times a \times f
-% \times m$ attributes, multiplied by the size of an aggregate distribution.
-% Furthermore, as we show in Section \ref{sec:in_memory_execution_engine},
-% evaluating all views for the entire dataset is unnecessary and inefficient. 
-% We can achieve much better performance by aggressively pruning low-utility
-% views on the fly.
-
-% Without this ideal operator $\mathcal{O}$,
-% our optimizations minimize table scans in two ways: (1) minimize the total number of
-% queries by intelligently combining queries, and (2) reduce the total
-% execution time by running queries in parallel. 
-% Our DBMS-backed execution engine for \SeeDB\ is agnostic towards the
-% particular DBMS used to execute queries.
-% However, because of significant differences in the way that row stores and
-% column stores organize data, some of the optimizations described below
-% will be more powerful in row stores and may actually hurt performance in column
-% stores. In our experimental evaluation (Section \ref{sec:experiments}), we study
-% the relative advantages of each of our optimizations for row and column stores.
-% The optimizations supported by \SeeDB\ are described below.
-
-% \subsubsection {Combine Multiple Aggregates} 
-% A large number of view queries have the same group-by attribute but different
-% aggregation attributes. 
-% Therefore, \SeeDB\ combines all view queries with the same
-% group-by attribute into a single, combined view query. For instance, instead of executing
-% queries for views $(a_1$, $m_1$, $f_1)$, $(a_1$, $m_2$, $f_2)$ \ldots $(a_1$, $m_k$, $f_k)$
-% independently, we can combine the $n$ views into a single view represented by
-% $(a_1, \{m_1, m_2\ldots m_k\}$, $\{f_1, f_2\ldots f_k\})$. We demonstrate later
-% on (Section \ref{sec:expts_dbms_execution_engine})  that this optimization
-% offers a speed-up roughly proportional to the number of measure attributes.
-
-\stitle {Combine Multiple Group-bys}:
-% Efficient cube materialization is a problem well studied in the OLAP literature.
-% Since the views considered by \SeeDB\ can be thought of as projections of the OLAP
-% cube, we can adapt efficient materialization techniques to our problem.
-After applying our multiple aggregate optimization, we are left with a number of 
-queries with a group-by on a single aggregate.
-We can of course group these together into a single query, but each additional 
-group by attribute will increase the number of groups, and (possibly) lead to slower
-overall performance when the number of groups becomes large.  
-Therefore, \SeeDB\ has to determine the optimal way of executing these multi-attribute
-{\it group-by} queries.
-%Savvy readers will recognize this problem as being a special case of materializing
-%an OLAP cube~\cite{olap_cube}.
-%Views evaluated by \SeeDB\ are projections of the OLAP cube and we can adapt techniqes
-%from the cube literature~\cite{} to find the optimial execution strategy for these queries.
-% There are few differences in the \SeeDB\ setting and traditional OLAP cubes: (1) OLAP
-% cube materialization is performed inside the database giving more flexibility in the
-% techniques used; in \SeeDB\ every evaluation corresponds to a separate query; (2) 
-%Specifically, we work with a similar problem formulation: 
-Our specific problem is as follows: given a space budget $\mathcal{S}$,
-and estimates of sizes of views (i.e. number of rows in the result), we need to find the optimal
-way to combine multiple single-attribute group-by queries into multi-attribute group-by queries.
-If we know the number of distinct values for each attribute, we can estimate the
-size of a view containing dimension attributes $a_i$ and $a_j$ as $|a_i|\times |a_j|$.
+\stitle {Combine Multiple GROUP BYs}:
+\mpv{Review again.} After applying our multiple aggregates optimization, \SeeDB is left with a number of 
+queries with multi-attribute aggregations but only single-attribute groupings.
+These queries can be further combined to take advantage of multi-attribute grouping.
+However, unlike combining multiple aggregates, the addition of a grouping attribute can 
+significantly increase the number of groups that must be maintained and (possibly)
+lead to slower overall performance for large number of groups.
+We claim (and verify in Section \ref{sec:experiments}) that grouping can benefit 
+performance so long as memory utilization for grouping stays under a threshold. 
+% Therefore, \SeeDB has to determine the optimal way of combining multiple GROUP BY queries.
+% Consequently, our specific problem is as follows: 
+Given a memory budget $\mathcal{S}$,
+and estimates of the number of distinct values for each attribute, we must determine the 
+optimal grouping of single-attribute GROUP BY queries into multi-attribute GROUP BYs.
+Note that knowledge of the number of distinct values for each attribute lets us estimate the
+size of any view; for instance, the size of a view containing dimension attributes $a_i$ and $a_j$ 
+can be estimated simply as $|a_i|\times |a_j|$.
 Formally, our problem becomes:
 \vspace{-5pt}
 \begin{problem}[Optimal Grouping]
@@ -208,278 +78,9 @@ such that the estimated size of any query result is below $\mathcal{S}$.
 We use the standard first-fit algorithm~\cite{first-fit} to find the optimal
 grouping of dimension attributes.
 
-
-
-% The first-fit algorithm works as follows:
-% on initialization, all groups $A_1, \ldots, $ $A_l$ are empty.
-%   For each dimension attribute, considered in an arbitrary order, place it in the first group
-%   $A_i$ that it can ``fit into'', i.e., the worst case
-%   number of distinct values for that $A_i < \tau$.
-%   For bin-packing, this algorithm has a guarantee of using up to 1.7X more 
-%   bins than necessary: here, this translates to up to 1.7X more groups than necessary.
-% Notice that since this grouping is independent of the input query, we can
-% perform grouping offline using more computationally expensive techniques as
-% well.
-
-
-% since we now store the aggregate for every combination
-% of $a_1, a_2, \ldots, a_n$, 
-% the number of aggregates that need to be recorded 
-% is the number of distinct combinations
-% of $(a_1, \ldots, a_n)$, which, in the worst case, 
-% is proportional to $\prod_i |a_i|$.
-% Thus, the number of aggregates that need to be recorded 
-% grows exponentially (in the worst case) in the
-% number of group-by attributes. 
-% We will show (Section \ref{sec:experiments}) that 
-% the time to execute a query with multiple group-by attributes does indeed
-% depend on the number of distinct values present in the 
-% combination of dimension attributes. 
-% From a DBMS perspective, this is expected because keeping track of a large
-% number of aggregates impacts computational time (e.g. for sorting in sort-based aggregate)
-% as well as temporary storage requirements (e.g. for hashing in hash-based
-% aggregate) making this technique ineffective for large numbers of
-% distinct values.
-
-% Consequently, when we combine group-by attributes, we must ensure that the
-% number of distinct values remains {\it small enough}, below a specific 
-% threshold $\tau$, that we determine based on system parameters.
-% For simplicity, we ignore the correlations between dimension attribute values,
-% and work with worst-case estimates. 
-% The upper limit on the number of distinct values for a given combination of
-% group-by attributes is given by the product of the number of distinct values
-% for each attribute.
-% For example, if we combine three dimension attributes $a_i$, $a_j$ and $a_k$
-% with $|a_i|$, $|a_j|$ and $|a_k|$ distinct values respectively, the maximum number of
-% distinct groups is $|a_i|\times |a_j| \times |a_k|$.
- % The number of distinct groups in turn depends on the correlation between
- % values of attributes that are being grouped together. 
- % For instance, if two
- % dimension attributes $a_i$ and $a_j$ have $n_i$ and $n_j$ distinct values
- % respectively and a correlation coefficient of $c$, the number of distinct
- % groups when grouping by both $a_i$ and $a_j$ can be approximated by
- % $n_i$$\ast$$n_j$$\ast$(1-$c$) for $c$$\neq$1 and $n_i$ for $c$=1 ($n_i$ must
- % be equal to $n_j$ in this case).
-  
-% Therefore, our problem can be stated as follows:
-% \begin{problem}[Optimal Grouping Optimization]
-% Given a set of dimension attributes $A$ = \{$a_1$\ldots$a_n$\}, divide the
-% dimension attributes in $A$ into groups $A_1, \ldots, A_l$ (where $A_i$ is some
-% subset of $A$ and $\bigcap A_i$=$A$) such that the worst-case number of distinct values
-% for each group is below $\tau$.
-% \vspace{-5pt}
-% \end{problem}
-
 \stitle{Other Optimizations}: 
-To further speedup processing, we can pre-compute results for 
-static views (e.g. comparison views on full tables) or operate on
+To further speedup processing, \SeeDB can also pre-compute results for 
+static views (e.g. reference views on full tables) or operate on
 pre-computed data samples.  Such optimizations are orthogonal to the
-problem of efficiently evaluating a large number of views, which we will have to
-do even in the presence of pre-computation or sampling, so we don't focus on them here.
-
-
-% In the experimental evaluation, we show that the optimizations described in this section can lead to speedups of XXX.
-% The absolute latency numbers are in the interactive range for small and medium datasets, but we find that for larger datasets latency falls in the 50-150 range which is unacceptable for an interactive system.
-
-%do not address the more important challenge of evaluating a large number of views.
-
-%In Section \ref{XXX} we show that this optimization gives us a speedup of XXX.
-
-% Given that the problem is NP-Hard, we use two strategies to group dimension attributes;
-% the first strategy is adapted from the standard first-fit approximation algorithm~\cite{first-fit}
-% for bin-packing; the second strategy is adapted from Huffman coding~\cite{huffman-codes}.
-  
-% \squishlist
-% \item {\bf First-Fit}: The algorithm is simple;
-% at first, all groups $A_1, \ldots, $ $A_l$ are empty.
-% For each dimension attribute, considered in an arbitrary order, place it in the first group
-% $A_i$ that it can ``fit into'', i.e., the worst case
-% number of distinct values for that $A_i < \tau$.
-% For bin-packing, this algorithm has a guarantee of using up to 1.7X more
-% bins than necessary: here, this translates to up to 1.7X more groups than necessary.
-  % In this trategy, we set an upper limit $V$ on the
-  % number of distinct groups that any combination of dimension attributes can
-  % produce.
-  % Now, suppose that each dimension attribute $a_i$ $\in A$ has $n_i$ distinct
-  % values.
-  % We cast the problem of finding the optimal grouping of dimension attributes as
-  % a version of bin-packing.
-  % Let each dimension attribute $a_i$ be an item with volume $log(n_i)$ and
-  % suppose that we are given bins of volume $log(V)$.
-  % Then finding the optimal grouping of attributes is exactly equivalent to
-  % finding the optimal packing of attribute items into the minimum number of
-  % bins.
-%   \item {\bf Huffman-Grouping}: Here, the algorithm works as follows:
-%   we start by assigning each dimension attribute its own group,
-%   and maintain these groups in sorted ascending order.
-%   At each step, we take the two smallest groups out of this sorted list, combine
-%   the dimension attributes in both of them into one new group, and then
-%   add this new group to the mix and re-sort.
-%   We keep doing this until we cannot combine the two smallest groups any more
-%   without violating the threshold $\tau$.
-% \squishend
-% If this was vanilla bin-packing, the first-fit algorithm would be sufficient to
-% find near-optimal groupings. 
-% The advantage of having the huffman-grouping algorithm is the following: Instead
-% of having a hard threshold $\tau$ on the worst-case number of distinct groups,
-% the huffman-grouping algorithm can also adapt to the case where we
-% are instead provided a black-box function that, given a particular
-% grouping of attributes, returns a value for the ``goodness'' of the combination.
-% As we will see in Section~\ref{sec:analytical_model}, 
-% we develop an analytical model for the performance (i.e., the execution time)
-% of the DBMS-backed execution engine. 
-% This model can be used to derive this black-box function.
-% Given a black-box function, the huffman-grouping algorithm operates
-% as follows: until the ``goodness'' of the grouping keeps increasing 
-% (i.e., the predicted execution time keeps decreasing),
-% repeatedly combine the two smallest groups into a single group.
-% We experimentally evaluate both strategies in Section \ref{sec:experiments}.
-% 
-% \srm{In 6.2.2., we mention the model.    Are we keeping this?  I think it could be ok to put the details in the appendix if we can show one graph that illustrates that the model can be used to predict how many groups to choose, etc.}
-
-% \subsubsection{Combine target and comparison view query}
-% \label{subsec:target_comparison_view}
-% Since the target view and comparison views only differ in the subset of data
-% that the query is executed on, we can easily rewrite these two view queries as
-% one. For instance, for the target and comparison view queries $Q1$ and $Q2$
-% shown below, we can add a group by clause to combine the two queries into $Q3$.
-% \begin{align*} 
-% Q1 = &{\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt WHERE \ \ x\ <\ 10\
-% GROUP \ \ BY} \ a \\
-% Q2 = &{\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D\  {\tt GROUP \ \ BY} \ a \\
-% Q3 = &{\tt SELECT \ } a, f(m), {\tt CASE\ IF\ x\ <\ 10\ THEN\ 1\ ELSE\ 0\
-% END}\\ 
-% &as\ g1,\ 1\ as\ g2 \ \ {\tt FROM} \ D\ {\tt GROUP \ \ BY} \ a,\ g1,\ g2
-% \end{align*}
-% This rewriting allows us to obtain results for both queries in a single table
-% scan. The impact of this optimization depends on the selectivity of the
-% input query and the presence of indexes. When the input query is less selective,
-% the query executor must do more work if the two queries are run separately. In
-% contrast, in the presence of an index, running selective queries independently
-% may be faster.
-% \srm{In 4.2.3., I don't understand why the combined query wouldn't always be faster.  It seems like you are replacing two scans with one, which should just be better.  How could it not be (unless there are very selective filter predicates that aren't show in the example???)}
-% \agp{I agree.}
-
-% \subsubsection {Combine Multiple Group-bys}
-% \label{subsec:mult_gb}
-%   Similar to the multiple aggregates optimization, another optimization
-%   supported by \SeeDB\ is to combine multiple queries with different group-by
-%   attributes into a single query with multiple group-by attributes.
-%   For instance, instead of executing queries for views $(a_1$, $m_1$, $f_1)$,
-%   $(a_2$, $m_1$, $f_1)$ \ldots $(a_n$, $m_1$, $f_1)$ independently, we can
-%   combine the $n$ views into a single view represented by $(\{a_1, a_2\ldots
-%   a_n\}$, $m_1$, $f_1)$ and post-process results.
-
-% Unlike the previous optimization, where the speed-up is proportional to the
-% number of view queries combined, in this case, the situation is not as straightforward. 
-% The reason for this is the following:
-% since we now store the aggregate for every combination
-% of $a_1, a_2, \ldots, a_n$, 
-% the number of aggregates that need to be recorded 
-% is the number of distinct combinations
-% of $(a_1, \ldots, a_n)$, which, in the worst case, 
-% is proportional to $\prod_i |a_i|$.
-% Thus, the number of aggregates that need to be recorded 
-% grows exponentially (in the worst case) in the
-% number of group-by attributes. 
-% We will show (Section \ref{sec:experiments}) that 
-% the time to execute a query with multiple group-by attributes does indeed
-% depend on the number of distinct values present in the 
-% combination of dimension attributes. 
-% From a DBMS perspective, this is expected because keeping track of a large
-% number of aggregates impacts computational time (e.g. for sorting in sort-based aggregate)
-% as well as temporary storage requirements (e.g. for hashing in hash-based
-% aggregate) making this technique ineffective for large numbers of
-% distinct values.
-
-% Consequently, when we combine group-by attributes, we must ensure that the
-% number of distinct values remains {\it small enough}, below a specific 
-% threshold $\tau$, that we determine based on system parameters.
-% For simplicity, we ignore the correlations between dimension attribute values,
-% and work with worst-case estimates. 
-% The upper limit on the number of distinct values for a given combination of
-% group-by attributes is given by the product of the number of distinct values
-% for each attribute.
-% For example, if we combine three dimension attributes $a_i$, $a_j$ and $a_k$
-% with $|a_i|$, $|a_j|$ and $|a_k|$ distinct values respectively, the maximum number of
-% distinct groups is $|a_i|\times |a_j| \times |a_k|$.
-%  % The number of distinct groups in turn depends on the correlation between
-%  % values of attributes that are being grouped together. 
-%  % For instance, if two
-%  % dimension attributes $a_i$ and $a_j$ have $n_i$ and $n_j$ distinct values
-%  % respectively and a correlation coefficient of $c$, the number of distinct
-%  % groups when grouping by both $a_i$ and $a_j$ can be approximated by
-%  % $n_i$$\ast$$n_j$$\ast$(1-$c$) for $c$$\neq$1 and $n_i$ for $c$=1 ($n_i$ must
-%  % be equal to $n_j$ in this case).
-  
-% Therefore, our problem can be stated as follows:
-% \begin{problem}[Optimal Grouping Optimization]
-% Given a set of dimension attributes $A$ = \{$a_1$\ldots$a_n$\}, divide the
-% dimension attributes in $A$ into groups $A_1, \ldots, A_l$ (where $A_i$ is some
-% subset of $A$ and $\bigcap A_i$=$A$) such that the worst-case number of distinct values
-% for each group is below $\tau$.
-% \vspace{-5pt}
-% \end{problem}
-% Notice that the problem as stated above is isomorphic to the NP-Hard
-% {\em bin-packing} problem~\cite{garey}: to see this, we let each dimension attribute
-% $a_i$ correspond to an item in the bin-packing problem with weight $\log (|a_i|)$,
-% and we set the threshold on the bin size to be $\log \tau$,
-% then packing items into bins is identical to finding groups $A_1, \ldots, A_l$,
-% such that the worst-case number of distinct values is below $\tau$.
-% Thus, the problem as stated above is NP-Hard.
-
-% We use the standard first-fit algorithm~\cite{first-fit} to find the optimal
-% grouping of dimension attributes.
-% The first-fit algorithm works as follows:
-% on initialization, all groups $A_1, \ldots, $ $A_l$ are empty.
-%   For each dimension attribute, considered in an arbitrary order, place it in the first group
-%   $A_i$ that it can ``fit into'', i.e., the worst case
-%   number of distinct values for that $A_i < \tau$.
-%   For bin-packing, this algorithm has a guarantee of using up to 1.7X more 
-%   bins than necessary: here, this translates to up to 1.7X more groups than necessary.
-% Notice that since this grouping is independent of the input query, we can
-% perform grouping offline using more computationally expensive techniques as
-% well.
-
-  % \subsubsection {Parallel Query Execution}
-  % \label{subsec:parallel_exec}
-  % While the above optimizations reduce the number of queries executed, we can
-  % further speedup \SeeDB\ processing by executing view queries in parallel. When
-  % executing queries in parallel, we expect co-executing queries to share pages in the
-  % buffer pool for scans of the same table, thus reducing disk accesses and
-  % therefore the total execution time. 
-  % However, a large number of parallel queries can lead to poor performance for
-  % several reasons including buffer pool contention, locking and cache line
-  % contention \cite{Postgres_wiki}. 
-  % As a result, we must identify the optimal number of parallel queries for our workload.
-  
-  % We do observe a reduction in the
-  %overall latency when a small number of queries are executing in parallel;
-  % however, the advantages disappear for larger number of queries running in
-  % parallel. We discuss this further in the evaluation subsection.
-% \subsubsection{Other Optimizations}
-% To further speedup \SeeDB we can pre-compute various partial results.
-% For example, in the case where our comparison view is constructed from the
-%   entire underlying table (Example 1 in Section \ref{sec:introduction}),
-%   comparison views are the same irrespective of the input query.
-% Therefore, we can precompute all possible comparison views once and store
-%   them for future use. 
-%   Similarly, if we precompute a sample of the table being queried, we can run
-% all view queries against this table to pick the top-$k$ views and only evaluate
-% those views on the entire dataset.
-% We do not experimentally evaluate these optimizations because while these
-% problems reduce the computation required by \SeeDB, the
-% challenges related to evaluating a large number of views (whether limited to
-% target views or limited to a sample) remain unaddressed.
-%   comparisons. If the dataset has $a$ dimension and
-%   $m$ measure attributes, 
-%   pre-computing comparison views would add $a \times m$
-%   tables. This corresponds to an extra storage of $O(a\times m \times n \times f)$ where $n$
-%   is the maximum number of distinct values in any of the $a$ attributes,
-%   and $f$ is the number of aggregation functions. 
-%   Note that pre-computation cannot be used in situations where the comparison
-%   view depends on the target view (Example 2) or is directly specified by the
-%   user (Example 3).
-%   
-
-
+problem of efficiently evaluating a large number of views, which we must address
+even in the presence of pre-computation or sampling.
