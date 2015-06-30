@@ -3,12 +3,9 @@
 
 \subsection{Pruning-Based Optimizations}
 \label{sec:pruning_opt}
-Although it is possible to construct hundreds of potential aggregate
-visualizations for a typical dataset, only a fraction of these visualizations 
-are relevant to the user.
-Most visualizations are low-utility and computational resources
+In practice, most visualizations are low-utility and computational resources
 are wasted in their computation.
-Therefore, as described in the architecture overview, at the end of every phase, 
+Therefore, as described earlier, at the end of every phase, 
 the execution engine uses pruning optimizations to determine which 
 aggregate views to discard.
 Partial results for each view based on the data processed
@@ -18,35 +15,8 @@ The \SeeDB execution engine supports two pruning schemes. The first uses
 confidence-interval techniques to bound utilities of views, while the second uses
 multi-armed bandit allocation strategies to find top utility views.
 
-\reviewer {
-	D2.5 The horizontal partitioning is never detailed: how is it done? How is the
-number of fragments decided?
-}
-\mpv{needs to say in architecture}
-%We evaluate both of these schemes in our experiments.
 
-\techreport{
-\begin{algorithm}[h]
-\caption{Pruning Framework}
-\label{algo:custom_exec_engine}
-\begin{algorithmic}[1]
-\State viewsInRunning $\gets$ \{all views\}
-\State currPhase $\gets$ 0
-\While {currPhase.hasNext()}
-\State processNextPartition()
-%\State updateUtilityEstimates()
-\If {currPhase.End()}
-\State pruneViews(viewsInRunning)
-\State currPhase.Next()
-\EndIf
-% \If {stoppingCondition.True()}
-% \State break
-% \EndIf
-\EndWhile
-\State return viewsInRunning.sort().getTopK()
-\end{algorithmic}
-\end{algorithm}
-}
+
 
 
 \stitle{Confidence Interval-Based Pruning.}
@@ -54,7 +24,7 @@ number of fragments decided?
 Our first pruning scheme uses worst-case statistical confidence intervals to
 bound view utilities.
 This technique is similar to top-k based pruning algorithms developed 
-in other contexts ~\cite{DBLP:conf/pods/FaginLN01, 
+in other contexts~\cite{DBLP:conf/pods/FaginLN01, 
 DBLP:conf/vldb/IlyasAE04, DBLP:conf/ICDE/ReDS07}.
 Our scheme works as follows: during each phase,
 we keep an estimate of the mean utility for every aggregate view $V_i$ and a
@@ -65,18 +35,6 @@ At the end of a phase, we use the following rule to prune low-utility
 views:
 {\em If the upper bound of the utility of view $V_i$ is lesser
 than the lower bound of the utility of $k$ or more views, then $V_i$ is discarded.}
-
-\begin{figure}[h]
-\vspace{-10pt}
-\centerline{
-\hbox{\resizebox{5cm}{!}{\includegraphics[trim=0mm 0mm 0mm 0mm, 
-clip=true]{Images/confidence_pruning.pdf}}}}
-\vspace{-10pt}
-\caption{Confidence Interval based Pruning}
-\label{fig:conf_interval}
-\vspace{-15pt}
-\end{figure}
-
 To illustrate, suppose a dataset has 4 views $V_1$ \ldots $V_4$ and we want to 
 identify the top-$2$ views.
 Further suppose that at the end of phase $i$,
@@ -94,6 +52,18 @@ $V_2$, and it will not appear in the top-$2$ views.
 \papertext{Pseudocode for our pruning scheme can be found in our technical report~\cite{seedb-tr}.}
 \techreport{We state the algorithm formally in
 Algorithm~\ref{algo:ci_based_pruning}.}
+
+\begin{figure}[h]
+\vspace{-10pt}
+\centerline{
+\hbox{\resizebox{8cm}{!}{\includegraphics[trim=0mm 112mm 0mm 40mm, 
+clip=true]{Images/confidence_pruning.pdf}}}}
+%\vspace{-90pt}
+\caption{Confidence Interval based Pruning}
+\label{fig:conf_interval}
+\vspace{-10pt}
+\end{figure}
+
 
 
 % Views $V_1$ and $V_2$ have the highest estimates for utility so far.
@@ -151,8 +121,8 @@ $$
 \le \delta.
 $$
 }
-
 \end{theorem}
+\vspace{-5pt}
 In our setting, each $Y_i$ corresponds to the an estimate of utility computed based on the
 records seen so far. 
 % estimates of utility that we 
@@ -319,12 +289,11 @@ records seen so far.
 
 \stitle{Multi-Armed Bandit Pruning.}
 \label{sec:multi_armed_bandit}
-Our second pruning scheme adopts the Multi-Armed Bandit (MAB)~\cite{bandits, AuerCF02, LaiR85} 
-setting to identify top views.
+Our second pruning scheme adopts Multi-Armed Bandit strategies (MAB)~\papertext{\cite{bandits}}\techreport{\cite{bandits, AuerCF02, LaiR85}}.
 In MAB, an online algorithm repeatedly chooses from a set of alternatives (arms)
 over a sequence of trials to maximize reward. 
-In our setting, the arms correspond to our set of potential visualizations and the reward corresponds
-to visualization utility. 
+\techreport{In our setting, the arms correspond to our set of potential visualizations and the reward corresponds
+to visualization utility.}
 We note that this is the first time that bandit strategies have been
 applied to the problem of identifying interesting visualizations.
 
@@ -333,8 +302,10 @@ mean rewards~\cite{BubeckWV13, audibert2010best}.
 This variation is identical to the problem addressed by \SeeDB: our goal is 
 find the visualizations (arms) with the  highest utility (reward).
 Specifically, we adapt the Successive Accepts and Rejects algorithm from \cite{BubeckWV13} 
-to find arms with the highest mean reward (Algorithm~\ref{algo:mab_based_pruning}). 
-\mpv{some reviewer comment here?}
+to find arms with the highest mean reward
+\techreport{(See Algorithm~\ref{algo:mab_based_pruning})}. 
+\papertext{The pseudocode can be found in the technical report~\cite{seedb-tr}.}
+\resolved{\mpv{some reviewer comment here?}}
 At the end of every phase (Section \ref{sec:system_architecture}), 
 views that are still under consideration 
 are ranked in order of their utility means. 
@@ -348,8 +319,9 @@ On the other hand, if $\Delta_n$ is higher, the view with the lowest mean is dis
 from the set of views in the running.
 \cite{BubeckWV13} proves that under certain assumptions about reward distributions,
 the above technique identifies the top-$k$ arms with high probability.
-\mpv{put guarantee from this paper?}
+\resolved{\mpv{put guarantee from this paper?}}
 
+\techreport{
 \begin{algorithm}
 \caption{MAB Based Pruning}
 \label{algo:mab_based_pruning}
@@ -365,6 +337,7 @@ the above technique identifies the top-$k$ arms with high probability.
 \EndIf
 \end{algorithmic}
 \end{algorithm}
+}
 
 % In MAB, each pull of an arm corresponds to a drawing from a sample
 % the underlying probability distribution of that arm.

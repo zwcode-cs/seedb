@@ -149,6 +149,30 @@ We next describe the \SeeDB optimizations,
 specifically, the sharing based optimizations in Section~\ref{sec:sharing_opt} and 
 the pruning based optimizations in Section~\ref{sec:pruning_opt}.
 
+\techreport{
+\begin{algorithm}[h]
+\caption{Pruning Framework}
+\label{algo:custom_exec_engine}
+\begin{algorithmic}[1]
+\State viewsInRunning $\gets$ \{all views\}
+\State currPhase $\gets$ 0
+\While {currPhase.hasNext()}
+\State processNextPartition()
+%\State updateUtilityEstimates()
+\If {currPhase.End()}
+\State pruneViews(viewsInRunning)
+\State currPhase.Next()
+\EndIf
+% \If {stoppingCondition.True()}
+% \State break
+% \EndIf
+\EndWhile
+\State return viewsInRunning.sort().getTopK()
+\end{algorithmic}
+\end{algorithm}
+\agp{I've pasted this as is but needs to be updated.}
+}
+
 
 
 \resolved{\agp{Only for historical record, can be deleted if not useful:
