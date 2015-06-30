@@ -36,9 +36,9 @@ We note that supporting basic visualization specification
 capabilities a la Polaris, coupled with automated data-driven recommendations enabling
 the reduction of tedious manual effort,
 implies that \SeeDB will form part of a
-{\em mixed initiative} \agp{cite?} data exploration tool.
+{\em mixed initiative}~\cite{mixed_initiative} data exploration tool.
 
-\agp{delete rest, too detailed:
+\resolved{delete rest, too detailed:
 We note that the {\em mixed-initiative} design of \SeeDB incorporating both manual
 visualization specification and automated recommendations, reflects the
 human-in-the-loop philosophy underlying \SeeDB.
@@ -65,19 +65,24 @@ top of any SQL-compliant database system.
 Figure \ref{fig:sys-arch} depicts the overall architecture of our
 system.  The \SeeDB client is a web-based front-end that captures user
 input and renders visualizations produced by the \SeeDB server.  The
-\SeeDB server is composed of \agp{XXX} main components.  The first
+\SeeDB server is composed of two main components.  The first
 component, the {\it view generator}, is responsible for parsing the
 input query, querying system metadata and generating the list of
 visualization queries that must be evaluated.  
 The goal of the {\em execution engine} is to evaluate the collection of queries
-using the underlying DBMS.
+using the underlying DBMS.\mpv{a couple of words about optimizations -- something
+like -- ... evaluate the collection of queries using our suite of optimization and
+the underlying DBMS}
 The selected aggregate views (with high deviation) 
-will be sent to the \SeeDB client 
+are sent to the \SeeDB client 
 and are displayed as visualization recommendations to the user, 
 who can then interact with these
-visualizations. \agp{I wasn't sure what view processor does... }
+visualizations.
 
-\stitle{Execution Engine.} In evaluating the collection of aggregate views, 
+\stitle{Execution Engine.} 
+\mpv{Add something about why we need two types of optimizations -- lots of queries,
+interactivity etc.}
+In evaluating the collection of aggregate views, 
 the execution engine  
 applies two kinds of optimizations:
 {\em sharing}, where aggregate view queries are combined to share computation
@@ -89,7 +94,12 @@ we develop a {\em phase-based execution framework},
 that proceeds in {\em phases},
 each phase operating on a subset of the dataset.
 For instance, phase $i$ of $n$ examines the $i$th fraction of the dataset
-if divided into $n$ parts. (We will describe how to select $n$ later on.) \agp{Manasi -- if we do this, we need to add a fwd pointer.}
+if divided into $n$ parts. (We will describe how to select $n$ later on.) 
+\agp{Manasi -- if we do this, we need to add a fwd pointer.}
+\mpv{we don't have this data, we can just say that empirically 
+we found that $n$=10 works well.}
+\mpv{We need a line about how phases are defined: something like first 
+100/n\% of the data.}
 The execution engine begins 
 with the entire set of aggregate views under consideration.
 \begin{denselist}
@@ -117,7 +127,8 @@ and one is applied at the end of the phase.
 can be found in the extended technical report~\cite{seedb-tr}.}
 
 We next describe the \SeeDB optimizations,
-specifically, the sharing based optimizations in Section~\ref{sec:sharing_opt} and the pruning based optimizations in Section~\ref{sec:in_memory_execution_engine}.
+specifically, the sharing based optimizations in Section~\ref{sec:sharing_opt} and 
+the pruning based optimizations in Section~\ref{sec:pruning_opt}.
 
 
 

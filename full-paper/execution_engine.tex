@@ -5,9 +5,9 @@
 \subsection{Basic Implementation}
 \label{sec:basic_implementation}
 
-In the basic implementation, for each aggregate view stub, \SeeDB generates
+In the basic implementation of \SeeDB, for each aggregate view, \SeeDB generates
 a SQL query corresponding to the target
-and comparison view, and issues
+and reference view, and issues
 the two queries, one at a time, to the database.
 It repeats this process for each aggregate view stub.
 As the results are received, \SeeDB can compute the
