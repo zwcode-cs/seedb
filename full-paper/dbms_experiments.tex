@@ -1,55 +1,125 @@
 %!TEX root=document.tex
 
 
-\begin{figure*}[t]
+% \begin{figure*}[t]
+% 	\centering
+% 	\begin{subfigure}{0.33\linewidth}
+% 		{\includegraphics[width=6cm] {Images/baselines_by_size.pdf}}
+% 		\caption{Latency vs. Table size}
+% 		\label{fig:baseline_size}
+% 	\end{subfigure}
+% 	\begin{subfigure}{0.33\linewidth}
+% 		\centering
+% 		{\includegraphics[width=6cm] {Images/baselines_by_views.pdf}}
+% 		\caption{Latency vs. Num Views}
+% 		\label{fig:baseline_views}
+% 	\end{subfigure}
+% 	\begin{subfigure}{0.33\linewidth}
+% 		{\includegraphics[width=6cm] {Images/multi_agg.pdf}}
+% 		\caption{Latency vs. number of aggregates}
+% 		\label{fig:multi_agg}
+% 	\end{subfigure}
+% 	\vspace{-10pt}
+% 	\caption{Baseline performance and Effect of Combining Aggregates }
+% 	\vspace{-10pt}
+% 	\label{fig:bank_perf}
+% \end{figure*}
+
+
+\begin{figure}[h]
 	\centering
-	\begin{subfigure}{0.33\linewidth}
-		{\includegraphics[width=6cm] {Images/baselines_by_size.pdf}}
+	\vspace*{-10pt}
+	\begin{subfigure}{0.48\linewidth}
+		\centering
+		\includegraphics[width=4.4cm] {Images/baselines_by_size.pdf}
+		\vspace{-15pt}
 		\caption{Latency vs. Table size}
 		\label{fig:baseline_size}
 	\end{subfigure}
-	\begin{subfigure}{0.33\linewidth}
+	\begin{subfigure}{0.48\linewidth}
 		\centering
-		{\includegraphics[width=6cm] {Images/baselines_by_views.pdf}}
+		\includegraphics[width=4.4cm] {Images/baselines_by_views.pdf}\
+		\vspace{-15pt}
 		\caption{Latency vs. Num Views}
 		\label{fig:baseline_views}
 	\end{subfigure}
-	\begin{subfigure}{0.33\linewidth}
-		{\includegraphics[width=6cm] {Images/multi_agg.pdf}}
+	\vspace{-10pt}
+	\caption{Baseline performance}
+	\label{fig:bank_perf}
+		\vspace{-10pt}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\vspace*{-10pt}
+	\begin{subfigure}{0.48\linewidth}
+		\centering
+		\includegraphics[width=4.4cm] {Images/multi_agg.pdf}
+		\vspace{-15pt}
 		\caption{Latency vs. number of aggregates}
 		\label{fig:multi_agg}
 	\end{subfigure}
-	\vspace{-10pt}
-	\caption{Baseline performance and Effect of Combining Aggregates }
-	\vspace{-10pt}
-	\label{fig:bank_perf}
-\end{figure*}
-
-\begin{figure*}[t]
-	\centering
-	\begin{subfigure}{0.33\linewidth}
+	\begin{subfigure}{0.48\linewidth}
 		\centering
-		{\includegraphics[width=6cm] {Images/parallel_noop.pdf}}
+		\includegraphics[width=4.4cm] {Images/parallel_noop.pdf}\
+		\vspace{-15pt}
 		\caption{Effect of parallelism}
 		\label{fig:parallelism}
 	\end{subfigure}
-	\begin{subfigure}{0.33\linewidth}
+	\vspace{-10pt}
+	\caption{Effect of Group-by and Parallelism}
+\end{figure}
+
+
+\begin{figure}[h]
+	\centering
+	\vspace*{-10pt}
+	\begin{subfigure}{0.48\linewidth}
 		\centering
-		{\includegraphics[width=6cm] {Images/multi_gb_same.pdf}}
+		\includegraphics[width=4.4cm] {Images/multi_gb_same.pdf}
+		\vspace{-15pt}
 		\caption{Latency vs. Num of Groups}
 		\label{fig:multi_gb_same}
 	\end{subfigure}
-	\begin{subfigure}{0.33\linewidth}
+	\begin{subfigure}{0.48\linewidth}
 		\centering
-		{\includegraphics[width=6cm] {Images/multi_gb.pdf}}
+		\includegraphics[width=4.4cm] {Images/multi_gb.pdf}\
+		\vspace{-15pt}
 		\caption{Latency vs. Num Dimensions}
 		\label{fig:multi_gb_bp}
 	\end{subfigure}
 	\vspace{-10pt}
-	\caption{Effect of Combining Group-by attributes and Parallel Query Execution}
-	\label{fig:bank_perf}
+	\caption{Effect of Groups and Dimensions}
 	\vspace{-10pt}
-\end{figure*} 
+\end{figure}
+
+
+
+% \begin{figure*}[t]
+% 	\centering
+% 	\begin{subfigure}{0.33\linewidth}
+% 		\centering
+% 		{\includegraphics[width=6cm] {Images/parallel_noop.pdf}}
+% 		\caption{Effect of parallelism}
+% 		\label{fig:parallelism}
+% 	\end{subfigure}
+% 	\begin{subfigure}{0.33\linewidth}
+% 		\centering
+% 		{\includegraphics[width=6cm] {Images/multi_gb_same.pdf}}
+% 		\caption{Latency vs. Num of Groups}
+% 		\label{fig:multi_gb_same}
+% 	\end{subfigure}
+% 	\begin{subfigure}{0.33\linewidth}
+% 		\centering
+% 		{\includegraphics[width=6cm] {Images/multi_gb.pdf}}
+% 		\caption{Latency vs. Num Dimensions}
+% 		\label{fig:multi_gb_bp}
+% 	\end{subfigure}
+% 	\vspace{-10pt}
+% 	\caption{Effect of Combining Group-by attributes and Parallel Query Execution}
+% 	\label{fig:bank_perf}
+% 	\vspace{-10pt}
+% \end{figure*} 
 
 \subsection{Basic {\large \SeeDB} Framework}
 \label{sec:basic_framework_expts}
