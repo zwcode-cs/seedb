@@ -2,8 +2,8 @@
 
 \section{Utility Metrics: Discussion}
 \label{sec:discussion}
-We now discuss and evaluate various aspects of utility metrics,
-including 
+We now discuss and evaluate various aspects of our choice of utility metrics,
+including:
 
 \noindent {\it (a) Distance Functions.} We evaluate the final results on
 using different distance functions for measuring deviation.
@@ -23,15 +23,16 @@ metrics to EMD and study impact on:
 We summarize our findings below.
 \papertext{Details can be found in the technical report~\cite{seedb-tr}.}
 \begin{denselist}
-\item {\em (a)} The choice of distance function between J-S, Euclidean, K-L divergence
-and EMD is not critical: the former three distance functions lead
+\item {\em (a)} The choice of distance function between Jenson-Shannon divergence (J-S), Euclidean distance, Kullback–Leibler (K-L) divergence
+and EMD is not critical: the first three distance functions lead
 to results that largely
 agree with EMD in the visualization ordering. For instance, the
-former three distance functions output 3 out of EMD's top-5 visualizations 
+first three distance functions output 3 out of EMD's top-5 visualizations 
 in their top-5, and
 two out of three distance functions output 4 out of EMD's top-5 visualizations in their top-5.
+\srm{Note the dataset that was used here.}
 \item {\em (b)} We developed a generalized utility metric
-that captures   deviation from the baseline ({\it deviation}),
+that captures deviation from the baseline ({\it deviation}),
 historical data ({\em history}),
 variation in and distribution of the data itself ({\it data distribution}),
 types and properties of the different attributes in the dataset ({\it metadata}), 
@@ -39,13 +40,13 @@ visual qualities of the visualization ({\it aesthetics}),
 past history of interactions with this user and other users ({\it user preferences}), and,
 to a limited extent,
 meaning and relative importance of attributes in the data ({\it semantics}).
-We have extended \SeeDB to support this generalized utility metric. 
+%We have extended \SeeDB to support this generalized utility metric. 
 \item {\em (c)} We evaluated EMD, the Euclidean distance, and MAX\_DIFF
 (a general utility metric that captures the difference between the largest
 and second largest aggregate group) within \SeeDB and found that
 all three utility measures perform similarly in terms of performance 
 (i.e., they lead to similar gains via our optimizations),
-while not sacrificing accuracy. 
+without sacrificing accuracy. 
 \end{denselist}
 
 \techreport{
