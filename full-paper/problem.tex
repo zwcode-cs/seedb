@@ -34,7 +34,7 @@ which can be readily visualized using bar charts or trend lines.
 In addition to the database $D$, we assume that the analyst has indicated
 a desire to explore a subset of data specified by a query $Q$.
 The goal of \SeeDB is to recommend visualizations of $Q$ that have
-high utility (which, in this paper, we measure using deviation, as explained below).
+high utility (which we measure using deviation, as explained below).
 The class of queries $Q$ posed over $D$ that we support encompass a general class of queries 
 that select a horizontal fragment of the fact table and one or more dimension tables.
 Conceptually, we can view this as a simple selection query over the result of joining all
@@ -64,7 +64,7 @@ and grouping query on the underlying data.
 % where an aggregate view
 % is the result of applying grouping and aggregation to a dataset.
 Consequently, we represent the visualization $V_i$ 
-compactly as a triple $(a, m, f)$, 
+compactly as a function represented by a triple $(a, m, f)$, 
 where $m \in M, a \in A, f \in F$.   
 We call this an {\em aggregate view} or simply a {\em view}.
 The aggregate view performs a group-by on $a$ and applies the aggregation function $f$ 
@@ -237,8 +237,9 @@ dataset (i.e. $D_Q$) compared to a reference dataset (called $D_R$) are said to 
 utility.
 The reference dataset $D_R$ may be defined as the entire underlying dataset ($D$),
 the complement of $D_Q$ ($D$ - $D_Q$) or data selected by any arbitrary query $Q'$ ($D_{Q'}$).
-We discuss in Section~\ref{sec:other_utility_metrics} how other distance metrics can be 
-incorporated into our system without any changes.
+The analyst has the option of specifying $D_R$; we use $D$ as the default if the analyst does not specify a reference. 
+% We discuss in Section~\ref{sec:other_utility_metrics} how other distance metrics can be 
+% incorporated into our system without any changes. 
 Given a view $V_i$, the deviation-based utility of $V_i$ is
 computed as the deviation between the results of applying $V_i$ to the query data, $D_Q$,
 and applying $V_i$ to the reference data, $D_R$.
@@ -260,7 +261,7 @@ denoted as $P[V_i (D_Q)]$ is:
 (F: 0.52, M: 0.48) while that for the reference view $V_i(D_R)$ ({\em married} adults), 
 denoted as $P[V_i (D_R)]$ is:
 (F: 0.31, M: 0.69). 
-In contrast, distributions for the visualization {\em Average Age
+In contrast, the distributions for the visualization {\em Average Age
 vs. Sex} are (F: 0.5, M: 0.5) and (F: 0.51, M: 0.49) 
 for the target and reference view respectively.
 Qualitatively, we see that the distributions show a large deviation for
@@ -268,9 +269,10 @@ the former visualization and hardly any deviation for the latter.
 
 Given an aggregate view $V_i$ and probability distributions for the
 target view  ($P[V_i (D_Q)]$) and reference view ($P[V_i (D_R)]$), we
-define {\em utility} of $V_i$ as the distance between these two probability
-distributions. Higher the distance betwee the two distributions, more likely is the
-visualization to be interesting and therefore higher the utility.
+define the {\em utility} of $V_i$ as the distance between these two probability
+distributions. The higher the distance between the two distributions, the more 
+likely the
+visualization is to be interesting and therefore higher the utility.
 Formally, if $S$ is a distance function,
 $$ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D_R)] )$$
 % The utility of a view is our measure for whether the target view is
@@ -283,9 +285,11 @@ to compute utility, including Earth Movers Distance,
 Euclidean Distance, Kullback-Leibler Divergence (K-L
 divergence), and Jenson-Shannon
 Distance. 
-Our experiments choose Earth Movers Distance as the default distance function,
-but in Section \ref{sec:other_utility_metrics} we show how the specific distance
-function affects our utility metric. 
+Our experiments use Earth Movers Distance as the default distance function,
+but in Section \ref{sec:discussion} we discuss results for
+other distance functions. 
+Also in Section~\ref{sec:discussion}, we describe how our utility metric
+can be generalized to capture other aspects of interest to analysts (beyond deviation).
 \resolved{
 \reviewer {
 	D2.3 SeeDB supports a variety of metrics to compute utility, but only one of
@@ -338,6 +342,7 @@ have the largest values of $U(V)$ among all the views $(a, m, f)$,
 while minimizing total computation time.
 \vspace{-5pt}
 \end{problem}
+\agp{This does not mention $R$ -- need to fix, or state as assumption above.}
 % Thus, \SeeDB\ aims to find the $k$ views (obtained by adding a single aggregate
 % and group-by operator) that have the largest utility based on the function $U$.
 
