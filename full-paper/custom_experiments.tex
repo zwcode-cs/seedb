@@ -2,8 +2,8 @@
 
 \subsection{Pruning Optimizations}
 \label{sec:custom_execution_engine_expts}
-In Section \ref{sec:in_memory_execution_engine}, we developed a set of strategies that enable \SeeDB to eliminate aggregate views with low utility early on and identify top-$k$ aggregate views rapidly.
-Through the next set of experiments, we evaluate 
+In Section \ref{sec:in_memory_execution_engine}, we developed a set of strategies that enable \SeeDB to eliminate aggregate views with low utility early on and rapidly identify top-$k$ aggregate views.
+In the next set of experiments, we evaluate 
 the impact of these optimizations.
 % Specifically, our evaluation studies the impact of
 % (a) our pruning strategies, 
@@ -14,8 +14,8 @@ the impact of these optimizations.
 
 \stitle{Metrics:}
 We evaluate performance of pruning optimizations along two dimensions, {\em latency}, as before, and
-quality of results.
-We measure the quality of results with two metrics: 
+result quality.
+We measure result quality with two metrics: 
 (1) {\em accuracy}: if $\{\mathcal{V}_T\}$
 is the set of aggregate views with the highest utility and $\{\mathcal{V}_S\}$ is the set of 
 aggregate views returned by
@@ -41,9 +41,9 @@ small $\Delta_k$s can lead to lower absolute accuracy.
 While this is true, notice that small $\Delta_k$s are, in fact, the result of views at 
 the top-$k$ boundary having similar utility (and interesting-ness).
 For instance, the utilities at the top-$5$ boundary for the DIAB dataset are 
-$U(V_5)$ = 0.257, $U(V_6)$ = 0.254, and $U(V_7)$ = 0.252.
+$U(V_5)$ = 0.257, $U(V_6)$ = 0.254, and $U(V_7)$ = 0.252 (see Figure~\ref{fig:diabetes_utility_distribution}).
 The small $\Delta_k$s lead to lower accuracy for $k$ = 5, but the 
-very similar utility values indicate that $V_6$ and $V_7$ are (almost) equally interesting.
+very similar utility values indicate that $V_6$ and $V_7$ are (almost) equally interesting as $V_5$ .
 Therefore, even if $V_6$ or $V_7$ are incorrectly chosen to be in the top-$k$, 
 the quality of results is essentially as high as when $V_5$ would have been chosen.
 Our {\em utility distance} metric correctly captures this overall quality of results.
