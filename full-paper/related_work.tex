@@ -199,17 +199,22 @@ its value is given the other values in the cube:
 \cite{DBLP:conf/EDBT/SarawagiAM98} uses techniques 
 based on a table analysis method while
 \cite{DBLP:conf/vldb/Sarawagi00} uses techniques based on entropy to find interesting cells.
-Inherent interestingness is a much simpler problem than the
-one addressed in our paper, since it can be precomputed before
-any queries arrive. (This is because inherent interestingness is independent of queries.) 
-Due to this, 
-the techniques in browsing \cite{DBLP:conf/EDBT/SarawagiAM98, 
-DBLP:conf/vldb/Sarawagi00} cannot be applied in our context.
-Furthermore, instead of comparing individual cells, 
-\SeeDB\ evaluates sets of aggregates (i.e. distributions
-for our view), thus focusing on trends in values rather than individual values:
-unlike individual cube values, trends can be more easily displayed
-and examined on visual interfaces.
+These techniques generally identify sub-cubes of a cube that produce the most
+deviation amongst all sub-cells, analogous to SeeDB finding the (single) dimension attribute that shows the greatest variation in a given
+aggregation query.  In contrast, SeeDB focuses on
+ finding variation vis-a-vis a reference data set, recommending multiple views over a large set of possible visualizations.
+
+%Inherent interestingness is a much simpler problem than the
+%one addressed in our paper, since it can be precomputed before
+%any queries arrive. (This is because inherent interestingness is independent of queries.) 
+%Due to this, 
+%the techniques in browsing \cite{DBLP:conf/EDBT/SarawagiAM98, 
+%DBLP:conf/vldb/Sarawagi00} cannot be applied in our context.
+%Furthermore, instead of comparing individual cells, 
+%\SeeDB\ evaluates sets of aggregates (i.e. distributions
+%for our view), thus focusing on trends in values rather than individual values:
+%unlike individual cube values, trends can be more easily displayed
+%and examined on visual interfaces.
 
 
 In \cite{DBLP:conf/vldb/Sarawagi99}, Sarawagi
