@@ -79,26 +79,26 @@ who can then interact with these
 visualizations.
 
 \stitle{Basic Execution Engine.} 
-To motivate the need for optimizations, we now describe 
-how our execution engine would work if we had no optimizations. 
+To motivate the need for optimizations, we first describe 
+how our execution engine would work without optimizations. 
 To identify the $k$ best aggregate views,
 \SeeDB needs to do the following:
 For each aggregate view, it generates
 a SQL query corresponding to the target
 and reference view, and issues
-the two queries, one at a time, to the underlying DBMS.
+the two queries to the underlying DBMS.
 It repeats this process for each aggregate view.
-As the results are received, \SeeDB computes the
+As the results are received, it computes the
 distance between the target and reference view
 distributions, and identifies the $k$ visualizations
 with highest utility. 
 
-Naturally, this basic implementation has many inefficiencies.
+This basic implementation has many inefficiencies.
 In a table with $a$ dimensions, $m$ measures, and $f$ aggregation functions, 
-$2\times f \times a \times  m$ queries must be executed independently.  
+$2\times f \times a \times  m$ queries must be executed.  
 As we show in Section~\ref{sec:experiments}, this can take >100s for
-large data sets (with hundreds of attributes and millions of rows).
-These latencies are unacceptable for interactive use.
+ large data sets.
+Such latencies are unacceptable for interactive use.
 
 \stitle{Execution Engine with Optimizations.} 
 To reduce latency in 
