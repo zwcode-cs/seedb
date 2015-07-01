@@ -95,10 +95,10 @@ END}\\
 
 
 \stitle {Parallel Query Execution}:
-  \SeeDB executes multiple view queries in parallel since co-executing queries can often
- share buffer pool pages and reduce disk accesses times. 
-  However, the precise number of parallel queries needs to be tuned to take into account 
-  buffer pool contention, locking, and cache line contention, among others factors~\cite{Postgres_wiki}.  
+  \SeeDB executes multiple view queries in parallel: these queries can often
+ share buffer pool pages, reducing disk access times. 
+  However, the precise number of parallel queries needs to be tuned taking into account 
+  buffer pool contention, locking, and cache line contention, among other factors~\cite{Postgres_wiki}.  
 
 \techreport{
 \stitle{Other Optimizations}: 

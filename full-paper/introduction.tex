@@ -5,7 +5,7 @@
 Data visualization is often the first step in data analysis.
 Given a new dataset or a new question about an existing dataset, an analyst builds
 various visualizations to get a feel for the data, to find anomalies and outliers, 
-and to identify trends and patterns that might merit further investigation.
+and to identify patterns that might merit further investigation.
 However, when working with high-dimensional datasets, identifying visualizations that
 show interesting variations and trends in data is non-trivial:
 the analyst must manually specify a large number of visualizations, explore relationships between various
@@ -149,12 +149,14 @@ quickly becomes untenable.
 	\centering
 	\begin{subfigure}{0.49\linewidth}
 		{\includegraphics[width=4cm] {Images/HUHI_sex_avg_cap_gain.pdf}}
+		\vspace{-5pt}
 		\caption{Interesting Visualization}
 		\label{fig:interesting_viz} 
 	\end{subfigure}
 	\begin{subfigure}{0.49\linewidth}
 		\centering
 		{\includegraphics[width=4cm] {Images/LULI_sex_avg_age.pdf}}
+		\vspace{-5pt}
 		\caption{Uninteresting Visualization}
 		\label{fig:uninteresting_viz}
 	\end{subfigure}
@@ -164,18 +166,10 @@ quickly becomes untenable.
 	\vspace{-10pt}
 \end{figure}
 
-%What might make one of these visualizations ``interesting'' or valuable for the 
-%task at hand depends on a number of factors.
-\resolved{
-\srm{I suggested below that our user studies show that users like our metric. Do we believe this?}
-\agp{rewrote to remove preference}	
-}
-% Of the entire set of possible visualizations, only a small fraction of visualizations
-% show trends and information relevant for the specific task.
-We have identified that across many analyses, 
+\noindent We have identified that across many analyses, 
 visualizations that show trends in the target 
-data (i.e., {\em unmarried} adults) that 
-deviate from trends in reference data (i.e., {\em married}
+data ({\em unmarried} adults) that 
+deviate from trends in reference data ({\em married}
 adults) are potentially interesting to analysts.
 For example, 
 from our user study (Section \ref{sec:user_study}), 
@@ -278,14 +272,14 @@ and married adults.
 % show the highest deviation between trends in $Q$ and trends in $D$. 
 % Specifically, \SeeDB considers visualizations that can be constructed via a combinations of grouping and 
 % aggregation applied to $Q$.
-The example above suggests that visualizations that depict
+\noindent The example above suggests that visualizations that depict
 deviations from a reference visualization are potentially interesting to analysts;
 our goal in the current paper is to build a system 
 that uses deviation as a means to identify
 the most interesting visualizations from a large set of potential visualizations.
-No existing system that we are aware of makes use of variation from a reference dataset
+No existing system that we are aware of makes use of variation from a reference
 to recommend visualizations.  
-Current visualization packages like Spotfire~\cite{Ahlberg:1996:SIE:245882.245893} and Tableau~\cite{tableau,polaris} have limited capabilities for 
+Current visualization packages like Spotfire~\cite{Ahlberg:1996:SIE:245882.245893} and Tableau~\cite{polaris} have limited capabilities for 
 recommending visualizations.
 Their recommendations only implement rules-of-thumb 
 regarding chart aesthetics such as choice of

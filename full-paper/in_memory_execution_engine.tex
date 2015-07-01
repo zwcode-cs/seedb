@@ -4,12 +4,11 @@
 \subsection{Pruning-Based Optimizations}
 \label{sec:pruning_opt}
 In practice, most visualizations are low-utility, meaning computing them wastes computational resources.
-Therefore, as described earlier, at the end of every phase, 
+Thus, as described earlier, at the end of every phase, 
 the execution engine uses pruning optimizations to determine which 
 aggregate views to discard.
 Specifically, partial results for each view based on the data processed
 so far are used to estimate utility and views with low utility are discarded.
-
 The \SeeDB execution engine supports two pruning schemes. The first uses 
 confidence-interval techniques to bound utilities of views, while the second uses
 multi-armed bandit allocation strategies to find top utility views.
