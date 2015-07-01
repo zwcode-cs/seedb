@@ -249,7 +249,8 @@ $$ Q_T\ =\ {\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D_Q\  {\tt GROUP \ \ BY} \ 
 Similarly, view $V_i$ applied to the reference data $V_i (D_R)$ can be expressed as $Q_R$. 
 We call this the {\em reference view}. 
 $$ Q_R\ =\ {\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D_R\  {\tt GROUP \ \ BY} \ a$$
-The results of both the above aggregate views are summaries with two columns, namely $a$ and
+The (two) SQL queries corresponding to each view are referred to as {\em view queries}.
+The results of the above view queries are summaries with two columns, namely $a$ and
 $f(m)$. 
 To ensure that all aggregate summaries have the same scale, we normalize each 
 summary into a probability distribution (i.e. the values of $f(m)$ sum to $1$).
@@ -299,7 +300,6 @@ them is tested. What is the impact of the metric used?
 	We need to show experiments showing this.
 }
 }
-\agp{View queries not defined}
 
 We can formally state the \SeeDB problem as follows:
 % Computing distance between probability distributions has
@@ -337,13 +337,13 @@ We can formally state the \SeeDB problem as follows:
 % intuitive nature. 
 \begin{problem}
 \vspace{-5pt}
-Given a user-specified query $Q$ on a database $D$, a utility function $U$ as defined
+Given a user-specified query $Q$ on a database $D$, a reference dataset $D_R$, 
+a utility function $U$ as defined
 above, and a positive integer $k$, find $k$ aggregate views $V \equiv (a, m, f)$ that
 have the largest values of $U(V)$ among all the views $(a, m, f)$, 
 while minimizing total computation time.
 \vspace{-5pt}
 \end{problem}
-\agp{This does not mention $R$ -- need to fix, or state as assumption above.}
 % Thus, \SeeDB\ aims to find the $k$ views (obtained by adding a single aggregate
 % and group-by operator) that have the largest utility based on the function $U$.
 

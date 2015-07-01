@@ -285,7 +285,7 @@ However, a high degree of parallelism can degrade performance for a variety of r
 Figure \ref{fig:parallelism} shows how latency varied as we varied the number of parallel SQL queries
 issued by \SeeDB.
 As expected, low levels of parallelism produced sizable performance gains but
-high levels led to degraded performance.  The the optimal number of queries to 
+high levels led to degraded performance.  The optimal number of queries to 
 run in parallel is approximately $16$ (equal to the number of cores),
 suggesting that choosing a degree of parallelism equal to the number of cores
 % for these kinds of simple aggregation queries when data largely fits in memory,
