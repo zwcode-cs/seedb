@@ -47,7 +47,7 @@ Therefore, even if $V_6$ or $V_7$ are incorrectly chosen to be in the top-$k$,
 the quality of results is essentially as high as when $V_5$ would have been chosen.
 Our {\em utility distance} metric correctly captures this overall quality of results.
 Utility distance indicates that, in the worst case, even when both $V_6$ or $V_7$ are 
-incorrectly chosen, the overall utility of the top-$5$ differs only by 0.013 (~5\% error) 
+incorrectly chosen, the overall utility of the top-$5$ differs only by 0.013 ($\approx$5\% error) 
 units compared to the true top-$5$.
 As a result, we jointly consider accuracy as well as utility distance when evaluating 
 result quality.
@@ -81,7 +81,7 @@ In the following experiments, we evaluate four techniques for pruning low-utilit
 In addition to the two pruning strategies from Section~\ref{sec:pruning_opt}, 
 namely the Hoeffding Confidence Intervals (CI) and the Multi-Armed Bandit (MAB),
 we implement two baseline strategies.
-First, the no pruning strategy processes the entire data and does not discard any views (NO\_PRU). 
+The no pruning strategy processes the entire data and does not discard any views (NO\_PRU). 
 It thus provides an upperbound on latency and accuracy, and lower bound on utility distance.
 The other baseline strategy we evaluate is the random strategy (RANDOM) that returns a random 
 set of $k$ aggregate views as the result.
@@ -196,10 +196,10 @@ discussed in Section \ref{sec:expt_summary}.
 \end{figure}
 
 In each of our experiments, we vary $k$ --- the number of visualizations to recommend --- between
-1 and 25 (a realistic upper limit on the number of aggregates views displayed on a screen)
+1 and 25 (a realistic upper limit on the number of aggregate views displayed on a screen)
 and measure the latency, accuracy, and utility distance for each of our
 strategies. 
-We pay special attentio to $k$ = 5 and 10 because empirically these $k$ values are used most commonly.
+We pay special attention to $k$ = 5 and 10 because empirically these $k$ values are used most commonly.
 Since the accuracy and utility distance of our techniques are influenced by the
 ordering of data, we repeat each experiment 20
 times and randomize data between runs. We report average
