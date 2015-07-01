@@ -338,7 +338,7 @@ the above technique identifies the top-$k$ arms with high probability.
 \State \{$\bar{u}_{i}$\} $\gets$ sorted utility means
 \State $\Delta_1$ $\gets$ $\bar{u}_{1}$ - $\bar{u}_{k+1}$
 \State $\Delta_n$ $\gets$ $\bar{u}_{k}$ - $\bar{u}_{n}$
-\If {$\Delta_1$ < $\Delta_n$}
+\If {$\Delta_1$ > $\Delta_n$}
 \State viewsInRunning.acceptTop()
 \Else
 \State viewsInRunning.discardBottom()
