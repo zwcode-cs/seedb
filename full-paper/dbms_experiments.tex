@@ -282,16 +282,14 @@ beyond which performance degrades significantly.}
 Executing \SeeDB-generated SQL queries in parallel can provide significant performance gains
 because queries can share buffer pool pages.
 However, a high degree of parallelism can degrade performance for a variety of reasons \cite{Postgres_wiki}. 
-Figure \ref{fig:parallelism} illustrates this issue: we varied the maximum number of parallel SQL queries
-issued by \SeeDB and measured the resulting latency of the system.
+Figure \ref{fig:parallelism} shows how latency varied as we varied the number of parallel SQL queries
+issued by \SeeDB.
 As expected, low levels of parallelism produced sizable performance gains but
-high levels led to degraded performance.
-For both row and column stores in our system, the optimal number of queries to 
-run in parallel is approximately $16$ (equal to the number of cores). 
-% This appears to hold true for both row or column stores. 
-In general, we have found that choosing a degree of parallelism equal to the number of cores
+high levels led to degraded performance.  The the optimal number of queries to 
+run in parallel is approximately $16$ (equal to the number of cores),
+suggesting that choosing a degree of parallelism equal to the number of cores
 % for these kinds of simple aggregation queries when data largely fits in memory,
-is a reasonable rule of thumb. 
+is a reasonable policy. 
 % \mpv{separate this from general study of parallel queries}
 
 % \begin{figure}[h]

@@ -10,8 +10,8 @@ we review papers in each of the areas, and describe how they relate to
 \stitle{Visualization Tools}:
 The visualization 
 research community has introduced a number of
-visual analytics tools such as ShowMe, Polaris, Spotfire and 
-Tableau~\cite{DBLP:journals/cacm/StolteTH08, DBLP:journals/tvcg/MackinlayHS07, Ahlberg:1996:SIE:245882.245893}.
+visual analytics tools such as Spotfire and 
+Tableau~\cite{DBLP:journals/cacm/StolteTH08, Ahlberg:1996:SIE:245882.245893}.
 These tools do provide some features for automatically selecting
 the best visualization for a data set, 
 % In these tools, the goal is to make it simpler for analysts 
@@ -26,10 +26,9 @@ but these features are restricted to a set of aesthetic rules of thumb that
 guide which visualization is most appropriate.
 %given a visual specification.
 Similar visual specification tools 
-have also been introduced by the
-database community, including Fusion
-Tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10} and the
-Devise~\cite{DBLP:conf/sigmod/LivnyRBCDLMW97} toolkit. 
+have been introduced by the
+database community, e.g., Fusion
+Tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10}. 
 In all these tools, the user must choose the data they want to visualize, requiring
 a tedious iteration through all sets of attributes.
 \techreport{
@@ -89,7 +88,7 @@ to speed-up the generation of these visualizations.
 scalable visualizations that employ in-memory caching, sampling, and
 pre-fetching to improve the interactivity of visualization systems
 backed by
-databases~\cite{2013-immens,DBLP:conf/avi/KandelPPHH12,hotmap,doshi2003prefetching,DBLP:journals/corr/KimBPIMR14}.
+databases (e.g.,~\cite{doshi2003prefetching,DBLP:journals/corr/KimBPIMR14}).
 Such techniques could be employed in our settings to further improve
 response times (although some of these techniques, such as in-memory caching,
 can only work with small datasets.)
@@ -228,8 +227,8 @@ and differ for similar reasons.
 draw on
 related techniques from literature on shared
 scans~\cite{Fernandez:1994:RBW:191843.191947} and multi-query
-optimization
-~\cite{DBLP:journals/tods/Sellis88,DBLP:journals/pvldb/KementsietsidisNCV08,DBLP:journals/pvldb/WangC13}.
+optimization (e.g.
+~\cite{DBLP:journals/tods/Sellis88}).
 %{\em shared scans}~\cite{DBLP:conf/VLDB/ZukowskiHNB07,DBLP:conf/sigmod/HollowayRSD07,DBLP:journals/pvldb/UnterbrunnerGAFK09,DBLP:conf/icde/RamanSQRDKNS08,DBLP:journals/pvldb/QiaoRRHL08}
 % Our goal of evaluating
 %many views in parallel is an instance of multi-query 
