@@ -332,35 +332,52 @@ The overall bookmark rate was 0.32.
 We next describe our key findings and observations.
 
 \stitle{1. \SeeDB enables fast visual analysis}.
-Table \ref{tab:agg_bookmarks} shows an overview of the bookmarking behavior for each tool.
-First, we see that the total number of aggregate visualizations created in \SeeDB (10.8) is higher
-than that for MANUAL (6.3).
-This suggests that analysts are exposed to more {\em views} of the data with \SeeDB than MANUAL, possibly
-aiding in a more thorough exploration of the dataset.
-Next, observe that the number of aggregate visualizations bookmarked in \SeeDB is much higher (3X more)
+Table \ref{tab:agg_bookmarks} shows an overview of the bookmarking behavior for each tool
+focusing on total number of visualizations generated, number of bookmarks and bookmarking rate.
+First off, we observe that the total number of (aggregate) visualizations created in the \SeeDB
+condition is higher than that for MANUAL. 
+While not statistically significant, this difference suggests that analysts are exposed to more
+{\em views} of the data with \SeeDB than MANUAL, possibly aiding in a more thorough exploration of
+the data.
+Next, we find that the number of aggregate visualizations bookmarked in \SeeDB is much higher (3X more)
 than that for MANUAL.
-In fact, we find the difference between number of bookmarks is statistically significant ({\em Paired t-test,
-t = 3.417, df = 9, p-value = 0.007665}).
-Note, however, that these results may be affected by the fact that the total number of visualizations
-built with \SeeDB is higher than that for MANUAL.
-To compensate for the total number of visualizations, we examine $bookmark\_rate$, i.e., the fraction of
+In fact, the two-factor analysis of variance shows a significant effect of tool on the number of bookmarks,
+F(1,1) = 18.609, p < 0.001. 
+We find no significant effect of dataset, F(1, 1) = 4.16. p > 0.05, or
+significant interaction between tool and dataset.
+While this result indicates that analysts bookmark more visualizations in \SeeDB, we note, that number of 
+bookmarks for a tool may be affected by the total number of visualizations built with the tool.
+Therefore, to account for variance in the total number of visualizations, we also examine $bookmark\_rate$
+for the two tools defined as the fraction of
 created visualizations that are bookmarked ($\frac{num\_bookmarks}{total\_viz}$).
-We find that the $bookmark\_rate$ for \SeeDB (0.42) is 3X larger than the $bookmark\_rate$ for 
+We find, once again, that the $bookmark\_rate$ for \SeeDB (0.42) is 3X larger than the $bookmark\_rate$ for 
 MANUAL (0.14).
-Moreover, we once again find this difference in $bookmark\_rate$ is statistically significant
-within subjects as well as across subjects ({\em Paired t-test, t = -2.5599, df = 8, p-value = 0.03365}).
-This implies that {\bf a \SeeDB-recommended visualization is 3 times more likely to be
-interesting compared to a manually constructed aggregate visualization}.
-In other words, users are 3X more likely to arrive at interesting visualizations when using
-\SeeDB vs. MANUAL; i.e., \SeeDB can enable users to find interesting insights faster.
-Results of a 2-way ANOVA also indicate that \SeeDB has a significant impact on 
-aggregate bookmark rate ({\em df = 1, sum sq = 0.3681, mean sq = 0.3681, F value = 10.034, p = 0.00685}). 
-(We find that choice of dataset does not affect bookmark rate, and there are no interaction or order effects.)
-Finally, we note that the statistical results regarding faster analysis are supported by anecdotal evidence 
+The two-factor analysis of variance shows a significant effect of tool on bookmark rate, F(1,1) = 10.034, p < 0.01.
+As before, we find no significant effect of dataset on bookmark rate, F(1, 1) = 3.125. p > 0.05, or
+significant interaction between tool and dataset.
+Together the two results above indicate that there is a {\bf significant effect of tool on both the number of bookmarks as well as the
+bookmark rate}.
+\SeeDB-recommended visualizations are 3 times more likely to be interesting compared
+to manually constructed visualizations.
+In other words, analysts are 3X more likely to arrive at interesting visualizations
+when using \SeeDB vs. MANUAL:
+\SeeDB can thus allow analysts to find analyze data faster. 
+\mpv{Remove? Finally, we note that the statistical results regarding faster analysis are supported by anecdotal evidence 
 and survey data from study participants.
 87\% of participants indicated that \SeeDB recommendations sped up their visual analysis, many alluding
 to the ability of \SeeDB to ``\ldots quickly deciding what correlations are relevant'' and 
-``[analyze]...a new dataset quickly''.
+``[analyze]...a new dataset quickly''.}
+
+
+% Moreover, we once again find this difference in $bookmark\_rate$ is statistically significant
+% within subjects as well as across subjects ({\em Paired t-test, t = -2.5599, df = 8, p-value = 0.03365}).
+% This implies that {\bf a \SeeDB-recommended visualization is 3 times more likely to be
+% interesting compared to a manually constructed aggregate visualization}.
+% In other words, users are 3X more likely to arrive at interesting visualizations when using
+% \SeeDB vs. MANUAL; i.e., \SeeDB can enable users to find interesting insights faster.
+% Results of a 2-way ANOVA also indicate that \SeeDB has a significant impact on 
+% aggregate bookmark rate ({\em df = 1, sum sq = 0.3681, mean sq = 0.3681, F value = 10.034, p = 0.00685}). 
+% (We find that choice of dataset does not affect bookmark rate, and there are no interaction or order effects.)
 
 % We also find that, on average, the $bookmark\_time$ for \SeeDB (92.91 $\pm$ 49.26) is twelve seconds 
 % shorter than that for MANUAL (105.02 $\pm$ 58.24). 
@@ -433,19 +450,22 @@ to the ability of \SeeDB to ``\ldots quickly deciding what correlations are rele
 
 \stitle{2. All participants preferred \SeeDB to MANUAL}. 
 The most important result of our survey was that 100\% of all users preferred \SeeDB to MANUAL for
-visual analysis, i.e., all users preferred to have recommendation support during their visual analysis.
-78\% of participants found the recommendations helpful and thought that they
+visual analysis, i.e., all users preferred to have recommendation support during analysis.
+78\% of participants found the recommendations ``Helpful'' or ``Very Helpful'' and thought that they
 showed interesting trends.
-In addition, majority of users found \SeeDB as a powerful means to get an overview of interesting trends
-in the data and to obtain starting points for further analysis. 
+In addition, majority of users found \SeeDB a powerful means to get an overview of interesting trends
+and starting points for further analysis. 
 One participant noted that \SeeDB was ``\ldots great tool for proposing a set of initial queries for a dataset''.
-Due to space constraints, we explore this result further in the associated tech report\cite{seedb-tr}.
-77\% of participants also indicated that \SeeDB recommended visualizations they might not explored, e.g.
-``\ldots interesting aspects of data to compare. I don't think I would have checked those by myself.''.
-To illustrate, Figure \ref{blah} \mpv{making these} shows two visualizations that were not generated by participants using MANUAL,
-but were in fact recommended by \SeeDB\ {\it and} bookmarked as being interesting.
-\papertext{An intriguing observation we made was that some analysts liked having recommendations, they did not want to rely 
-very heavily on recommendations but instead let their intuition guide their analysis.}
+Due to space constraints, we explore this result further in the associated tech report~\cite{seedb-tr}.
+77\% of participants also indicated that \SeeDB visualizations showed unexpected trends (e.g. big difference
+in capital gain for Self-Inc in Figure \ref{fig:huhi}), and indicated that \SeeDB suggested visualizations
+they wouldn't have created,
+e.g. ``\ldots interesting aspects of data to compare. I don't think I would have checked those by myself.''.
+% To illustrate, Figure \ref{blah} \mpv{making these} shows two visualizations that were not generated by participants using MANUAL,
+% but were in fact recommended by \SeeDB\ {\it and} bookmarked as being interesting.
+\papertext{An intriguing observation we made was that while some analysts liked having recommendations, 
+they did not want to rely 
+too heavily on recommendations but instead let intuition guide their analysis.}
 \techreport{An intriguing observation from two participants was that while they wanted recommendations to support them
 in analysis, they did not want to rely too heavily on recommendations and ignore their creativity.
 One participant noted {\em ``The only potential downside may be that it made 
