@@ -59,23 +59,22 @@ given a subset of data to be studied, \SeeDB intelligently explores the
 space of visualizations, evaluates promising visualizations for trends, and 
 recommends those it 
 deems most ``useful'' or ``interesting''. % for that data relative to the rest.
-The two major obstacles in recommending high-utility visualizations are {\em scale}:
+The two major obstacles in recommending interesting visualizations are (a) {\em scale}:
 dealing with a large number of candidate visualizations and evaluating all of them in parallel, while
-responding within interactive time scales, and {\em utility}: identifying 
-an appropriate scoring function for assessing visualization utility.
-For the former, \SeeDB introduces {\em incremental 
-pruning} techniques to quickly identify high-utility visualizations at query time,
-coupled with techniques to {\em maximize 
-the sharing of computation} across visualizations.
+responding within interactive time scales, and (b) {\em utility}: identifying 
+an appropriate metric for assessing interestingness of visualizations.
+For the former, \SeeDB introduces {\em pruning optimizations} to quickly 
+identify high-utility visualizations and {\em sharing optimizations} to maximize
+sharing of computation across visualizations.
 For the latter, as a first step, % in crafting a sophisticated utility scoring function, 
 we adopt a 
-deviation-based scoring function for visualization 
-utility, while indicating how we may be able to generalize to capture more aspects
-within our utility function.
+deviation-based metric for visualization 
+utility, while indicating how we may be able to generalize it to other factors
+influencing utility.
 We implement \SeeDB as a middleware layer that can run on top of any DBMS. 
-Our experiments show that our framework can identify ``interesting'' visualizations with high accuracy. 
+Our experiments show that our framework can identify interesting visualizations with high accuracy. 
 Our optimizations lead to 
 {\em multiple orders of magnitude speedup} on relational row and column stores and provide
 recommendations at interactive time scales.
-Finally, we demonstrate via a user study the effectiveness of our ranking function
+Finally, we demonstrate via a user study the effectiveness of our deviation-based utility metric
 and the value of recommendations in supporting visual analytics. 
