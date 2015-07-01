@@ -317,9 +317,9 @@ num\_rows) for SYN*-10 and proportional to $\max(100^p$, num\_rows) for SYN*-100
 The results of the experiment are shown in Figure \ref{fig:multi_gb_same}.
 We see that as the number of group-by attributes increases from 1 to 10, 
 the latency of ROW (blue) decreases initially.
-However, once the space budget $\mathcal{S}_{ROW}$ (proxied by the number of distinct groups) exceeds 10000, 
+However, once the memory budget $\mathcal{S}_{ROW}$ (proxied by the number of distinct groups) exceeds 10000, 
 latency increases significantly.
-We see a similar trend for COL, but with a space budget $\mathcal{S}_{COL}$ of 100.\footnote{\scriptsize The different space
+We see a similar trend for COL, but with a memory budget $\mathcal{S}_{COL}$ of 100.\footnote{\scriptsize The different memory
 budgets can be explained based on the different internal parameteres and implementations of
 the two systems.}
 Thus, we find empirically that memory usage from grouping is in fact related to latency and that 
@@ -395,21 +395,21 @@ optimal groupings must keep memory usage under a threshold.
 To evaluate the gains offered by our bin-packing optimization, we evaluate two methods to
 perform grouping, MAX\_GB and BP.
 MAX\_GB simply sets a limit on the number of group-bys in each query ($n_{gb}$) where as BP applies
-our bin-packing strategy using the respective space budgets.
+our bin-packing strategy using the respective memory budgets.
 Figure \ref{fig:multi_gb_bp} shows a comparison of the two methods.
 To evaluate MAX\_GB, we varied $n_{gb}$ was varied between 1 and 20 (solid lines). 
 Since SYN contains attributes with between 1 -- 1000 distinct values, memory utilization for a given
 $n_{gb}$ can be variable.
 For example, $n_{gb}$ = 3 can have anywhere between 1 and $10^9$ distinct groupings, thus breaking the
-space budget for some groupings. 
+memory budget for some groupings. 
 Because groupings with MAX\_GB depends on order, results in Figure \ref{fig:multi_gb_bp} are averages
 over 20 runs.
 The dotted lines show the latency obtained by performing optimal grouping via bin-packing.
-Unlike MAX\_GB, BP consistently keeps memory utilization under the space budget.
+Unlike MAX\_GB, BP consistently keeps memory utilization under the memory budget.
 Consequently, we observe that BP improves performance for both ROW and COL. 
-We observe a significant, 2.5X improvement in ROW because the large space budget $\mathcal{S}_{ROW}$
+We observe a significant, 2.5X improvement in ROW because the large memory budget $\mathcal{S}_{ROW}$
 allows many queries to be combined.
-COL, in contrast, shows a much less pronounced speedup since its smaller space budget ($\mathcal{S}_{COL}$= 100) 
+COL, in contrast, shows a much less pronounced speedup since its smaller memory budget ($\mathcal{S}_{COL}$= 100) 
 biases optimal grouping to contain single attribute groups.
 
 % Next, we use the space constraint derived in the previous experiment
