@@ -347,7 +347,7 @@ the above technique identifies the top-$k$ arms with high probability.
 \end{algorithm}
 }
 
-\stitle{Consistent Distance Metrics.} 
+\stitle{Consistent Distance Functions.} 
 Note that the two pruning schemes described above have guarantees
 in other settings that do not directly carry over to our setting---for example,
 the MAB setting assumes that each trial samples from a fixed underlying distribution,
@@ -355,16 +355,18 @@ while in fact, our trials correspond to random values across $m$ distributions (
 which are aggregated together to form a utility estimate for a given view. 
 In our evaluation, we show that in spite of this limitation, the pruning schemes
 work rather well in practice. 
-We can, however, show that as we sample more and more, the estimated utility
+
+We can, however, get a weaker guarantee: we can show that as we sample more and more, the estimated utility
 $\hat{U}$ can be made to be arbitrarily close to $U$ for all aggregate views.
-Essentially, this means that any pruning algorithm that uses a sufficiently
-large sample will prune away low utility views with very high probability.
+Essentially, this means that any pruning algorithm (including Confidence and MAB) 
+that uses a sufficiently
+large sample will prune away low utility views with high probability.
 We can state our claim formally in the following lemma. 
 \papertext{The proof based on 
 Hoeffding's inequality can be found in the extended
 technical report~\cite{seedb-tr}.
 While we show this for $\ell_2$, similar 
-results hold for other distance metrics,
+results hold for other distance functions,
 such as $\ell_1$, EMD, Kullback-Leibler, and Jenson-Shannon metrics.}
 % At a high level, the proof
 % involves repeated applications of Hoeffding's inequality to
@@ -381,9 +383,9 @@ Then, as the number of samples tends to $\infty$, $\hat{U} \rightarrow U$
 with probability $1-\delta$, for as small $\delta$ as needed.
 \end{lemma}
 \vspace{-5pt}
-We call distance metric that has this property a {\em
-consistent distance metric}.
-Consistent distance metrics allow pruning schemes
+We call distance function that has this property a {\em
+consistent distance function}.
+Consistent distance functions allow pruning schemes
 to gather increasingly better estimates of utility values
 over time (as long as the samples are large enough). 
 Specifically, we show in Section~\ref{sec:custom_execution_engine_expts}
@@ -391,7 +393,7 @@ that the Confidence and MAB-based pruning schemes
 work well (i.e., have high accuracy while reducing
 effort) for EMD, and then
 in Section~\ref{sec:discussion}, we show that 
-these schemes work well for other consistent distance metrics.
+these schemes work well for other consistent distance functions.
 
 
 
