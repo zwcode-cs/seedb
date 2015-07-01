@@ -55,16 +55,16 @@ the contents of the WHERE clause.}\agp{rewritten to make clear that
 it is a function.}
 }
 
-Each visualization considered by \SeeDB can be translated into an aggregate
-and grouping query on the underlying data.
+Each \SeeDB visualization  can be translated into an agg\-re\-gate/group-by
+ query on the underlying data.
 % Since each visualization represents an aggregate summary of the underlying data,
 % the visualization can be distilled into an aggregate and grouping query.
 % Borrowing from the data cube literature~\cite{olap}, 
 % we call these summaries aggregate {\it views}.
 % where an aggregate view
 % is the result of applying grouping and aggregation to a dataset.
-Consequently, we represent the visualization $V_i$ 
-compactly as a function represented by a triple $(a, m, f)$, 
+We represent a visualization $V_i$ 
+ as a function represented by a triple $(a, m, f)$, 
 where $m \in M, a \in A, f \in F$.   
 We call this an {\em aggregate view} or simply a {\em view}.
 The aggregate view performs a group-by on $a$ and applies the aggregation function $f$ 

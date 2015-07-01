@@ -11,7 +11,7 @@ we review papers in each of the areas, and describe how they relate to
 The visualization 
 research community has introduced a number of
 visual analytics tools such as Spotfire and 
-Tableau~\cite{DBLP:journals/cacm/StolteTH08, Ahlberg:1996:SIE:245882.245893}.
+Tableau~\cite{polaris, Ahlberg:1996:SIE:245882.245893}.
 These tools do provide some features for automatically selecting
 the best visualization for a data set, 
 % In these tools, the goal is to make it simpler for analysts 
@@ -244,15 +244,13 @@ are simple aggregations. Finally, our pruning
 techniques allow us to stop evaluating some visualizations if we find
 that their utility is low, something other multi-query schemes cannot do.
 
-\stitle{Query Recommendation Systems}: Finally, there is some related work in
-the space of general query recommendation in databases (see
-~\cite{marcel2011survey} for an overview.)  These systems are
-generally designed to help users pose users relevant
+\stitle{Query Recommendation Systems}: There is related work on recommending queries in databases (see
+~\cite{marcel2011survey}).  Such systems are
+ designed to help users pose users relevant
 queries over of a database, typically by consulting historical query
 workloads and using statistical similarity or recommender algorithms
-to refine user inputs.  These techniques, to the best of our
-knowledge, focus on recommending SQL queries instead of visualizations
-(and hence don't focus on visually relevant distance metrics.)  However, we
+to refine user inputs.  These techniques focus on recommending SQL queries instead of visualizations
+(and hence don't focus on visually relevant distance metrics.)  We
 believe they could be integrated into a generalized utility metric
 inside SeeDB, although a full user-study comparing their effectiveness
 is outside the scope of this work.

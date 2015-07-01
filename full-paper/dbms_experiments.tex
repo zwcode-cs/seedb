@@ -278,8 +278,7 @@ Overall, this optimization provides a 4X speedup for ROW and a 3X speed up for C
 
 \stitle{Parallel Query Execution:} 
 {\em \underline{Summary:} Running view queries in parallel can offer significant
-performance gains; however, there is an optimal number of queries
-beyond which performance degrades significantly.}
+performance gains.}
 Executing \SeeDB-generated SQL queries in parallel can provide significant performance gains
 because queries can share buffer pool pages.
 However, a high degree of parallelism can degrade performance for a variety of reasons \cite{Postgres_wiki}. 

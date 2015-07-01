@@ -51,14 +51,14 @@
 Data analysts often build visualizations
 as the first step in their analytical workflow.
 However, when working with high-dimensional datasets, identifying visualizations
-that show relevant or desired trends in data can often be laborious and time-consuming.
-The need to manually specify visualizations one-at-a-time hampers rapid analysis and exploration.
+that show relevant or desired trends in data can be laborious.
+%The need to manually specify visualizations one-at-a-time hampers rapid analysis and exploration.
 We propose \SeeDB, a visualization recommendation engine to facilitate fast 
 visual analysis: 
 given a subset of data to be studied, \SeeDB intelligently explores the 
 space of visualizations, evaluates promising visualizations for trends, and 
 recommends those it 
-deems most ``useful'' or ``interesting'' for that data relative to the rest.
+deems most ``useful'' or ``interesting''.% for that data relative to the rest.
 The two major obstacles in recommending high-utility visualizations are {\em scale}:
 dealing with a large number of candidate visualizations and evaluating all of them in parallel, while
 responding within interactive time scales, and {\em utility}: identifying 
@@ -66,10 +66,10 @@ an appropriate scoring function for assessing visualization utility.
 For the former, \SeeDB introduces a general-purpose {\em incremental 
 view pruning}
 framework to quickly identify high-utility visualizations at query time.
-We supplement our pruning framework with multi-query optimization techniques that maximize 
+We supplement our pruning framework with multi-query optimization techniques to maximize 
 sharing of computation across visualizations.
-For the latter, as a first step in crafting a sophisticated utility scoring function, 
-we adopt and evaluate a 
+For the latter, as a first step,% in crafting a sophisticated utility scoring function, 
+we adopt a 
 deviation-based scoring function for visualization 
 utility, while indicating how we may be able to generalize to capture more aspects
 within our utility function.
