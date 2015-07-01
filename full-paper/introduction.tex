@@ -71,9 +71,9 @@ For some datasets, simply generating each of these visualizations can take many 
 (as we will see in this paper).
 Second, evaluating each of these visualizations for utility requires repeated
 computations on the same underlying data, wasting time and computational resources.
-Third, recommendations need to be made to analysts at interactive speeds,
+Third, recommendations need to be made at interactive speeds,
 necessitating approximations that return visualizations with slightly lower accuracy. 
-Addressing challenges and trade-offs in our system, \SeeDB, 
+Addressing these challenges and trade-offs in our system, \SeeDB, 
 is the primary focus of this paper. 
 
 % first, the curse of dimensionality makes the number of possible visualizations very large;
@@ -94,12 +94,6 @@ is the primary focus of this paper.
 
 We begin with an illustrative example that explains the \SeeDB use case and motivates our deviation-based
 utility metric. 
-\resolved{\reviewer {
-Focusing on the
-diabetes dataset in Figure 1 and Figure 3 would leave more room to reuse
-them to discuss some findings for example using Figure 3.
-}
-\mpv{in reviewer response mention that we use a more accessible dataset}}
 \begin{example}
 Consider a journalist performing research for a news article about millennials.
 Previous analyses show that millennials are getting married at an older age than 
@@ -163,7 +157,7 @@ quickly becomes untenable.
 	\vspace{-10pt}
 	\caption{Motivating Example}
 	\label{fig:intro}
-	\vspace{-10pt}
+	\vspace{-15pt}
 \end{figure}
 
 \noindent We have identified that across many analyses, 
@@ -178,7 +172,7 @@ analysts find the visualization in Figure \ref{fig:interesting_viz}
 interesting since it depicts an aspect of the data for unmarried adults 
 that is significantly different from the equivalent aspect
 for married adults.
-Specifically, the chart show that although capital gain 
+Specifically, the chart shows that although capital gain 
 for female and male unmarried adults 
 is approximately equal, capital gain for female, 
 married adults is only half that of male, 
@@ -302,16 +296,16 @@ for future work.
 % where analysts can both generate their own visualizations (like Tableau or Spotfire), 
 % or get data-driven recommendations on demand.
 Our implementation of \SeeDB incorporates an end-to-end data querying and 
-visualization environment that allows where analysts to manually generate 
+visualization environment that allows analysts to manually generate 
 their own visualizations (like Tableau or Spotfire), or get data-driven recommendations on demand, which
 can be further refined using the manual interface.
 We chose to support both automated and manual interaction in \SeeDB because we 
 believe that a {\em mixed-initiative interface}~\cite{mixed_initiative} is essential for keeping 
 analysts in the loop and allowing them to drive the analysis process.
-\SeeDB, is built as a middleware layer that can run on any 
-relational database system.
-In this paper, we develop and validate the use of  
-two orthogonal techniques to make this problem tractable:
+
+In developing \SeeDB as a middleware layer that can run on any database system,
+we develop and validate the use of  
+two orthogonal techniques to make the problem of recommending visualizations based on deviation tractable:
 \begin{denselist}
 \item {\em Sharing Computation.} 
 We develop a suite of multi-query optimization techniques to share computation
@@ -330,8 +324,8 @@ Lastly, we develop a general {\em phase-based execution framework}
 that allows us to leverage the benefits of these two techniques
 in tandem, reducing the time for execution by over 100X and
 making many recommendations feasible in real-time.
-We conclude by presenting an experimental evaluation of \SeeDB 
-via both a performance study and a user study.
+% We conclude by presenting an experimental evaluation of \SeeDB 
+% via both a performance study and a user study.
 In summary, the contributions of this paper are:
 
 % efficiently manages the search

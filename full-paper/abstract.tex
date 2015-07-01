@@ -63,11 +63,10 @@ The two major obstacles in recommending high-utility visualizations are {\em sca
 dealing with a large number of candidate visualizations and evaluating all of them in parallel, while
 responding within interactive time scales, and {\em utility}: identifying 
 an appropriate scoring function for assessing visualization utility.
-For the former, \SeeDB introduces a general-purpose {\em incremental 
-view pruning}
-framework to quickly identify high-utility visualizations at query time.
-We supplement our pruning framework with multi-query optimization techniques to maximize 
-sharing of computation across visualizations.
+For the former, \SeeDB introduces {\em incremental 
+pruning} framework to quickly identify high-utility visualizations at query time,
+coupled with techniques to maximize 
+the sharing of computation across visualizations.
 For the latter, as a first step,% in crafting a sophisticated utility scoring function, 
 we adopt a 
 deviation-based scoring function for visualization 
