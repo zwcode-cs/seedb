@@ -122,12 +122,11 @@ the $i = 4$th phase processes records $30,001$ to $40,000$.
 The execution engine begins 
 with the entire set of aggregate views under consideration.
 \begin{denselist}
-\item During phase $i$, the execution engine updates the partial results
-for the set of aggregate views
+\item During phase $i$, the \SeeDB updates partial results
+for the views
 still under consideration using the $i$th fraction of the dataset.
 The execution engine applies {\em sharing-based optimizations}
-to minimize scans of the $i$th fraction of the dataset by combining
-DBMS queries and executing them in tandem.
+to minimize scans on this  $i$th fraction of the dataset.
 \item At the end of phase $i$, the execution engine uses 
 {\em pruning-based optimizations} to determine which aggregate views to discard.
 The partial results of each aggregate view on the fraction from $1$ through $i$ are used to 
@@ -145,9 +144,9 @@ at the end of the $n$th phase.
 \papertext{The pseudocode for the phase based execution framework
 can be found in the technical report~\cite{seedb-tr}.}
 
-We next describe the \SeeDB optimizations,
-specifically, the sharing based optimizations in Section~\ref{sec:sharing_opt} and 
-the pruning based optimizations in Section~\ref{sec:pruning_opt}.
+%We next describe the \SeeDB optimizations,
+%specifically, the sharing based optimizations in Section~\ref{sec:sharing_opt} and 
+%the pruning based optimizations in Section~\ref{sec:pruning_opt}.
 \techreport{
 \begin{algorithm}[h]
 \caption{Pruning Framework}

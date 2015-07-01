@@ -128,8 +128,9 @@
 leads to latencies in the 100s of seconds for both ROW and COL;
 latency increases linearly in the size of the dataset and  number
 of views. 
-Column stores are superior to row stores,
-with $\frac{1}{5}$th the latency.}
+%Column stores are superior to row stores,
+%with $\frac{1}{5}$th the latency.
+}
 Without any optimizations, the basic \SeeDB
 serially executes two SQL queries for each
 possible view.
@@ -145,11 +146,11 @@ poor performance: latency for ROW is between 50-500s,
 while it is between 10-100s for COL. 
 This is because, depending on the dataset, both ROW and COL run between 50 to 250 SQL queries 
 for each \SeeDB invocation.
-Clearly, latencies associated with the basic \SeeDB framework are not practical for interactive 
+%Clearly, latencies associated with the basic \SeeDB framework are not practical for interactive 
 applications. 
 Second, COL runs about 5X faster than ROW. 
-This is expected because individual view queries only select a single dimension and measure
-attribute allowing COL to selectively read only two columns whereas ROW must read in the entire table.
+This is expected because most queries only select a few attributes,
+benefitting column-stores.
 Third, as expected, the latency of the
 basic framework is proportional to the number of rows as well as the 
 number of views in the table.
@@ -264,7 +265,7 @@ varied the maximum number of aggregates in any \SeeDB-generated SQL query
 % We ran these experiments on the SYN2 dataset 
 % since it has a large number (20) of measure attributes.
 % We varied the number of aggregate attributes 
-% in a query between 1 and 20 (i.e., we grouped $n_{agg}$ view
+b% in a query between 1 and 20 (i.e., we grouped $n_{agg}$ view
 % queries that share the same group-by attribute into one query
 % that is issued to the DBMS).
 The resulting latencies on the SYN dataset are shown in Figure \ref{fig:multi_agg} (log scale on the y-axis).

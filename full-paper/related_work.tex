@@ -60,7 +60,7 @@ but is restricted determining the best binning for the
 for the $x$ axis: in particular, it decides which granularity
 is appropriate to bin on to depict the most interesting relationships 
 between data. 
-Since this is a much simpler (and less ambitious) problem
+Since this is a much simpler problem
 than ours, sophisticated techniques are not necessary.
 % Our work is also similar to VizDeck which is a tool that given a dataset, uses a
 % set of pre-determined rules to create diverse visualizations and
@@ -75,11 +75,11 @@ than ours, sophisticated techniques are not necessary.
 % utility.
 %Another related tool 
 %is 
-VizDeck~\cite{DBLP:conf/sigmod/KeyHPA12} is a tool that, given a dataset,
-depicts all possible 2-D visualizations on a dashboard.
+VizDeck~\cite{DBLP:conf/sigmod/KeyHPA12}
+depicts all possible 2-D visualizations of a dataset on a dashboard.
 % that the user can
 %manipulate by reordering or pinning visualizations.
-Given that VizDeck generates all visualizations, it is only meant for 
+Given that VizDeck generates all visualizations, it is  meant for 
 small datasets; additionally, the VizDeck does not discuss techniques
 to speed-up the generation of these visualizations. 
 
@@ -238,15 +238,11 @@ optimization (e.g.
 %Multi-query optimization focuses on the creation of ``global''
 %query plans for a collection of queries rather than a single one,
 %such that the intermediate operators and results are shared across queries.
-Our problem is simpler however, since we know which candidate
-visualizations we need to evaluate, given a query, rather than having
-to wait for a batch of queries to arrive.  Hence, we can choose how to
-batch aggregates.  Further, because we are only executing simple
-aggregation queries with predictable selectivities, we can deploy
-optimizations tailored to our setting.  Finally, our pruning
+Our problem is simpler however, since we don't have 
+to wait for a batch of queries to arrive and all queries
+are simple aggregations. Finally, our pruning
 techniques allow us to stop evaluating some visualizations if we find
-that their utility is low---other multi-query schemes do not have the
-luxury of not performing particular computations.
+that their utility is low, something other multi-query schemes cannot do.
 
 \stitle{Query Recommendation Systems}: Finally, there is some related work in
 the space of general query recommendation in databases (see
