@@ -55,7 +55,7 @@ the contents of the WHERE clause.}\agp{rewritten to make clear that
 it is a function.}
 }
 
-Each \SeeDB visualization  can be translated into an agg\-re\-gate/group-by
+Each \SeeDB visualization  can be translated into an agg\-re\-gate / group-by
  query on the underlying data.
 % Since each visualization represents an aggregate summary of the underlying data,
 % the visualization can be distilled into an aggregate and grouping query.
@@ -281,7 +281,8 @@ $$ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D_R)] )$$
 % the higher the utility, the more the deviation
 % from the comparison view, and the more likely the associated visualization is to be interesting.
 Computing distance between probability distributions has
-been well studied in the literature, and \SeeDB\ supports a variety of metrics
+been well studied in the literature, and \SeeDB\ supports a variety of distance
+functions
 to compute utility, including Earth Movers Distance, 
 Euclidean Distance, Kullback-Leibler Divergence (K-L
 divergence), and Jenson-Shannon
@@ -291,15 +292,6 @@ but in Section \ref{sec:discussion} we discuss results for
 other distance functions. 
 Also in Section~\ref{sec:discussion}, we describe how our utility metric
 can be generalized to capture other aspects of interest to analysts (beyond deviation).
-\resolved{
-\reviewer {
-	D2.3 SeeDB supports a variety of metrics to compute utility, but only one of
-them is tested. What is the impact of the metric used?
-}
-\mpv{
-	We need to show experiments showing this.
-}
-}
 
 We can formally state the \SeeDB problem as follows:
 % Computing distance between probability distributions has
