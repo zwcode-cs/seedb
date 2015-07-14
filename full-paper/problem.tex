@@ -55,7 +55,7 @@ the contents of the WHERE clause.}\agp{rewritten to make clear that
 it is a function.}
 }
 
-Each \SeeDB visualization  can be translated into an agg\-re\-gate / group-by
+Each \SeeDB visualization  can be translated into an agg\-re\-gate over group-by
  query on the underlying data.
 % Since each visualization represents an aggregate summary of the underlying data,
 % the visualization can be distilled into an aggregate and grouping query.
@@ -257,9 +257,11 @@ summary into a probability distribution (i.e. the values of $f(m)$ sum to $1$).
 % over the various values of $a$ and the tables can be normalized into
 %probability distributions for comparison. To convert each result table 
 For our example visualization of {\em Average Capital Gain vs. Sex} (Figure \ref{fig:intro}),
-the probability distribution for the target view $V_i(D_Q)$ ({\em unmarried} adults), 
+the probability distribution for the target view $V_i(D_Q)$ ({\em unmarried} adults, data 
+in Table \ref{tab:interesting_viz}), 
 denoted as $P[V_i (D_Q)]$ is: 
-(F: 0.52, M: 0.48) while that for the reference view $V_i(D_R)$ ({\em married} adults), 
+(F: 0.52, M: 0.48) while that for the reference view $V_i(D_R)$ ({\em married} adults, data 
+in Table \ref{tab:uninteresting_viz}), 
 denoted as $P[V_i (D_R)]$ is:
 (F: 0.31, M: 0.69). 
 In contrast, the distributions for the visualization {\em Average Age
@@ -289,9 +291,7 @@ divergence), and Jenson-Shannon
 Distance. 
 Our experiments use Earth Movers Distance as the default distance function,
 but in Section \ref{sec:discussion} we discuss results for
-other distance functions. 
-Also in Section~\ref{sec:discussion}, we describe how our utility metric
-can be generalized to capture other aspects of interest to analysts (beyond deviation).
+other distance functions.
 
 We can formally state the \SeeDB problem as follows:
 % Computing distance between probability distributions has
@@ -336,6 +336,11 @@ have the largest values of $U(V)$ among all the views $(a, m, f)$,
 while minimizing total computation time.
 \vspace{-5pt}
 \end{problem}
+
+In Section~\ref{sec:discussion}, we describe how our metric
+can be generalized to capture aspects of interestingess besides
+deviation.
+
 % Thus, \SeeDB\ aims to find the $k$ views (obtained by adding a single aggregate
 % and group-by operator) that have the largest utility based on the function $U$.
 

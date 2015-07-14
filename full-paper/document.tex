@@ -38,6 +38,8 @@
 \newcommand{\mpv}[1]{\textcolor{blue}{MV: #1}}
 \newcommand{\agp}[1]{\textcolor{magenta}{AGP: #1}}
 \newcommand{\resolved}[1]{\textcolor{green}{}}
+\newcommand{\removefromtr}[1]{#1}
+\newcommand{\crc}[1]{\textcolor{red}{#1}}
 \newcommand{\aggv}[1]{aggregate view}
 %\newcommand{\alkis}[1]{\smallskip\noindent \textcolor{red}{\it $\Rightarrow$ Alkis: #1}}
 \newcommand{\SeeDB}{{\sc SeeDB}\xspace}
@@ -98,9 +100,9 @@
 
 \newcommand{\eat}[1]{}
 \newcommand{\papertext}[1]{#1}
-\newcommand{\techreport}[1]{}
+\newcommand{\techreport}[1]{#1}
 
-\newcommand{\techreporttext}[1]{}
+\newcommand{\techreporttext}[1]{<<TR: #1 END TR>>}
 \newcommand{\stitle}[1]{\vspace{0.25em}\noindent\textbf{#1}}
 
 \newcommand{\srm}[1]{\textcolor{blue}{Sam: #1}}

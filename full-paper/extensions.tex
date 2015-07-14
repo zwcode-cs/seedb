@@ -13,7 +13,7 @@ metrics to EMD and study the impact on:
 {\it (i)} performance and
 {\it (ii)} accuracy when pruning optimizations are employed.
 
-
+\removefromtr{
 We summarize our findings below.
 \papertext{Details can be found in the technical report~\cite{seedb-tr}.}
 \begin{denselist}
@@ -42,6 +42,7 @@ all three utility measures perform similarly in terms of performance
 (i.e., they lead to similar gains via our optimizations),
 without sacrificing accuracy. 
 \end{denselist}
+}
 
 \techreport{
 \subsection{Distance Functions}
@@ -58,30 +59,110 @@ like we described in Section~\ref{sec:pruning_opt}.
 
 We applied each of these distance functions---Euclidean,
 K-L divergence, and J-S divergence---to 
-our test datasets (\agp{which?}) and compared
-the resulting recommendations orders to that of EMD. 
-We found that for the top-$5$ visualizations
-output by EMD, 
-all three distance functions
-output 3 out of 5 visualizations in their top-5, 
-whereas two of three distance functions 
-output 4 out of 5 visualizations in their top-5.
-Similarly, for $k$=10, 
-all three distance functions output 6 out of the top-10 visualizations
-output by EMD in their top-10, while two of three distance functions
-output 9 out of the top-10 visualizations output by
-EMD in their top-10.
+our test datasets and compared
+the resulting visualization orders to that of EMD. 
+We found a high degree of agreement on the visualization orders
+produced by multiple distance functions.
+For example, for the census dataset, when the visualization order
+produced by EMD was compared to that for other distance functions, we
+found that: (a) 3 of the top-$5$ visualizations were output by all
+three distance functions, and 4 of the top-$5$ were output by two of three
+distance functions. (b) for $k$=10, 6 of the top-$10$ visualizations 
+were output by all three functions while 9 of the top-$10$ were output by
+two of the three distance functions.
+We find similar agreement on the lowest ranked visualizations as well.
 
-Thus, we find a high degree of agreement on the 
-top visualizations according to multiple distance functions.
-We see similar results for the lowest utility visualizations as well. 
-For the bottom-$5$ visualizations output by EMD, 
-all three distance functions output 3 out of 5 in their top-5, 
-and two of three distance functions output 4 out of 5 in their top-5.
-These results indicate that the choice of specific distance 
-function measuring deviation is not
-critical; the above functions produce similar 
-orderings of visualizations.
+Thus we find that the choice of specific function used to measure 
+deviation is not crucial; the supported functions produce very similar
+visualization orders.
+
+\subsection{Pruning on Other Utility Metrics}
+In Section \ref{sec:pruning_opt}, we described the 
+two pruning strategies used by \SeeDB to rapidly discard 
+low-utility views.
+As seen in Section \ref{sec:experiments}, 
+our strategies work well for the EMD-based 
+utility metric.
+
+We now present results which indicate that our pruning strategies
+are general and can support other utility metrics as well.
+To validate this claim, we evaluate \SeeDB using two other metrics:
+(a) Euclidean distance (L2): like EMD,
+this is a deviation-based utility metric.
+(b) Max deviation (MAX\_DIFF): this metric
+measures the maximum deviation between the normalized values for any
+group in the query and reference distribution.
+This metric would, for example, score the
+visualization in Figure~\ref{fig:huhi} very highly.
+
+% Now, given that \SeeDB can support other
+% distance functions (Section~\ref{sec:diff_dist_funcs})
+% or utility metrics (Section~\ref{sec:gen_util}),
+% we now focus on evaluating whether \SeeDB's optimizations
+% translate to gains on these other utility metrics.
+% We consider two other utility metrics
+
+\begin{figure}[h]
+	\centering
+	\vspace*{-10pt}
+	\begin{subfigure}{0.48\linewidth}
+		\centering
+		\includegraphics[width=4.4cm] {Images/in_memory_diff_metrics_latency.pdf}
+		\vspace{-15pt}
+		\caption{Latency}
+		\label{fig:dist_latency}
+	\end{subfigure}
+	\begin{subfigure}{0.48\linewidth}
+		\centering
+		\includegraphics[width=4.4cm] {Images/in_memory_diff_metrics_accuracy.pdf}
+		\vspace{-15pt}
+		\caption{Accuracy}
+		\label{fig:dist_accuracy}
+	\end{subfigure}
+	\vspace{-10pt}
+\caption{Latency and Accuracy for different Distance Functions}	
+		\vspace{-10pt}
+\end{figure}
+
+Figure~\ref{fig:dist_latency} and Figure~\ref{fig:dist_accuracy}
+respectively show the reduction in latency and accuracy for EMD,
+L2 and MAX\_DIFF.
+We observe very similar trends with respect to reduction in latency
+and accuracy for all metrics.
+Since we have validated that pruning works well with EMD, the
+results indicate that pruning can also handle other metrics such as
+L2 and MAX\_DIFF well.
+As mentioned in Section \ref{sec:pruning_opt}, we posit that pruning
+techniques work for any {\em consistent utility metric} where the 
+estimate of the utility metric tends to the real value as the sample
+size increases.
+
+% In Figure~\ref{fig:dist_latency}, we plot the reduction 
+% in latency for these metrics and EMD,
+% and in Figure~\ref{fig:dist_accuracy}, we plot the
+% accuracy, both as a function of $k$.
+% The results indicate that in all cases,
+% the reduction of latency is significant,
+% and is similar between EMD, L2 and MAX\_DIFF.
+% At the same time, the accuracy variation between 
+% EMD, L2, and MAX\_DIFF is also similar
+% (slight variations can be attributed to random noise).
+
+% These results indicate that \SeeDB is capable of
+% providing similar performance improvements on other
+% utility measures. 
+
+
+% Thus, we find a high degree of agreement on the 
+% top visualizations according to multiple distance functions.
+% We see similar results for the lowest utility visualizations as well. 
+% For the bottom-$5$ visualizations output by EMD, 
+% all three distance functions output 3 out of 5 in their top-5, 
+% and two of three distance functions output 4 out of 5 in their top-5.
+% These results indicate that the choice of specific distance 
+% function measuring deviation is not
+% critical; the above functions produce similar 
+% orderings of visualizations.
 
 \subsection{General Utility Metrics}\label{sec:gen_util}
 
@@ -165,72 +246,10 @@ in the utility function $U (V_i)$ that would assign weights to each view.
 Thus, in this form, \SeeDB has been extended to 
 incorporate other recommendation dimensions into
 the utility metric without any changes to the \SeeDB framework.
+}
 
 
-
-\begin{figure}[h]
-	\centering
-	\vspace*{-10pt}
-	\begin{subfigure}{0.48\linewidth}
-		\centering
-		\includegraphics[width=4.4cm] {Images/in_memory_diff_metrics_latency.pdf}
-		\vspace{-15pt}
-		\caption{Latency}
-		\label{fig:dist_latency}
-	\end{subfigure}
-	\begin{subfigure}{0.48\linewidth}
-		\centering
-		\includegraphics[width=4.4cm] {Images/in_memory_diff_metrics_accuracy.pdf}
-		\vspace{-15pt}
-		\caption{Accuracy}
-		\label{fig:dist_accuracy}
-	\end{subfigure}
-	\vspace{-10pt}
-\caption{Latency and Accuracy for different Distance Functions}	
-		\vspace{-10pt}
-\end{figure}
-
-
-\subsection{Performance and Accuracy of {\large \SeeDB}}
-In Section \ref{sec:pruning_opt}, we described the 
-two pruning strategies used by \SeeDB
-to rapidly discard low-utility views.
-As seen in Section \ref{sec:experiments}, 
-our strategies work well for the EMD-based 
-utility metric.
-
-Now, given that \SeeDB can support other
-distance functions (Section~\ref{sec:diff_dist_funcs})
-or general utility metrics (Section~\ref{sec:gen_util}),
-we now focus on evaluating whether \SeeDB's optimizations
-translate to gains on these other utility metrics.
-We consider two other utility metrics
-(a) Euclidean distance (L2): like EMD,
-this is a deviation-based utility metric.
-(b) Max deviation (MAX\_DIFF): this metric
-measures the maximum deviation between
-the highest aggregate, and the second highest
-aggregate. This metric would, for example, score
-visualization Figure~\ref{fig:huhi} very highly.
-
-
-In Figure~\ref{fig:dist_latency}, we plot the reduction 
-in latency for these metrics,
-and in Figure~\ref{fig:dist_accuracy}, we plot the
-accuracy, both as a function of $k$.
-The results indicate that in all cases,
-the reduction of latency is significant,
-and is similar between EMD, L2 and MAX\_DIFF.
-At the same time, the accuracy variation between 
-EMD, L2, and MAX\_DIFF is also similar
-(slight variations can be attributed to random noise).
-
-These results indicate that \SeeDB is capable of
-providing similar performance improvements on other
-utility measures. 
-
-\agp{This isn't very flattering...}
-}%techreport
+%techreport
 
 \if{0}
 We now discuss the generality of our pruning techniques 

@@ -27,7 +27,7 @@ of interestingness of a visualization.
 To validate deviation as a utility metric, we obtained ground truth data about
 interestingness of visualizations and evaluated \SeeDB against it.
 To obtain ground truth, we presented 5 data analysis experts with the Census 
-dataset (Section \ref{sec:introduction}) the analysis task of
+dataset (Section \ref{sec:introduction}) and the analysis task of
 studying the effect of marital status on socio-economic indicators.
 We presented experts with the full set of potential aggregate visualizations 
 and asked them to classify each visualization as interesting or
@@ -35,16 +35,16 @@ not interesting {\em in the context of the task}.
 Of the 48 visualizations, on average, experts classified 4.5 visualizations
 (sd = 2.3) as being interesting for the task.
 The small number indicates that of the entire set of potential visualizations, 
-only a small fraction (\textasciitilde10\%) show interesting trends.
+only a small fraction (\textasciitilde10\%) shows interesting trends.
 To obtain consensus on ground truth, we labeled
-any visualization chosen by a majority of participants as 
-interesting; the rest were not. 
+any visualization chosen by a majority of experts as 
+interesting; the rest were labeled as not interesting. 
 This process identified 6 interesting and 42 uninteresting visualizations.
 In addition to Figures~\ref{fig:interesting_viz} (interesting, recommended by \SeeDB) 
 and Figure \ref{fig:uninteresting_viz} (not interesting, not recommended by \SeeDB), 
 Figure~\ref{fig:huhi}, a
 visualization recommended by \SeeDB, 
-was labeled as interesting (according to a expert: ``\ldots it
+was labeled as interesting (according to an expert: ``\ldots it
 shows a big difference in earning for self-inc adults'') while 
 Figure~\ref{fig:luli} was labeled as not interesting (notice the lack of deviation).
 While some classifications can be explained using deviation, some cannot: 
@@ -167,16 +167,15 @@ To evaluate the accuracy of \SeeDB's recommendations over the Census data,
 we ran \SeeDB for the study task, varying $k$ between 0 \ldots 48, and measured
 the agreement between \SeeDB recommendations and ground truth.
 As is common in data mining, 
-we computed the ``receiver operating curve'' or ROC curve for \SeeDB, 
-Figure \ref{fig:roc}, depicting 
+we computed the ``receiver operating curve'' or ROC curve for \SeeDB
+(Figure \ref{fig:roc}) depicting 
 the relationship between the true positive rate (TPR) on the 
-x-axis and false positive rate (FPR) on the y-axis for different values of a
-parameter ($k$ in this case). 
+x-axis and false positive rate (FPR) on the y-axis for different values of $k$. 
 TPR is the number of interesting visualizations returned as a fraction of the 
 total number of interesting visualizations, 
 while FPR is the fraction of recommendations
 that were incorrectly returned as interesting, as a fraction of the number
-of interesting visualizations returned. 
+of non-interesting visualizations. 
 ROC curves for highly accurate classifiers are skewed towards the upper left
 corner of the graph. The red line indicates the random baseline (every example
 is classified randomly).
@@ -196,8 +195,8 @@ While ROC curves on different datasets and tasks will vary,
 this user study shows that \SeeDB recommendations have high quality
 and coverage,
 despite focusing on a simple deviation-based utility metric.
-We expect that taking into account other aspects (apart from deviation),
-would improve \SeeDB's recommendations even more.
+We expect that taking into account other aspects of interestingness
+would improve \SeeDB recommendations even more.
 
 % We varied the number of visualizations $k$ recommended by \SeeDB between 0 and
 % max \mpv{fill in max}.
@@ -262,12 +261,12 @@ manual tool, and (iii) analysts would {\em prefer} using \SeeDB to a manual tool
 \stitle{Participants and Datasets}. We recruited 16 participants (5 female, 11
  male), all graduate students with prior data analysis experience and visualization
  experience (e.g. R, matplotlib or Excel).
- None of the participants had previously worked with the study datasets.
-
  Our study used the Housing and Movies datasets from 
  Table \ref{tab:datasets}.
- These  datasets were chosen because they were easy to understand and 
-  comparable in size and number of potential visualizations.
+ These  datasets were chosen because they were easy to understand and
+ comparable in size and number of potential visualizations.
+ None of the participants had previously worked with the study datasets.
+
  
 \stitle{Study Protocol}.
 Our study used a 2 (visualization tool) X 2 (dataset) within-subjects design.
@@ -470,7 +469,7 @@ identified as an interesting visualization in the ground truth.
 %they did not want to rely 
 %too heavily on recommendations but instead let intuition guide their analysis.}
 \techreport{An intriguing observation from two participants was that while they wanted recommendations to support them
-in analysis, they did not want to rely too heavily on recommendations and ignore their creativity.
+in analysis, they did not want to rely too heavily on recommendations.
 One participant noted {\em ``The only potential downside may be that it made 
 me lazy so I didn't bother thinking as much about what I really could study or be interested in''}.
 This observation suggests lines for future work that can find the right balance between automatically 
@@ -501,7 +500,7 @@ or measure attribute) and bookmarked the resulting visualization.
 % visualizations that were variations of it (e.g. different aggregation or measure attribute) 
 % until they found an interesting visualization.
 % \mpv{can I put any data here?}
-Thus, even if participants did not bookmark recommendations directly, their often created
+Thus, even if participants did not bookmark recommendations directly, they often created
 small variations of the visualization and bookmarked them.
 In other words, along with providing recommendations that were interesting by themselves, \SeeDB
 helped direct participants to other interesting visualizations by {\em seeding} their analysis.
@@ -509,10 +508,9 @@ This pattern was highlighted in user comments as well; e.g.,
 ``\ldots would be incredibly useful in the initial analysis of the data'', 
 ``\ldots quickly deciding what correlations are relevant and gives a quick peek'',
 ``\ldots great tool for proposing a set of initial queries for a dataset''.
-In addition to understand the role recommendations played in analysis, these observations 
-also serve to reinforce the design choice of \SeeDB as a complement to a traditional
-visualization system vs. a standalong system; the mixed-initiative nature of the tool 
-is essential for it to be functional in visual analysis.
+In addition to understanding the role recommendations played in analysis, these observations 
+also served to reinforce the design choice of \SeeDB as a complement to manual chart construction; 
+the mixed-initiative nature of the tool is essential for it to be functional in visual analysis.
 }
 
 
@@ -522,24 +520,22 @@ Given that both studies described above were conducted in the lab, the studies h
 First, due to constraints on time and resources, the sample sizes for both studies were small.
 A larger set of participants and spread of datasets could be used to further demonstrate the
 efficacy of our system.
-Second, our user studies were conducted with graduate students participants who, on one hand, 
-likely have higher data analysis skills than typical users, while on the other hand, are 
-not experts in the dataset being analyzed.
-Consequently, our results represent results the perspective of capable data analysts who 
+Second, our user studies were conducted with graduate students participants.
+Consequently, our results represent the perspective of capable data analysts who 
 have limited familiarity with the data.
 We find that \SeeDB is particularly well suited for this particular setting of initial data 
-analysis when the user is not very familiar with the data (\~ coldstart).
+analysis when the user is not very familiar with the data.
 It would be instructive to evaluate \SeeDB on datasets about which users have expert knowledge.
-Finally, we note that being a research prototype, limited functionality of \SeeDB (e.g. in types of
-charts) and potential issues with learnability and interactivity may have also had an impact on
-our study.
+Finally, we note that being a research prototype, the limited functionality of \SeeDB and
+potential issues of learnability may have impacted our study.
+}
 
-\mpv{Also: The datasets we evaluated had a relatively small (< 100) number of potential visualizations;
-it would be valuable to evaluate the performance of \SeeDB on datasets with thousands of potential
-visualizations.
-It is also possible that some datasets were easier to interpret than others.
-}
-}
+% \mpv{Also: The datasets we evaluated had a relatively small (< 100) number of potential visualizations;
+% it would be valuable to evaluate the performance of \SeeDB on datasets with thousands of potential
+% visualizations.
+% It is also possible that some datasets were easier to interpret than others.
+% }
+% }
 
 
 

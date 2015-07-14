@@ -38,7 +38,7 @@ i.e., $\Delta_k = U(V_k) - U(V_{k+1})$.
 Views with large $\Delta_k$ values can be pruned accurately while whose with
 small $\Delta_k$s can lead to lower absolute accuracy.
 While this is true, notice that small $\Delta_k$s are, in fact, the result of views at 
-the top-$k$ boundary having similar utility (and interestingness).
+the top-$k$ boundary having similar utility (and, therefore, interestingness).
 For instance, the utilities at the top-$5$ boundary for the DIAB dataset are 
 $U(V_5)$ = 0.257, $U(V_6)$ = 0.254, and $U(V_7)$ = 0.252 (see Figure~\ref{fig:diabetes_utility_distribution}).
 The small $\Delta_k$s lead to lower accuracy for $k$ = 5, but the 
@@ -47,8 +47,8 @@ Therefore, even if $V_6$ or $V_7$ are incorrectly chosen to be in the top-$k$,
 the quality of results is essentially as high as when $V_5$ would have been chosen.
 Our {\em utility distance} metric correctly captures this overall quality of results.
 Utility distance indicates that, in the worst case, even when both $V_6$ or $V_7$ are 
-incorrectly chosen, the overall utility of the top-$5$ differs only by 0.013 ($\approx$5\% error) 
-units compared to the true top-$5$.
+incorrectly chosen, the overall utility of the top-$5$ differs only by 0.013 
+units ($\approx$5\% error) compared to the true top-$5$.
 As a result, we jointly consider accuracy as well as utility distance when evaluating 
 result quality.
 
@@ -90,8 +90,8 @@ technique to be useful, it must do significantly better than RANDOM.
 Since absolute latencies of any pruning strategy depend closely on the exact DBMS execution techniques, 
 in this section, we report relative improvements in latency, specifically, the percent improvement 
 in latency with pruning compared to latency without pruning.
-Absolute latency numbers for real datasets are discussed in Section \ref{sec:expt_summary}.
-We do not employ early stopping for any of these techniques.
+Absolute latency numbers are discussed in Section \ref{sec:expt_summary}.
+We do not employ early stopping in the next set of experiments.
 
 %we present latencies in this section 
 
@@ -179,16 +179,13 @@ discussed in Section \ref{sec:expt_summary}.
 		\caption{Bank dataset: utility distribution}
 		\label{fig:bank_utility_distribution}
 	\end{subfigure}
-	
-	\begin{subfigure}{1\linewidth}
+		\begin{subfigure}{0.48\linewidth}
 		\centering
-		\includegraphics[width=6.5cm]
-		{Images/diabetes_utility_distribution.pdf}
-		\vspace{-5pt}
-		\caption{Diabetes dataset: utility distribution}
-		\label{fig:diabetes_utility_distribution}
+		\includegraphics[width=4.4cm] {Images/in_memory_bank_accuracy.pdf}
+		\vspace{-15pt}
+		\caption{Bank Dataset Accuracy}
+		\label{fig:bank_accuracy}
 	\end{subfigure}
-
 \vspace{-10pt}
 \label{fig:utility_distribution}
 \caption{Distribution of Utilities}
@@ -266,12 +263,13 @@ metrics over 20 runs.
 \begin{figure}[h]
 	\centering
 	\vspace*{-10pt}
-	\begin{subfigure}{0.48\linewidth}
+	\begin{subfigure}{1\linewidth}
 		\centering
-		\includegraphics[width=4.4cm] {Images/in_memory_bank_accuracy.pdf}
-		\vspace{-15pt}
-		\caption{Bank Dataset Accuracy}
-		\label{fig:bank_accuracy}
+		\includegraphics[width=6.5cm]
+		{Images/diabetes_utility_distribution.pdf}
+		\vspace{-5pt}
+		\caption{Diabetes dataset: utility distribution}
+		\label{fig:diabetes_utility_distribution}
 	\end{subfigure}
 	\begin{subfigure}{0.48\linewidth}
 		\centering
@@ -361,7 +359,7 @@ We see the effect of utility distribution in the performance of our pruning
 strategies.
 Figure~\ref{fig:bank_accuracy} and Figure~\ref{fig:bank_utility_dist} respectively show
 the {\em average} accuracy and utility distance of our strategies over 20 runs.
-We find that MAB consistently produces 75\% or better accuracy for all values of $k$ and
+We find that MAB consistently produces 75\% or better accuracy for all values of $k$, and
 CI produces 85\% or better accuracy for $k$$>$10.
 For $k$=1 and 2, the accuracy is 75\% for both pruning strategies (due to large 
 $\Delta_k$ values).
@@ -480,7 +478,7 @@ We see this behavior in Figure~\ref{fig:dia_accuracy} where the accuracy of
 pruning is quite low ($<60\%$) for $k$=1 but improves consistently to 68\% (CI) 
 and 86\% (MAB) for $k$=5 and is $>$80\% for $k$$\geq$10.
 In the companion figure, Figure \ref{fig:dia_utility_dist}, we see that although
-accuracy is relatively low $k$$<$5, utility distance is small (0.013 for CI, 0.002
+accuracy is relatively low for $k$$<$5, utility distance is small (0.013 for CI, 0.002
 for MAB) indicating that the results are high quality.
 Both CI and MAB produce 40X smaller utility distances compared to RANDOM.
 
@@ -507,8 +505,8 @@ relative to NO\_PRU. For smaller $k$, reductions can be even higher, closer to 9
 especially useful when we want to identify and quickly display the first one or two top views.}
 Figures~\ref{fig:bank_latency} and \ref{fig:dia_latency} show the latency
 of our strategies for the banking and diabetes dataset.
-First off, we observe that the use of either of CI or MAB produces a 50\% reduction in latency
-throughout.
+First off, we observe that the use of either CI or MAB produces a 50\% reduction in latency
+for $k$$\geq$10.
 In fact, for CI, we obtain almost a 90\% reduction in latency for small $k$. 
 For $k$=5, MAB produces between 50 - 60\% reduction while CI produces a reduction of 60 - 80\%.
 Early stopping, i.e. returning approximate results once the top-$k$ views have been identified, 
@@ -547,7 +545,7 @@ As expected, as $k$ increases, latency also increases because we can prune fewer
 
 \stitle{CI vs. MAB}.
 In our evaluation, we compared two competing pruning strategies, CI and MAB. 
-From the figures, we observe that MAB, 
+From the above figures, we observe that MAB, 
 on average, has higher accuracy and lower utility distance compared to
 CI, i.e., overall, it produces higher quality results.
 However, we find that CI performs much better than MAB on latency.

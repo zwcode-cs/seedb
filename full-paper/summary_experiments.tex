@@ -21,7 +21,7 @@ by our sharing optimizations (SHARING), and by the combination of our sharing an
 We also show latencies for early result generation with COMB (COMB\_EARLY), where we return approximate results 
 as soon as the top-$k$ visualizations have been identified.
 The results in Figure \ref{fig:all_opt_with_pruning} 
-use the CI pruning scheme and $k$=10. 
+use the Confidence Interval (CI) pruning scheme and $k$=10. 
 
 %We note that overall the results on the column store (not shown) are similar, with slightly faster overall performance.  The column store benefits less from the pruning optimizations on small datasets (BANK and DIAB), because it has a higher fixed per-query overhead than Postgres, which causes the additional queries run for each round of the pruning algorithm to introduce some penalty.  However, on these datasets the total runtimes are still only a few seconds or less no matter which optimizations we enable.
 
@@ -106,8 +106,7 @@ use the CI pruning scheme and $k$=10.
 \end{figure}
  
 \begin{denselist} 
-\item $[$\underline{\em $>$ 100X speedup overall}$]$ The combination of our sharing and pruning optimizations provides a speedup of up 
-between 50X (COMB) -- 300X (COMB\_EARLY) for ROW (Figure \ref{fig:share_prune_row}) and 
+\item $[$\underline{\em $>$ 100X speedup overall}$]$ The combination of our sharing and pruning optimizations provides a speedup between 50X (COMB) -- 300X (COMB\_EARLY) for ROW (Figure \ref{fig:share_prune_row}) and 
 10X (COMB) -- 30X (COMB\_EARLY) for COL (Figure \ref{fig:share_prune_col}).
 This reduces latencies for small datasets like DIAB from 12s to 200ms, and from almost 2 hrs to tens of seconds for large datasets 
 like AIR10. 

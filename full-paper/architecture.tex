@@ -17,6 +17,10 @@ describe the architecture and the execution engine in more detail.
 \SeeDB's visualization recommendation capabilities
 are packaged into an end-to-end visual analytics environment, 
 with basic visualization functionalities such as those provided by Tableau.
+The \SeeDB front-end allows analysts to manually
+generate visualizations, or
+obtain data-driven recommendations on demand, which can be further
+refined using the manual interface.
 %  as a recommendation plugin that can
 % be incorporated into a visualization tool such as Tableau or Spotfire. 
 % For evaluating our system, we have combined \SeeDB with a simple visualization
@@ -34,16 +38,13 @@ response to changes in the query (B)
 issued against the database.
 
 \begin{figure}[htb]
-\vspace{-10pt}
 \centerline{
-\hbox{\resizebox{8cm}{!}{\includegraphics[trim=0 0 0 0, 
-clip=true]{Images/seedb-architecture.pdf}}}}
+\hbox{\resizebox{8.5cm}{!}{\includegraphics[trim=0mm 0mm 0mm 0mm,
+clip=true]{Images/seedb_frontend.pdf}}}}
+\caption{\SeeDB Frontend}
 \vspace{-12pt}
-\caption{SeeDB Architecture}
-\vspace{-10pt}
-\label{fig:sys-arch}
+\label{fig:frontend1}
 \end{figure} 
-
 
 \stitle{Architectural Overview.} 
 \SeeDB is implemented as a middleware layer that can run on
@@ -64,12 +65,23 @@ and are displayed as visualization recommendations to the user,
 who can then interact with these
 visualizations.
 
+\begin{figure}[htb]
+\vspace{-5pt}
+\centerline{
+\hbox{\resizebox{8cm}{!}{\includegraphics[trim=0 0 0 0, 
+clip=true]{Images/seedb-architecture.pdf}}}}
+\vspace{-12pt}
+\caption{SeeDB Architecture}
+\vspace{-10pt}
+\label{fig:sys-arch}
+\end{figure} 
+
 \stitle{Basic Execution Engine.} 
 To motivate the need for optimizations, we first describe 
 how our execution engine would work without optimizations. 
 To identify the $k$ best aggregate views,
 \SeeDB needs to do the following:
-For each aggregate view, it generates
+for each aggregate view, it generates
 a SQL query corresponding to the target
 and reference view, and issues
 the two queries to the underlying DBMS.
@@ -89,7 +101,7 @@ Such latencies are unacceptable for interactive use.
 \stitle{Execution Engine with Optimizations.} 
 To reduce latency in 
 evaluating the collection of aggregate views, 
-the execution engine  
+the \SeeDB execution engine  
 applies two kinds of optimizations:
 {\em sharing}, where aggregate view queries are combined to share computation
 as much as possible, and {\em pruning}, where aggregate view queries
@@ -108,7 +120,7 @@ the $i = 4$th phase processes records $30,001$ to $40,000$.
 The execution engine begins 
 with the entire set of aggregate views under consideration.
 \begin{denselist}
-\item During phase $i$, the \SeeDB updates partial results
+\item During phase $i$, \SeeDB updates partial results
 for the views
 still under consideration using the $i$th fraction of the dataset.
 The execution engine applies {\em sharing-based optimizations}
@@ -127,53 +139,35 @@ at the end of the $n$th phase.
 %Further, in this manner, the sharing and pruning based optimizations do
 %not interfere with each other---one is applied during the phase,
 %and one is applied at the end of the phase.
-\papertext{The pseudocode for the phase based execution framework
-can be found in the technical report~\cite{seedb-tr}.}
+% \papertext{The pseudocode for the phase based execution framework
+% can be found in the technical report~\cite{seedb-tr}.}
 
 %We next describe the \SeeDB optimizations,
 %specifically, the sharing based optimizations in Section~\ref{sec:sharing_opt} and 
 %the pruning based optimizations in Section~\ref{sec:pruning_opt}.
 \techreport{
 \begin{algorithm}[h]
-\caption{Pruning Framework}
-\label{algo:custom_exec_engine}
+\caption{Phase-based Execution Framework}
+\label{algo:phase_based_exec}
 \begin{algorithmic}[1]
 \State viewsInRunning $\gets$ \{all views\}
-\State currPhase $\gets$ 0
-\While {currPhase.hasNext()}
-\State processNextPartition()
+\For {currPhase $\gets$ 1 \ldots n}
+\State processDataForNextPhase(viewsInRunning)
 %\State updateUtilityEstimates()
-\If {currPhase.End()}
 \State pruneViews(viewsInRunning)
-\State currPhase.Next()
-\EndIf
 % \If {stoppingCondition.True()}
 % \State break
 % \EndIf
-\EndWhile
-\State return viewsInRunning.sort().getTopK()
+\EndFor
+\State return viewsInRunning.getTopK()
 \end{algorithmic}
 \end{algorithm}
-\agp{I've pasted this as is but needs to be updated.}
 }
 % \reviewer {
 % 	D2.5 The horizontal partitioning is never detailed: how is it done? How is the
 % number of fragments decided?
 % }
 % \mpv{something about how partitions are defined}
-
-
-
-
- 
-\begin{figure}[htb]
-\centerline{
-\hbox{\resizebox{8.5cm}{!}{\includegraphics[trim=0mm 0mm 0mm 0mm,
-clip=true]{Images/seedb_frontend.pdf}}}}
-\caption{\SeeDB Frontend}
-\vspace{-20pt}
-\label{fig:frontend1}
-\end{figure} 
 
 
 % The optimizer applies multi-query

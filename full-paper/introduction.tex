@@ -119,29 +119,6 @@ quickly becomes untenable.
 \vspace{-7pt}
 	\centering
 	\begin{subfigure}{0.49\linewidth}
-	   \begin{tabular}{ccc} \hline
-	   	Sex  &   Married & Capital \\
-	   	 & & Gain  \\ \hline
-		Female & True  &  758 \\ \hline
-		Female & False &  380 \\ \hline
-		Male   & True  &  1657 \\ \hline
-		Male   & False &  356 \\ \hline
-	  \end{tabular}
-		  \caption{Data: Avg Capital Gain vs. Sex} \label{tab:interesting_viz}
-	\end{subfigure}
-	\begin{subfigure}{0.49\linewidth}
-	   \begin{tabular}{ccc} \hline
-	   	Sex  &   Married & Age \\ \hline
-		Female & True  &  44 \\ \hline
-		Female & False &  28 \\ \hline
-		Male   & True  &  43 \\ \hline
-		Male   & False &  28 \\ \hline
-	  \end{tabular}
-	  \caption{Data: Avg Age vs. Sex} \label{tab:uninteresting_viz}
-	\end{subfigure}
-	
-	\centering
-	\begin{subfigure}{0.49\linewidth}
 		{\includegraphics[width=4cm] {Images/HUHI_sex_avg_cap_gain.pdf}}
 		\vspace{-5pt}
 		\caption{Interesting Visualization}
@@ -153,6 +130,31 @@ quickly becomes untenable.
 		\vspace{-5pt}
 		\caption{Uninteresting Visualization}
 		\label{fig:uninteresting_viz}
+	\end{subfigure}
+	\centering
+	\begin{subfigure}{0.49\linewidth}
+	   \begin{tabular}{|c|c|} \hline
+	   	Sex  &   Capital Gain \\ \hline
+	   	\multicolumn{2}{|c|}	{Unmarried Adults} \\ \hline
+		Female & 380 \\ \hline
+		Male   & 356 \\ \hline
+		\multicolumn{2}{|c|}	{Married Adults} \\ \hline
+		Female &  758 \\ \hline
+		Male  &  1657 \\ \hline
+	  \end{tabular}
+		  \caption{Data: Avg Capital Gain vs. Sex} \label{tab:interesting_viz}
+	\end{subfigure}
+	\begin{subfigure}{0.49\linewidth}
+	   \begin{tabular}{|c|c|} \hline
+	   	Sex  &   Capital Gain \\ \hline
+	   	\multicolumn{2}{|c|}	{Unmarried Adults} \\ \hline
+	   	Female & 28 \\ \hline
+	   	Male   &  28 \\ \hline
+	   	\multicolumn{2}{|c|}	{Married Adults} \\ \hline
+		Female &  44 \\ \hline
+		Male   &  43 \\ \hline
+	  \end{tabular}
+	  \caption{Data: Avg Age vs. Sex} \label{tab:uninteresting_viz}
 	\end{subfigure}
 	\vspace{-10pt}
 	\caption{Motivating Example}
@@ -172,7 +174,7 @@ analysts find the visualization in Figure \ref{fig:interesting_viz}
 interesting since it depicts an aspect of the data for unmarried adults 
 that is significantly different from the equivalent aspect
 for married adults.
-Specifically, the chart shows that although capital gain 
+Specifically, the chart depicts that although capital gain 
 for female and male unmarried adults 
 is approximately equal, capital gain for female, 
 married adults is only half that of male, 
@@ -372,6 +374,10 @@ In summary, the contributions of this paper are:
   beyond deviation (Section~\ref{sec:discussion}).
 \end{denselist}
 
+\crc{
+	Finally, we note that this work builds upon the high-level ideas for \SeeDB\ as 
+	described in~\cite{DBLP:conf/vldb/Parameswaran2013} and ~\cite{DBLP:journals/pvldb/VartakMPP14}.
+}
 \noindent Finally, we note that the vision for \SeeDB\ was described 
 in a vision paper~\cite{DBLP:conf/vldb/Parameswaran2013} and presented 
 as a demonstration~\cite{DBLP:journals/pvldb/VartakMPP14}, 
