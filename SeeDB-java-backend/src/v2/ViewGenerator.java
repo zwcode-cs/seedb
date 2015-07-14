@@ -2,6 +2,8 @@ package v2;
 
 import java.util.ArrayList;
 
+import v2.Setting.VizSource;
+
 public class ViewGenerator {
 	
 	/**
@@ -14,43 +16,40 @@ public class ViewGenerator {
 	 */
 	// question about where viz type setting goes
 	// also decide if input query goes into setting
-	public void generateViewStubs(
+	public static ArrayList<View> generateViewStubs(
 			DBMetadata metadata, 
 			InputQuery targetQuery,
 			InputQuery referenceQuery, 
-			UserPreferences preferences, 
+			InvocationParameters params,
 			Setting setting) {
-		// for single viz
-		
-		// for comparative viz
-		// for manual
-		
-		// for recommendations
-		// go through DB metadata and identify dimensions and measures 
-		// TODO: not in query
-		// take cross product
-		
-		ArrayList<AggregateComparisonView> views 
-			= new ArrayList<AggregateComparisonView>();
-		ArrayList<Attribute> dimensions = new ArrayList<Attribute>();
-		ArrayList<Attribute> measures = new ArrayList<Attribute>();
-		
-		for (Attribute a : metadata.getAttributes()) {
-			// TODO: if a in targetQuery or referenceQuery, continue
-			if (a.isDimension()) {
-				dimensions.add(a);
-			} else if (a.isMeasure()) {
-				measures.add(a);
+		if (params.vizSource == VizSource.MANUAL) {
+			return null;
+		} else { // recommendations
+			if (params.comparativeVisualization) {
+				ArrayList<View> views 
+					= new ArrayList<View>();
+				ArrayList<Attribute> dimensions = new ArrayList<Attribute>();
+				ArrayList<Attribute> measures = new ArrayList<Attribute>();
+				
+				for (Attribute a : metadata.getAttributes()) {
+					// TODO: if a in targetQuery or referenceQuery, continue
+					if (a.isDimension()) {
+						dimensions.add(a);
+					} else if (a.isMeasure()) {
+						measures.add(a);
+					}
+				}
+				
+				// consider all combinations
+				for (Attribute d : dimensions) {
+					for (Attribute m : measures) {
+						views.add(new AggregateComparisonView(d, m));
+					}
+				}
+				return views;
+			} else {
+				return null;
 			}
-		}
-		
-		// consider all combinations
-		for (Attribute d : dimensions) {
-			for (Attribute m : measures) {
-				views.add(new AggregateComparisonView(d, m));
-			}
-		}
-		
+		}	
 	}
-
 }

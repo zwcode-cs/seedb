@@ -1,6 +1,8 @@
 package v2;
 
 public class Setting {
-	public boolean manualPlot = false;
+	public static enum VizSource {MANUAL, SEEDB};
+	
+	
 
 }

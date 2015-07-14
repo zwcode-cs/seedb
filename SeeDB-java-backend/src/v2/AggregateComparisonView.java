@@ -19,4 +19,8 @@ public class AggregateComparisonView extends View {
 		this.functions.add(AggregateFunctions.COUNT);
 		this.functions.add(AggregateFunctions.SUM); // for avg, we still need these
 	}
+	
+	public String toString() {
+		return this.dimension + ";" + this.measure;
+	}
 }

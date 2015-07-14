@@ -1,5 +1,8 @@
 package v2;
 
-public class InputQuery {
+import java.util.ArrayList;
 
+public class InputQuery {
+	public String table;
+	public ArrayList<Predicate> predicates;
 }
