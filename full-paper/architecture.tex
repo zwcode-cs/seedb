@@ -21,6 +21,8 @@ The \SeeDB front-end allows analysts to manually
 generate visualizations, or
 obtain data-driven recommendations on demand, which can be further
 refined using the manual interface.
+We design the frontend as a {\it mixed-initiative} interface to
+keep the human in the loop and allow the user to steer the analysis.
 %  as a recommendation plugin that can
 % be incorporated into a visualization tool such as Tableau or Spotfire. 
 % For evaluating our system, we have combined \SeeDB with a simple visualization
@@ -94,7 +96,7 @@ with highest utility.
 This basic implementation has many inefficiencies.
 In a table with $a$ dimensions, $m$ measures, and $f$ aggregation functions, 
 $2\times f \times a \times  m$ queries must be executed.  
-As we show in Section~\ref{sec:experiments}, this can take >100s for
+As we show in Section~\ref{sec:experiments}, this can take $>$100s for
  large data sets.
 Such latencies are unacceptable for interactive use.
 
@@ -127,7 +129,7 @@ The execution engine applies {\em sharing-based optimizations}
 to minimize scans on this  $i$th fraction of the dataset.
 \item At the end of phase $i$, the execution engine uses 
 {\em pruning-based optimizations} to determine which aggregate views to discard.
-The partial results of each aggregate view on the fractions from $1$ through $i$ are used to 
+The partial results for each aggregate view on the fractions from $1$ through $i$ are used to 
 estimate the quality of each view, and the views with low utility are discarded. 
 \end{denselist}
 The retained aggregate views are then processed on the $i+1$th round,
@@ -145,7 +147,7 @@ at the end of the $n$th phase.
 %We next describe the \SeeDB optimizations,
 %specifically, the sharing based optimizations in Section~\ref{sec:sharing_opt} and 
 %the pruning based optimizations in Section~\ref{sec:pruning_opt}.
-\techreport{
+\techreportfinal{
 \begin{algorithm}[h]
 \caption{Phase-based Execution Framework}
 \label{algo:phase_based_exec}

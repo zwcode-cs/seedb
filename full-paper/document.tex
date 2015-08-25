@@ -1,5 +1,5 @@
-\documentclass{sig-alternate}
-%\documentclass{vldb}
+%\documentclass{sig-alternate}
+\documentclass{vldb}
 %\documentstyle{article}
 %\documentstyle[amsmath,amsthm,amssymb,twocolumn]{article}
 %\usepackage{times}
@@ -33,13 +33,13 @@
 \begin{document}
 
 
-
 \newcommand{\reviewer}[1]{\textcolor{red}{Review: #1}}
 \newcommand{\mpv}[1]{\textcolor{blue}{MV: #1}}
 \newcommand{\agp}[1]{\textcolor{magenta}{AGP: #1}}
 \newcommand{\resolved}[1]{\textcolor{green}{}}
 \newcommand{\removefromtr}[1]{#1}
-\newcommand{\crc}[1]{\textcolor{red}{#1}}
+\newcommand{\techreportfinal}[1]{}
+\newcommand{\crc}[1]{#1}
 \newcommand{\aggv}[1]{aggregate view}
 %\newcommand{\alkis}[1]{\smallskip\noindent \textcolor{red}{\it $\Rightarrow$ Alkis: #1}}
 \newcommand{\SeeDB}{{\sc SeeDB}\xspace}
@@ -68,9 +68,9 @@
 
 
 \makeatletter
-\def\@copyrightspace{\relax}
+%\def\@copyrightspace{\relax}
 \makeatother
-
+%\toappear
 %\newcommand{\histvis}{\mbox{\sc HistVis}}
 \newcommand{\squishlist}{
    \begin{list}{$\bullet$}
@@ -100,7 +100,7 @@
 
 \newcommand{\eat}[1]{}
 \newcommand{\papertext}[1]{#1}
-\newcommand{\techreport}[1]{#1}
+\newcommand{\techreport}[1]{<<TR: #1 END TR>>}
 
 \newcommand{\techreporttext}[1]{<<TR: #1 END TR>>}
 \newcommand{\stitle}[1]{\vspace{0.25em}\noindent\textbf{#1}}
@@ -109,7 +109,9 @@
 
 
 %\title{{\LARGE \sc SeeDB}: Towards Automatic Query Result Visualizations}
-\title{{\LARGE \sc SeeDB}: Supporting Visual Analytics \\ with Data-Driven Recommendations}
+%\title{{\LARGE \sc SeeDB}: Visual Analytics with Data-Driven \\
+%Visualization Recommendations}
+\title{{\LARGE \sc SeeDB}: Visualization Recommendation \\ to Support Visual Analytics}
 %\subtitle{\vspace{-10pt}[Vision Paper]\vspace{5pt}}
 
 \numberofauthors{4} 
@@ -154,6 +156,7 @@
  \balance
 
 {\scriptsize
+\vspace{2mm}
 \bibliographystyle{abbrv}
 \bibliography{visubib}
 }

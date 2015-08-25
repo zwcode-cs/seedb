@@ -18,7 +18,7 @@
 % As a result, there are opportunities to reduce the number of queries and passes over the data 
 % by merging and batching queries.
 
-In the naive implementation, each visualization is translated into view
+In the basic implementation of th execution engine, each visualization is translated into two view
 queries that get executed independently on the DBMS.
 However, for a particular user input, the queries evaluated by \SeeDB
 are very similar: they scan the same underlying data and differ only in the 
@@ -104,7 +104,7 @@ END}\\
   However, the precise number of parallel queries needs to be tuned taking into account 
   buffer pool contention, locking, and cache line contention, among other factors~\cite{Postgres_wiki}.  
 
-\techreport{
+\techreportfinal{
 \stitle{Other Optimizations}: 
 To further speedup processing, \SeeDB can also pre-compute results for 
 static views (e.g. reference views on full tables) or operate on

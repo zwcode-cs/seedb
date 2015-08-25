@@ -243,10 +243,11 @@ The analyst has the option of specifying $D_R$; we use $D_R = D$ as the default 
 Given a view $V_i$, the deviation-based utility of $V_i$ is
 computed as the deviation between the results of applying $V_i$ to the query data, $D_Q$,
 and applying $V_i$ to the reference data, $D_R$.
-View $V_i$ applied to the results of $Q$ can be expressed as query $Q_T$ below. 
+View $V_i$ applied to the query data can be expressed as query 
+$Q_T$ below. 
 We call this the {\em target view}.
 $$ Q_T\ =\ {\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D_Q\  {\tt GROUP \ \ BY} \ a$$ 
-Similarly, view $V_i$ applied to the reference data $V_i (D_R)$ can be expressed as $Q_R$. 
+Similarly, view $V_i$ applied to the reference data can be expressed as $Q_R$. 
 We call this the {\em reference view}. 
 $$ Q_R\ =\ {\tt SELECT \ } a, f(m) \ \ {\tt FROM} \  D_R\  {\tt GROUP \ \ BY} \ a$$
 The (two) SQL queries corresponding to each view are referred to as {\em view queries}.
