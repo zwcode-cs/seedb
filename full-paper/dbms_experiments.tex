@@ -397,7 +397,7 @@ perform grouping, MAX\_GB and BP.
 MAX\_GB simply sets a limit on the number of group-bys in each query ($n_{gb}$) whereas BP applies
 our bin-packing strategy using the respective memory budgets.
 Figure \ref{fig:multi_gb_bp} shows a comparison of the two methods on the SYN dataset.
-To evaluate MAX\_GB, we varied $n_{gb}$ was varied between 1 and 20 (solid lines). 
+To evaluate MAX\_GB, we varied $n_{gb}$ between 1 and 20 (solid lines). 
 Since SYN contains attributes with between 1 -- 1000 distinct values, memory utilization for a given
 $n_{gb}$ can be variable.
 For example, $n_{gb}$ = 3 can have anywhere between 1 and $10^9$ distinct groupings, thus breaking the

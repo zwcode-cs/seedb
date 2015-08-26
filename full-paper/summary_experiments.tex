@@ -15,7 +15,7 @@ recommended visualizations can be useful)
 %The previous sections described the basic framework for \SeeDB and our suite of sharing and pruning optimizations.
 % two suits of optimizations to efficiently process, we developed a basic framework and sets of pruning an sharing optimizations for \SeeDB.
 Figures \ref{fig:all_opt_with_pruning}.a and \ref{fig:all_opt_with_pruning}.b show a summary of \SeeDB performance for the four 
-(large) real datasets from Table \ref{tab:datasets} (BANK, DIAB, AIR and AIR10).
+real datasets from Table \ref{tab:datasets} (BANK, DIAB, AIR and AIR10).
 For each dataset, we show the latencies obtained on the ROW and COL store by the basic \SeeDB framework (NO\_OPT), 
 by our sharing optimizations (SHARING), and by the combination of our sharing and pruning optimizations (COMB). 
 We also show latencies for early result generation with COMB (COMB\_EARLY), where we return approximate results 
@@ -111,12 +111,12 @@ use the Confidence Interval (CI) pruning scheme and $k$=10.
 This reduces latencies for small datasets like DIAB from 12s to 200ms, and from almost 2 hrs to tens of seconds for large datasets 
 like AIR10. 
 %{\it Our optimizations thus allows us to respond in real-time with exact views for small datasets and approximate views (COMB\_EARLY) for large datasets}.
-\item $[$\underline{\em 8--20X speedup from sharing}$]$ The sharing optimizations (Section \ref{sec:sharing_opt}) alone produce performance gains of up to 20X for ROW and 8X for COL. 
+\item $[$\underline{\em 6--40X speedup from sharing}$]$ The sharing optimizations (Section \ref{sec:sharing_opt}) alone produce performance gains of up to 40X for ROW and 6X for COL. 
 %This enables \SeeDB to process moderate sized datasets within a few seconds.
 %In fact, for small datasets like BANK and DIAB, the overheads associated with phased-execution can be avoided completely since SHARING
 %alone can achieve interactive latencies.
 \item $[$\underline{\em 5X speedup from pruning without loss of accuracy}$]$ Pruning optimizations (Section \ref{sec:pruning_opt}) provide additional gains of up to 5X. Early result return, in particular, enables real-time response for large datasets, e.g. for AIR, the COMB\_EARLY strategy allows \SeeDB to return results in under 4s while processing the full dataset takes tens of seconds. We also find that quality of results is not adversely affected by pruning: the utility distance (defined later) for our pruning strategies is close to 0.
-\item $[$\underline{\em Multiplicative gains}$]$ A gain of 20X from sharing optimizations in the ROW store combines with the 5X gain from pruning to produce an overall gain of over 100X (Figure \ref{fig:share_prune_row}).
+\item $[$\underline{\em Multiplicative gains}$]$ A gain of 40X from sharing optimizations in the ROW store combines with the 5X gain from pruning to produce an overall gain of over 200X (Figure \ref{fig:share_prune_row}).
 %\item $[$\underline{\em Column stores perform better}$]$ In general, COL stores are better suited to the \SeeDB workload and 
 %significantly outperform ROW stores. The column-oriented data layout of COL enables the selective processing of specific attributes involved in each visualization. 
 \item $[$\underline{\em Gains improve on larger datasets}$]$ The overall gain is much larger for AIR10 (300X) vs. BANK (10X). We find that our SHARING optimization is best suited for small datasets like BANK and DIAB, while COMB and COMB\_EARLY are essential for large datasets like AIR and AIR10.

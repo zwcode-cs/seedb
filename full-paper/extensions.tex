@@ -2,49 +2,42 @@
 
 \section{Utility Metrics: Discussion}
 \label{sec:discussion}
-We now discuss various aspects of our choice of utility metrics,
-including: {\it (a) Distance Functions,} 
-i.e., using different distance functions for measuring deviation, {\it (b) General Utilities,} i.e., how our
-techniques can be used to capture a variety of other  aspects
-of visualization recommendation beyond deviation, and {\it (c) \SeeDB's Capabilities,} i.e., how
-well \SeeDB captures
-different distance functions and general utility metrics. Specifically, we compare two
-metrics to EMD and study the impact on: 
-{\it (i)} performance and
-{\it (ii)} accuracy when pruning optimizations are employed.
+In the previous sections, we evaluated a particular utility metric supported by \SeeDB,
+namely the deviation-based utility metric.
+We now briefly discuss the generality of our techniques;
+for a detailed discussion, please refer to~\cite{seedb-tr}.
+To examine the effect of the distance function on visualization recommendations, we compared
+visualization orderings obtained by using EMD, Jenson-Shannon divergence (J-S), Euclidean distance, 
+Kullback-Leibler (K-L) divergence as distance functions.
+Our results indicate that the choice of distance function is, in fact, not critical; 
+all of the above functions largely agree in their choice of top visualizations.
+We also evaluated the generality of our pruning techniques on other utility metrics.
+In particular, we evaluated the performance of pruning on two metrics:
+Euclidean distance based deviation and MAX\_DIFF, a utility metric that ranks visualizations
+by the maximum difference between respective groups in the target and reference visualizations.
+Once again, our results demonstrate that our pruning strategies are effective (i.e., reduce latency without sacrificing
+accuracy) for diverse metrics.
+These results suggest that the \SeeDB framework is, in fact, general and can support a variety of
+metrics. 
+In future work, we seek to incorporate diverse metrics into \SeeDB. 
+% \removefromtr{
+% We summarize our findings below.
+% \papertext{Details can be found in the technical report~\cite{seedb-tr}.}
+% \begin{denselist}
+% \item {\em (b)} We developed a generalized utility metric
+% that captures deviation from the baseline ({\it deviation}),
+% historical data ({\em history}),
+% variation in and distribution of the data itself ({\it data distribution}),
+% types and properties of the different attributes in the dataset ({\it metadata}), 
+% visual qualities of the visualization ({\it aesthetics}),  
+% past history of interactions with this user and other users ({\it user preferences}), and,
+% to a limited extent,
+% meaning and relative importance of attributes in the data ({\it semantics}).
+% %We have extended \SeeDB to support this generalized utility metric. 
+% \end{denselist}
+% }
 
-\removefromtr{
-We summarize our findings below.
-\papertext{Details can be found in the technical report~\cite{seedb-tr}.}
-\begin{denselist}
-\item {\em (a)} The choice of distance function between Jenson-Shannon divergence (J-S), Euclidean distance, Kullback-Leibler (K-L) divergence
-and EMD is not critical: the first three distance functions lead
-to results that largely
-agree with EMD in the visualization ordering. For instance, the
-first three distance functions output 3 out of EMD's top-5 visualizations 
-in their top-5, and
-two out of three distance functions output 4 out of EMD's top-5 visualizations in their top-5
-on the census dataset.
-\item {\em (b)} We developed a generalized utility metric
-that captures deviation from the baseline ({\it deviation}),
-historical data ({\em history}),
-variation in and distribution of the data itself ({\it data distribution}),
-types and properties of the different attributes in the dataset ({\it metadata}), 
-visual qualities of the visualization ({\it aesthetics}),  
-past history of interactions with this user and other users ({\it user preferences}), and,
-to a limited extent,
-meaning and relative importance of attributes in the data ({\it semantics}).
-%We have extended \SeeDB to support this generalized utility metric. 
-\item {\em (c)} We evaluated EMD, the Euclidean distance, and MAX\_DIFF
-(a general utility metric that captures the difference between the largest
-and second largest aggregate group) within \SeeDB and found that
-all three utility measures perform similarly in terms of performance 
-(i.e., they lead to similar gains via our optimizations),
-without sacrificing accuracy. 
-\end{denselist}
-}
-
-\techreport{
+\techreportfinal{
 \subsection{Distance Functions}
 \label{sec:diff_dist_funcs}
 By default, \SeeDB uses Earth Movers Distance (EMD) 
@@ -166,10 +159,6 @@ size increases.
 
 \subsection{General Utility Metrics}\label{sec:gen_util}
 
-% In this section we prove that our sampling 
-% algorithms converge, and then describe our generalized
-% distance metric.
-
 In addition to deviation, there are several other aspects
 or {\em dimensions} that need to be taken into account
 in order to make data-driven recommendations even more powerful.
@@ -215,7 +204,6 @@ This component can capture
 the amount of rapid local changes that have happened
 within the distribution corresponding to $P[V_i (D_Q)]$ (item 3 above).
 
-
 Next, we turn to the question of incorporating other recommendation dimensions into our utility 
 metric, beyond items 1--3 above that are all distribution-based.
 Consider the following form of a generalized utility metric:
@@ -247,9 +235,6 @@ Thus, in this form, \SeeDB has been extended to
 incorporate other recommendation dimensions into
 the utility metric without any changes to the \SeeDB framework.
 }
-
-
-%techreport
 
 \if{0}
 We now discuss the generality of our pruning techniques 

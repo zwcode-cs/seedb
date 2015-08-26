@@ -114,9 +114,9 @@ To derive benefits from both these kinds of optimizations,
 we develop a {\em phased execution framework}.
 Each phase operates on a subset of the dataset.
 Phase $i$ of $n$ operates on the $i$th of $n$ equally-sized partitions of the dataset. 
-(Empirically, we have found $n=10$ to
-work well, though our results are not very sensitive to the value
-of $n$.) 
+% (Empirically, we have found $n=10$ to
+% work well, though our results are not very sensitive to the value
+% of $n$.) 
 For instance, if we have $100,000$ records and $10$ phases,
 the $i = 4$th phase processes records $30,001$ to $40,000$.
 The execution engine begins 

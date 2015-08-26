@@ -42,7 +42,7 @@ the top-$k$ boundary having similar utility (and, therefore, interestingness).
 For instance, the utilities at the top-$5$ boundary for the DIAB dataset are 
 $U(V_5)$ = 0.257, $U(V_6)$ = 0.254, and $U(V_7)$ = 0.252 (see Figure~\ref{fig:diabetes_utility_distribution}).
 The small $\Delta_k$s lead to lower accuracy for $k$ = 5, but the 
-very similar utility values indicate that $V_6$ and $V_7$ are (almost) equally interesting as $V_5$ .
+very similar utility values indicate that $V_6$ and $V_7$ are (almost) as interesting as $V_5$ .
 Therefore, even if $V_6$ or $V_7$ are incorrectly chosen to be in the top-$k$, 
 the quality of results is essentially as high as when $V_5$ would have been chosen.
 Our {\em utility distance} metric correctly captures this overall quality of results.
@@ -179,12 +179,13 @@ discussed in Section \ref{sec:expt_summary}.
 		\caption{Bank dataset: utility distribution}
 		\label{fig:bank_utility_distribution}
 	\end{subfigure}
-		\begin{subfigure}{0.48\linewidth}
+	\begin{subfigure}{1\linewidth}
 		\centering
-		\includegraphics[width=4.4cm] {Images/in_memory_bank_accuracy.pdf}
-		\vspace{-15pt}
-		\caption{Bank Dataset Accuracy}
-		\label{fig:bank_accuracy}
+		\includegraphics[width=6.5cm]
+		{Images/diabetes_utility_distribution.pdf}
+		\vspace{-5pt}
+		\caption{Diabetes dataset: utility distribution}
+		\label{fig:diabetes_utility_distribution}
 	\end{subfigure}
 \vspace{-10pt}
 \label{fig:utility_distribution}
@@ -192,11 +193,12 @@ discussed in Section \ref{sec:expt_summary}.
 \vspace{-15pt}
 \end{figure}
 
+
 In each of our experiments, we vary $k$ --- the number of visualizations to recommend --- between
 1 and 25 (a realistic upper limit on the number of aggregate views displayed on a screen)
 and measure the latency, accuracy, and utility distance for each of our
 strategies. 
-We pay special attention to $k$ = 5 and 10 because empirically these $k$ values are used most commonly.
+We pay special attention to $k$ = 5 and 10 because these $k$ values are most common.
 Since the accuracy and utility distance of our techniques are influenced by the
 ordering of data, we repeat each experiment 20
 times and randomize data between runs. We report average
@@ -263,27 +265,24 @@ metrics over 20 runs.
 \begin{figure}[h]
 	\centering
 	\vspace*{-10pt}
-	\begin{subfigure}{1\linewidth}
+	\begin{subfigure}{0.48\linewidth}
 		\centering
-		\includegraphics[width=6.5cm]
-		{Images/diabetes_utility_distribution.pdf}
-		\vspace{-5pt}
-		\caption{Diabetes dataset: utility distribution}
-		\label{fig:diabetes_utility_distribution}
+		\includegraphics[width=4.4cm] {Images/in_memory_bank_accuracy.pdf}
+		\vspace{-15pt}
+		\caption{Bank Dataset Accuracy}
+		\label{fig:bank_accuracy}
 	\end{subfigure}
 	\begin{subfigure}{0.48\linewidth}
 		\centering
-		\includegraphics[width=4.4cm] {Images/in_memory_dia_accuracy.pdf}\
+		\includegraphics[width=4.4cm] {Images/in_memory_bank_utility_dist.pdf}
 		\vspace{-15pt}
-		\caption{Diabetes Dataset Accuracy}
-		\label{fig:dia_accuracy}
+		\caption{Bank Dataset Utility Distance}
+		\label{fig:bank_utility_dist}
 	\end{subfigure}
 	\vspace{-10pt}
-	\caption{Accuracies Across Datasets}
+	\caption{Bank dataset result quality}
 	\vspace{-10pt}
 \end{figure}
-
-
 
 
 
@@ -352,9 +351,9 @@ in this chart while the 25-th highest utility corresponds to the {\it left-most}
 line. 
 We observe that the highest and second highest utility are spread well apart 
 from the rest ($\Delta_k$=0.0125). 
-The top 3rd--9th utilities are similar ($\Delta_k$<0.002) while the 10th highest 
+The top 3rd--9th utilities are similar ($\Delta_k$$<$0.002) while the 10th highest 
 utility is well separated from neighboring utilities ($\Delta_{10}$=0.0125).
-The remaining aggregate views once again have similar utilities ($\Delta_k$<0.001).
+The remaining aggregate views once again have similar utilities ($\Delta_k$$<$0.001).
 We see the effect of utility distribution in the performance of our pruning 
 strategies.
 Figure~\ref{fig:bank_accuracy} and Figure~\ref{fig:bank_utility_dist} respectively show
@@ -369,7 +368,7 @@ Between $k$=3\ldots9, the accuracy for all strategies suffers due to small $\Del
 In spite of lower accuracies, note that utility distance is consistently small ($<$ 0.02).
 After $k$=10, the performance of all our strategies improves once again and tends to 100\% accuracy and
 0 utility distance.
-We note that NO\_PRU necessarily has perfect performance, while RANDOM has extremely poor accuracy (<0.25) 
+We note that NO\_PRU necessarily has perfect performance, while RANDOM has extremely poor accuracy ($<$0.25) 
 and utility distance ($>$5X that of CI and MAB). 
 
 \begin{figure}[h]
@@ -377,10 +376,10 @@ and utility distance ($>$5X that of CI and MAB).
 	\vspace*{-10pt}
 	\begin{subfigure}{0.48\linewidth}
 		\centering
-		\includegraphics[width=4.4cm] {Images/in_memory_bank_utility_dist.pdf}
+		\includegraphics[width=4.4cm] {Images/in_memory_dia_accuracy.pdf}\
 		\vspace{-15pt}
-		\caption{Bank Dataset Utility Distance}
-		\label{fig:bank_utility_dist}
+		\caption{Diabetes Dataset Accuracy}
+		\label{fig:dia_accuracy}
 	\end{subfigure}
 	\begin{subfigure}{0.48\linewidth}
 		\centering
@@ -390,7 +389,7 @@ and utility distance ($>$5X that of CI and MAB).
 		\label{fig:dia_utility_dist}
 	\end{subfigure}
 	\vspace{-10pt}
-	\caption{Utility Distances Across Datasets}
+	\caption{Diabetes dataset result quality}
 	\vspace{-10pt}
 \end{figure}
 
@@ -506,7 +505,7 @@ especially useful when we want to identify and quickly display the first one or 
 Figures~\ref{fig:bank_latency} and \ref{fig:dia_latency} show the latency
 of our strategies for the banking and diabetes dataset.
 First off, we observe that the use of either CI or MAB produces a 50\% reduction in latency
-for $k$$\geq$10.
+for $k$$\leq$15.
 In fact, for CI, we obtain almost a 90\% reduction in latency for small $k$. 
 For $k$=5, MAB produces between 50 - 60\% reduction while CI produces a reduction of 60 - 80\%.
 Early stopping, i.e. returning approximate results once the top-$k$ views have been identified, 

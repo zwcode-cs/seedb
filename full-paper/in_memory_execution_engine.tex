@@ -21,7 +21,7 @@ multi-armed bandit allocation strategies to find top utility views.
 \label{sec:confidence_interval}
 Our first pruning scheme uses worst-case statistical confidence intervals to
 bound view utilities.
-This technique is similar to top-k based pruning algorithms developed 
+This technique (called CI) is similar to top-k based pruning algorithms developed 
 in other contexts~\cite{DBLP:conf/vldb/IlyasAE04, DBLP:conf/ICDE/ReDS07}.
 Our scheme works as follows: during each phase,
 we keep an estimate of the mean utility for every aggregate view $V_i$ and a
@@ -47,7 +47,7 @@ that the utility of $V_4$ lies within its confidence interval, it follows that,
 with high probability, $V_4$'s utility will be lower than that of both $V_1$ and
 $V_2$, and it will not appear in the top-$2$ views.
 \removefromtr{Pseudocode for our pruning scheme can be found in our technical report~\cite{seedb-tr}.}
-\techreport{We state the algorithm formally in
+\techreportfinal{We state the algorithm formally in
 Algorithm~\ref{algo:ci_based_pruning}.}
 
 \begin{figure}[h]
@@ -62,7 +62,7 @@ clip=true]{Images/confidence_pruning.pdf}}}}
 \end{figure}
 
 
-\techreport{
+\techreportfinal{
 \begin{algorithm}
 \caption{Confidence Interval Based Pruning}
 \label{algo:ci_based_pruning}
@@ -81,11 +81,12 @@ clip=true]{Images/confidence_pruning.pdf}}}}
 
 We use {\it worst case} confidence intervals as derived from
 the Hoeffding-Serfling inequality~\cite{serfling1974probability}.
+\mpv{Upper and lower case Ys? 
 The inequality states that if we are given $N$ values $y_1, \ldots, y_N$ in 
 $[0, 1]$ with average $\mu$, and we have have drawn $m$ values without replacement, $Y_1, \ldots, Y_m$, 
 then we can calculate a running confidence interval around the current mean 
 of the $m$ values such that the actual mean of the $N$
-is always within this confidence interval with a probability of $1 - \delta$:
+is always within this confidence interval with a probability of $1 - \delta$:}
 \begin{theorem}
 \label{thm:hs}
 Fix any $\delta > 0$. For $1 \le m \le N-1$, define
@@ -266,7 +267,7 @@ records seen so far.
 
 \stitle{Multi-Armed Bandit Pruning.}
 \label{sec:multi_armed_bandit}
-Our second pruning scheme employs a Multi-Armed Bandit strategy (MAB)~\papertext{\cite{bandits}}\techreport{\cite{bandits, AuerCF02, LaiR85}}.
+Our second pruning scheme employs a Multi-Armed Bandit strategy (MAB)~\papertext{\cite{bandits}}\techreportfinal{\cite{bandits, AuerCF02, LaiR85}}.
 In MAB, an online algorithm repeatedly chooses from a set of alternatives (arms)
 over a sequence of trials to maximize reward. 
 We note that this is the first time that bandit strategies have been
@@ -289,12 +290,12 @@ If $\Delta_1$ is greater than $\Delta_n$, the view with the highest mean is
 in pruning computations).
 On the other hand, if $\Delta_n$ is higher, the view with the lowest mean is discarded
 from the set of views in the running.
-\techreport{(See Algorithm~\ref{algo:mab_based_pruning})}. 
+\techreportfinal{(See Algorithm~\ref{algo:mab_based_pruning})}. 
 \removefromtr{The pseudocode can be found in the technical report~\cite{seedb-tr}.}
 \cite{BubeckWV13} proves that under certain assumptions about reward distributions,
 the above technique identifies the top-$k$ arms with high probability.
 
-\techreport{
+\techreportfinal{
 \begin{algorithm}
 \caption{MAB Based Pruning}
 \label{algo:mab_based_pruning}
@@ -303,7 +304,7 @@ the above technique identifies the top-$k$ arms with high probability.
 \State \{$\bar{u}_{i}$\} $\gets$ sorted utility means
 \State $\Delta_1$ $\gets$ $\bar{u}_{1}$ - $\bar{u}_{k+1}$
 \State $\Delta_n$ $\gets$ $\bar{u}_{k}$ - $\bar{u}_{n}$
-\If {$\Delta_1$ > $\Delta_n$}
+\If {$\Delta_1$ $>$ $\Delta_n$}
 \State viewsInRunning.acceptTop()
 \Else
 \State viewsInRunning.discardBottom()
@@ -334,24 +335,24 @@ which are aggregated together to form a utility estimate for a given view.
 In our evaluation, we show that in spite of this limitation, the pruning schemes
 work rather well in practice. 
 
-We can, however, get a weaker guarantee: we can show that as we sample more and more, the estimated utility
+We can, however, get a weaker guarantee: we can show that, 
+as we sample more and more, the estimated utility
 $\hat{U}$ can be made to be arbitrarily close to $U$ for all aggregate views.
-Essentially, this means that any pruning algorithm (including Confidence and MAB) 
+Essentially, this means that a pruning algorithm (such as CI and MAB) 
 that uses a sufficiently
 large sample will prune away low utility views with high probability.
-We can state our claim formally in the following lemma. 
-\removefromtr{The proof based on 
-Hoeffding's inequality can be found in the extended
-technical report~\cite{seedb-tr}.
-While we show this for $\ell_2$, similar 
-results hold for other distance functions,
-such as $\ell_1$, EMD, Kullback-Leibler, and Jenson-Shannon metrics.}
+We can state this property formally as follows. 
+
+%While we show the result for Euclidean distance, we posit that
+%similar results hold for many other distance functions.}
+%,such as $\ell_1$, EMD, Kullback-Leibler, and Jenson-Shannon metrics.}
 % At a high level, the proof
 % involves repeated applications of Hoeffding's inequality to
 % upper and lower-bound $\hat{U}$ within $U$ along with terms 
 % that tend to $0$ as the number of samples increases.
 \vspace{-5pt}
-\begin{lemma} [Consistency]
+
+\begin{property} [Consistency]
 Let the target and reference visualizations
 both have $m$ groups.
 Let $\hat{U}$ denote our estimate of the utility $U$ 
@@ -359,9 +360,9 @@ based on a uniformly random sample
 across all $m$ groups. 
 Then, as the number of samples tends to $\infty$, $\hat{U} \rightarrow U$
 with probability $1-\delta$, for as small $\delta$ as needed.
-\end{lemma}
+\end{property}
 \vspace{-5pt}
-\techreport{
+\techreportfinal{
 For the purpose of the proof
 of the lemma above, we focus on the case where the visualization $V_i$
 corresponds to the AVG aggregate. 
@@ -444,10 +445,16 @@ consistent distance functions}.
 Consistent distance functions allow pruning schemes
 to gather increasingly better estimates of utility values
 over time (as long as the samples are large enough). 
-Specifically, we show empirically in Section~\ref{sec:custom_execution_engine_expts}
-that the Confidence Interval and MAB-based pruning schemes 
-work well for EMD (i.e., have high accuracy while reducing
-latency), and then
-in Section~\ref{sec:discussion}, we show that 
-these schemes work well for other consistent distance functions.
+\removefromtr{In the extended
+technical report~\cite{seedb-tr}, we prove using Hoeffding's inequality that
+this property holds for Euclidean distance.}
+Our results in Sections~\ref{sec:custom_execution_engine_expts}
+and~\ref{sec:discussion} empirically show that CI and MAB-based pruning 
+schemes work well not only for Euclidean distance but also for EMD and other distance functions.
+%Specifically, we show empirically in 
+%that the CI and MAB-based pruning schemes 
+%work well for EMD (i.e., have high accuracy while reducing
+%latency), and then
+%in Section, we show that 
+%these schemes work well for other consistent distance functions.
 
