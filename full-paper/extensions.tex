@@ -2,6 +2,7 @@
 
 \section{Utility Metrics: Discussion}
 \label{sec:discussion}
+\if{0}
 In the previous sections, we evaluated a particular utility metric supported by \SeeDB,
 namely the deviation-based utility metric.
 We now briefly discuss the generality of our techniques;
@@ -20,6 +21,33 @@ accuracy) for diverse metrics.
 These results suggest that the \SeeDB framework is, in fact, general and can support a variety of
 metrics. 
 In future work, we seek to incorporate diverse metrics into \SeeDB. 
+\fi
+
+\purple{Our current system uses a particular metric for defining visualization utility,
+namely, deviation-based utility.
+Clearly there are other metrics and dimensions that can capture the interestingness
+of a visualization.
+For example, other metrics based on data, e.g. metrics detecting outliers, correlations, 
+similarity (as opposed to difference), presence of clusters etc.,
+can provide insights into patterns that may be relevant for the particular task.
+\SeeDB currently focuses on data-driven recommendations and our system can support 
+diverse data-driven metrics.
+We show in the extended technical report~\cite{seedb-tr} that our optimizations are effective 
+for a variety of (consistent) utility metrics.}
+
+\purple{In addition to data, many other aspects determine the interestingess of a visualization.
+We can identify attributes relevant to the task using metrics based on metadata (e.g.
+schema) and semantics.
+Similarly, aesthetics play a big role in determining whether a visualization is easy to understand,
+making visual design a important metric in visualization recommendation.
+Finally, user preference, whether based on history of multiple users or a single user in
+a specific session, can provide insight into which visualizations are most interesting.
+A full-fledged visualization recommendation system would take into account a combination
+of these aspects to make recommendations.
+In our technical report, we discuss how we can design a generalized utility metric to 
+incorporate other dimensions of visualization quality such as those discussed above.
+In future work, we seek to extend \SeeDB to support a generalized utility metric.}
+
 % \removefromtr{
 % We summarize our findings below.
 % \papertext{Details can be found in the technical report~\cite{seedb-tr}.}

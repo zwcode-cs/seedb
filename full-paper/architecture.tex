@@ -36,7 +36,7 @@ formulate queries;
 (D) a recommendations plugin 
 that displays recommended visualizations.
 The recommendations provided by \SeeDB change in 
-response to changes in the query (B)
+response to changes in the query (A)
 issued against the database.
 
 \begin{figure}[htb]
@@ -121,17 +121,27 @@ For instance, if we have $100,000$ records and $10$ phases,
 the $i = 4$th phase processes records $30,001$ to $40,000$.
 The execution engine begins 
 with the entire set of aggregate views under consideration.
-\begin{denselist}
-\item During phase $i$, \SeeDB updates partial results
+% \begin{denselist}
+% \item During phase $i$, \SeeDB updates partial results
+% for the views
+% still under consideration using the $i$th fraction of the dataset.
+% The execution engine applies {\em sharing-based optimizations}
+% to minimize scans on this  $i$th fraction of the dataset.
+% \item At the end of phase $i$, the execution engine uses 
+% {\em pruning-based optimizations} to determine which aggregate views to discard.
+% The partial results for each aggregate view on the fractions from $1$ through $i$ are used to 
+% estimate the quality of each view, and the views with low utility are discarded. 
+% \end{denselist}
+% \begin{denselist}
+During phase $i$, \SeeDB updates partial results
 for the views
 still under consideration using the $i$th fraction of the dataset.
 The execution engine applies {\em sharing-based optimizations}
 to minimize scans on this  $i$th fraction of the dataset.
-\item At the end of phase $i$, the execution engine uses 
+At the end of phase $i$, the execution engine uses 
 {\em pruning-based optimizations} to determine which aggregate views to discard.
 The partial results for each aggregate view on the fractions from $1$ through $i$ are used to 
 estimate the quality of each view, and the views with low utility are discarded. 
-\end{denselist}
 The retained aggregate views are then processed on the $i+1$th round,
 and the process continues. 
 In this manner, the set of views under consideration

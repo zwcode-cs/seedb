@@ -7,24 +7,21 @@ Finding the right visualization given a query of interest is a
 laborious and time-consuming task.
 In this paper, we presented \SeeDB, a visualization recommendation
 engine to help users 
-rapidly identify interesting and useful visualizations of their data using a deviation-based 
-metric to highlight attributes with unusual variation.
+rapidly identify interesting and useful visualizations using a deviation-based 
+metric.
 Our implementation of \SeeDB runs on top of a relational engine, and employs two types of optimization 
 techniques, sharing-based, and pruning-based techniques, to obtain near-interactive performance.
-These techniques help us reduce latency by a factor of 100X, with the optimizations combining in a multiplicative way. 
-Furthermore, our user study shows that \SeeDB provides useful
-visualizations, that both help users find interesting visualizations with fewer iterations, and that
-users find help as an augmentation to a visualization system.
+These techniques reduce latency by over 100X, with the optimizations combining in a multiplicative way. 
+Furthermore, our user study shows that our deviation-based metric can, in fact, capture interestingness of a 
+visualization, and that \SeeDB enables users to find interesting visualizations faster.
 In conclusion, \SeeDB is an important first step in our exploration of 
-automated visualization recommendation tools, 
-paving the way toward automating the tedium of data analysis.
+visualization recommendation tools, 
+paving the way towards rapid visual data analysis.
 
 \stitle{Acknowledgements.}
-We thank the anonymous reviewers for their valuable feedback. We acknowledge support from grant IIS-1513407 and IIS-1513443 awarded by the National Science Foundation, funds from the Intel Science and Technology Center in Big Data, 
+We thank the anonymous reviewers for their valuable feedback. We acknowledge support from grants IIS-1513407 and IIS-1513443 awarded by the National Science Foundation, funds from the Intel Science and Technology Center in Big Data, 
 grant 1U54GM114838 awarded by NIGMS through funds provided by the trans-NIH Big Data to Knowledge (BD2K) initiative \break 
-(www.bd2k.nih.gov), and funds provided by Google and Intel. The content is solely the responsibility of the authors and does not necessarily represent the official views of the funding agencies and organizations.
-
-
+(www.bd2k.nih.gov), and funds provided by Google and Intel. The content is solely the responsibility of the authors and does not represent the official views of the funding agencies and organizations.
 
 % We presented two implementations of \SeeDB, one that runs on top of existing
 % DBMSs and another that is a custom execution engine that supports shared table scans

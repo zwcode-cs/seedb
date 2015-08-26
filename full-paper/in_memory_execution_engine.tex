@@ -81,12 +81,11 @@ clip=true]{Images/confidence_pruning.pdf}}}}
 
 We use {\it worst case} confidence intervals as derived from
 the Hoeffding-Serfling inequality~\cite{serfling1974probability}.
-\mpv{Upper and lower case Ys? 
 The inequality states that if we are given $N$ values $y_1, \ldots, y_N$ in 
-$[0, 1]$ with average $\mu$, and we have have drawn $m$ values without replacement, $Y_1, \ldots, Y_m$, 
+$[0, 1]$ with average $\mu$, and we have drawn $m$ values without replacement, $Y_1, \ldots, Y_m$, 
 then we can calculate a running confidence interval around the current mean 
 of the $m$ values such that the actual mean of the $N$
-is always within this confidence interval with a probability of $1 - \delta$:}
+is always within this confidence interval with a probability of $1 - \delta$:
 \begin{theorem}
 \label{thm:hs}
 Fix any $\delta > 0$. For $1 \le m \le N-1$, define
@@ -101,7 +100,7 @@ $$
 }
 \end{theorem}
 \vspace{-5pt}
-In our setting, each $Y_i$ corresponds to the an estimate of utility computed based on the
+In our setting, each $Y_i$ corresponds to an estimate of utility computed based on the
 records seen so far. 
 % estimates of utility that we 
 % have obtained based on the set of records seen thus far. 
@@ -275,7 +274,7 @@ applied to the problem of identifying interesting visualizations.
 
 A recently-studied variation of MAB focuses on finding the arms with the highest
 mean reward~\cite{BubeckWV13, audibert2010best}.
-This variation is identical to the problem addressed by \SeeDB: our goal is 
+This variation is identical to the problem addressed by \SeeDB: our goal is to
 find the visualizations (arms) with the  highest utility (reward).
 Specifically, we adapt the Successive Accepts and Rejects algorithm from \cite{BubeckWV13} 
 to find arms with the highest mean reward.
@@ -290,7 +289,7 @@ If $\Delta_1$ is greater than $\Delta_n$, the view with the highest mean is
 in pruning computations).
 On the other hand, if $\Delta_n$ is higher, the view with the lowest mean is discarded
 from the set of views in the running.
-\techreportfinal{(See Algorithm~\ref{algo:mab_based_pruning})}. 
+\techreportfinal{(See Algorithm~\ref{algo:mab_based_pruning}).} 
 \removefromtr{The pseudocode can be found in the technical report~\cite{seedb-tr}.}
 \cite{BubeckWV13} proves that under certain assumptions about reward distributions,
 the above technique identifies the top-$k$ arms with high probability.
@@ -438,19 +437,25 @@ It is in fact also possible to explicitly derive a number of samples
 such that $\hat{U}$ is close to $U$ within a certain error bound
 and with a certain probability. 
 \end{proof}
-
 }
 We call distance functions that have this property as {\em
 consistent distance functions}.
 Consistent distance functions allow pruning schemes
 to gather increasingly better estimates of utility values
 over time (as long as the samples are large enough). 
+\purple{
 \removefromtr{In the extended
 technical report~\cite{seedb-tr}, we prove using Hoeffding's inequality that
 this property holds for Euclidean distance.}
-Our results in Sections~\ref{sec:custom_execution_engine_expts}
-and~\ref{sec:discussion} empirically show that CI and MAB-based pruning 
-schemes work well not only for Euclidean distance but also for EMD and other distance functions.
+Our results in Section~\ref{sec:custom_execution_engine_expts}
+and~\cite{seedb-tr} empirically show that CI and MAB-based pruning 
+schemes work well for a variety of metrics including EMD based deviation,
+Euclidean distance based deviation as well as metrics such as MAX\_DIFF that
+rank visualizations by the difference between respective groups in the
+target and reference distributions.}
+
+%not only for Euclidean distance but also for EMD 
+%and other distance functions.
 %Specifically, we show empirically in 
 %that the CI and MAB-based pruning schemes 
 %work well for EMD (i.e., have high accuracy while reducing

@@ -5,7 +5,8 @@
 %\usepackage{times}
 \usepackage{mathtools}
 \usepackage{epigraph}
-
+%\usepackage{authblk}
+%\usepackage{hyperref}
 
 %\usepackage{MnSymbol} 
 %\usepackage{MinionPro}
@@ -35,6 +36,7 @@
 
 \newcommand{\reviewer}[1]{\textcolor{red}{Review: #1}}
 \newcommand{\mpv}[1]{\textcolor{blue}{MV: #1}}
+\newcommand{\purple}[1]{\textcolor{purple}{#1}}
 \newcommand{\agp}[1]{\textcolor{magenta}{AGP: #1}}
 \newcommand{\resolved}[1]{\textcolor{green}{}}
 \newcommand{\removefromtr}[1]{#1}
@@ -112,29 +114,73 @@
 %\title{{\LARGE \sc SeeDB}: Towards Automatic Query Result Visualizations}
 %\title{{\LARGE \sc SeeDB}: Visual Analytics with Data-Driven \\
 %Visualization Recommendations}
-\title{{\LARGE \sc SeeDB}: Visualization Recommendation \\ to Support Visual Analytics}
+\title{{\LARGE \sc SeeDB}: Efficient Data-Driven Visualization Recommendations to Support Visual Analytics}
 %\subtitle{\vspace{-10pt}[Vision Paper]\vspace{5pt}}
 
-\numberofauthors{4} 
+% \numberofauthors{5} 
+% \author{
+% \alignauthor
+% \hspace{-20pt} Manasi Vartak \\ 
+% \affaddr{\hspace{-20pt}MIT} \\
+% \affaddr{\hspace{-20pt}mvartak@csail.mit.edu} 
+% \alignauthor
+% \hspace{-50pt} Sajjadur Rahman \\ 
+% \affaddr{\hspace{-50pt}University of Illinois (UIUC)} \\
+% \affaddr{\hspace{-50pt}srahman7@illinois.edu} 
+% \alignauthor 
+% \hspace{-80pt}Samuel Madden \\ 
+% \affaddr{\hspace{-80pt}MIT} \\ 
+% \affaddr{\hspace{-80pt}madden@csail.mit.edu}
+% \alignauthor
+% \hspace{-110pt}Aditya Parameswaran \\ 
+% \affaddr{\hspace{-110pt}University of Illinois (UIUC)} \\
+% \affaddr{\hspace{-110pt}adityagp@illinois.edu} 
+% \alignauthor 
+% \hspace{-140pt}Neoklis Polyzotis \\ 
+% \affaddr{\hspace{-140pt}Google} \\ 
+% \affaddr{\hspace{-140pt}alkispolyzotis@gmail.com} 
+% }
+
 \author{
-\alignauthor
-\hspace{-45pt} Manasi Vartak \\ 
-\affaddr{\hspace{-45pt}MIT} \\
-\affaddr{\hspace{-45pt}mvartak@mit.edu} 
-\alignauthor 
-\hspace{-95pt}Samuel Madden \\ 
-\affaddr{\hspace{-95pt}MIT} \\ 
-\affaddr{\hspace{-95pt}madden@csail.mit.edu}
-\alignauthor
-\hspace{-120pt}Aditya Parameswaran \\ 
-\affaddr{\hspace{-120pt}University of Illinois (UIUC)} \\
-\affaddr{\hspace{-120pt}adityagp@illinois.edu} 
-\alignauthor 
-\hspace{-145pt}Neoklis Polyzotis \\ 
-\affaddr{\hspace{-145pt}Google} \\ 
-\affaddr{\hspace{-145pt}alkispolyzotis@gmail.com} 
+   \begin{tabular*}{\textwidth}{ccccc}
+     \hspace{-30pt}Manasi Vartak$^1$ &
+      \hspace{-5pt}Sajjadur Rahman$^2$ &
+     \hspace{-5pt} Samuel Madden$^1$ &
+ \hspace{-5pt}     Aditya Parameswaran$^2$ & 
+ \hspace{-5pt}     Neoklis Polyzotis$^3$\\
+   \end{tabular*}\\[15pt]
+   \begin{tabular*}{\textwidth}{ccc}
+         $^1$\affaddr{MIT} &
+     $^2$\affaddr{University of Illinois (UIUC)} & $^3$\affaddr{Google} \\
+\affaddr{\{mvartak, madden\}@csail.mit.edu} & \affaddr{\{asrahman7, adityagp\}@illinois.edu} & \affaddr{alkispolyzotis@gmail.com}\\
+ \end{tabular*}
 }
+
+
+% \setlength{\affilsep}{1pt}
+% \renewcommand\Authfont{\aufnt}
+% \renewcommand\Affilfont{\affaddr}
+% \renewcommand\Authands{, }
+% \author{Souvik Bhattacherjee}
+% \author[1]{Amit Chavan}
+% \author[2]{Silu Huang}
+% %\author[1]{\authorcr Amol Deshpande}
+% \author[1]{Amol Deshpande}
+% \author[2]{Aditya Parameswaran}
+% \affil[1]{University of Maryland, College Park;
+% \{\href{mailto:bsouvik@cs.umd.edu}{bsouvik} | \href{mailto:amitc@cs.umd.edu}{amitc} | \href{mailto:amol@cs.umd.edu}{amol}@cs.umd.edu\}}
+% \affil[2]{University of Illinois, Urbana-Champaign;
+% \{\href{mailto:shuang86@illinois.edu}{shuang86} | \href{mailto:adityagp@illinois.edu}{adityagp}@illinois.edu\}}
  
+
+%  \author[1]{Manasi Vartak \\ MIT \thanks{A.A@university.edu}}
+% \author[1]{Author B\thanks{B.B@university.edu}}
+% \author[1]{Author C\thanks{C.C@university.edu}}
+% \author[2]{Author D\thanks{D.D@university.edu}}
+% \author[2]{Author E\thanks{E.E@university.edu}}
+% \affil[1]{Department of Computer Science, \LaTeX\ University}
+% \affil[2]{Department of Mechanical Engineering, \LaTeX\ University}
+
 %\numberofauthors{3}
 %\author{
 %}

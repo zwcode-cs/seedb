@@ -3,17 +3,22 @@
 
 \section{Related Work}
 \label{sec:related_work}
-\SeeDB\ is draws on related work from multiple areas;
+\SeeDB\ draws on related work from multiple areas;
 we review papers in each of the areas, and describe how they relate to
 \SeeDB. 
 
 \stitle{Visualization Tools}:
-The visualization 
-research community has introduced a number of
-visual analytics tools such as Spotfire and 
-Tableau~\cite{polaris, Ahlberg:1996:SIE:245882.245893}.
-These tools do provide some features for automatically selecting
-the best visualization for a data set, 
+The visualization research community has introduced a number of
+visualization toolkits and tools including Spotfire and 
+Tableau~\cite{polaris, Ahlberg:1996:SIE:245882.245893} that enable
+users to build visualizations with different levels of sophistication.
+Similar visual specification tools have been introduced by the
+database community as well, e.g., Fusion
+Tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10}.
+Some of these tools provide features that use heuristics to suggest
+chart types for a given set of variables. 
+% but these features are restricted to a set of aesthetic rules of thumb that
+% guide which visualization is most appropriate.
 % In these tools, the goal is to make it simpler for analysts 
 % to pose specifications of what they would like to examine
 % (e.g., they would like to examine sales by year for cars),
@@ -22,23 +27,17 @@ the best visualization for a data set,
 % (e.g., a trend line or a bar chart).
 % Most of the ``smarts'' in these tools is restricted
 %to a set of 
-but these features are restricted to a set of aesthetic rules of thumb that
-guide which visualization is most appropriate.
 %given a visual specification.
-Similar visual specification tools 
-have been introduced by the
-database community, e.g., Fusion
-Tables~\cite{DBLP:conf/sigmod/GonzalezHJLMSSG10}. 
-In all these tools, the user must choose the data they want to visualize, requiring
-a tedious iteration through all sets of attributes.
-\techreportfinal{
-For datasets with a large number of attributes,
-it is often hard for the analyst to manually study
-every single attribute.
-}
-In contrast, in \SeeDB, our goal is to automatically recommend visualizations
-based on a generalized distance function, finding
-attribute sets that maximize the value of this function.
+All of these tools, however, require the user to manually specify
+visualizations, leading to a tedious trial-and-error process to find
+visualizations that are interesting or useful.
+% In all these tools, the user must choose the data they want to visualize, requiring
+% a tedious iteration through all sets of attributes.
+In contrast, \SeeDB seeks to automatically identify and 
+recommend interesting visualizations based on a utility metric.
+
+% based on a generalized distance function, finding
+% attribute sets that maximize the value of this function.
 %in addition to the simple visualization
 %specification functionalities described above,
 %which is more appropriate when the analyst already
