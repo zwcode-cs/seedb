@@ -49,19 +49,27 @@ recommend interesting visualizations based on a utility metric.
 %recommend visualizations. 
 
 
-\mpv{Still working
 \stitle{Recommending Visualizations.}
 %A few systems have attempted to automate some aspects of data analysis
-%and visualization. For example, 
-Profiler 
-detects anomalies in data \cite{DBLP:conf/avi/KandelPPHH12} and provides
-some visualization recommendation functionality,
-but is restricted determining the best binning for the
-for the $x$ axis: in particular, it decides which granularity
-is appropriate to bin on to depict the most interesting relationships 
-between data. 
-Since this is a much simpler problem
-than ours, sophisticated techniques are not necessary.
+%and visualization. For example,
+There has been work such as\break
+\cite{Mackinlay:1986:ADG:22949.22950, DBLP:journals/tvcg/MackinlayHS07} 
+on recommending visual encodings for different types of data.
+Tools like VISO~\cite{polowinski2013viso} use semantic ontologies to recommend visualizations,
+while those like Voyager~\cite{wongvoyager2015} focus on the interface design aspects
+for exploratory data analysis.
+Another type of visualization recommendation is performed by systems like
+Profiler and Scorpion \cite{DBLP:conf/avi/KandelPPHH12, scorpion} which detect specific 
+patterns (e.g. outliers) in data.
+% Profiler 
+% detects anomalies in data  and provides
+% some visualization recommendation functionality,
+% but is restricted determining the best binning for the
+% for the $x$ axis: in particular, it decides which granularity
+% is appropriate to bin on to depict the most interesting relationships 
+% between data. 
+% Since this is a much simpler problem
+% than ours, sophisticated techniques are not necessary.
 % Our work is also similar to VizDeck which is a tool that given a dataset, uses a
 % set of pre-determined rules to create diverse visualizations and
 % allows the user to pick and choose the visualizations that seem relevant
@@ -78,7 +86,7 @@ than ours, sophisticated techniques are not necessary.
 VizDeck~\cite{DBLP:conf/sigmod/KeyHPA12}
 depicts all possible 2-D visualizations of a dataset on a dashboard.
 While a dashboard with all 2-D visualizations can provide an overview of the data, 
-this approach can quickly become intractable as the number of attributes increases.}
+this approach can quickly become intractable as the number of attributes increases.
 % The rendering of all visualizations also limits it to datasets with a small 
 % number of attributes.
 % Given that VizDeck generates all visualizations, it is  meant for 

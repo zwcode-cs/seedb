@@ -119,6 +119,7 @@ quickly becomes intractable.
 \vspace{-7pt}
 	\centering
 	\begin{subfigure}{0.49\linewidth}
+	    \centering
 		{\includegraphics[width=4cm] {Images/HUHI_sex_avg_cap_gain.pdf}}
 		\vspace{-5pt}
 		\caption{Interesting Visualization}
@@ -133,8 +134,9 @@ quickly becomes intractable.
 	\end{subfigure}
 	\centering
 	\begin{subfigure}{0.49\linewidth}
+	   \centering
 	   \begin{tabular}{|c|c|} \hline
-	   	Sex  &   Capital Gain \\ \hline
+	   	{\bf Sex}  &   {\bf Avg Capital Gain} \\ \hline
 	   	\multicolumn{2}{|c|}	{Unmarried Adults} \\ \hline
 		Female & 380 \\ \hline
 		Male   & 356 \\ \hline
@@ -145,8 +147,9 @@ quickly becomes intractable.
 		  \caption{Data: Avg Capital Gain vs. Sex} \label{tab:interesting_viz}
 	\end{subfigure}
 	\begin{subfigure}{0.49\linewidth}
+	   \centering
 	   \begin{tabular}{|c|c|} \hline
-	   	Sex  &   Capital Gain \\ \hline
+	   	{\bf Sex}  &   {\bf Avg Age} \\ \hline
 	   	\multicolumn{2}{|c|}	{Unmarried Adults} \\ \hline
 	   	Female & 28 \\ \hline
 	   	Male   &  28 \\ \hline
@@ -323,9 +326,8 @@ reducing time taken by 20X.
 We develop pruning techniques to avoid wasting computation
 on obviously low-utility visualizations, adapting
 techniques from traditional 
-  confidence-interval-based~\cite{hoeffding1963probability} 
-  top-$k$ ranking and
-  multi-armed bandits~\cite{bandits},
+  confidence-interval-based top-$k$ ranking~\cite{hoeffding1963probability} 
+  and multi-armed bandits~\cite{bandits},
   further reducing time taken by 5X.
 \end{denselist}
 Lastly, we develop a general-purpose {\em phase-based execution framework}
@@ -381,8 +383,8 @@ In summary, the contributions of this paper are:
 \end{denselist}
 
 We note that this work builds upon the high-level ideas for \SeeDB\ as 
-described in~\cite{DBLP:conf/vldb/Parameswaran2013} and 
-~\cite{DBLP:journals/pvldb/VartakMPP14}.
+described in our short vision paper~\cite{DBLP:conf/vldb/Parameswaran2013} and 
+demo paper~\cite{DBLP:journals/pvldb/VartakMPP14}.
 % \noindent Finally, we note that the vision for \SeeDB\ was described 
 % in a vision paper~\cite{DBLP:conf/vldb/Parameswaran2013} and presented 
 % as a demonstration~\cite{DBLP:journals/pvldb/VartakMPP14}, 
