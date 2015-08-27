@@ -506,7 +506,7 @@ biases optimal grouping to contain single attribute groups.
 
 \stitle{All Sharing Optimizations:} 
 {\em \underline{Summary:} Applying all of our sharing optimizations
-leads to a speedup of up to 20X for row stores, and 8X for column stores;
+leads to a speedup of up to 40X for row stores, and 6X for column stores;
 column stores are still faster than row stores.}
 Based on the optimal parameters identified from the previous experiments, we combined 
 our optimizations to obtain the best performance. 
@@ -523,8 +523,8 @@ Figure~\ref{fig:all_opt} shows the latency of \SeeDB\ on SYN when all
 optimizations have been applied.
 (Results on real datasets are presented in Section
 \ref{sec:expt_summary}.)
-We see that our sharing optimizations lead to a speed up of 20X for ROW 
-(Figures~\ref{fig:all_opt}a) and a speedup of 10X in COL (Figures~\ref{fig:all_opt}b). 
+We see that our sharing optimizations lead to a speed up of upto 40X for ROW 
+(Figures~\ref{fig:all_opt}a) and a speedup of 6X in COL (Figures~\ref{fig:all_opt}b). 
 Sharing is most effective for datasets with 
 large sizes and many views, particularly for ROW where reduction in table scans has 
 large benefits.

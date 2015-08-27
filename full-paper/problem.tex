@@ -34,8 +34,8 @@ which can be readily visualized using bar charts or trend lines.
 In addition to the database $D$, we assume that the analyst has indicated
 a desire to explore a subset of data specified by a query $Q$.
 The goal of \SeeDB is to recommend visualizations of $Q$ that have
-high utility (which we measure using deviation, as explained below).
-The class of queries $Q$ posed over $D$ that we support encompass a general class of queries 
+high utility (which we measure using deviation, as explained in this section).
+The class of queries $Q$ posed over $D$ that we support encompasses a general class of queries 
 that select a horizontal fragment of the fact table and one or more dimension tables.
 Conceptually, we can view this as a simple selection query over the result of joining all
 the tables involved in the snowflake schema. 
@@ -261,13 +261,13 @@ For our example visualization of {\em Average Capital Gain vs. Sex} (Figure \ref
 the probability distribution for the target view $V_i(D_Q)$ ({\em unmarried} adults, data 
 in Table \ref{tab:interesting_viz}), 
 denoted as $P[V_i (D_Q)]$ is: 
-(F: 0.52, M: 0.48) while that for the reference view $V_i(D_R)$ ({\em married} adults, data 
-in Table \ref{tab:uninteresting_viz}), 
+(F: 0.52, M: 0.48) while that for the reference view $V_i(D_R)$ ({\em married} adults, Table \ref{tab:interesting_viz}), 
 denoted as $P[V_i (D_R)]$ is:
 (F: 0.31, M: 0.69). 
 In contrast, the distributions for the visualization {\em Average Age
 vs. Sex} are (F: 0.5, M: 0.5) and (F: 0.51, M: 0.49) 
-for the target and reference view respectively.
+for the target and reference views respectively (data 
+in Table \ref{tab:uninteresting_viz}).
 Qualitatively, we see that the distributions show a large deviation for
 the former visualization and hardly any deviation for the latter.
 
@@ -286,12 +286,12 @@ $$ U (V_i) = S ( P[V_i (D_Q)], P[V_i (D_R)] )$$
 Computing distance between probability distributions has
 been well studied in the literature, and \SeeDB\ supports a variety of distance
 functions
-to compute utility, including Earth Movers Distance, 
+to compute utility, including Earth Mover's Distance, 
 Euclidean Distance, Kullback-Leibler Divergence (K-L
 divergence), and Jenson-Shannon
 Distance. 
 \SeeDB uses Earth Mover's Distance as the default distance function,
-but we find that using other distance functions gives comparable results~\cite{seedb-tr}.
+and we find that using other distance functions gives comparable results~\cite{seedb-tr}.
 
 %in Section \ref{sec:discussion} we discuss results for
 %other distance functions.
@@ -341,7 +341,7 @@ while minimizing total computation time.
 \end{problem}
 
 In Section~\ref{sec:discussion}, we describe how our metric
-can be generalized to capture aspects of interestingess besides
+can be generalized to capture aspects of interestingness besides
 deviation.
 
 % Thus, \SeeDB\ aims to find the $k$ views (obtained by adding a single aggregate

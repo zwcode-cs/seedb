@@ -99,7 +99,7 @@ scalable visualizations that employ in-memory caching, sampling, and
 pre-fetching to improve the interactivity of visualization systems
 backed by
 databases (e.g.,~\cite{doshi2003prefetching,DBLP:journals/corr/KimBPIMR14}).
-Such techniques could be employed in our settings to further improve
+Such techniques could be employed in our setting to further improve
 response times (although some of these techniques, such as in-memory caching,
 can only work with small datasets).
 
@@ -149,8 +149,8 @@ involve aggregation across multiple dimensions.
 %(BI) applications.
 Even when the number of attributes and number
 of distinct values of each attribute is relatively small,
-the space required to materialize then entire cube can be prohibitive,
-meaning that only a few (if any) dimensions can be pre-aggregated.
+the space required to materialize the entire cube can be prohibitive,
+meaning that only a few dimensions can be pre-aggregated.
 %and store these data cubes is
 %very large --- as a result of this, in practice, data cubes
 %are only stored, if at all, for a small number of attributes 
@@ -163,7 +163,7 @@ so as to minimize the amount of work to be performed at run time
 %and since any ad-hoc data exploration queries can be provided on-the-fly, materialization
 %is not an option except for the most common or popular attributes.
 While the optimization techniques underlying cube materialization 
-are similar in spirit to our sharing optimizations from Section~\ref{sec:sharing_opt},
+are similar in spirit to our sharing optimizations (Section~\ref{sec:sharing_opt}),
 they focus on offline computation of views to minimize storage rather than efficient online
 optimization.
 
@@ -219,7 +219,7 @@ In \cite{DBLP:conf/vldb/Sarawagi99}, Sarawagi
 proposes techniques to explain an
 increase or decrease in a specific aggregate by drilling down into that aggregate.
 In contrast, \SeeDB\ seeks to find interesting
-differences between two datasets that have not yet been aggregated along any dimensions.
+differences between two datasets that have not yet been aggregated along any dimension.
 %,
 % rather than explaining the cause of variations observed in already aggregated
 %quantities.  
@@ -251,8 +251,8 @@ optimization (e.g.
 %Multi-query optimization focuses on the creation of ``global''
 %query plans for a collection of queries rather than a single one,
 %such that the intermediate operators and results are shared across queries.
-Our problem is simpler however, since we don't have 
-to wait for a batch of queries to arrive and all queries
+Our problem is simpler, however, since we don't have 
+to wait for a batch of queries to arrive and all our queries
 are aggregations. 
 The goal of choosing only the top visualizations also enables us
 to use pruning techniques to terminate evaluation of low utility visualizations, 
@@ -261,7 +261,7 @@ something other multi-query schemes cannot do.
 \stitle{Query Recommendation Systems}: There is related work on recommending queries in databases 
 (see~\cite{marcel2011survey}).  Such systems are
  designed to help users pose users relevant
-queries over of a database, typically by consulting historical query
+queries over a database, typically by consulting historical query
 workloads and using statistical similarity or recommender algorithms
 to refine user inputs.  
 While these techniques focus on recommending SQL queries instead of visualizations
